@@ -388,69 +388,6 @@ public final class SiteExporter implements ResourceExporter {
         return outputFolder.resolve(id.getNamespace() + "/" + id.getPath());
     }
 
-    /**
-     * Dumps the P2P tunnel types and how they can be obtained.
-     */
-    private static void dumpP2PTypes(Set<Item> usedVanillaItems, SiteExportWriter siteExport) {
-
-        var tunnelTypes = new ItemLike[] {
-                P2PTunnelAttunement.ME_TUNNEL,
-                P2PTunnelAttunement.ENERGY_TUNNEL,
-                P2PTunnelAttunement.ITEM_TUNNEL,
-                P2PTunnelAttunement.FLUID_TUNNEL,
-                P2PTunnelAttunement.REDSTONE_TUNNEL,
-                P2PTunnelAttunement.LIGHT_TUNNEL
-        };
-
-        for (var tunnelItem : tunnelTypes) {
-            var typeInfo = new P2PTypeInfo();
-            typeInfo.tunnelItemId = getItemId(tunnelItem.asItem()).toString();
-
-            Set<Item> items = new HashSet<>();
-            for (var entry : P2PTunnelAttunementInternal.getTagTunnels().entrySet()) {
-                if (entry.getValue() == tunnelItem.asItem()) {
-                    BuiltInRegistries.ITEM.getTagOrEmpty(entry.getKey()).forEach(h -> items.add(h.value()));
-                }
-            }
-            items.stream().map(i -> getItemId(i).toString()).forEach(typeInfo.attunementItemIds::add);
-
-            // Export attunement info
-            var attunementInfo = P2PTunnelAttunementInternal.getAttunementInfo(tunnelItem);
-            attunementInfo.apis().stream().map(c -> c.name().toString())
-                    .forEach(typeInfo.attunementApiClasses::add);
-
-            usedVanillaItems.addAll(items);
-            siteExport.addP2PType(typeInfo);
-        }
-    }
-
-    /**
-     * Dumps a table that describes the relationship between items that are just colored variants of each other.
-     */
-    private static void dumpColoredItems(SiteExportWriter siteExport) {
-        for (var coloredPart : AEParts.COLORED_PARTS) {
-            dumpColoredItem(coloredPart, siteExport);
-        }
-    }
-
-    private static void dumpColoredItem(ColoredItemDefinition itemDefinition, SiteExportWriter siteExport) {
-        var baseItem = itemDefinition.item(AEColor.TRANSPARENT);
-        if (baseItem == null) {
-            return;
-        }
-
-        for (var color : AEColor.values()) {
-            if (color.dye == null) {
-                continue;
-            }
-
-            var coloredItem = itemDefinition.item(color);
-            if (coloredItem != null) {
-                siteExport.addColoredVersion(baseItem, color.dye, coloredItem);
-            }
-        }
-    }
-
     private void processItems(Minecraft client,
             SiteExportWriter siteExport,
             Path outputFolder) throws IOException {
