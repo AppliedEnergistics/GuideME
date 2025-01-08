@@ -1,6 +1,5 @@
 package guideme.guidebook.scene.export;
 
-import appeng.thirdparty.fabric.SpriteFinder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
@@ -66,7 +65,8 @@ record Mesh(MeshData.DrawState drawState,
         }
 
         var uvSupplier = getUvSupplier(offset, uvElement);
-        var spriteFinder = SpriteFinder.get(textureAtlas);
+        // TODO: Should cache this...
+        var spriteFinder = new SpriteFinder(textureAtlas.getTextures(), textureAtlas);
 
         return streamQuadMidpoints(uvSupplier)
                 .map(uvPos -> spriteFinder.find(uvPos.x, uvPos.y))

@@ -1,6 +1,5 @@
 package guideme.guidebook.document.block;
 
-import appeng.client.gui.Icon;
 import guideme.guidebook.color.ConstantColor;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.layout.LayoutContext;
