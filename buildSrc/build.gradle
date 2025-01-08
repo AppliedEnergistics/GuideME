@@ -1,0 +1,8 @@
+dependencies {
+    implementation("dev.lukebemish.immaculate:dev.lukebemish.immaculate.gradle.plugin:0.1.6")
+    implementation("net.neoforged.gradleutils:net.neoforged.gradleutils.gradle.plugin:4.0.0")
+}
+
+repositories {
+    gradlePluginPortal()
+}
