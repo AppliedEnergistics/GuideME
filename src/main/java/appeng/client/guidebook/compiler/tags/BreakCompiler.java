@@ -5,8 +5,8 @@ import java.util.Set;
 import appeng.client.guidebook.compiler.PageCompiler;
 import appeng.client.guidebook.document.flow.LytFlowBreak;
 import appeng.client.guidebook.document.flow.LytFlowParent;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
-import appeng.libs.mdast.model.MdAstNode;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.model.MdAstNode;
 
 public class BreakCompiler extends FlowTagCompiler {
     @Override

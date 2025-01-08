@@ -1,7 +1,7 @@
-package appeng.libs.micromark;
+package guideme.libs.micromark;
 
-import appeng.libs.micromark.symbol.Codes;
-import appeng.libs.micromark.symbol.Constants;
+import guideme.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.symbol.Constants;
 
 public final class ClassifyCharacter {
     private ClassifyCharacter() {

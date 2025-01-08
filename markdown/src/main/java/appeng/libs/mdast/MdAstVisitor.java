@@ -1,6 +1,6 @@
-package appeng.libs.mdast;
+package guideme.libs.mdast;
 
-import appeng.libs.mdast.model.MdAstNode;
+import guideme.libs.mdast.model.MdAstNode;
 
 public interface MdAstVisitor {
     default Result beforeNode(MdAstNode node) {

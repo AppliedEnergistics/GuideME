@@ -1,6 +1,6 @@
-package appeng.libs.micromark;
+package guideme.libs.micromark;
 
-import appeng.libs.unist.UnistPoint;
+import guideme.libs.unist.UnistPoint;
 
 /**
  * A location in the document (`line`/`column`/`offset`) and chunk (`_index`, `_bufferIndex`).

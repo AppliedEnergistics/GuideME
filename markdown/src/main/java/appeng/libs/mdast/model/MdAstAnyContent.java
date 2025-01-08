@@ -1,6 +1,6 @@
-package appeng.libs.mdast.model;
+package guideme.libs.mdast.model;
 
-import appeng.libs.unist.UnistNode;
+import guideme.libs.unist.UnistNode;
 
 /**
  * Root for anything that can be part of a {@link MdAstParent}.

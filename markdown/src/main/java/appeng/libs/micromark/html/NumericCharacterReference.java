@@ -1,6 +1,6 @@
-package appeng.libs.micromark.html;
+package guideme.libs.micromark.html;
 
-import appeng.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.symbol.Codes;
 
 public final class NumericCharacterReference {
     private NumericCharacterReference() {

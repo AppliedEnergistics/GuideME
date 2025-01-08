@@ -1,4 +1,4 @@
-package appeng.libs.mdx;
+package guideme.libs.mdx;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -14,14 +14,14 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.TestFactory;
 
-import appeng.libs.micromark.Micromark;
-import appeng.libs.micromark.ParseException;
-import appeng.libs.micromark.Token;
-import appeng.libs.micromark.html.CompileOptions;
-import appeng.libs.micromark.html.HtmlCompiler;
-import appeng.libs.micromark.html.HtmlContext;
-import appeng.libs.micromark.html.HtmlExtension;
-import appeng.libs.micromark.html.ParseOptions;
+import guideme.libs.micromark.Micromark;
+import guideme.libs.micromark.ParseException;
+import guideme.libs.micromark.Token;
+import guideme.libs.micromark.html.CompileOptions;
+import guideme.libs.micromark.html.HtmlCompiler;
+import guideme.libs.micromark.html.HtmlContext;
+import guideme.libs.micromark.html.HtmlExtension;
+import guideme.libs.micromark.html.ParseOptions;
 
 public class MdxTest {
 

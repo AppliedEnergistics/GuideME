@@ -1,4 +1,4 @@
-package appeng.libs.micromark;
+package guideme.libs.micromark;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
 
-import appeng.libs.unist.UnistPoint;
+import guideme.libs.unist.UnistPoint;
 
 /**
  * A context object that helps w/ parsing markdown.

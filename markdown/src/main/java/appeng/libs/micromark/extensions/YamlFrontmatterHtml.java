@@ -1,8 +1,8 @@
-package appeng.libs.micromark.extensions;
+package guideme.libs.micromark.extensions;
 
-import appeng.libs.micromark.Token;
-import appeng.libs.micromark.html.HtmlContext;
-import appeng.libs.micromark.html.HtmlExtension;
+import guideme.libs.micromark.Token;
+import guideme.libs.micromark.html.HtmlContext;
+import guideme.libs.micromark.html.HtmlExtension;
 
 public final class YamlFrontmatterHtml {
 

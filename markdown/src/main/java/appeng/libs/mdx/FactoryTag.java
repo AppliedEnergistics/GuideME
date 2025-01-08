@@ -1,22 +1,22 @@
-package appeng.libs.mdx;
+package guideme.libs.mdx;
 
-import static appeng.libs.mdx.EcmaScriptIdentifiers.isCont;
-import static appeng.libs.mdx.EcmaScriptIdentifiers.isStart;
+import static guideme.libs.mdx.EcmaScriptIdentifiers.isCont;
+import static guideme.libs.mdx.EcmaScriptIdentifiers.isStart;
 
 import java.util.Locale;
 
-import appeng.libs.micromark.Assert;
-import appeng.libs.micromark.CharUtil;
-import appeng.libs.micromark.Construct;
-import appeng.libs.micromark.ParseException;
-import appeng.libs.micromark.Point;
-import appeng.libs.micromark.State;
-import appeng.libs.micromark.TokenizeContext;
-import appeng.libs.micromark.Tokenizer;
-import appeng.libs.micromark.Types;
-import appeng.libs.micromark.factory.FactorySpace;
-import appeng.libs.micromark.symbol.Codes;
-import appeng.libs.micromark.symbol.Constants;
+import guideme.libs.micromark.Assert;
+import guideme.libs.micromark.CharUtil;
+import guideme.libs.micromark.Construct;
+import guideme.libs.micromark.ParseException;
+import guideme.libs.micromark.Point;
+import guideme.libs.micromark.State;
+import guideme.libs.micromark.TokenizeContext;
+import guideme.libs.micromark.Tokenizer;
+import guideme.libs.micromark.Types;
+import guideme.libs.micromark.factory.FactorySpace;
+import guideme.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.symbol.Constants;
 
 public final class FactoryTag {
     private FactoryTag() {

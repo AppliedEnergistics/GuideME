@@ -1,4 +1,4 @@
-package appeng.libs.mdast.model;
+package guideme.libs.mdast.model;
 
 /**
  * Strong (Parent) represents strong importance, seriousness, or urgency for its contents.

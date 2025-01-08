@@ -1,29 +1,29 @@
-package appeng.libs.micromark;
+package guideme.libs.micromark;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import appeng.libs.micromark.commonmark.Attention;
-import appeng.libs.micromark.commonmark.AutoLink;
-import appeng.libs.micromark.commonmark.BlockQuote;
-import appeng.libs.micromark.commonmark.CharacterEscape;
-import appeng.libs.micromark.commonmark.CharacterReference;
-import appeng.libs.micromark.commonmark.CodeFenced;
-import appeng.libs.micromark.commonmark.CodeIndented;
-import appeng.libs.micromark.commonmark.CodeText;
-import appeng.libs.micromark.commonmark.Definition;
-import appeng.libs.micromark.commonmark.HardBreakEscape;
-import appeng.libs.micromark.commonmark.HeadingAtx;
-import appeng.libs.micromark.commonmark.HtmlFlow;
-import appeng.libs.micromark.commonmark.HtmlText;
-import appeng.libs.micromark.commonmark.LabelEnd;
-import appeng.libs.micromark.commonmark.LabelStartImage;
-import appeng.libs.micromark.commonmark.LabelStartLink;
-import appeng.libs.micromark.commonmark.ListConstruct;
-import appeng.libs.micromark.commonmark.SetextUnderline;
-import appeng.libs.micromark.commonmark.ThematicBreak;
-import appeng.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.commonmark.Attention;
+import guideme.libs.micromark.commonmark.AutoLink;
+import guideme.libs.micromark.commonmark.BlockQuote;
+import guideme.libs.micromark.commonmark.CharacterEscape;
+import guideme.libs.micromark.commonmark.CharacterReference;
+import guideme.libs.micromark.commonmark.CodeFenced;
+import guideme.libs.micromark.commonmark.CodeIndented;
+import guideme.libs.micromark.commonmark.CodeText;
+import guideme.libs.micromark.commonmark.Definition;
+import guideme.libs.micromark.commonmark.HardBreakEscape;
+import guideme.libs.micromark.commonmark.HeadingAtx;
+import guideme.libs.micromark.commonmark.HtmlFlow;
+import guideme.libs.micromark.commonmark.HtmlText;
+import guideme.libs.micromark.commonmark.LabelEnd;
+import guideme.libs.micromark.commonmark.LabelStartImage;
+import guideme.libs.micromark.commonmark.LabelStartLink;
+import guideme.libs.micromark.commonmark.ListConstruct;
+import guideme.libs.micromark.commonmark.SetextUnderline;
+import guideme.libs.micromark.commonmark.ThematicBreak;
+import guideme.libs.micromark.symbol.Codes;
 
 public final class DefaultExtension {
     private DefaultExtension() {
@@ -71,10 +71,10 @@ public final class DefaultExtension {
                 Codes.backslash, List.of(CharacterEscape.characterEscape));
 
         extension.text = new HashMap<>();
-        extension.text.put(Codes.carriageReturn, List.of(appeng.libs.micromark.commonmark.LineEnding.lineEnding));
-        extension.text.put(Codes.lineFeed, List.of(appeng.libs.micromark.commonmark.LineEnding.lineEnding));
+        extension.text.put(Codes.carriageReturn, List.of(guideme.libs.micromark.commonmark.LineEnding.lineEnding));
+        extension.text.put(Codes.lineFeed, List.of(guideme.libs.micromark.commonmark.LineEnding.lineEnding));
         extension.text.put(Codes.carriageReturnLineFeed,
-                List.of(appeng.libs.micromark.commonmark.LineEnding.lineEnding));
+                List.of(guideme.libs.micromark.commonmark.LineEnding.lineEnding));
         extension.text.put(Codes.exclamationMark, List.of(LabelStartImage.labelStartImage));
         extension.text.put(Codes.ampersand, List.of(CharacterReference.characterReference));
         extension.text.put(Codes.asterisk, List.of(Attention.attention));

@@ -1,15 +1,15 @@
-package appeng.libs.mdast.mdx;
+package guideme.libs.mdast.mdx;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-import appeng.libs.mdast.AbstractMdAstTest;
-import appeng.libs.mdast.MdAst;
-import appeng.libs.mdast.MdastOptions;
-import appeng.libs.mdast.model.MdAstRoot;
-import appeng.libs.mdx.MdxSyntax;
+import guideme.libs.mdast.AbstractMdAstTest;
+import guideme.libs.mdast.MdAst;
+import guideme.libs.mdast.MdastOptions;
+import guideme.libs.mdast.model.MdAstRoot;
+import guideme.libs.mdx.MdxSyntax;
 
 public class MdxMdastExtensionTest extends AbstractMdAstTest {
 

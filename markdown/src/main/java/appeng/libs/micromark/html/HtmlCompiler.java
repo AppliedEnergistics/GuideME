@@ -1,4 +1,4 @@
-package appeng.libs.micromark.html;
+package guideme.libs.micromark.html;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,11 +10,11 @@ import java.util.regex.Pattern;
 
 import org.jetbrains.annotations.Nullable;
 
-import appeng.libs.micromark.ListUtils;
-import appeng.libs.micromark.NamedCharacterEntities;
-import appeng.libs.micromark.NormalizeIdentifier;
-import appeng.libs.micromark.Token;
-import appeng.libs.micromark.Tokenizer;
+import guideme.libs.micromark.ListUtils;
+import guideme.libs.micromark.NamedCharacterEntities;
+import guideme.libs.micromark.NormalizeIdentifier;
+import guideme.libs.micromark.Token;
+import guideme.libs.micromark.Tokenizer;
 
 /**
  * While micromark is a lexer/tokenizer, the common case of going from markdown to html is currently built in as this

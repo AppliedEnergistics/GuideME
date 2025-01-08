@@ -1,4 +1,4 @@
-package appeng.libs.micromark.html;
+package guideme.libs.micromark.html;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -8,8 +8,8 @@ import java.util.regex.Pattern;
 
 import org.jetbrains.annotations.Nullable;
 
-import appeng.libs.micromark.CharUtil;
-import appeng.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.CharUtil;
+import guideme.libs.micromark.symbol.Codes;
 
 public final class SanitizeUri {
     private SanitizeUri() {

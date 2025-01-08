@@ -1,7 +1,7 @@
-package appeng.libs.mdast.gfm.model;
+package guideme.libs.mdast.gfm.model;
 
-import appeng.libs.mdast.model.MdAstAnyContent;
-import appeng.libs.mdast.model.MdAstParent;
+import guideme.libs.mdast.model.MdAstAnyContent;
+import guideme.libs.mdast.model.MdAstParent;
 
 public class GfmTableRow extends MdAstParent<GfmTableCell> implements MdAstAnyContent {
     public GfmTableRow() {

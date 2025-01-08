@@ -1,7 +1,7 @@
-package appeng.libs.micromark;
+package guideme.libs.micromark;
 
-import appeng.libs.mdast.model.MdAstPosition;
-import appeng.libs.unist.UnistPoint;
+import guideme.libs.mdast.model.MdAstPosition;
+import guideme.libs.unist.UnistPoint;
 
 public class ParseException extends RuntimeException {
     private final UnistPoint from;

@@ -1,4 +1,4 @@
-package appeng.libs.micromark.content;
+package guideme.libs.micromark.content;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -6,11 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import appeng.libs.micromark.Extension;
-import appeng.libs.micromark.Micromark;
-import appeng.libs.micromark.TestUtil;
-import appeng.libs.micromark.html.HtmlCompiler;
-import appeng.libs.micromark.html.ParseOptions;
+import guideme.libs.micromark.Extension;
+import guideme.libs.micromark.Micromark;
+import guideme.libs.micromark.TestUtil;
+import guideme.libs.micromark.html.HtmlCompiler;
+import guideme.libs.micromark.html.ParseOptions;
 
 public class DefinitionTest {
     @ParameterizedTest(name = "[{index}] {2}")

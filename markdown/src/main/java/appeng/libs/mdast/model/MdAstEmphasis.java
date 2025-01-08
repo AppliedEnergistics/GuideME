@@ -1,4 +1,4 @@
-package appeng.libs.mdast.model;
+package guideme.libs.mdast.model;
 
 /**
  * Emphasis (Parent) represents stress emphasis of its contents. Emphasis can be used where phrasing content is

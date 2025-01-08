@@ -1,12 +1,12 @@
-package appeng.libs.mdast.gfm;
+package guideme.libs.mdast.gfm;
 
 import org.junit.jupiter.api.Test;
 
-import appeng.libs.mdast.AbstractMdAstTest;
-import appeng.libs.mdast.MdAst;
-import appeng.libs.mdast.MdastOptions;
-import appeng.libs.mdast.model.MdAstNode;
-import appeng.libs.micromark.extensions.gfm.GfmTableSyntax;
+import guideme.libs.mdast.AbstractMdAstTest;
+import guideme.libs.mdast.MdAst;
+import guideme.libs.mdast.MdastOptions;
+import guideme.libs.mdast.model.MdAstNode;
+import guideme.libs.micromark.extensions.gfm.GfmTableSyntax;
 
 class GfmTableMdastExtensionTest extends AbstractMdAstTest {
 

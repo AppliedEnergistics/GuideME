@@ -13,8 +13,8 @@ import appeng.client.guidebook.document.block.LytImage;
 import appeng.client.guidebook.document.flow.InlineBlockAlignment;
 import appeng.client.guidebook.document.flow.LytFlowInlineBlock;
 import appeng.client.guidebook.document.flow.LytFlowParent;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
-import appeng.libs.mdast.model.MdAstNode;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.model.MdAstNode;
 
 public class FloatingImageCompiler extends FlowTagCompiler {
     public static final String TAG_NAME = "FloatingImage";

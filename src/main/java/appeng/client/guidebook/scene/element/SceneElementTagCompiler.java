@@ -7,7 +7,7 @@ import appeng.client.guidebook.document.LytErrorSink;
 import appeng.client.guidebook.extensions.Extension;
 import appeng.client.guidebook.extensions.ExtensionPoint;
 import appeng.client.guidebook.scene.GuidebookScene;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 
 /**
  * Contributed by {@link SceneElementCompilerPlugin}.

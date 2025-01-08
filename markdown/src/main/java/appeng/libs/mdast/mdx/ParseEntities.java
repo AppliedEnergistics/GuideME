@@ -1,10 +1,10 @@
-package appeng.libs.mdast.mdx;
+package guideme.libs.mdast.mdx;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import appeng.libs.micromark.CharUtil;
-import appeng.libs.micromark.NamedCharacterEntities;
+import guideme.libs.micromark.CharUtil;
+import guideme.libs.micromark.NamedCharacterEntities;
 
 /**
  * Reduced functionality port of https://github.com/wooorm/parse-entities/

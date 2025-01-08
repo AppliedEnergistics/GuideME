@@ -1,6 +1,6 @@
-package appeng.libs.micromark;
+package guideme.libs.micromark;
 
-import appeng.libs.micromark.html.HtmlCompiler;
+import guideme.libs.micromark.html.HtmlCompiler;
 
 public class PerfTest {
     public static void main(String[] args) {

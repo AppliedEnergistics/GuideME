@@ -14,8 +14,8 @@ import appeng.client.guidebook.extensions.Extension;
 import appeng.client.guidebook.extensions.ExtensionCollection;
 import appeng.client.guidebook.scene.element.SceneElementTagCompiler;
 import appeng.client.guidebook.scene.level.GuidebookLevel;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
-import appeng.libs.mdast.model.MdAstNode;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.model.MdAstNode;
 
 public class SceneTagCompiler extends BlockTagCompiler implements Extension {
     public static final String TAG_NAME = "GameScene";

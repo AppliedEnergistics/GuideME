@@ -9,8 +9,8 @@ import appeng.client.guidebook.compiler.tags.BlockTagCompiler;
 import appeng.client.guidebook.compiler.tags.MdxAttrs;
 import appeng.client.guidebook.document.block.LytBlockContainer;
 import appeng.client.guidebook.scene.level.GuidebookLevel;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
-import appeng.libs.mdast.model.MdAstNode;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.model.MdAstNode;
 
 /**
  * Handles tags like <code>&lt;BlockImage id="mod:blockid" /&gt;</code> and renders a 3D block image in its place.

@@ -1,6 +1,6 @@
-package appeng.libs.micromark;
+package guideme.libs.micromark;
 
-import appeng.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.symbol.Codes;
 
 public final class CharUtil {
     private CharUtil() {

@@ -6,8 +6,8 @@ import appeng.client.guidebook.document.block.LytBlockContainer;
 import appeng.client.guidebook.document.flow.LytFlowParent;
 import appeng.client.guidebook.extensions.Extension;
 import appeng.client.guidebook.extensions.ExtensionPoint;
-import appeng.libs.mdast.mdx.model.MdxJsxFlowElement;
-import appeng.libs.mdast.mdx.model.MdxJsxTextElement;
+import guideme.libs.mdast.mdx.model.MdxJsxFlowElement;
+import guideme.libs.mdast.mdx.model.MdxJsxTextElement;
 
 /**
  * Tag compilers handle HTML-like tags found in Markdown content, such as <code>&lt;Image /&gt;</code> and similar.

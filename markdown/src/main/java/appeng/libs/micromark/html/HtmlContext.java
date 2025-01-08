@@ -1,8 +1,8 @@
-package appeng.libs.micromark.html;
+package guideme.libs.micromark.html;
 
 import org.jetbrains.annotations.Nullable;
 
-import appeng.libs.micromark.Token;
+import guideme.libs.micromark.Token;
 
 /**
  * HTML compiler context

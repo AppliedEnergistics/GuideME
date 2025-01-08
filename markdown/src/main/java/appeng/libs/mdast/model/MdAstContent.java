@@ -1,4 +1,4 @@
-package appeng.libs.mdast.model;
+package guideme.libs.mdast.model;
 
 /**
  * Content represents runs of text that form definitions and paragraphs.

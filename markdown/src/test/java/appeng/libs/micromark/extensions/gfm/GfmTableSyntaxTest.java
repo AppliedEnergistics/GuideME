@@ -1,4 +1,4 @@
-package appeng.libs.micromark.extensions.gfm;
+package guideme.libs.micromark.extensions.gfm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -12,11 +12,11 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
-import appeng.libs.micromark.Extension;
-import appeng.libs.micromark.Micromark;
-import appeng.libs.micromark.html.CompileOptions;
-import appeng.libs.micromark.html.HtmlCompiler;
-import appeng.libs.micromark.html.ParseOptions;
+import guideme.libs.micromark.Extension;
+import guideme.libs.micromark.Micromark;
+import guideme.libs.micromark.html.CompileOptions;
+import guideme.libs.micromark.html.HtmlCompiler;
+import guideme.libs.micromark.html.ParseOptions;
 
 public class GfmTableSyntaxTest {
 

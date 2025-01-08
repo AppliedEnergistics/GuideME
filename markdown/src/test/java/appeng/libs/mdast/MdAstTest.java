@@ -1,4 +1,4 @@
-package appeng.libs.mdast;
+package guideme.libs.mdast;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,13 +13,13 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
-import appeng.libs.mdast.model.MdAstBreak;
-import appeng.libs.mdast.model.MdAstEmphasis;
-import appeng.libs.mdast.model.MdAstNode;
-import appeng.libs.mdast.model.MdAstParagraph;
-import appeng.libs.mdast.model.MdAstStrong;
-import appeng.libs.micromark.Token;
-import appeng.libs.micromark.Types;
+import guideme.libs.mdast.model.MdAstBreak;
+import guideme.libs.mdast.model.MdAstEmphasis;
+import guideme.libs.mdast.model.MdAstNode;
+import guideme.libs.mdast.model.MdAstParagraph;
+import guideme.libs.mdast.model.MdAstStrong;
+import guideme.libs.micromark.Token;
+import guideme.libs.micromark.Types;
 
 public class MdAstTest extends AbstractMdAstTest {
 

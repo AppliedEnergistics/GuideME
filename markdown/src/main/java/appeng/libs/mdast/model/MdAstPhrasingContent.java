@@ -1,4 +1,4 @@
-package appeng.libs.mdast.model;
+package guideme.libs.mdast.model;
 
 /**
  * Phrasing content represent the text in a document, and its markup.

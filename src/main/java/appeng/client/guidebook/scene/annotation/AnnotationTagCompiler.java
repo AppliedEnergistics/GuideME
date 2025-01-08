@@ -8,7 +8,7 @@ import appeng.client.guidebook.document.block.LytBlock;
 import appeng.client.guidebook.document.block.LytVBox;
 import appeng.client.guidebook.scene.GuidebookScene;
 import appeng.client.guidebook.scene.element.SceneElementTagCompiler;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 
 public abstract class AnnotationTagCompiler implements SceneElementTagCompiler {
 

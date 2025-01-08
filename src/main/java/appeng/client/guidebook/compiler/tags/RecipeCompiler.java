@@ -23,8 +23,8 @@ import appeng.client.guidebook.document.block.recipes.LytInscriberRecipe;
 import appeng.client.guidebook.document.block.recipes.LytSmeltingRecipe;
 import appeng.client.guidebook.document.block.recipes.LytSmithingRecipe;
 import appeng.client.guidebook.document.block.recipes.LytTransformRecipe;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
-import appeng.libs.mdast.model.MdAstNode;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.model.MdAstNode;
 import appeng.recipes.AERecipeTypes;
 import appeng.util.Platform;
 

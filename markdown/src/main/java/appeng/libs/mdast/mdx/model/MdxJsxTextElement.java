@@ -1,4 +1,4 @@
-package appeng.libs.mdast.mdx.model;
+package guideme.libs.mdast.mdx.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,9 +8,9 @@ import com.google.gson.stream.JsonWriter;
 
 import org.jetbrains.annotations.Nullable;
 
-import appeng.libs.mdast.model.MdAstParent;
-import appeng.libs.mdast.model.MdAstPhrasingContent;
-import appeng.libs.mdast.model.MdAstStaticPhrasingContent;
+import guideme.libs.mdast.model.MdAstParent;
+import guideme.libs.mdast.model.MdAstPhrasingContent;
+import guideme.libs.mdast.model.MdAstStaticPhrasingContent;
 
 public class MdxJsxTextElement extends MdAstParent<MdAstPhrasingContent>
         implements MdxJsxElementFields, MdAstStaticPhrasingContent {

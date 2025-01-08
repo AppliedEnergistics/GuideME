@@ -8,7 +8,7 @@ import appeng.client.guidebook.document.flow.LytFlowParent;
 import appeng.client.guidebook.document.flow.LytTooltipSpan;
 import appeng.client.guidebook.document.interaction.ItemTooltip;
 import appeng.client.guidebook.indices.ItemIndex;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 
 public class ItemLinkCompiler extends FlowTagCompiler {
     @Override

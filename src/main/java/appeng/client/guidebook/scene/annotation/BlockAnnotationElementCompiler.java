@@ -8,7 +8,7 @@ import appeng.client.guidebook.color.ConstantColor;
 import appeng.client.guidebook.compiler.PageCompiler;
 import appeng.client.guidebook.compiler.tags.MdxAttrs;
 import appeng.client.guidebook.document.LytErrorSink;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 
 public class BlockAnnotationElementCompiler extends AnnotationTagCompiler {
 

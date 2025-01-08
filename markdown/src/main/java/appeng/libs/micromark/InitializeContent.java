@@ -1,7 +1,7 @@
-package appeng.libs.micromark;
+package guideme.libs.micromark;
 
-import appeng.libs.micromark.factory.FactorySpace;
-import appeng.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.factory.FactorySpace;
+import guideme.libs.micromark.symbol.Codes;
 
 public final class InitializeContent {
 

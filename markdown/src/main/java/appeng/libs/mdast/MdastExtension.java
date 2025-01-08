@@ -1,4 +1,4 @@
-package appeng.libs.mdast;
+package guideme.libs.mdast;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import appeng.libs.mdast.model.MdAstRoot;
-import appeng.libs.micromark.Token;
+import guideme.libs.mdast.model.MdAstRoot;
+import guideme.libs.micromark.Token;
 
 /**
  * An mdast extension changes how markdown tokens are turned into mdast.

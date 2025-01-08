@@ -1,4 +1,4 @@
-package appeng.libs.micromark.extensions.gfm;
+package guideme.libs.micromark.extensions.gfm;
 
 public enum Align {
     LEFT,

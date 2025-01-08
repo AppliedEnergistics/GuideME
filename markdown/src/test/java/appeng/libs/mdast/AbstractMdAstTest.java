@@ -1,4 +1,4 @@
-package appeng.libs.mdast;
+package guideme.libs.mdast;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -16,8 +16,8 @@ import com.google.gson.internal.bind.JsonTreeWriter;
 
 import org.intellij.lang.annotations.Language;
 
-import appeng.libs.mdast.model.MdAstNode;
-import appeng.libs.mdast.model.MdAstParent;
+import guideme.libs.mdast.model.MdAstNode;
+import guideme.libs.mdast.model.MdAstParent;
 
 public class AbstractMdAstTest {
     protected static final Gson GSON = new GsonBuilder()

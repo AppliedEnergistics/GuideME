@@ -7,9 +7,9 @@ import appeng.client.guidebook.GuidePage;
 import appeng.client.guidebook.compiler.ParsedGuidePage;
 import appeng.client.guidebook.document.block.LytNode;
 import appeng.client.guidebook.document.block.LytVisitor;
-import appeng.libs.mdast.MdAstVisitor;
-import appeng.libs.mdast.MdAstYamlFrontmatter;
-import appeng.libs.mdast.model.MdAstNode;
+import guideme.libs.mdast.MdAstVisitor;
+import guideme.libs.mdast.MdAstYamlFrontmatter;
+import guideme.libs.mdast.model.MdAstNode;
 import appeng.siteexport.ResourceExporter;
 
 /**

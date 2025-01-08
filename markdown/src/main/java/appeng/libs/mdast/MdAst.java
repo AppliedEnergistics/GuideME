@@ -1,7 +1,7 @@
-package appeng.libs.mdast;
+package guideme.libs.mdast;
 
-import appeng.libs.mdast.model.MdAstRoot;
-import appeng.libs.micromark.Micromark;
+import guideme.libs.mdast.model.MdAstRoot;
+import guideme.libs.micromark.Micromark;
 
 public final class MdAst {
     private MdAst() {

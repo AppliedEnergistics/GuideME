@@ -1,12 +1,12 @@
-package appeng.libs.micromark;
+package guideme.libs.micromark;
 
 import java.util.Objects;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
-import appeng.libs.micromark.html.NumericCharacterReference;
-import appeng.libs.micromark.symbol.Codes;
-import appeng.libs.micromark.symbol.Constants;
+import guideme.libs.micromark.html.NumericCharacterReference;
+import guideme.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.symbol.Constants;
 
 public final class DecodeString {
 

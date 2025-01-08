@@ -1,4 +1,4 @@
-package appeng.libs.mdast.model;
+package guideme.libs.mdast.model;
 
 /**
  * ThematicBreak (Node) represents a thematic break, such as a scene change in a story, a transition to another topic,

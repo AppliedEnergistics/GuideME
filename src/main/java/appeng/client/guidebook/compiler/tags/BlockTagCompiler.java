@@ -6,9 +6,9 @@ import appeng.client.guidebook.document.block.LytBlockContainer;
 import appeng.client.guidebook.document.flow.InlineBlockAlignment;
 import appeng.client.guidebook.document.flow.LytFlowInlineBlock;
 import appeng.client.guidebook.document.flow.LytFlowParent;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
-import appeng.libs.mdast.mdx.model.MdxJsxFlowElement;
-import appeng.libs.mdast.mdx.model.MdxJsxTextElement;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.mdx.model.MdxJsxFlowElement;
+import guideme.libs.mdast.mdx.model.MdxJsxTextElement;
 
 /**
  * Compiler base-class for tag compilers that compile block content but allow the block content to be used in flow

@@ -1,4 +1,4 @@
-package appeng.libs.micromark;
+package guideme.libs.micromark;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,8 +15,8 @@ import org.junit.jupiter.api.TestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import appeng.libs.micromark.html.CompileOptions;
-import appeng.libs.micromark.html.HtmlCompiler;
+import guideme.libs.micromark.html.CompileOptions;
+import guideme.libs.micromark.html.HtmlCompiler;
 
 /**
  * Uses the Commonmark Testcases from https://spec.commonmark.org/0.30/spec.json.

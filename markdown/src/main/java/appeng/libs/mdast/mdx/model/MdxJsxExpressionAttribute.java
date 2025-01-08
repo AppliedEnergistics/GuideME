@@ -1,6 +1,6 @@
-package appeng.libs.mdast.mdx.model;
+package guideme.libs.mdast.mdx.model;
 
-import appeng.libs.mdast.model.MdAstLiteral;
+import guideme.libs.mdast.model.MdAstLiteral;
 
 public class MdxJsxExpressionAttribute extends MdAstLiteral implements MdxJsxAttributeNode {
     public MdxJsxExpressionAttribute() {

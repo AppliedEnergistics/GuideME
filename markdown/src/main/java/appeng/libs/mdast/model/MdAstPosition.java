@@ -1,4 +1,4 @@
-package appeng.libs.mdast.model;
+package guideme.libs.mdast.model;
 
 import java.io.IOException;
 
@@ -6,8 +6,8 @@ import com.google.gson.stream.JsonWriter;
 
 import org.jetbrains.annotations.Nullable;
 
-import appeng.libs.unist.UnistPoint;
-import appeng.libs.unist.UnistPosition;
+import guideme.libs.unist.UnistPoint;
+import guideme.libs.unist.UnistPosition;
 
 public class MdAstPosition implements UnistPosition {
     public UnistPoint start;

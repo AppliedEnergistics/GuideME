@@ -1,4 +1,4 @@
-package appeng.libs.micromark.commonmark;
+package guideme.libs.micromark.commonmark;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import appeng.libs.micromark.Assert;
-import appeng.libs.micromark.ListUtils;
-import appeng.libs.micromark.Token;
-import appeng.libs.micromark.Tokenizer;
-import appeng.libs.micromark.Types;
-import appeng.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.Assert;
+import guideme.libs.micromark.ListUtils;
+import guideme.libs.micromark.Token;
+import guideme.libs.micromark.Tokenizer;
+import guideme.libs.micromark.Types;
+import guideme.libs.micromark.symbol.Codes;
 
 public final class Subtokenize {
     private Subtokenize() {

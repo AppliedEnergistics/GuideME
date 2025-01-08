@@ -9,7 +9,7 @@ import appeng.client.guidebook.document.block.LytListItem;
 import appeng.client.guidebook.document.block.LytParagraph;
 import appeng.client.guidebook.document.flow.LytFlowLink;
 import appeng.client.guidebook.indices.CategoryIndex;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 
 public class CategoryIndexCompiler extends BlockTagCompiler {
     @Override

@@ -1,4 +1,4 @@
-package appeng.libs.mdast.model;
+package guideme.libs.mdast.model;
 
 /**
  * Paragraph (Parent) represents a unit of discourse dealing with a particular point or idea.

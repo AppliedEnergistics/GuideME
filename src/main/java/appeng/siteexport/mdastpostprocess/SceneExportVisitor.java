@@ -13,10 +13,10 @@ import appeng.client.guidebook.scene.BlockImageTagCompiler;
 import appeng.client.guidebook.scene.LytGuidebookScene;
 import appeng.client.guidebook.scene.SceneTagCompiler;
 import appeng.client.guidebook.scene.export.SceneExporter;
-import appeng.libs.mdast.MdAstVisitor;
-import appeng.libs.mdast.mdx.model.MdxJsxAttribute;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
-import appeng.libs.mdast.model.MdAstNode;
+import guideme.libs.mdast.MdAstVisitor;
+import guideme.libs.mdast.mdx.model.MdxJsxAttribute;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.model.MdAstNode;
 import appeng.siteexport.CacheBusting;
 import appeng.siteexport.ResourceExporter;
 

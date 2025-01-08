@@ -5,9 +5,9 @@ import appeng.client.guidebook.compiler.TagCompiler;
 import appeng.client.guidebook.document.block.LytBlockContainer;
 import appeng.client.guidebook.document.block.LytParagraph;
 import appeng.client.guidebook.document.flow.LytFlowParent;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
-import appeng.libs.mdast.mdx.model.MdxJsxFlowElement;
-import appeng.libs.mdast.mdx.model.MdxJsxTextElement;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.mdx.model.MdxJsxFlowElement;
+import guideme.libs.mdast.mdx.model.MdxJsxTextElement;
 
 /**
  * Compiler base-class for tag compilers that compile flow content but allow the flow content to be used in block

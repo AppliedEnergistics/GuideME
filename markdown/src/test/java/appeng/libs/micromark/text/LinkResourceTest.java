@@ -1,12 +1,12 @@
-package appeng.libs.micromark.text;
+package guideme.libs.micromark.text;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import appeng.libs.micromark.TestUtil;
-import appeng.libs.micromark.html.CompileOptions;
-import appeng.libs.micromark.html.ParseOptions;
+import guideme.libs.micromark.TestUtil;
+import guideme.libs.micromark.html.CompileOptions;
+import guideme.libs.micromark.html.ParseOptions;
 
 public class LinkResourceTest {
     @ParameterizedTest(name = "[{index}] {2}")

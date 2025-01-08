@@ -8,7 +8,7 @@ import appeng.client.guidebook.compiler.PageCompiler;
 import appeng.client.guidebook.compiler.tags.FlowTagCompiler;
 import appeng.client.guidebook.document.flow.LytFlowParent;
 import appeng.core.AEConfig;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 
 /**
  * Provides access to AE2 config values in guide content.

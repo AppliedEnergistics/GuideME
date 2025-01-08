@@ -1,4 +1,4 @@
-package appeng.libs.micromark.symbol;
+package guideme.libs.micromark.symbol;
 
 /**
  * This module is compiled away!

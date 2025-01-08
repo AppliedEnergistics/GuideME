@@ -1,4 +1,4 @@
-package appeng.libs.micromark;
+package guideme.libs.micromark;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -6,12 +6,12 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import appeng.libs.micromark.html.CompileOptions;
-import appeng.libs.micromark.html.HtmlCompiler;
-import appeng.libs.micromark.html.HtmlContext;
-import appeng.libs.micromark.html.HtmlExtension;
-import appeng.libs.micromark.html.ParseOptions;
-import appeng.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.html.CompileOptions;
+import guideme.libs.micromark.html.HtmlCompiler;
+import guideme.libs.micromark.html.HtmlContext;
+import guideme.libs.micromark.html.HtmlExtension;
+import guideme.libs.micromark.html.ParseOptions;
+import guideme.libs.micromark.symbol.Codes;
 
 public class ExtensionTest {
 

@@ -7,7 +7,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
-import appeng.libs.mdast.model.MdAstNode;
+import guideme.libs.mdast.model.MdAstNode;
 
 /**
  * Serializes the MdAst nodes to JSON.

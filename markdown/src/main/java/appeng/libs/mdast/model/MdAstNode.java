@@ -1,4 +1,4 @@
-package appeng.libs.mdast.model;
+package guideme.libs.mdast.model;
 
 import java.io.IOException;
 import java.util.function.Predicate;
@@ -7,9 +7,9 @@ import com.google.gson.stream.JsonWriter;
 
 import org.jetbrains.annotations.Nullable;
 
-import appeng.libs.mdast.MdAstVisitor;
-import appeng.libs.unist.UnistNode;
-import appeng.libs.unist.UnistPosition;
+import guideme.libs.mdast.MdAstVisitor;
+import guideme.libs.unist.UnistNode;
+import guideme.libs.unist.UnistPosition;
 
 public abstract class MdAstNode implements UnistNode {
     private final String type;

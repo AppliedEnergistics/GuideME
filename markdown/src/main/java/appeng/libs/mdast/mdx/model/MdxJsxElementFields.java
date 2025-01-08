@@ -1,11 +1,11 @@
-package appeng.libs.mdast.mdx.model;
+package guideme.libs.mdast.mdx.model;
 
 import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
 
-import appeng.libs.mdast.model.MdAstAnyContent;
-import appeng.libs.unist.UnistNode;
+import guideme.libs.mdast.model.MdAstAnyContent;
+import guideme.libs.unist.UnistNode;
 
 public interface MdxJsxElementFields extends UnistNode {
     @Nullable

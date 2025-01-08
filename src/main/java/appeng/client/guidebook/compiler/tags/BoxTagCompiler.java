@@ -7,7 +7,7 @@ import appeng.client.guidebook.document.block.LytBlockContainer;
 import appeng.client.guidebook.document.block.LytBox;
 import appeng.client.guidebook.document.block.LytHBox;
 import appeng.client.guidebook.document.block.LytVBox;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 
 public class BoxTagCompiler extends BlockTagCompiler {
     private final BoxFlowDirection direction;

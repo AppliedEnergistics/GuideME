@@ -10,7 +10,7 @@ import appeng.client.guidebook.document.flow.LytFlowAnchor;
 import appeng.client.guidebook.document.flow.LytFlowLink;
 import appeng.client.guidebook.document.flow.LytFlowParent;
 import appeng.client.guidebook.document.interaction.TextTooltip;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 
 public class ATagCompiler extends FlowTagCompiler {
     @Override

@@ -1,7 +1,7 @@
-package appeng.libs.mdast;
+package guideme.libs.mdast;
 
-import appeng.libs.micromark.Token;
-import appeng.libs.micromark.extensions.YamlFrontmatterSyntax;
+import guideme.libs.micromark.Token;
+import guideme.libs.micromark.extensions.YamlFrontmatterSyntax;
 
 public class YamlFrontmatterExtension {
 

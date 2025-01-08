@@ -1,15 +1,15 @@
-package appeng.libs.micromark.extensions;
+package guideme.libs.micromark.extensions;
 
 import java.util.List;
 
-import appeng.libs.micromark.CharUtil;
-import appeng.libs.micromark.Construct;
-import appeng.libs.micromark.Extension;
-import appeng.libs.micromark.State;
-import appeng.libs.micromark.TokenizeContext;
-import appeng.libs.micromark.Tokenizer;
-import appeng.libs.micromark.Types;
-import appeng.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.CharUtil;
+import guideme.libs.micromark.Construct;
+import guideme.libs.micromark.Extension;
+import guideme.libs.micromark.State;
+import guideme.libs.micromark.TokenizeContext;
+import guideme.libs.micromark.Tokenizer;
+import guideme.libs.micromark.Types;
+import guideme.libs.micromark.symbol.Codes;
 
 /**
  * Add support for parsing YAML frontmatter in markdown.

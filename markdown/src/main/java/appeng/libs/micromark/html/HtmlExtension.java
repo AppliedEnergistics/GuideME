@@ -1,11 +1,11 @@
-package appeng.libs.micromark.html;
+package guideme.libs.micromark.html;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
 
-import appeng.libs.micromark.Token;
+import guideme.libs.micromark.Token;
 
 public class HtmlExtension {
     @FunctionalInterface

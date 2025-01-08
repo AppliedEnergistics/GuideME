@@ -1,4 +1,4 @@
-package appeng.libs.micromark;
+package guideme.libs.micromark;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import appeng.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.symbol.Codes;
 
 /**
  * A context object that helps w/ tokenizing markdown constructs.

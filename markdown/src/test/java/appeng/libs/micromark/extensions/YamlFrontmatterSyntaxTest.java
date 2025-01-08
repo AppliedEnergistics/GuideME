@@ -1,4 +1,4 @@
-package appeng.libs.micromark.extensions;
+package guideme.libs.micromark.extensions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -7,9 +7,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import appeng.libs.micromark.Micromark;
-import appeng.libs.micromark.Tokenizer;
-import appeng.libs.micromark.html.ParseOptions;
+import guideme.libs.micromark.Micromark;
+import guideme.libs.micromark.Tokenizer;
+import guideme.libs.micromark.html.ParseOptions;
 
 public class YamlFrontmatterSyntaxTest {
 

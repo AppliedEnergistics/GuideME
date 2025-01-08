@@ -1,17 +1,17 @@
-package appeng.libs.mdast.gfm;
+package guideme.libs.mdast.gfm;
 
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
-import appeng.libs.mdast.MdastContext;
-import appeng.libs.mdast.MdastContextProperty;
-import appeng.libs.mdast.MdastExtension;
-import appeng.libs.mdast.gfm.model.GfmTable;
-import appeng.libs.mdast.gfm.model.GfmTableCell;
-import appeng.libs.mdast.gfm.model.GfmTableRow;
-import appeng.libs.mdast.model.MdAstInlineCode;
-import appeng.libs.micromark.Token;
-import appeng.libs.micromark.extensions.gfm.GfmTableSyntax;
+import guideme.libs.mdast.MdastContext;
+import guideme.libs.mdast.MdastContextProperty;
+import guideme.libs.mdast.MdastExtension;
+import guideme.libs.mdast.gfm.model.GfmTable;
+import guideme.libs.mdast.gfm.model.GfmTableCell;
+import guideme.libs.mdast.gfm.model.GfmTableRow;
+import guideme.libs.mdast.model.MdAstInlineCode;
+import guideme.libs.micromark.Token;
+import guideme.libs.micromark.extensions.gfm.GfmTableSyntax;
 
 public final class GfmTableMdastExtension {
 

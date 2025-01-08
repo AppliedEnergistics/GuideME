@@ -1,10 +1,10 @@
-package appeng.libs.micromark.flow;
+package guideme.libs.micromark.flow;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import appeng.libs.micromark.TestUtil;
+import guideme.libs.micromark.TestUtil;
 
 public class ThematicBreakTest {
     @ParameterizedTest(name = "[{index}] {2}")

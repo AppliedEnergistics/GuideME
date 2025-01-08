@@ -1,4 +1,4 @@
-package appeng.libs.mdast.mdx;
+package guideme.libs.mdast.mdx;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,20 +6,20 @@ import java.util.Objects;
 
 import org.jetbrains.annotations.Nullable;
 
-import appeng.libs.mdast.MdastContext;
-import appeng.libs.mdast.MdastContextProperty;
-import appeng.libs.mdast.MdastExtension;
-import appeng.libs.mdast.mdx.model.MdxJsxAttribute;
-import appeng.libs.mdast.mdx.model.MdxJsxAttributeNode;
-import appeng.libs.mdast.mdx.model.MdxJsxExpressionAttribute;
-import appeng.libs.mdast.mdx.model.MdxJsxFlowElement;
-import appeng.libs.mdast.mdx.model.MdxJsxTextElement;
-import appeng.libs.mdast.model.MdAstNode;
-import appeng.libs.mdast.model.MdAstPosition;
-import appeng.libs.micromark.ListUtils;
-import appeng.libs.micromark.ParseException;
-import appeng.libs.micromark.Point;
-import appeng.libs.micromark.Token;
+import guideme.libs.mdast.MdastContext;
+import guideme.libs.mdast.MdastContextProperty;
+import guideme.libs.mdast.MdastExtension;
+import guideme.libs.mdast.mdx.model.MdxJsxAttribute;
+import guideme.libs.mdast.mdx.model.MdxJsxAttributeNode;
+import guideme.libs.mdast.mdx.model.MdxJsxExpressionAttribute;
+import guideme.libs.mdast.mdx.model.MdxJsxFlowElement;
+import guideme.libs.mdast.mdx.model.MdxJsxTextElement;
+import guideme.libs.mdast.model.MdAstNode;
+import guideme.libs.mdast.model.MdAstPosition;
+import guideme.libs.micromark.ListUtils;
+import guideme.libs.micromark.ParseException;
+import guideme.libs.micromark.Point;
+import guideme.libs.micromark.Token;
 
 public final class MdxMdastExtension {
     private static final MdastContextProperty<List<Tag>> TAG_STACK = new MdastContextProperty<>();

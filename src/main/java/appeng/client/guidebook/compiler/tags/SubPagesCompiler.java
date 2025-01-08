@@ -19,7 +19,7 @@ import appeng.client.guidebook.document.block.LytParagraph;
 import appeng.client.guidebook.document.flow.LytFlowLink;
 import appeng.client.guidebook.navigation.NavigationNode;
 import appeng.client.guidebook.scene.LytItemImage;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 
 public class SubPagesCompiler extends BlockTagCompiler {
     private static final Comparator<NavigationNode> ALPHABETICAL_COMPARATOR = Comparator

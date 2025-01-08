@@ -25,8 +25,8 @@ import appeng.client.guidebook.color.ColorValue;
 import appeng.client.guidebook.color.ConstantColor;
 import appeng.client.guidebook.compiler.PageCompiler;
 import appeng.client.guidebook.document.LytErrorSink;
-import appeng.libs.mdast.mdx.model.MdxJsxAttribute;
-import appeng.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.mdx.model.MdxJsxAttribute;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 
 /**
  * utilities for dealing with attributes of {@link MdxJsxElementFields}.

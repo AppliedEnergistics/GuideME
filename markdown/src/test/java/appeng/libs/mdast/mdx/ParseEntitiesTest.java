@@ -1,4 +1,4 @@
-package appeng.libs.mdast.mdx;
+package guideme.libs.mdast.mdx;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

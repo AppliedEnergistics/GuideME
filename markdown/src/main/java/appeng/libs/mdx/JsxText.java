@@ -1,9 +1,9 @@
-package appeng.libs.mdx;
+package guideme.libs.mdx;
 
-import appeng.libs.micromark.Construct;
-import appeng.libs.micromark.State;
-import appeng.libs.micromark.TokenizeContext;
-import appeng.libs.micromark.Tokenizer;
+import guideme.libs.micromark.Construct;
+import guideme.libs.micromark.State;
+import guideme.libs.micromark.TokenizeContext;
+import guideme.libs.micromark.Tokenizer;
 
 final class JsxText {
 

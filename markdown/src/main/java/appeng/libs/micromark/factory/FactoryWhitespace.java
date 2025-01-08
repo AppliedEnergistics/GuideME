@@ -1,9 +1,9 @@
-package appeng.libs.micromark.factory;
+package guideme.libs.micromark.factory;
 
-import appeng.libs.micromark.CharUtil;
-import appeng.libs.micromark.State;
-import appeng.libs.micromark.Tokenizer;
-import appeng.libs.micromark.Types;
+import guideme.libs.micromark.CharUtil;
+import guideme.libs.micromark.State;
+import guideme.libs.micromark.Tokenizer;
+import guideme.libs.micromark.Types;
 
 public final class FactoryWhitespace {
     private FactoryWhitespace() {

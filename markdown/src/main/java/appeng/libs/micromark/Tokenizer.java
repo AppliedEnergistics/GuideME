@@ -1,4 +1,4 @@
-package appeng.libs.micromark;
+package guideme.libs.micromark;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,8 +11,8 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import appeng.libs.micromark.symbol.Codes;
-import appeng.libs.unist.UnistPoint;
+import guideme.libs.micromark.symbol.Codes;
+import guideme.libs.unist.UnistPoint;
 
 /**
  * Create a tokenizer. Tokenizers deal with one type of data (e.g., containers, flow, text). The parser is the object

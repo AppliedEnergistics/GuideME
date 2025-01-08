@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Style;
 
 import appeng.client.guidebook.compiler.PageCompiler;
 import appeng.client.guidebook.document.LytErrorSink;
-import appeng.libs.unist.UnistNode;
+import guideme.libs.unist.UnistNode;
 
 public interface LytFlowParent extends LytErrorSink {
     void append(LytFlowContent child);

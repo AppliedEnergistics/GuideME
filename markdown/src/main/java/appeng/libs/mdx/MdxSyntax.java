@@ -1,10 +1,10 @@
-package appeng.libs.mdx;
+package guideme.libs.mdx;
 
 import java.util.Collections;
 import java.util.List;
 
-import appeng.libs.micromark.Extension;
-import appeng.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.Extension;
+import guideme.libs.micromark.symbol.Codes;
 
 public class MdxSyntax {
 

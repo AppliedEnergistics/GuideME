@@ -1,10 +1,10 @@
-package appeng.libs.micromark.misc;
+package guideme.libs.micromark.misc;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import appeng.libs.micromark.TestUtil;
+import guideme.libs.micromark.TestUtil;
 
 public class UrlTest {
     @ParameterizedTest(name = "[{index}] {2}")

@@ -1,4 +1,4 @@
-package appeng.libs.mdx;
+package guideme.libs.mdx;
 
 import java.util.function.Predicate;
 import java.util.regex.Pattern;

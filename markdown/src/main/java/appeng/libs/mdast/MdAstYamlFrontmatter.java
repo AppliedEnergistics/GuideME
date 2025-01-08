@@ -1,11 +1,11 @@
-package appeng.libs.mdast;
+package guideme.libs.mdast;
 
 import java.io.IOException;
 
 import com.google.gson.stream.JsonWriter;
 
-import appeng.libs.mdast.model.MdAstAnyContent;
-import appeng.libs.mdast.model.MdAstNode;
+import guideme.libs.mdast.model.MdAstAnyContent;
+import guideme.libs.mdast.model.MdAstNode;
 
 public class MdAstYamlFrontmatter extends MdAstNode implements MdAstAnyContent {
     public String value = "";

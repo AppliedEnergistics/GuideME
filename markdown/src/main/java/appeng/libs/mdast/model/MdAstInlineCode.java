@@ -1,4 +1,4 @@
-package appeng.libs.mdast.model;
+package guideme.libs.mdast.model;
 
 /**
  * InlineCode (Literal) represents a fragment of computer code, such as a file name, computer program, or anything a
