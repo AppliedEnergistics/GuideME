@@ -1,4 +1,4 @@
-package appeng.client.guidebook.scene;
+package guideme.guidebook.scene;
 
 import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.NativeImage;

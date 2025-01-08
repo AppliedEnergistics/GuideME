@@ -1,4 +1,4 @@
-package appeng.client.guidebook.scene.element;
+package guideme.guidebook.scene.element;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,6 +1,6 @@
-package appeng.client.guidebook.document;
+package guideme.guidebook.document;
 
-import appeng.client.guidebook.compiler.PageCompiler;
+import guideme.guidebook.compiler.PageCompiler;
 import guideme.libs.unist.UnistNode;
 
 public interface LytErrorSink {

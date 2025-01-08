@@ -1,6 +1,6 @@
-package appeng.client.guidebook.navigation;
+package guideme.guidebook.navigation;
 
-import appeng.client.guidebook.compiler.ParsedGuidePage;
+import guideme.guidebook.compiler.ParsedGuidePage;
 import com.mojang.serialization.JavaOps;
 import java.util.ArrayList;
 import java.util.Collection;

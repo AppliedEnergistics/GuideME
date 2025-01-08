@@ -1,15 +1,15 @@
 
-package appeng.client.guidebook.scene;
+package guideme.guidebook.scene;
 
-import appeng.client.guidebook.color.SymbolicColor;
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.compiler.tags.BlockTagCompiler;
-import appeng.client.guidebook.compiler.tags.MdxAttrs;
-import appeng.client.guidebook.document.block.LytBlockContainer;
-import appeng.client.guidebook.extensions.Extension;
-import appeng.client.guidebook.extensions.ExtensionCollection;
-import appeng.client.guidebook.scene.element.SceneElementTagCompiler;
-import appeng.client.guidebook.scene.level.GuidebookLevel;
+import guideme.guidebook.color.SymbolicColor;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.compiler.tags.BlockTagCompiler;
+import guideme.guidebook.compiler.tags.MdxAttrs;
+import guideme.guidebook.document.block.LytBlockContainer;
+import guideme.guidebook.extensions.Extension;
+import guideme.guidebook.extensions.ExtensionCollection;
+import guideme.guidebook.scene.element.SceneElementTagCompiler;
+import guideme.guidebook.scene.level.GuidebookLevel;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstNode;
 import java.util.HashMap;

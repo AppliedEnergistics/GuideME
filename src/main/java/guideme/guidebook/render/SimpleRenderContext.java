@@ -1,8 +1,8 @@
-package appeng.client.guidebook.render;
+package guideme.guidebook.render;
 
-import appeng.client.guidebook.color.ColorValue;
-import appeng.client.guidebook.color.LightDarkMode;
-import appeng.client.guidebook.document.LytRect;
+import guideme.guidebook.color.ColorValue;
+import guideme.guidebook.color.LightDarkMode;
+import guideme.guidebook.document.LytRect;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;

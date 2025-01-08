@@ -1,6 +1,6 @@
-package appeng.client.guidebook.document.flow;
+package guideme.guidebook.document.flow;
 
-import appeng.client.guidebook.document.LytRect;
+import guideme.guidebook.document.LytRect;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.Nullable;
 

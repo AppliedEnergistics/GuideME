@@ -1,4 +1,4 @@
-package appeng.client.guidebook.extensions;
+package guideme.guidebook.extensions;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;

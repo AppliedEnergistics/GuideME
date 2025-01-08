@@ -1,8 +1,8 @@
-package appeng.client.guidebook;
+package guideme.guidebook;
 
-import appeng.client.guidebook.compiler.ParsedGuidePage;
-import appeng.client.guidebook.indices.PageIndex;
-import appeng.client.guidebook.navigation.NavigationTree;
+import guideme.guidebook.compiler.ParsedGuidePage;
+import guideme.guidebook.indices.PageIndex;
+import guideme.guidebook.navigation.NavigationTree;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 

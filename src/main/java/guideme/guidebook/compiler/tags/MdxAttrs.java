@@ -1,9 +1,9 @@
-package appeng.client.guidebook.compiler.tags;
+package guideme.guidebook.compiler.tags;
 
-import appeng.client.guidebook.color.ColorValue;
-import appeng.client.guidebook.color.ConstantColor;
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.document.LytErrorSink;
+import guideme.guidebook.color.ColorValue;
+import guideme.guidebook.color.ConstantColor;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.document.LytErrorSink;
 import guideme.libs.mdast.mdx.model.MdxJsxAttribute;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import java.util.regex.Pattern;

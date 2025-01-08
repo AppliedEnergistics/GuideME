@@ -1,6 +1,6 @@
-package appeng.client.guidebook.document.interaction;
+package guideme.guidebook.document.interaction;
 
-import appeng.siteexport.ResourceExporter;
+import guideme.siteexport.ResourceExporter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

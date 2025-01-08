@@ -1,8 +1,8 @@
-package appeng.client.guidebook.document.flow;
+package guideme.guidebook.document.flow;
 
-import appeng.client.guidebook.document.block.LytVisitor;
-import appeng.client.guidebook.style.Styleable;
-import appeng.client.guidebook.style.TextStyle;
+import guideme.guidebook.document.block.LytVisitor;
+import guideme.guidebook.style.Styleable;
+import guideme.guidebook.style.TextStyle;
 import org.jetbrains.annotations.Nullable;
 
 public class LytFlowContent implements Styleable {

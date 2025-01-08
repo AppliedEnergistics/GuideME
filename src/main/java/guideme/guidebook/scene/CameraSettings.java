@@ -1,6 +1,6 @@
-package appeng.client.guidebook.scene;
+package guideme.guidebook.scene;
 
-import appeng.client.guidebook.document.LytSize;
+import guideme.guidebook.document.LytSize;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

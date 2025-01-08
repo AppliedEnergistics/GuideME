@@ -1,4 +1,4 @@
-package appeng.client.guidebook.compiler;
+package guideme.guidebook.compiler;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;

@@ -1,9 +1,9 @@
-package appeng.client.guidebook.scene.annotation;
+package guideme.guidebook.scene.annotation;
 
-import appeng.client.guidebook.color.ConstantColor;
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.compiler.tags.MdxAttrs;
-import appeng.client.guidebook.document.LytErrorSink;
+import guideme.guidebook.color.ConstantColor;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.compiler.tags.MdxAttrs;
+import guideme.guidebook.document.LytErrorSink;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import java.util.Set;
 import org.jetbrains.annotations.Nullable;

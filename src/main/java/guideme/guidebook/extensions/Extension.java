@@ -1,4 +1,4 @@
-package appeng.client.guidebook.extensions;
+package guideme.guidebook.extensions;
 
 /**
  * The base interface for all other classes and interfaces acting as extensions.

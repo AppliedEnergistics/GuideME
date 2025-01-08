@@ -1,10 +1,10 @@
-package appeng.client.guidebook.document.interaction;
+package guideme.guidebook.document.interaction;
 
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.document.block.LytBlock;
-import appeng.client.guidebook.layout.LayoutContext;
-import appeng.client.guidebook.render.RenderContext;
-import appeng.client.guidebook.screen.GuideScreen;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.document.block.LytBlock;
+import guideme.guidebook.layout.LayoutContext;
+import guideme.guidebook.render.RenderContext;
+import guideme.guidebook.screen.GuideScreen;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;

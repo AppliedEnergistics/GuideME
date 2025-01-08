@@ -1,4 +1,4 @@
-package appeng.client.guidebook.scene.export;
+package guideme.guidebook.scene.export;
 
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;

@@ -1,4 +1,4 @@
-package appeng.client.guidebook.scene;
+package guideme.guidebook.scene;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

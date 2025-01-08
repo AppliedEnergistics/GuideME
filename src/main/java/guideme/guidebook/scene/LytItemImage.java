@@ -1,11 +1,11 @@
-package appeng.client.guidebook.scene;
+package guideme.guidebook.scene;
 
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.document.block.LytBlock;
-import appeng.client.guidebook.layout.LayoutContext;
-import appeng.client.guidebook.render.RenderContext;
-import appeng.siteexport.ExportableResourceProvider;
-import appeng.siteexport.ResourceExporter;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.document.block.LytBlock;
+import guideme.guidebook.layout.LayoutContext;
+import guideme.guidebook.render.RenderContext;
+import guideme.siteexport.ExportableResourceProvider;
+import guideme.siteexport.ResourceExporter;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;

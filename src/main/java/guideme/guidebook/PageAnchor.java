@@ -1,4 +1,4 @@
-package appeng.client.guidebook;
+package guideme.guidebook;
 
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;

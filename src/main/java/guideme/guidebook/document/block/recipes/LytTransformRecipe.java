@@ -1,11 +1,11 @@
-package appeng.client.guidebook.document.block.recipes;
+package guideme.guidebook.document.block.recipes;
 
-import appeng.client.guidebook.document.DefaultStyles;
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.document.block.LytSlot;
-import appeng.client.guidebook.document.block.LytSlotGrid;
-import appeng.client.guidebook.layout.LayoutContext;
-import appeng.client.guidebook.render.RenderContext;
+import guideme.guidebook.document.DefaultStyles;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.document.block.LytSlot;
+import guideme.guidebook.document.block.LytSlotGrid;
+import guideme.guidebook.layout.LayoutContext;
+import guideme.guidebook.render.RenderContext;
 import appeng.core.AppEng;
 import appeng.recipes.transform.TransformRecipe;
 import appeng.util.Platform;

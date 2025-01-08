@@ -1,9 +1,9 @@
-package appeng.client.guidebook.document.block;
+package guideme.guidebook.document.block;
 
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.document.flow.LytFlowContent;
-import appeng.client.guidebook.style.Styleable;
-import appeng.client.guidebook.style.TextStyle;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.document.flow.LytFlowContent;
+import guideme.guidebook.style.Styleable;
+import guideme.guidebook.style.TextStyle;
 import guideme.libs.mdast.model.MdAstNode;
 import java.util.Collections;
 import java.util.List;

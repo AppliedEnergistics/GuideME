@@ -1,6 +1,6 @@
-package appeng.client.guidebook.document.interaction;
+package guideme.guidebook.document.interaction;
 
-import appeng.siteexport.ResourceExporter;
+import guideme.siteexport.ResourceExporter;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Tooltip;

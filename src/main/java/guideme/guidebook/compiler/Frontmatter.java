@@ -1,4 +1,4 @@
-package appeng.client.guidebook.compiler;
+package guideme.guidebook.compiler;
 
 import java.util.Map;
 import net.minecraft.resources.ResourceLocation;

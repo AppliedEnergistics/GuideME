@@ -1,9 +1,9 @@
-package appeng.client.guidebook.screen;
+package guideme.guidebook.screen;
 
 import appeng.client.gui.style.Blitter;
-import appeng.client.guidebook.GuidebookText;
-import appeng.client.guidebook.color.LightDarkMode;
-import appeng.client.guidebook.color.SymbolicColor;
+import guideme.guidebook.GuidebookText;
+import guideme.guidebook.color.LightDarkMode;
+import guideme.guidebook.color.SymbolicColor;
 import appeng.core.AppEng;
 import java.util.function.Consumer;
 import java.util.function.Supplier;

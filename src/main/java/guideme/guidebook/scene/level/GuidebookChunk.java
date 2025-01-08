@@ -1,4 +1,4 @@
-package appeng.client.guidebook.scene.level;
+package guideme.guidebook.scene.level;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.FullChunkStatus;

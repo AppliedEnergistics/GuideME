@@ -1,4 +1,4 @@
-package appeng.client.guidebook.document;
+package guideme.guidebook.document;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2i;

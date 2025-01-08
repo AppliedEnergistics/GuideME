@@ -1,17 +1,17 @@
-package appeng.client.guidebook.scene.annotation;
+package guideme.guidebook.scene.annotation;
 
-import appeng.client.guidebook.document.block.LytBlock;
-import appeng.client.guidebook.document.interaction.ContentTooltip;
-import appeng.client.guidebook.document.interaction.GuideTooltip;
-import appeng.client.guidebook.document.interaction.TextTooltip;
-import appeng.siteexport.ExportableResourceProvider;
-import appeng.siteexport.ResourceExporter;
+import guideme.guidebook.document.block.LytBlock;
+import guideme.guidebook.document.interaction.ContentTooltip;
+import guideme.guidebook.document.interaction.GuideTooltip;
+import guideme.guidebook.document.interaction.TextTooltip;
+import guideme.siteexport.ExportableResourceProvider;
+import guideme.siteexport.ResourceExporter;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * An annotation to show additional information to the user about content in a
- * {@link appeng.client.guidebook.scene.GuidebookScene}.
+ * {@link guideme.guidebook.scene.GuidebookScene}.
  */
 public abstract class SceneAnnotation implements ExportableResourceProvider {
     @Nullable

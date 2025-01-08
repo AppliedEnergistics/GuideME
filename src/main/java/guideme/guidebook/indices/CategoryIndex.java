@@ -1,7 +1,7 @@
-package appeng.client.guidebook.indices;
+package guideme.guidebook.indices;
 
-import appeng.client.guidebook.PageAnchor;
-import appeng.client.guidebook.compiler.ParsedGuidePage;
+import guideme.guidebook.PageAnchor;
+import guideme.guidebook.compiler.ParsedGuidePage;
 import com.google.gson.stream.JsonWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Pages can declare to be part of multiple categories using the categories frontmatter.
  * <p/>
- * This index is installed by default on all {@linkplain appeng.client.guidebook.Guide guides}.
+ * This index is installed by default on all {@linkplain guideme.guidebook.Guide guides}.
  */
 public class CategoryIndex extends MultiValuedIndex<String, PageAnchor> {
     private static final Logger LOG = LoggerFactory.getLogger(CategoryIndex.class);

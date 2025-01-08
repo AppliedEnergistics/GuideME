@@ -1,4 +1,4 @@
-package appeng.client.guidebook.style;
+package guideme.guidebook.style;
 
 /**
  * See https://developer.mozilla.org/en-US/docs/Web/CSS/white-space

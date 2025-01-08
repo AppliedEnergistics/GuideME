@@ -1,4 +1,4 @@
-package appeng.client.guidebook.document.block.table;
+package guideme.guidebook.document.block.table;
 
 public class LytTableColumn {
     int x;

@@ -1,10 +1,10 @@
-package appeng.client.guidebook.compiler.tags;
+package guideme.guidebook.compiler.tags;
 
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.document.block.LytBlockContainer;
-import appeng.client.guidebook.document.block.LytBox;
-import appeng.client.guidebook.document.block.LytHBox;
-import appeng.client.guidebook.document.block.LytVBox;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.document.block.LytBlockContainer;
+import guideme.guidebook.document.block.LytBox;
+import guideme.guidebook.document.block.LytHBox;
+import guideme.guidebook.document.block.LytVBox;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import java.util.Set;
 

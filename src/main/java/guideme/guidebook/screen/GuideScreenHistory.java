@@ -1,6 +1,6 @@
-package appeng.client.guidebook.screen;
+package guideme.guidebook.screen;
 
-import appeng.client.guidebook.PageAnchor;
+import guideme.guidebook.PageAnchor;
 import java.util.Optional;
 
 public interface GuideScreenHistory {

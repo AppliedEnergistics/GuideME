@@ -1,4 +1,4 @@
-package appeng.client.guidebook.color;
+package guideme.guidebook.color;
 
 /**
  * TODO Colors from WIP patchouli book "nameplate_color": "8A5BA4", "link_color": "8A5BA4", "link_hover_color":

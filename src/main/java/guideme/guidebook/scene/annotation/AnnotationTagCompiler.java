@@ -1,11 +1,11 @@
-package appeng.client.guidebook.scene.annotation;
+package guideme.guidebook.scene.annotation;
 
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.document.LytErrorSink;
-import appeng.client.guidebook.document.block.LytBlock;
-import appeng.client.guidebook.document.block.LytVBox;
-import appeng.client.guidebook.scene.GuidebookScene;
-import appeng.client.guidebook.scene.element.SceneElementTagCompiler;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.document.LytErrorSink;
+import guideme.guidebook.document.block.LytBlock;
+import guideme.guidebook.document.block.LytVBox;
+import guideme.guidebook.scene.GuidebookScene;
+import guideme.guidebook.scene.element.SceneElementTagCompiler;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import org.jetbrains.annotations.Nullable;
 

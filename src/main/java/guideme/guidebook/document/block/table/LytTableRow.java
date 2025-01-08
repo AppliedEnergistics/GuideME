@@ -1,7 +1,7 @@
-package appeng.client.guidebook.document.block.table;
+package guideme.guidebook.document.block.table;
 
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.document.block.LytNode;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.document.block.LytNode;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package appeng.client.guidebook.scene.annotation;
+package guideme.guidebook.scene.annotation;
 
 import java.util.OptionalDouble;
 import org.apache.commons.lang3.tuple.Pair;

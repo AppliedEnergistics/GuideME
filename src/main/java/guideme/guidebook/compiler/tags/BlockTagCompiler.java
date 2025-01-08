@@ -1,11 +1,11 @@
-package appeng.client.guidebook.compiler.tags;
+package guideme.guidebook.compiler.tags;
 
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.compiler.TagCompiler;
-import appeng.client.guidebook.document.block.LytBlockContainer;
-import appeng.client.guidebook.document.flow.InlineBlockAlignment;
-import appeng.client.guidebook.document.flow.LytFlowInlineBlock;
-import appeng.client.guidebook.document.flow.LytFlowParent;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.compiler.TagCompiler;
+import guideme.guidebook.document.block.LytBlockContainer;
+import guideme.guidebook.document.flow.InlineBlockAlignment;
+import guideme.guidebook.document.flow.LytFlowInlineBlock;
+import guideme.guidebook.document.flow.LytFlowParent;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.mdx.model.MdxJsxFlowElement;
 import guideme.libs.mdast.mdx.model.MdxJsxTextElement;

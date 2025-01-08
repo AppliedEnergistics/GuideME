@@ -1,6 +1,6 @@
-package appeng.client.guidebook.screen;
+package guideme.guidebook.screen;
 
-import appeng.client.guidebook.PageAnchor;
+import guideme.guidebook.PageAnchor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

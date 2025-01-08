@@ -1,8 +1,8 @@
-package appeng.client.guidebook.scene.export;
+package guideme.guidebook.scene.export;
 
-import appeng.client.guidebook.scene.CameraSettings;
-import appeng.client.guidebook.scene.GuidebookLevelRenderer;
-import appeng.client.guidebook.scene.GuidebookScene;
+import guideme.guidebook.scene.CameraSettings;
+import guideme.guidebook.scene.GuidebookLevelRenderer;
+import guideme.guidebook.scene.GuidebookScene;
 import appeng.flatbuffers.scene.ExpAnimatedTexturePart;
 import appeng.flatbuffers.scene.ExpAnimatedTexturePartFrame;
 import appeng.flatbuffers.scene.ExpCameraSettings;
@@ -18,8 +18,8 @@ import appeng.flatbuffers.scene.ExpVertexElementType;
 import appeng.flatbuffers.scene.ExpVertexElementUsage;
 import appeng.flatbuffers.scene.ExpVertexFormat;
 import appeng.flatbuffers.scene.ExpVertexFormatElement;
-import appeng.siteexport.CacheBusting;
-import appeng.siteexport.ResourceExporter;
+import guideme.siteexport.CacheBusting;
+import guideme.siteexport.ResourceExporter;
 import com.google.flatbuffers.FlatBufferBuilder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.MeshData;

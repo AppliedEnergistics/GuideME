@@ -1,9 +1,9 @@
-package appeng.client.guidebook.layout;
+package guideme.guidebook.layout;
 
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.document.block.AlignItems;
-import appeng.client.guidebook.document.block.LytAxis;
-import appeng.client.guidebook.document.block.LytBlock;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.document.block.AlignItems;
+import guideme.guidebook.document.block.LytAxis;
+import guideme.guidebook.document.block.LytBlock;
 import java.util.List;
 import org.joml.Vector2i;
 

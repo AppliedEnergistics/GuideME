@@ -1,15 +1,15 @@
-package appeng.client.guidebook.render;
+package guideme.guidebook.render;
 
 import appeng.api.stacks.AEFluidKey;
 import appeng.client.gui.Icon;
 import appeng.client.gui.style.BackgroundGenerator;
 import appeng.client.gui.style.FluidBlitter;
-import appeng.client.guidebook.color.ColorValue;
-import appeng.client.guidebook.color.ConstantColor;
-import appeng.client.guidebook.color.LightDarkMode;
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.layout.MinecraftFontMetrics;
-import appeng.client.guidebook.style.ResolvedTextStyle;
+import guideme.guidebook.color.ColorValue;
+import guideme.guidebook.color.ConstantColor;
+import guideme.guidebook.color.LightDarkMode;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.layout.MinecraftFontMetrics;
+import guideme.guidebook.style.ResolvedTextStyle;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;

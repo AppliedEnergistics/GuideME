@@ -1,16 +1,16 @@
-package appeng.client.guidebook.screen;
+package guideme.guidebook.screen;
 
 import appeng.client.Point;
-import appeng.client.guidebook.color.ColorValue;
-import appeng.client.guidebook.color.SymbolicColor;
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.document.block.LytParagraph;
-import appeng.client.guidebook.document.flow.LytFlowSpan;
-import appeng.client.guidebook.layout.LayoutContext;
-import appeng.client.guidebook.layout.MinecraftFontMetrics;
-import appeng.client.guidebook.navigation.NavigationNode;
-import appeng.client.guidebook.navigation.NavigationTree;
-import appeng.client.guidebook.render.SimpleRenderContext;
+import guideme.guidebook.color.ColorValue;
+import guideme.guidebook.color.SymbolicColor;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.document.block.LytParagraph;
+import guideme.guidebook.document.flow.LytFlowSpan;
+import guideme.guidebook.layout.LayoutContext;
+import guideme.guidebook.layout.MinecraftFontMetrics;
+import guideme.guidebook.navigation.NavigationNode;
+import guideme.guidebook.navigation.NavigationTree;
+import guideme.guidebook.render.SimpleRenderContext;
 import appeng.sounds.AppEngSounds;
 import java.util.ArrayList;
 import java.util.List;

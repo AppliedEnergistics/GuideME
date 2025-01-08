@@ -1,11 +1,11 @@
-package appeng.client.guidebook.layout.flow;
+package guideme.guidebook.layout.flow;
 
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.document.flow.LytFlowContent;
-import appeng.client.guidebook.document.flow.LytFlowSpan;
-import appeng.client.guidebook.layout.LayoutContext;
-import appeng.client.guidebook.render.RenderContext;
-import appeng.client.guidebook.style.TextAlignment;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.document.flow.LytFlowContent;
+import guideme.guidebook.document.flow.LytFlowSpan;
+import guideme.guidebook.layout.LayoutContext;
+import guideme.guidebook.render.RenderContext;
+import guideme.guidebook.style.TextAlignment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;

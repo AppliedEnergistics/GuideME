@@ -1,4 +1,4 @@
-package appeng.client.guidebook.style;
+package guideme.guidebook.style;
 
 public enum TextAlignment {
     LEFT,

@@ -1,6 +1,6 @@
-package appeng.client.guidebook.style;
+package guideme.guidebook.style;
 
-import appeng.client.guidebook.color.ColorValue;
+import guideme.guidebook.color.ColorValue;
 import net.minecraft.resources.ResourceLocation;
 
 public record ResolvedTextStyle(

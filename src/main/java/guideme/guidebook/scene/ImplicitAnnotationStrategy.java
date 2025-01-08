@@ -1,9 +1,9 @@
-package appeng.client.guidebook.scene;
+package guideme.guidebook.scene;
 
-import appeng.client.guidebook.extensions.Extension;
-import appeng.client.guidebook.extensions.ExtensionPoint;
-import appeng.client.guidebook.scene.annotation.SceneAnnotation;
-import appeng.client.guidebook.scene.level.GuidebookLevel;
+import guideme.guidebook.extensions.Extension;
+import guideme.guidebook.extensions.ExtensionPoint;
+import guideme.guidebook.scene.annotation.SceneAnnotation;
+import guideme.guidebook.scene.level.GuidebookLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;

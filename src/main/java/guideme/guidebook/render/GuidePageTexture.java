@@ -1,6 +1,6 @@
-package appeng.client.guidebook.render;
+package guideme.guidebook.render;
 
-import appeng.client.guidebook.document.LytSize;
+import guideme.guidebook.document.LytSize;
 import appeng.core.AppEng;
 import com.mojang.blaze3d.platform.NativeImage;
 import java.io.IOException;

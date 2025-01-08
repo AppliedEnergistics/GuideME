@@ -1,6 +1,6 @@
-package appeng.client.guidebook.style;
+package guideme.guidebook.style;
 
-import appeng.client.guidebook.document.DefaultStyles;
+import guideme.guidebook.document.DefaultStyles;
 import java.util.function.Consumer;
 import org.jetbrains.annotations.Nullable;
 

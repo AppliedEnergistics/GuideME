@@ -1,7 +1,7 @@
-package appeng.client.guidebook.indices;
+package guideme.guidebook.indices;
 
-import appeng.client.guidebook.GuidePageChange;
-import appeng.client.guidebook.compiler.ParsedGuidePage;
+import guideme.guidebook.GuidePageChange;
+import guideme.guidebook.compiler.ParsedGuidePage;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,9 +1,9 @@
-package appeng.client.guidebook.compiler;
+package guideme.guidebook.compiler;
 
-import appeng.client.guidebook.document.block.LytBlockContainer;
-import appeng.client.guidebook.document.flow.LytFlowParent;
-import appeng.client.guidebook.extensions.Extension;
-import appeng.client.guidebook.extensions.ExtensionPoint;
+import guideme.guidebook.document.block.LytBlockContainer;
+import guideme.guidebook.document.flow.LytFlowParent;
+import guideme.guidebook.extensions.Extension;
+import guideme.guidebook.extensions.ExtensionPoint;
 import guideme.libs.mdast.mdx.model.MdxJsxFlowElement;
 import guideme.libs.mdast.mdx.model.MdxJsxTextElement;
 import java.util.Set;

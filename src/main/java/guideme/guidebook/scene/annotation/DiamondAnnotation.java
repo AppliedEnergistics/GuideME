@@ -1,11 +1,11 @@
-package appeng.client.guidebook.scene.annotation;
+package guideme.guidebook.scene.annotation;
 
-import appeng.client.guidebook.color.ColorValue;
-import appeng.client.guidebook.color.ConstantColor;
-import appeng.client.guidebook.color.MutableColor;
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.render.RenderContext;
-import appeng.client.guidebook.scene.GuidebookScene;
+import guideme.guidebook.color.ColorValue;
+import guideme.guidebook.color.ConstantColor;
+import guideme.guidebook.color.MutableColor;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.render.RenderContext;
+import guideme.guidebook.scene.GuidebookScene;
 import appeng.core.AppEng;
 import net.minecraft.client.Minecraft;
 import org.joml.Vector3f;

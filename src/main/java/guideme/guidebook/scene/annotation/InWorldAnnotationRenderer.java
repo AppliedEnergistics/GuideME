@@ -1,6 +1,6 @@
-package appeng.client.guidebook.scene.annotation;
+package guideme.guidebook.scene.annotation;
 
-import appeng.client.guidebook.color.MutableColor;
+import guideme.guidebook.color.MutableColor;
 import appeng.core.AppEng;
 import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.systems.RenderSystem;

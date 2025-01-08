@@ -1,11 +1,11 @@
-package appeng.client.guidebook.compiler;
+package guideme.guidebook.compiler;
 
-import appeng.client.guidebook.document.block.LytDocument;
-import appeng.client.guidebook.document.block.LytHeading;
-import appeng.client.guidebook.document.block.LytNode;
-import appeng.client.guidebook.document.block.LytVisitor;
-import appeng.client.guidebook.document.flow.LytFlowAnchor;
-import appeng.client.guidebook.document.flow.LytFlowContent;
+import guideme.guidebook.document.block.LytDocument;
+import guideme.guidebook.document.block.LytHeading;
+import guideme.guidebook.document.block.LytNode;
+import guideme.guidebook.document.block.LytVisitor;
+import guideme.guidebook.document.flow.LytFlowAnchor;
+import guideme.guidebook.document.flow.LytFlowContent;
 import java.util.Locale;
 import java.util.Stack;
 import org.jetbrains.annotations.Nullable;

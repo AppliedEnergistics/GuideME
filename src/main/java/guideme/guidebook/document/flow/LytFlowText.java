@@ -1,6 +1,6 @@
-package appeng.client.guidebook.document.flow;
+package guideme.guidebook.document.flow;
 
-import appeng.client.guidebook.document.block.LytVisitor;
+import guideme.guidebook.document.block.LytVisitor;
 
 public class LytFlowText extends LytFlowContent {
     private String text = "";

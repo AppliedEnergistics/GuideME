@@ -1,7 +1,7 @@
-package appeng.client.guidebook.layout.flow;
+package guideme.guidebook.layout.flow;
 
-import appeng.client.guidebook.document.block.LytBlock;
-import appeng.client.guidebook.render.RenderContext;
+import guideme.guidebook.document.block.LytBlock;
+import guideme.guidebook.render.RenderContext;
 import net.minecraft.client.renderer.MultiBufferSource;
 
 /**

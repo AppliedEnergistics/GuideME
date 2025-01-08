@@ -1,4 +1,4 @@
-package appeng.client.guidebook.compiler;
+package guideme.guidebook.compiler;
 
 import java.net.URI;
 import net.minecraft.ResourceLocationException;

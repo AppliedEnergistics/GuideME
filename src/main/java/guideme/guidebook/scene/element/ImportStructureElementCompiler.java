@@ -1,9 +1,9 @@
-package appeng.client.guidebook.scene.element;
+package guideme.guidebook.scene.element;
 
-import appeng.client.guidebook.compiler.IdUtils;
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.document.LytErrorSink;
-import appeng.client.guidebook.scene.GuidebookScene;
+import guideme.guidebook.compiler.IdUtils;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.document.LytErrorSink;
+import guideme.guidebook.scene.GuidebookScene;
 import com.google.common.io.ByteStreams;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import java.nio.charset.StandardCharsets;

@@ -1,11 +1,11 @@
-package appeng.client.guidebook.document.block;
+package guideme.guidebook.document.block;
 
-import appeng.client.guidebook.color.SymbolicColor;
-import appeng.client.guidebook.document.DefaultStyles;
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.layout.LayoutContext;
-import appeng.client.guidebook.render.RenderContext;
-import appeng.client.guidebook.style.ResolvedTextStyle;
+import guideme.guidebook.color.SymbolicColor;
+import guideme.guidebook.document.DefaultStyles;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.layout.LayoutContext;
+import guideme.guidebook.render.RenderContext;
+import guideme.guidebook.style.ResolvedTextStyle;
 import net.minecraft.client.renderer.MultiBufferSource;
 
 public class LytListItem extends LytVBox {

@@ -1,12 +1,12 @@
-package appeng.client.guidebook.compiler.tags;
+package guideme.guidebook.compiler.tags;
 
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.document.block.LytBlockContainer;
-import appeng.client.guidebook.document.block.LytList;
-import appeng.client.guidebook.document.block.LytListItem;
-import appeng.client.guidebook.document.block.LytParagraph;
-import appeng.client.guidebook.document.flow.LytFlowLink;
-import appeng.client.guidebook.indices.CategoryIndex;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.document.block.LytBlockContainer;
+import guideme.guidebook.document.block.LytList;
+import guideme.guidebook.document.block.LytListItem;
+import guideme.guidebook.document.block.LytParagraph;
+import guideme.guidebook.document.flow.LytFlowLink;
+import guideme.guidebook.indices.CategoryIndex;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import java.util.Set;
 

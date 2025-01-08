@@ -1,8 +1,8 @@
-package appeng.client.guidebook.layout.flow;
+package guideme.guidebook.layout.flow;
 
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.document.flow.LytFlowContent;
-import appeng.client.guidebook.render.RenderContext;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.document.flow.LytFlowContent;
+import guideme.guidebook.render.RenderContext;
 import net.minecraft.client.renderer.MultiBufferSource;
 import org.jetbrains.annotations.Nullable;
 

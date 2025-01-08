@@ -1,4 +1,4 @@
-package appeng.client.guidebook.compiler.tags;
+package guideme.guidebook.compiler.tags;
 
 public enum BoxFlowDirection {
     ROW,

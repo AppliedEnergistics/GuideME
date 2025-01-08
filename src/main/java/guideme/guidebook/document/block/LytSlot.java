@@ -1,11 +1,11 @@
-package appeng.client.guidebook.document.block;
+package guideme.guidebook.document.block;
 
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.document.interaction.GuideTooltip;
-import appeng.client.guidebook.document.interaction.InteractiveElement;
-import appeng.client.guidebook.document.interaction.ItemTooltip;
-import appeng.client.guidebook.layout.LayoutContext;
-import appeng.client.guidebook.render.RenderContext;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.document.interaction.GuideTooltip;
+import guideme.guidebook.document.interaction.InteractiveElement;
+import guideme.guidebook.document.interaction.ItemTooltip;
+import guideme.guidebook.layout.LayoutContext;
+import guideme.guidebook.render.RenderContext;
 import appeng.core.AppEng;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;

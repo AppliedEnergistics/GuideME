@@ -1,6 +1,6 @@
-package appeng.client.guidebook.compiler;
+package guideme.guidebook.compiler;
 
-import appeng.client.guidebook.PageAnchor;
+import guideme.guidebook.PageAnchor;
 import java.net.URI;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.resources.ResourceLocation;

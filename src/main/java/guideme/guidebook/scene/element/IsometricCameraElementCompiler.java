@@ -1,9 +1,9 @@
-package appeng.client.guidebook.scene.element;
+package guideme.guidebook.scene.element;
 
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.compiler.tags.MdxAttrs;
-import appeng.client.guidebook.document.LytErrorSink;
-import appeng.client.guidebook.scene.GuidebookScene;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.compiler.tags.MdxAttrs;
+import guideme.guidebook.document.LytErrorSink;
+import guideme.guidebook.scene.GuidebookScene;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import java.util.Set;
 

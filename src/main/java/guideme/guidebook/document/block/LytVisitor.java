@@ -1,6 +1,6 @@
-package appeng.client.guidebook.document.block;
+package guideme.guidebook.document.block;
 
-import appeng.client.guidebook.document.flow.LytFlowContent;
+import guideme.guidebook.document.flow.LytFlowContent;
 
 public interface LytVisitor {
     default Result beforeNode(LytNode node) {

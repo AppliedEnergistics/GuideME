@@ -1,8 +1,8 @@
-package appeng.client.guidebook.document.flow;
+package guideme.guidebook.document.flow;
 
-import appeng.client.guidebook.PageAnchor;
-import appeng.client.guidebook.color.SymbolicColor;
-import appeng.client.guidebook.screen.GuideScreen;
+import guideme.guidebook.PageAnchor;
+import guideme.guidebook.color.SymbolicColor;
+import guideme.guidebook.screen.GuideScreen;
 import appeng.sounds.AppEngSounds;
 import java.net.URI;
 import java.util.function.Consumer;

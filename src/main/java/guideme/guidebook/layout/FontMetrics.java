@@ -1,6 +1,6 @@
-package appeng.client.guidebook.layout;
+package guideme.guidebook.layout;
 
-import appeng.client.guidebook.style.ResolvedTextStyle;
+import guideme.guidebook.style.ResolvedTextStyle;
 
 public interface FontMetrics {
     float getAdvance(int codePoint, ResolvedTextStyle style);

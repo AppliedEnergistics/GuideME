@@ -1,4 +1,4 @@
-package appeng.client.guidebook;
+package guideme.guidebook;
 
 import appeng.core.localization.LocalizationEnum;
 

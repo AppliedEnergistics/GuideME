@@ -1,8 +1,8 @@
-package appeng.client.guidebook.compiler.tags;
+package guideme.guidebook.compiler.tags;
 
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.compiler.TagCompiler;
-import appeng.client.guidebook.document.block.LytBlockContainer;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.compiler.TagCompiler;
+import guideme.guidebook.document.block.LytBlockContainer;
 import guideme.libs.mdast.mdx.model.MdxJsxFlowElement;
 import java.util.Set;
 

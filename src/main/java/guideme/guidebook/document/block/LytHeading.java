@@ -1,8 +1,8 @@
-package appeng.client.guidebook.document.block;
+package guideme.guidebook.document.block;
 
-import appeng.client.guidebook.color.SymbolicColor;
-import appeng.client.guidebook.document.DefaultStyles;
-import appeng.client.guidebook.render.RenderContext;
+import guideme.guidebook.color.SymbolicColor;
+import guideme.guidebook.document.DefaultStyles;
+import guideme.guidebook.render.RenderContext;
 
 public class LytHeading extends LytParagraph {
     private int depth = 1;

@@ -1,13 +1,13 @@
-package appeng.client.guidebook.document.flow;
+package guideme.guidebook.document.flow;
 
-import appeng.client.guidebook.document.LytSize;
-import appeng.client.guidebook.document.block.LytBlock;
-import appeng.client.guidebook.document.block.LytVisitor;
-import appeng.client.guidebook.document.interaction.GuideTooltip;
-import appeng.client.guidebook.document.interaction.InteractiveElement;
-import appeng.client.guidebook.layout.LayoutContext;
-import appeng.client.guidebook.layout.MinecraftFontMetrics;
-import appeng.client.guidebook.screen.GuideScreen;
+import guideme.guidebook.document.LytSize;
+import guideme.guidebook.document.block.LytBlock;
+import guideme.guidebook.document.block.LytVisitor;
+import guideme.guidebook.document.interaction.GuideTooltip;
+import guideme.guidebook.document.interaction.InteractiveElement;
+import guideme.guidebook.layout.LayoutContext;
+import guideme.guidebook.layout.MinecraftFontMetrics;
+import guideme.guidebook.screen.GuideScreen;
 import java.util.Optional;
 
 public class LytFlowInlineBlock extends LytFlowContent implements InteractiveElement {

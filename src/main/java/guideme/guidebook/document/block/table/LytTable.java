@@ -1,10 +1,10 @@
-package appeng.client.guidebook.document.block.table;
+package guideme.guidebook.document.block.table;
 
-import appeng.client.guidebook.color.SymbolicColor;
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.document.block.LytBlock;
-import appeng.client.guidebook.layout.LayoutContext;
-import appeng.client.guidebook.render.RenderContext;
+import guideme.guidebook.color.SymbolicColor;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.document.block.LytBlock;
+import guideme.guidebook.layout.LayoutContext;
+import guideme.guidebook.render.RenderContext;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.renderer.MultiBufferSource;

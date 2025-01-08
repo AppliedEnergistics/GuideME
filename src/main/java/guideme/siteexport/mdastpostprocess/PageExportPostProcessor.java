@@ -1,10 +1,10 @@
-package appeng.siteexport.mdastpostprocess;
+package guideme.siteexport.mdastpostprocess;
 
-import appeng.client.guidebook.GuidePage;
-import appeng.client.guidebook.compiler.ParsedGuidePage;
-import appeng.client.guidebook.document.block.LytNode;
-import appeng.client.guidebook.document.block.LytVisitor;
-import appeng.siteexport.ResourceExporter;
+import guideme.guidebook.GuidePage;
+import guideme.guidebook.compiler.ParsedGuidePage;
+import guideme.guidebook.document.block.LytNode;
+import guideme.guidebook.document.block.LytVisitor;
+import guideme.siteexport.ResourceExporter;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import guideme.libs.mdast.MdAstVisitor;

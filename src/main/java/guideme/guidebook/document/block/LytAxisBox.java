@@ -1,4 +1,4 @@
-package appeng.client.guidebook.document.block;
+package guideme.guidebook.document.block;
 
 /**
  * A box that just aligns its content along the vertical or horizontal axis.

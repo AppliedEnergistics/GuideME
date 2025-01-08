@@ -1,6 +1,6 @@
-package appeng.client.guidebook.document.block.table;
+package guideme.guidebook.document.block.table;
 
-import appeng.client.guidebook.document.block.LytVBox;
+import guideme.guidebook.document.block.LytVBox;
 
 /**
  * A cell in a {@link LytTable}s {@link LytTableRow}.

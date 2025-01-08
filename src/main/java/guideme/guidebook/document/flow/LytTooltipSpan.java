@@ -1,9 +1,9 @@
-package appeng.client.guidebook.document.flow;
+package guideme.guidebook.document.flow;
 
-import appeng.client.guidebook.document.interaction.GuideTooltip;
-import appeng.client.guidebook.document.interaction.InteractiveElement;
-import appeng.siteexport.ExportableResourceProvider;
-import appeng.siteexport.ResourceExporter;
+import guideme.guidebook.document.interaction.GuideTooltip;
+import guideme.guidebook.document.interaction.InteractiveElement;
+import guideme.siteexport.ExportableResourceProvider;
+import guideme.siteexport.ResourceExporter;
 import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
 

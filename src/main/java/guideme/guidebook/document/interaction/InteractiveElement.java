@@ -1,6 +1,6 @@
-package appeng.client.guidebook.document.interaction;
+package guideme.guidebook.document.interaction;
 
-import appeng.client.guidebook.screen.GuideScreen;
+import guideme.guidebook.screen.GuideScreen;
 import java.util.Optional;
 
 public interface InteractiveElement {

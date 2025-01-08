@@ -1,7 +1,7 @@
-package appeng.client.guidebook;
+package guideme.guidebook;
 
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.compiler.ParsedGuidePage;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.compiler.ParsedGuidePage;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.methvin.watcher.DirectoryChangeEvent;

@@ -1,4 +1,4 @@
-package appeng.client.guidebook.compiler;
+package guideme.guidebook.compiler;
 
 import guideme.libs.mdast.model.MdAstRoot;
 import net.minecraft.resources.ResourceLocation;

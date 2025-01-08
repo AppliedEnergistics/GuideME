@@ -1,4 +1,4 @@
-package appeng.client.guidebook.document.flow;
+package guideme.guidebook.document.flow;
 
 import java.util.OptionalInt;
 

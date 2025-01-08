@@ -1,8 +1,8 @@
-package appeng.client.guidebook.extensions;
+package guideme.guidebook.extensions;
 
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.compiler.tags.FlowTagCompiler;
-import appeng.client.guidebook.document.flow.LytFlowParent;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.compiler.tags.FlowTagCompiler;
+import guideme.guidebook.document.flow.LytFlowParent;
 import appeng.core.AEConfig;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import java.util.Map;

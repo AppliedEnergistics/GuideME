@@ -1,8 +1,8 @@
-package appeng.siteexport.mdastpostprocess;
+package guideme.siteexport.mdastpostprocess;
 
-import appeng.client.guidebook.compiler.IdUtils;
-import appeng.client.guidebook.compiler.tags.FloatingImageCompiler;
-import appeng.siteexport.ResourceExporter;
+import guideme.guidebook.compiler.IdUtils;
+import guideme.guidebook.compiler.tags.FloatingImageCompiler;
+import guideme.siteexport.ResourceExporter;
 import guideme.libs.mdast.MdAstVisitor;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstImage;

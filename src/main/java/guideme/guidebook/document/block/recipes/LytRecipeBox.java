@@ -1,8 +1,8 @@
-package appeng.client.guidebook.document.block.recipes;
+package guideme.guidebook.document.block.recipes;
 
-import appeng.client.guidebook.document.block.LytBox;
-import appeng.siteexport.ExportableResourceProvider;
-import appeng.siteexport.ResourceExporter;
+import guideme.guidebook.document.block.LytBox;
+import guideme.siteexport.ExportableResourceProvider;
+import guideme.siteexport.ResourceExporter;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
 public abstract class LytRecipeBox extends LytBox implements ExportableResourceProvider {

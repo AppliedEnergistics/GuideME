@@ -1,4 +1,4 @@
-package appeng.client.guidebook.color;
+package guideme.guidebook.color;
 
 public interface ColorValue {
     /**

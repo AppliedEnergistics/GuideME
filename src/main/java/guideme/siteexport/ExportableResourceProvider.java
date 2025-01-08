@@ -1,8 +1,8 @@
-package appeng.siteexport;
+package guideme.siteexport;
 
-import appeng.client.guidebook.document.block.LytNode;
-import appeng.client.guidebook.document.block.LytVisitor;
-import appeng.client.guidebook.document.flow.LytFlowContent;
+import guideme.guidebook.document.block.LytNode;
+import guideme.guidebook.document.block.LytVisitor;
+import guideme.guidebook.document.flow.LytFlowContent;
 
 /**
  * Parts of the document tree should implement this interface to export resources for being shown in the guidebook *Web*

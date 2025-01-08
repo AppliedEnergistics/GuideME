@@ -1,4 +1,4 @@
-package appeng.client.guidebook.color;
+package guideme.guidebook.color;
 
 /**
  * Applies a function to an existing color that makes it lighter or darker by a given percentage.

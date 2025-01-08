@@ -1,4 +1,4 @@
-package appeng.client.guidebook.navigation;
+package guideme.guidebook.navigation;
 
 import java.util.List;
 import net.minecraft.resources.ResourceLocation;

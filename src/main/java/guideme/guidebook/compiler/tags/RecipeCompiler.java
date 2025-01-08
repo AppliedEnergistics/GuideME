@@ -1,14 +1,14 @@
-package appeng.client.guidebook.compiler.tags;
+package guideme.guidebook.compiler.tags;
 
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.document.block.LytBlock;
-import appeng.client.guidebook.document.block.LytBlockContainer;
-import appeng.client.guidebook.document.block.recipes.LytChargerRecipe;
-import appeng.client.guidebook.document.block.recipes.LytCraftingRecipe;
-import appeng.client.guidebook.document.block.recipes.LytInscriberRecipe;
-import appeng.client.guidebook.document.block.recipes.LytSmeltingRecipe;
-import appeng.client.guidebook.document.block.recipes.LytSmithingRecipe;
-import appeng.client.guidebook.document.block.recipes.LytTransformRecipe;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.document.block.LytBlock;
+import guideme.guidebook.document.block.LytBlockContainer;
+import guideme.guidebook.document.block.recipes.LytChargerRecipe;
+import guideme.guidebook.document.block.recipes.LytCraftingRecipe;
+import guideme.guidebook.document.block.recipes.LytInscriberRecipe;
+import guideme.guidebook.document.block.recipes.LytSmeltingRecipe;
+import guideme.guidebook.document.block.recipes.LytSmithingRecipe;
+import guideme.guidebook.document.block.recipes.LytTransformRecipe;
 import appeng.recipes.AERecipeTypes;
 import appeng.util.Platform;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;

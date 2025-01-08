@@ -1,4 +1,4 @@
-package appeng.client.guidebook.color;
+package guideme.guidebook.color;
 
 public record ConstantColor(int color) implements ColorValue {
     public static ConstantColor WHITE = new ConstantColor(-1);

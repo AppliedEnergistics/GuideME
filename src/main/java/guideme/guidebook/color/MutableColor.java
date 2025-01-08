@@ -1,4 +1,4 @@
-package appeng.client.guidebook.color;
+package guideme.guidebook.color;
 
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;

@@ -1,4 +1,4 @@
-package appeng.client.guidebook.scene.level;
+package guideme.guidebook.scene.level;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;

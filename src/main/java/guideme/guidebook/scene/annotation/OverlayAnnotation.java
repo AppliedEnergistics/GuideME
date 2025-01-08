@@ -1,8 +1,8 @@
-package appeng.client.guidebook.scene.annotation;
+package guideme.guidebook.scene.annotation;
 
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.render.RenderContext;
-import appeng.client.guidebook.scene.GuidebookScene;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.render.RenderContext;
+import guideme.guidebook.scene.GuidebookScene;
 
 /**
  * A {@link SceneAnnotation} that renders as part of the user-interface, overlaid on top of the in-world scene.

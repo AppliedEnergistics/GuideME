@@ -1,8 +1,8 @@
-package appeng.client.guidebook.scene;
+package guideme.guidebook.scene;
 
-import appeng.client.guidebook.scene.annotation.InWorldAnnotation;
-import appeng.client.guidebook.scene.annotation.InWorldAnnotationRenderer;
-import appeng.client.guidebook.scene.level.GuidebookLevel;
+import guideme.guidebook.scene.annotation.InWorldAnnotation;
+import guideme.guidebook.scene.annotation.InWorldAnnotationRenderer;
+import guideme.guidebook.scene.level.GuidebookLevel;
 import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.shaders.FogShape;

@@ -1,8 +1,8 @@
-package appeng.client.guidebook.document.block;
+package guideme.guidebook.document.block;
 
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.layout.LayoutContext;
-import appeng.client.guidebook.render.RenderContext;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.layout.LayoutContext;
+import guideme.guidebook.render.RenderContext;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.renderer.MultiBufferSource;

@@ -1,9 +1,9 @@
-package appeng.client.guidebook.hotkey;
+package guideme.guidebook.hotkey;
 
-import appeng.client.guidebook.GuidebookText;
-import appeng.client.guidebook.PageAnchor;
-import appeng.client.guidebook.indices.ItemIndex;
-import appeng.client.guidebook.screen.GuideScreen;
+import guideme.guidebook.GuidebookText;
+import guideme.guidebook.PageAnchor;
+import guideme.guidebook.indices.ItemIndex;
+import guideme.guidebook.screen.GuideScreen;
 import appeng.core.AppEngClient;
 import com.google.common.base.Strings;
 import com.mojang.blaze3d.platform.InputConstants;

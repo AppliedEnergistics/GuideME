@@ -1,6 +1,6 @@
-package appeng.client.guidebook.layout.flow;
+package guideme.guidebook.layout.flow;
 
-import appeng.client.guidebook.document.LytRect;
+import guideme.guidebook.document.LytRect;
 import java.util.Objects;
 import java.util.stream.Stream;
 

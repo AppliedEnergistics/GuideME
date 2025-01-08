@@ -1,12 +1,12 @@
-package appeng.client.guidebook.document.interaction;
+package guideme.guidebook.document.interaction;
 
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.document.block.LytBlock;
-import appeng.client.guidebook.layout.LayoutContext;
-import appeng.client.guidebook.layout.MinecraftFontMetrics;
-import appeng.client.guidebook.render.SimpleRenderContext;
-import appeng.siteexport.ExportableResourceProvider;
-import appeng.siteexport.ResourceExporter;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.document.block.LytBlock;
+import guideme.guidebook.layout.LayoutContext;
+import guideme.guidebook.layout.MinecraftFontMetrics;
+import guideme.guidebook.render.SimpleRenderContext;
+import guideme.siteexport.ExportableResourceProvider;
+import guideme.siteexport.ResourceExporter;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

@@ -1,6 +1,6 @@
-package appeng.client.guidebook;
+package guideme.guidebook;
 
-import appeng.client.guidebook.compiler.ParsedGuidePage;
+import guideme.guidebook.compiler.ParsedGuidePage;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 

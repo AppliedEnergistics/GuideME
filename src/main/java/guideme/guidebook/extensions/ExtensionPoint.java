@@ -1,4 +1,4 @@
-package appeng.client.guidebook.extensions;
+package guideme.guidebook.extensions;
 
 /**
  * An extension point is offered by the guidebook to plug in additional functionality. Each extension point defines an

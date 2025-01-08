@@ -1,4 +1,4 @@
-package appeng.client.guidebook.scene;
+package guideme.guidebook.scene;
 
 import net.minecraft.util.StringRepresentable;
 

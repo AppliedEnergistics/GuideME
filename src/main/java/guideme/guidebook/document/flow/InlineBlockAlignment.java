@@ -1,4 +1,4 @@
-package appeng.client.guidebook.document.flow;
+package guideme.guidebook.document.flow;
 
 /**
  * How an inline block element is supposed to be aligned within the flow layout.

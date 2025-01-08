@@ -1,11 +1,11 @@
-package appeng.client.guidebook.scene;
+package guideme.guidebook.scene;
 
 import appeng.api.parts.IPartCollisionHelper;
 import appeng.api.parts.IPartHost;
-import appeng.client.guidebook.color.SymbolicColor;
-import appeng.client.guidebook.scene.annotation.InWorldBoxAnnotation;
-import appeng.client.guidebook.scene.annotation.SceneAnnotation;
-import appeng.client.guidebook.scene.level.GuidebookLevel;
+import guideme.guidebook.color.SymbolicColor;
+import guideme.guidebook.scene.annotation.InWorldBoxAnnotation;
+import guideme.guidebook.scene.annotation.SceneAnnotation;
+import guideme.guidebook.scene.level.GuidebookLevel;
 import appeng.core.localization.GuiText;
 import appeng.parts.BusCollisionHelper;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package appeng.siteexport.model;
+package guideme.siteexport.model;
 
 import java.util.ArrayList;
 import java.util.List;

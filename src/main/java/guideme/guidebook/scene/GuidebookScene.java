@@ -1,11 +1,11 @@
-package appeng.client.guidebook.scene;
+package guideme.guidebook.scene;
 
-import appeng.client.guidebook.document.LytPoint;
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.scene.annotation.InWorldAnnotation;
-import appeng.client.guidebook.scene.annotation.OverlayAnnotation;
-import appeng.client.guidebook.scene.annotation.SceneAnnotation;
-import appeng.client.guidebook.scene.level.GuidebookLevel;
+import guideme.guidebook.document.LytPoint;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.scene.annotation.InWorldAnnotation;
+import guideme.guidebook.scene.annotation.OverlayAnnotation;
+import guideme.guidebook.scene.annotation.SceneAnnotation;
+import guideme.guidebook.scene.level.GuidebookLevel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

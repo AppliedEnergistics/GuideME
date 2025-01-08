@@ -1,4 +1,4 @@
-package appeng.client.guidebook.document.block;
+package guideme.guidebook.document.block;
 
 public enum AlignItems {
     CENTER,

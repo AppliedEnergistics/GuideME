@@ -1,7 +1,7 @@
-package appeng.client.guidebook.document.flow;
+package guideme.guidebook.document.flow;
 
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.document.LytErrorSink;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.document.LytErrorSink;
 import guideme.libs.unist.UnistNode;
 import java.util.Optional;
 import net.minecraft.network.chat.FormattedText;

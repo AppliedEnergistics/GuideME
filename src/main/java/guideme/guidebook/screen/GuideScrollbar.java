@@ -1,4 +1,4 @@
-package appeng.client.guidebook.screen;
+package guideme.guidebook.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferUploader;

@@ -1,4 +1,4 @@
-package appeng.siteexport.model;
+package guideme.siteexport.model;
 
 public class FluidInfoJson {
     public String id;

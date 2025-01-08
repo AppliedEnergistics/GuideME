@@ -1,6 +1,6 @@
-package appeng.client.guidebook.scene.annotation;
+package guideme.guidebook.scene.annotation;
 
-import appeng.client.guidebook.color.ColorValue;
+import guideme.guidebook.color.ColorValue;
 import java.util.OptionalDouble;
 import net.minecraft.core.BlockPos;
 import org.apache.commons.lang3.tuple.Pair;

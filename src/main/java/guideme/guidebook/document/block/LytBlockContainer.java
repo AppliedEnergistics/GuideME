@@ -1,7 +1,7 @@
-package appeng.client.guidebook.document.block;
+package guideme.guidebook.document.block;
 
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.document.LytErrorSink;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.document.LytErrorSink;
 import guideme.libs.unist.UnistNode;
 
 public interface LytBlockContainer extends LytErrorSink {

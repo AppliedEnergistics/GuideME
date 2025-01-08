@@ -1,6 +1,6 @@
-package appeng.siteexport.model;
+package guideme.siteexport.model;
 
-import appeng.client.guidebook.navigation.NavigationNode;
+import guideme.guidebook.navigation.NavigationNode;
 import java.util.List;
 import net.minecraft.world.item.ItemStack;
 

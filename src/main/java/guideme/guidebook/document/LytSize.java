@@ -1,4 +1,4 @@
-package appeng.client.guidebook.document;
+package guideme.guidebook.document;
 
 public record LytSize(int width, int height) {
 

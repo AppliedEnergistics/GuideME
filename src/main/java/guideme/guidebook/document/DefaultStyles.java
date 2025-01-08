@@ -1,12 +1,12 @@
-package appeng.client.guidebook.document;
+package guideme.guidebook.document;
 
-import appeng.client.guidebook.color.ColorValue;
-import appeng.client.guidebook.color.ConstantColor;
-import appeng.client.guidebook.color.SymbolicColor;
-import appeng.client.guidebook.style.ResolvedTextStyle;
-import appeng.client.guidebook.style.TextAlignment;
-import appeng.client.guidebook.style.TextStyle;
-import appeng.client.guidebook.style.WhiteSpaceMode;
+import guideme.guidebook.color.ColorValue;
+import guideme.guidebook.color.ConstantColor;
+import guideme.guidebook.color.SymbolicColor;
+import guideme.guidebook.style.ResolvedTextStyle;
+import guideme.guidebook.style.TextAlignment;
+import guideme.guidebook.style.TextStyle;
+import guideme.guidebook.style.WhiteSpaceMode;
 import net.minecraft.client.Minecraft;
 
 public final class DefaultStyles {

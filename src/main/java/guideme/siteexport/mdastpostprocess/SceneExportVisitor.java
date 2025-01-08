@@ -1,12 +1,12 @@
-package appeng.siteexport.mdastpostprocess;
+package guideme.siteexport.mdastpostprocess;
 
-import appeng.client.guidebook.document.block.LytNode;
-import appeng.client.guidebook.scene.BlockImageTagCompiler;
-import appeng.client.guidebook.scene.LytGuidebookScene;
-import appeng.client.guidebook.scene.SceneTagCompiler;
-import appeng.client.guidebook.scene.export.SceneExporter;
-import appeng.siteexport.CacheBusting;
-import appeng.siteexport.ResourceExporter;
+import guideme.guidebook.document.block.LytNode;
+import guideme.guidebook.scene.BlockImageTagCompiler;
+import guideme.guidebook.scene.LytGuidebookScene;
+import guideme.guidebook.scene.SceneTagCompiler;
+import guideme.guidebook.scene.export.SceneExporter;
+import guideme.siteexport.CacheBusting;
+import guideme.siteexport.ResourceExporter;
 import com.google.common.collect.Multimap;
 import guideme.libs.mdast.MdAstVisitor;
 import guideme.libs.mdast.mdx.model.MdxJsxAttribute;

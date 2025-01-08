@@ -1,4 +1,4 @@
-package appeng.client.guidebook.scene.export;
+package guideme.guidebook.scene.export;
 
 import appeng.thirdparty.fabric.SpriteFinder;
 import com.mojang.blaze3d.vertex.MeshData;

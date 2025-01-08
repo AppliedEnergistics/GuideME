@@ -1,10 +1,10 @@
-package appeng.client.guidebook.scene.element;
+package guideme.guidebook.scene.element;
 
-import appeng.client.guidebook.compiler.PageCompiler;
-import appeng.client.guidebook.document.LytErrorSink;
-import appeng.client.guidebook.extensions.Extension;
-import appeng.client.guidebook.extensions.ExtensionPoint;
-import appeng.client.guidebook.scene.GuidebookScene;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.document.LytErrorSink;
+import guideme.guidebook.extensions.Extension;
+import guideme.guidebook.extensions.ExtensionPoint;
+import guideme.guidebook.scene.GuidebookScene;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import java.util.Set;
 

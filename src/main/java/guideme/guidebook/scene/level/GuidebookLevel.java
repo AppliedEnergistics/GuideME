@@ -1,4 +1,4 @@
-package appeng.client.guidebook.scene.level;
+package guideme.guidebook.scene.level;
 
 import appeng.core.AppEng;
 import appeng.util.Platform;

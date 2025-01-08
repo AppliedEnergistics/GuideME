@@ -1,4 +1,4 @@
-package appeng.siteexport.model;
+package guideme.siteexport.model;
 
 import com.google.gson.JsonElement;
 import java.util.ArrayList;

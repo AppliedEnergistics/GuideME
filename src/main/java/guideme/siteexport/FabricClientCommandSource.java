@@ -1,4 +1,4 @@
-package appeng.siteexport;
+package guideme.siteexport;
 
 import net.minecraft.network.chat.Component;
 

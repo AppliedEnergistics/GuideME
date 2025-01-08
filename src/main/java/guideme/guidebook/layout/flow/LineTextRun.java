@@ -1,7 +1,7 @@
-package appeng.client.guidebook.layout.flow;
+package guideme.guidebook.layout.flow;
 
-import appeng.client.guidebook.render.RenderContext;
-import appeng.client.guidebook.style.ResolvedTextStyle;
+import guideme.guidebook.render.RenderContext;
+import guideme.guidebook.style.ResolvedTextStyle;
 import net.minecraft.client.renderer.MultiBufferSource;
 
 public class LineTextRun extends LineElement {

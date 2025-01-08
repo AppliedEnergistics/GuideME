@@ -1,4 +1,4 @@
-package appeng.siteexport.model;
+package guideme.siteexport.model;
 
 public class ItemInfoJson {
     public String id;

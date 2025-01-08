@@ -1,8 +1,8 @@
-package appeng.client.guidebook.indices;
+package guideme.guidebook.indices;
 
-import appeng.client.guidebook.PageAnchor;
-import appeng.client.guidebook.compiler.IdUtils;
-import appeng.client.guidebook.compiler.ParsedGuidePage;
+import guideme.guidebook.PageAnchor;
+import guideme.guidebook.compiler.IdUtils;
+import guideme.guidebook.compiler.ParsedGuidePage;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.ResourceLocationException;
@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 /**
  * An index of Minecraft items to the main guidebook page describing it.
  * <p/>
- * This index is installed by default on all {@linkplain appeng.client.guidebook.Guide guides}.
+ * This index is installed by default on all {@linkplain guideme.guidebook.Guide guides}.
  */
 public class ItemIndex extends UniqueIndex<ResourceLocation, PageAnchor> {
     private static final Logger LOG = LoggerFactory.getLogger(ItemIndex.class);
