@@ -34,7 +34,6 @@ import guideme.guidebook.render.GuidePageTexture;
 import guideme.guidebook.render.SimpleRenderContext;
 import guideme.guidebook.style.TextAlignment;
 import guideme.guidebook.style.TextStyle;
-import appeng.core.AEConfig;
 import guideme.GuideME;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;

@@ -24,9 +24,12 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import guideme.GuideME;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
@@ -97,6 +100,20 @@ public final class Blitter {
      */
     public static Blitter texture(String file, int referenceWidth, int referenceHeight) {
         return new Blitter(GuideME.makeId("textures/" + file), referenceWidth, referenceHeight);
+    }
+
+    /**
+     * Creates a blitter from a texture atlas sprite.
+     */
+    public static Blitter sprite(TextureAtlasSprite sprite) {
+        var atlas = (TextureAtlas) Minecraft.getInstance().getTextureManager().getTexture(sprite.atlasLocation());
+
+        return new Blitter(sprite.atlasLocation(), atlas.getWidth(), atlas.getHeight())
+                .src(
+                        sprite.getX(),
+                        sprite.getY(),
+                        sprite.contents().width(),
+                        sprite.contents().height());
     }
 
     public Blitter copy() {

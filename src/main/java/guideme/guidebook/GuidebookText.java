@@ -1,6 +1,7 @@
 package guideme.guidebook;
 
-import appeng.core.localization.LocalizationEnum;
+
+import guideme.data.LocalizationEnum;
 
 public enum GuidebookText implements LocalizationEnum {
     HistoryGoBack("Go back one page"),

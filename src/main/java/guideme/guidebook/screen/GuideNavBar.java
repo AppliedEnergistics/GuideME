@@ -1,6 +1,7 @@
 package guideme.guidebook.screen;
 
 import appeng.client.Point;
+import guideme.GuideME;
 import guideme.guidebook.color.ColorValue;
 import guideme.guidebook.color.SymbolicColor;
 import guideme.guidebook.document.LytRect;
@@ -11,7 +12,6 @@ import guideme.guidebook.layout.MinecraftFontMetrics;
 import guideme.guidebook.navigation.NavigationNode;
 import guideme.guidebook.navigation.NavigationTree;
 import guideme.guidebook.render.SimpleRenderContext;
-import appeng.sounds.AppEngSounds;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
@@ -64,7 +64,7 @@ public class GuideNavBar extends AbstractWidget {
             updateLayout();
 
             var handler = Minecraft.getInstance().getSoundManager();
-            handler.play(SimpleSoundInstance.forUI(AppEngSounds.GUIDE_CLICK_EVENT, 1.0F));
+            handler.play(SimpleSoundInstance.forUI(GuideME.GUIDE_CLICK_EVENT, 1.0F));
             if (row.node.pageId() != null) {
                 screen.navigateTo(row.node.pageId());
             }

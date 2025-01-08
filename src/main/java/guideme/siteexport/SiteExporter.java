@@ -1,8 +1,5 @@
 package guideme.siteexport;
 
-import appeng.api.features.P2PTunnelAttunement;
-import appeng.api.features.P2PTunnelAttunementInternal;
-import appeng.api.util.AEColor;
 import guideme.guidebook.Guide;
 import guideme.guidebook.GuidePage;
 import guideme.guidebook.compiler.PageCompiler;
@@ -12,16 +9,12 @@ import guideme.guidebook.indices.ItemIndex;
 import guideme.guidebook.navigation.NavigationNode;
 import appeng.core.AppEngClient;
 import appeng.core.definitions.AEBlocks;
-import appeng.core.definitions.AEParts;
-import appeng.core.definitions.ColoredItemDefinition;
 import appeng.recipes.entropy.EntropyRecipe;
 import appeng.recipes.handlers.ChargerRecipe;
 import appeng.recipes.handlers.InscriberRecipe;
 import appeng.recipes.mattercannon.MatterCannonAmmo;
 import appeng.recipes.transform.TransformRecipe;
 import guideme.siteexport.mdastpostprocess.PageExportPostProcessor;
-import guideme.siteexport.model.P2PTypeInfo;
-import appeng.util.CraftingRecipeUtil;
 import guideme.util.Platform;
 import com.google.common.io.MoreFiles;
 import com.google.common.io.RecursiveDeleteOption;
@@ -47,6 +40,7 @@ import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -60,11 +54,11 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.Fluid;
@@ -201,11 +195,32 @@ public final class SiteExporter implements ResourceExporter {
         if (!resultItem.isEmpty()) {
             referenceItem(resultItem);
         }
-        for (var ingredient : CraftingRecipeUtil.getIngredients(recipe)) {
+        for (var ingredient : getIngredients(recipe)) {
             referenceIngredient(ingredient);
         }
     }
 
+    private static NonNullList<Ingredient> getIngredients(Recipe<?> recipe) {
+        // Special handling for upgrade recipes since those do not override getIngredients
+        if (recipe instanceof SmithingTrimRecipe trimRecipe) {
+            var ingredients = NonNullList.withSize(3, Ingredient.EMPTY);
+            ingredients.set(0, trimRecipe.template);
+            ingredients.set(1, trimRecipe.base);
+            ingredients.set(2, trimRecipe.addition);
+            return ingredients;
+        }
+
+        if (recipe instanceof SmithingTransformRecipe transformRecipe) {
+            var ingredients = NonNullList.withSize(3, Ingredient.EMPTY);
+            ingredients.set(0, transformRecipe.template);
+            ingredients.set(1, transformRecipe.base);
+            ingredients.set(2, transformRecipe.addition);
+            return ingredients;
+        }
+
+        return recipe.getIngredients();
+    }
+    
     private void dumpRecipes(SiteExportWriter writer) {
         for (var holder : recipes) {
             var id = holder.id();

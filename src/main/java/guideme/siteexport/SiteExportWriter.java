@@ -3,7 +3,6 @@ package guideme.siteexport;
 import guideme.guidebook.Guide;
 import guideme.guidebook.compiler.MdAstNodeAdapter;
 import guideme.guidebook.compiler.ParsedGuidePage;
-import guideme.guidebook.extensions.ConfigValueTagExtension;
 import guideme.guidebook.indices.PageIndex;
 import appeng.items.tools.powered.MatterCannonItem;
 import appeng.recipes.entropy.EntropyRecipe;

@@ -1,7 +1,5 @@
 package guideme.guidebook.render;
 
-import appeng.api.stacks.AEFluidKey;
-import appeng.client.gui.Icon;
 import appeng.client.gui.style.BackgroundGenerator;
 import appeng.client.gui.style.FluidBlitter;
 import guideme.guidebook.color.ColorValue;
@@ -79,17 +77,6 @@ public interface RenderContext {
         var texture = Minecraft.getInstance().getTextureManager().getTexture(sprite.atlasLocation());
         fillTexturedRect(rect, texture, color, color, color, color,
                 sprite.getU0(), sprite.getV0(), sprite.getU1(), sprite.getV1());
-    }
-
-    default void drawIcon(int x, int y, Icon icon, ColorValue color) {
-        var u0 = icon.x / (float) Icon.TEXTURE_WIDTH;
-        var v0 = icon.y / (float) Icon.TEXTURE_HEIGHT;
-        var u1 = (icon.x + icon.width) / (float) Icon.TEXTURE_WIDTH;
-        var v1 = (icon.y + icon.height) / (float) Icon.TEXTURE_HEIGHT;
-
-        var texture = Minecraft.getInstance().getTextureManager().getTexture(Icon.TEXTURE);
-        fillTexturedRect(new LytRect(x, y, icon.width, icon.height), texture, color, color, color, color,
-                u0, v0, u1, v1);
     }
 
     default void fillTexturedRect(LytRect rect, ResourceLocation textureId) {
@@ -204,8 +191,9 @@ public interface RenderContext {
     }
 
     default void renderFluid(Fluid fluid, int x, int y, int z, int width, int height) {
-        FluidBlitter.create(AEFluidKey.of(fluid))
+        FluidBlitter.create(new FluidStack(fluid, 1))
                 .dest(x, y, width, height)
+                .zOffset(z)
                 .blit(guiGraphics());
     }
 

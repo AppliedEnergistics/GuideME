@@ -1,9 +1,9 @@
 package guideme.guidebook.document.flow;
 
+import guideme.GuideME;
 import guideme.guidebook.PageAnchor;
 import guideme.guidebook.color.SymbolicColor;
 import guideme.guidebook.screen.GuideScreen;
-import appeng.sounds.AppEngSounds;
 import java.net.URI;
 import java.util.function.Consumer;
 import net.minecraft.Util;
@@ -16,13 +16,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LytFlowLink extends LytTooltipSpan {
-    private static final Logger LOG = LoggerFactory.getLogger(LytFlowLink.class);
-
     @Nullable
     private Consumer<GuideScreen> clickCallback;
 
     @Nullable
-    private SoundEvent clickSound = AppEngSounds.GUIDE_CLICK_EVENT;
+    private SoundEvent clickSound = GuideME.GUIDE_CLICK_EVENT;
 
     public LytFlowLink() {
         modifyStyle(style -> style.color(SymbolicColor.LINK));
