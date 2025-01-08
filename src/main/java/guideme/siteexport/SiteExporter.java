@@ -22,7 +22,7 @@ import appeng.recipes.transform.TransformRecipe;
 import guideme.siteexport.mdastpostprocess.PageExportPostProcessor;
 import guideme.siteexport.model.P2PTypeInfo;
 import appeng.util.CraftingRecipeUtil;
-import appeng.util.Platform;
+import guideme.util.Platform;
 import com.google.common.io.MoreFiles;
 import com.google.common.io.RecursiveDeleteOption;
 import com.mojang.blaze3d.platform.NativeImage;

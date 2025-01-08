@@ -10,7 +10,7 @@ import guideme.guidebook.document.block.recipes.LytSmeltingRecipe;
 import guideme.guidebook.document.block.recipes.LytSmithingRecipe;
 import guideme.guidebook.document.block.recipes.LytTransformRecipe;
 import appeng.recipes.AERecipeTypes;
-import appeng.util.Platform;
+import guideme.util.Platform;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstNode;
 import java.util.ArrayList;

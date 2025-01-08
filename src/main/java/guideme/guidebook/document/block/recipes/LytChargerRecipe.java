@@ -5,15 +5,15 @@ import guideme.guidebook.document.LytRect;
 import guideme.guidebook.document.block.LytSlot;
 import guideme.guidebook.layout.LayoutContext;
 import guideme.guidebook.render.RenderContext;
-import appeng.core.AppEng;
+import guideme.GuideME;
 import appeng.core.definitions.AEBlocks;
 import appeng.recipes.handlers.ChargerRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class LytChargerRecipe extends LytRecipeBox {
-    private static final ResourceLocation ARROW_LIGHT = AppEng.makeId("ae2guide/gui/recipe_arrow_light.png");
-    private static final ResourceLocation ARROW_DARK = AppEng.makeId("ae2guide/gui/recipe_arrow_dark.png");
+    private static final ResourceLocation ARROW_LIGHT = GuideME.makeId("ae2guide/gui/recipe_arrow_light.png");
+    private static final ResourceLocation ARROW_DARK = GuideME.makeId("ae2guide/gui/recipe_arrow_dark.png");
 
     private final ChargerRecipe recipe;
 

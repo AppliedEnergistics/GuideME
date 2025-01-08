@@ -5,16 +5,16 @@ import guideme.guidebook.document.LytRect;
 import guideme.guidebook.document.block.LytSlot;
 import guideme.guidebook.layout.LayoutContext;
 import guideme.guidebook.render.RenderContext;
-import appeng.core.AppEng;
-import appeng.util.Platform;
+import guideme.GuideME;
+import guideme.util.Platform;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.block.Blocks;
 
 public class LytSmeltingRecipe extends LytRecipeBox {
-    private static final ResourceLocation ARROW_LIGHT = AppEng.makeId("ae2guide/gui/recipe_arrow_light.png");
-    private static final ResourceLocation ARROW_DARK = AppEng.makeId("ae2guide/gui/recipe_arrow_dark.png");
+    private static final ResourceLocation ARROW_LIGHT = GuideME.makeId("ae2guide/gui/recipe_arrow_light.png");
+    private static final ResourceLocation ARROW_DARK = GuideME.makeId("ae2guide/gui/recipe_arrow_dark.png");
 
     private final SmeltingRecipe recipe;
 

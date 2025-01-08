@@ -6,7 +6,7 @@ import guideme.guidebook.color.MutableColor;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.render.RenderContext;
 import guideme.guidebook.scene.GuidebookScene;
-import appeng.core.AppEng;
+import guideme.GuideME;
 import net.minecraft.client.Minecraft;
 import org.joml.Vector3f;
 
@@ -50,7 +50,7 @@ public class DiamondAnnotation extends OverlayAnnotation {
         }
 
         var texture = Minecraft.getInstance().getTextureManager()
-                .getTexture(AppEng.makeId("textures/guide/diamond.png"));
+                .getTexture(GuideME.makeId("textures/guide/diamond.png"));
         context.fillTexturedRect(rect, texture, outer, outer, outer, outer, 0, 0, 0.5f, 1);
         context.fillTexturedRect(rect, texture, inner, inner, inner, inner, 0.5f, 0, 1f, 1);
     }

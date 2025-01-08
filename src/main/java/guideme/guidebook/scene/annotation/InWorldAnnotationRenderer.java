@@ -1,7 +1,7 @@
 package guideme.guidebook.scene.annotation;
 
 import guideme.guidebook.color.MutableColor;
-import appeng.core.AppEng;
+import guideme.GuideME;
 import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -41,7 +41,7 @@ public final class InWorldAnnotationRenderer {
 
     public static void render(MultiBufferSource.BufferSource buffers, Iterable<InWorldAnnotation> annotations) {
         var sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS)
-                .apply(AppEng.makeId("block/noise"));
+                .apply(GuideME.makeId("block/noise"));
 
         var occludedConsumer = buffers.getBuffer(OCCLUDED);
         for (var annotation : annotations) {

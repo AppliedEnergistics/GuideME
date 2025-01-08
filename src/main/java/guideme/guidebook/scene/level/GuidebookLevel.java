@@ -1,7 +1,7 @@
 package guideme.guidebook.scene.level;
 
-import appeng.core.AppEng;
-import appeng.util.Platform;
+import guideme.GuideME;
+import guideme.util.Platform;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.Arrays;
@@ -57,7 +57,7 @@ import org.jetbrains.annotations.Nullable;
 public class GuidebookLevel extends Level {
 
     private static final ResourceKey<Level> LEVEL_ID = ResourceKey.create(Registries.DIMENSION,
-            AppEng.makeId("guidebook"));
+            GuideME.makeId("guidebook"));
 
     private final TransientEntitySectionManager<Entity> entityStorage = new TransientEntitySectionManager<>(
             Entity.class, new EntityCallbacks());

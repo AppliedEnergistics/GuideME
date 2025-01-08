@@ -1,7 +1,7 @@
 package guideme.guidebook.render;
 
 import guideme.guidebook.document.LytSize;
-import appeng.core.AppEng;
+import guideme.GuideME;
 import com.mojang.blaze3d.platform.NativeImage;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 public class GuidePageTexture {
 
     public static GuidePageTexture missing() {
-        return new GuidePageTexture(AppEng.makeId("missing"), null);
+        return new GuidePageTexture(GuideME.makeId("missing"), null);
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(GuidePageTexture.class);

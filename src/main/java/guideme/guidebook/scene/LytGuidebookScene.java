@@ -1,5 +1,6 @@
 package guideme.guidebook.scene;
 
+import guideme.GuideME;
 import guideme.guidebook.color.ColorValue;
 import guideme.guidebook.color.SymbolicColor;
 import guideme.guidebook.document.LytPoint;
@@ -21,7 +22,6 @@ import guideme.guidebook.scene.annotation.InWorldBoxAnnotation;
 import guideme.guidebook.scene.annotation.SceneAnnotation;
 import guideme.guidebook.screen.GuideIconButton;
 import guideme.guidebook.screen.GuideScreen;
-import appeng.core.AEConfig;
 import guideme.siteexport.OffScreenRenderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexSorting;
@@ -334,7 +334,7 @@ public class LytGuidebookScene extends LytBox {
          * Render one in 2D space at 0,0. And render one in 3D space at 0,0,0.
          */
         private void renderDebugCrosshairs() {
-            if (!AEConfig.instance().isShowDebugGuiOverlays()) {
+            if (!GuideME.instance().isShowDebugGuiOverlays()) {
                 return;
             }
 

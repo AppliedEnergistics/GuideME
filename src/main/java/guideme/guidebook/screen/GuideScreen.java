@@ -35,7 +35,7 @@ import guideme.guidebook.render.SimpleRenderContext;
 import guideme.guidebook.style.TextAlignment;
 import guideme.guidebook.style.TextStyle;
 import appeng.core.AEConfig;
-import appeng.core.AppEng;
+import guideme.GuideME;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import java.net.URI;
@@ -69,7 +69,7 @@ public class GuideScreen extends Screen {
     private static final DashPattern DEBUG_NODE_OUTLINE = new DashPattern(1f, 4, 3, 0xFFFFFFFF, 500);
     private static final DashPattern DEBUG_CONTENT_OUTLINE = new DashPattern(0.5f, 2, 1, 0x7FFFFFFF, 500);
     private static final ColorValue DEBUG_HOVER_OUTLINE_COLOR = new ConstantColor(0x7FFFFF00);
-    private static final ResourceLocation BACKGROUND_TEXTURE = AppEng.makeId("textures/block/sky_stone_block.png");
+    private static final ResourceLocation BACKGROUND_TEXTURE = GuideME.makeId("textures/block/sky_stone_block.png");
     private final Guide guide;
 
     private final GuideScrollbar scrollbar;
@@ -243,7 +243,7 @@ public class GuideScreen extends Screen {
 
         guiGraphics.disableScissor();
 
-        if (AEConfig.instance().isShowDebugGuiOverlays()) {
+        if (GuideME.instance().isShowDebugGuiOverlays()) {
             renderHoverOutline(document, context);
         }
 
@@ -605,7 +605,7 @@ public class GuideScreen extends Screen {
             }
         } else {
             // Otherwise treat it as a page anchor
-            var pageId = AppEng.makeId(uri.getSchemeSpecificPart());
+            var pageId = GuideME.makeId(uri.getSchemeSpecificPart());
             PageAnchor anchor = new PageAnchor(pageId, uri.getFragment());
             history.push(anchor);
             loadPageAndScrollTo(anchor);

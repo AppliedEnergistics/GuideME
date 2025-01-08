@@ -5,15 +5,15 @@ import guideme.guidebook.document.LytRect;
 import guideme.guidebook.document.block.LytSlot;
 import guideme.guidebook.layout.LayoutContext;
 import guideme.guidebook.render.RenderContext;
-import appeng.core.AppEng;
+import guideme.GuideME;
 import appeng.recipes.handlers.InscriberRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class LytInscriberRecipe extends LytRecipeBox {
 
-    private static final ResourceLocation ARROWS_LIGHT = AppEng.makeId("ae2guide/gui/inscriber_arrows_bg_light.png");
-    private static final ResourceLocation ARROWS_DARK = AppEng.makeId("ae2guide/gui/inscriber_arrows_bg_dark.png");
+    private static final ResourceLocation ARROWS_LIGHT = GuideME.makeId("ae2guide/gui/inscriber_arrows_bg_light.png");
+    private static final ResourceLocation ARROWS_DARK = GuideME.makeId("ae2guide/gui/inscriber_arrows_bg_dark.png");
 
     private final InscriberRecipe recipe;
 

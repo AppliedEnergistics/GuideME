@@ -12,7 +12,7 @@ import guideme.guidebook.indices.PageIndex;
 import guideme.guidebook.navigation.NavigationTree;
 import guideme.guidebook.screen.GlobalInMemoryHistory;
 import guideme.guidebook.screen.GuideScreen;
-import appeng.util.Platform;
+import guideme.util.Platform;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;

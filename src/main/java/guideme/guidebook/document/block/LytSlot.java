@@ -6,7 +6,7 @@ import guideme.guidebook.document.interaction.InteractiveElement;
 import guideme.guidebook.document.interaction.ItemTooltip;
 import guideme.guidebook.layout.LayoutContext;
 import guideme.guidebook.render.RenderContext;
-import appeng.core.AppEng;
+import guideme.GuideME;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -18,10 +18,10 @@ import net.minecraft.world.item.crafting.Ingredient;
  * Renders a standard Minecraft GUI slot.
  */
 public class LytSlot extends LytBlock implements InteractiveElement {
-    public static final ResourceLocation SLOT_LIGHT = AppEng.makeId("ae2guide/gui/slot_light.png");
-    public static final ResourceLocation SLOT_DARK = AppEng.makeId("ae2guide/gui/slot_dark.png");
-    public static final ResourceLocation LARGE_SLOT_LIGHT = AppEng.makeId("ae2guide/gui/large_slot_light.png");
-    public static final ResourceLocation LARGE_SLOT_DARK = AppEng.makeId("ae2guide/gui/large_slot_dark.png");
+    public static final ResourceLocation SLOT_LIGHT = GuideME.makeId("ae2guide/gui/slot_light.png");
+    public static final ResourceLocation SLOT_DARK = GuideME.makeId("ae2guide/gui/slot_dark.png");
+    public static final ResourceLocation LARGE_SLOT_LIGHT = GuideME.makeId("ae2guide/gui/large_slot_light.png");
+    public static final ResourceLocation LARGE_SLOT_DARK = GuideME.makeId("ae2guide/gui/large_slot_dark.png");
 
     private static final int ITEM_SIZE = 16;
     private static final int PADDING = 1;

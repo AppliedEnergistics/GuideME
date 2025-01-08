@@ -18,7 +18,7 @@ import guideme.siteexport.model.ItemInfoJson;
 import guideme.siteexport.model.NavigationNodeJson;
 import guideme.siteexport.model.P2PTypeInfo;
 import guideme.siteexport.model.SiteExportJson;
-import appeng.util.Platform;
+import guideme.util.Platform;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;

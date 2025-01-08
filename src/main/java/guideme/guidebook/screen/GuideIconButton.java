@@ -4,7 +4,7 @@ import appeng.client.gui.style.Blitter;
 import guideme.guidebook.GuidebookText;
 import guideme.guidebook.color.LightDarkMode;
 import guideme.guidebook.color.SymbolicColor;
-import appeng.core.AppEng;
+import guideme.GuideME;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.GuiGraphics;
@@ -58,7 +58,7 @@ public class GuideIconButton extends Button {
 
         var resolved = color.resolve(LightDarkMode.current());
 
-        Blitter.texture(AppEng.makeId("textures/guide/buttons.png"), 64, 64)
+        Blitter.texture(GuideME.makeId("textures/guide/buttons.png"), 64, 64)
                 .src(role.iconSrcX, role.iconSrcY, 16, 16)
                 .dest(getX(), getY(), 16, 16)
                 .colorArgb(resolved)

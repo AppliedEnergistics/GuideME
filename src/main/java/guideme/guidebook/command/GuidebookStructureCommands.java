@@ -2,7 +2,6 @@ package guideme.guidebook.command;
 
 import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
 
-import appeng.core.AppEngClient;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -17,6 +16,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
+
+import guideme.guidebook.Guide;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.commands.CommandSourceStack;
@@ -61,8 +62,16 @@ public class GuidebookStructureCommands {
 
     private static final String FILE_PATTERN_DESC = "Structure NBT Files (*.snbt, *.nbt)";
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        LiteralArgumentBuilder<CommandSourceStack> rootCommand = literal("ae2guide");
+    private final String commandName;
+    private final Guide guide;
+
+    public GuidebookStructureCommands(String commandName, Guide guide) {
+        this.commandName = commandName;
+        this.guide = guide;
+    }
+
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        LiteralArgumentBuilder<CommandSourceStack> rootCommand = literal(this.commandName);
 
         registerPlaceAllStructures(rootCommand);
 
@@ -73,7 +82,7 @@ public class GuidebookStructureCommands {
         dispatcher.register(rootCommand);
     }
 
-    private static void registerPlaceAllStructures(LiteralArgumentBuilder<CommandSourceStack> rootCommand) {
+    private void registerPlaceAllStructures(LiteralArgumentBuilder<CommandSourceStack> rootCommand) {
         LiteralArgumentBuilder<CommandSourceStack> subcommand = literal("placeallstructures");
         // Only usable on singleplayer worlds and only by the local player (in case it is opened to LAN)
         subcommand.requires(source -> Minecraft.getInstance().hasSingleplayerServer());
@@ -87,7 +96,7 @@ public class GuidebookStructureCommands {
         rootCommand.then(subcommand);
     }
 
-    private static void registerImportCommand(LiteralArgumentBuilder<CommandSourceStack> rootCommand) {
+    private void registerImportCommand(LiteralArgumentBuilder<CommandSourceStack> rootCommand) {
         LiteralArgumentBuilder<CommandSourceStack> importSubcommand = literal("importstructure");
         // Only usable on singleplayer worlds and only by the local player (in case it is opened to LAN)
         importSubcommand.requires(source -> Minecraft.getInstance().hasSingleplayerServer());
@@ -101,8 +110,7 @@ public class GuidebookStructureCommands {
         rootCommand.then(importSubcommand);
     }
 
-    private static void placeAllStructures(ServerLevel level, BlockPos origin) {
-        var guide = AppEngClient.instance().getGuide();
+    private void placeAllStructures(ServerLevel level, BlockPos origin) {
         var sourceFolder = guide.getDevelopmentSourceFolder();
         if (sourceFolder == null) {
             return;
@@ -152,7 +160,7 @@ public class GuidebookStructureCommands {
         }
     }
 
-    private static void importStructure(ServerLevel level, BlockPos origin) {
+    private void importStructure(ServerLevel level, BlockPos origin) {
         var minecraft = Minecraft.getInstance();
         var server = minecraft.getSingleplayerServer();
         var player = minecraft.player;
@@ -188,7 +196,7 @@ public class GuidebookStructureCommands {
                 }, minecraft);
     }
 
-    private static boolean placeStructure(ServerLevel level,
+    private boolean placeStructure(ServerLevel level,
             BlockPos origin,
             String structurePath) throws CommandSyntaxException, IOException {
         var manager = level.getServer().getStructureManager();

@@ -6,9 +6,9 @@ import guideme.guidebook.document.block.LytSlot;
 import guideme.guidebook.document.block.LytSlotGrid;
 import guideme.guidebook.layout.LayoutContext;
 import guideme.guidebook.render.RenderContext;
-import appeng.core.AppEng;
+import guideme.GuideME;
 import guideme.siteexport.ExportableResourceProvider;
-import appeng.util.Platform;
+import guideme.util.Platform;
 import java.util.List;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
@@ -24,8 +24,8 @@ import org.slf4j.LoggerFactory;
 public class LytSmithingRecipe extends LytRecipeBox implements ExportableResourceProvider {
     private static final Logger LOG = LoggerFactory.getLogger(LytSmithingRecipe.class);
 
-    private static final ResourceLocation ARROW_LIGHT = AppEng.makeId("ae2guide/gui/recipe_arrow_light.png");
-    private static final ResourceLocation ARROW_DARK = AppEng.makeId("ae2guide/gui/recipe_arrow_dark.png");
+    private static final ResourceLocation ARROW_LIGHT = GuideME.makeId("ae2guide/gui/recipe_arrow_light.png");
+    private static final ResourceLocation ARROW_DARK = GuideME.makeId("ae2guide/gui/recipe_arrow_dark.png");
 
     private final SmithingRecipe recipe;
 
