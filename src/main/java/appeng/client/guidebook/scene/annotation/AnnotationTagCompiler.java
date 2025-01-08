@@ -1,7 +1,5 @@
 package appeng.client.guidebook.scene.annotation;
 
-import org.jetbrains.annotations.Nullable;
-
 import appeng.client.guidebook.compiler.PageCompiler;
 import appeng.client.guidebook.document.LytErrorSink;
 import appeng.client.guidebook.document.block.LytBlock;
@@ -9,6 +7,7 @@ import appeng.client.guidebook.document.block.LytVBox;
 import appeng.client.guidebook.scene.GuidebookScene;
 import appeng.client.guidebook.scene.element.SceneElementTagCompiler;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class AnnotationTagCompiler implements SceneElementTagCompiler {
 

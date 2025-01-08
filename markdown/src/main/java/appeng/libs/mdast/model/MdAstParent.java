@@ -1,16 +1,13 @@
 package guideme.libs.mdast.model;
 
+import com.google.gson.stream.JsonWriter;
+import guideme.libs.mdast.MdAstVisitor;
+import guideme.libs.unist.UnistParent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-
-import com.google.gson.stream.JsonWriter;
-
 import org.jetbrains.annotations.Nullable;
-
-import guideme.libs.mdast.MdAstVisitor;
-import guideme.libs.unist.UnistParent;
 
 /**
  * Parent (UnistParent) represents an abstract public interface in mdast containing other nodes (said to be children).

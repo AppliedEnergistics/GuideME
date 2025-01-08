@@ -1,12 +1,11 @@
 package appeng.client.guidebook.scene;
 
-import java.util.Set;
-
 import appeng.client.guidebook.compiler.PageCompiler;
 import appeng.client.guidebook.compiler.tags.BlockTagCompiler;
 import appeng.client.guidebook.compiler.tags.MdxAttrs;
 import appeng.client.guidebook.document.block.LytBlockContainer;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import java.util.Set;
 
 public class ItemImageTagCompiler extends BlockTagCompiler {
 

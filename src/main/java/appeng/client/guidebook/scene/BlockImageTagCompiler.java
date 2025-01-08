@@ -1,9 +1,5 @@
 package appeng.client.guidebook.scene;
 
-import java.util.Set;
-
-import net.minecraft.core.BlockPos;
-
 import appeng.client.guidebook.compiler.PageCompiler;
 import appeng.client.guidebook.compiler.tags.BlockTagCompiler;
 import appeng.client.guidebook.compiler.tags.MdxAttrs;
@@ -11,6 +7,8 @@ import appeng.client.guidebook.document.block.LytBlockContainer;
 import appeng.client.guidebook.scene.level.GuidebookLevel;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstNode;
+import java.util.Set;
+import net.minecraft.core.BlockPos;
 
 /**
  * Handles tags like <code>&lt;BlockImage id="mod:blockid" /&gt;</code> and renders a 3D block image in its place.

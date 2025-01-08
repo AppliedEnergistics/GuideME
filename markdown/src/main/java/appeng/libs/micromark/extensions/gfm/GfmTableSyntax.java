@@ -1,8 +1,5 @@
 package guideme.libs.micromark.extensions.gfm;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import guideme.libs.micromark.Assert;
 import guideme.libs.micromark.CharUtil;
 import guideme.libs.micromark.Construct;
@@ -18,6 +15,8 @@ import guideme.libs.micromark.Types;
 import guideme.libs.micromark.factory.FactorySpace;
 import guideme.libs.micromark.symbol.Codes;
 import guideme.libs.micromark.symbol.Constants;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GfmTableSyntax extends Extension {
     public static final TokenProperty<List<Align>> ALIGN = new TokenProperty<>();

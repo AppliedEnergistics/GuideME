@@ -2,7 +2,6 @@ package guideme.libs.micromark.html;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jetbrains.annotations.Nullable;
 
 public class CompileOptions {

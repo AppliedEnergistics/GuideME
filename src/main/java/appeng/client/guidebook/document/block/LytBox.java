@@ -1,13 +1,11 @@
 package appeng.client.guidebook.document.block;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import net.minecraft.client.renderer.MultiBufferSource;
-
 import appeng.client.guidebook.document.LytRect;
 import appeng.client.guidebook.layout.LayoutContext;
 import appeng.client.guidebook.render.RenderContext;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.client.renderer.MultiBufferSource;
 
 public abstract class LytBox extends LytBlock implements LytBlockContainer {
     protected final List<LytBlock> children = new ArrayList<>();

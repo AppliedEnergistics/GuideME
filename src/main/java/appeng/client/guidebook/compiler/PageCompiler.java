@@ -1,25 +1,5 @@
 package appeng.client.guidebook.compiler;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import net.minecraft.ResourceLocationException;
-import net.minecraft.resources.ResourceLocation;
-
 import appeng.client.guidebook.GuidePage;
 import appeng.client.guidebook.PageAnchor;
 import appeng.client.guidebook.PageCollection;
@@ -81,6 +61,22 @@ import guideme.libs.mdx.MdxSyntax;
 import guideme.libs.micromark.extensions.YamlFrontmatterSyntax;
 import guideme.libs.micromark.extensions.gfm.GfmTableSyntax;
 import guideme.libs.unist.UnistNode;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import net.minecraft.ResourceLocationException;
+import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApiStatus.Internal
 public final class PageCompiler {
@@ -393,7 +389,6 @@ public final class PageCompiler {
         return link;
     }
 
-    @NotNull
     private LytImage compileImage(MdAstImage astImage) {
         var image = new LytImage();
         image.setTitle(astImage.title);

@@ -1,14 +1,13 @@
 package appeng.client.guidebook.extensions;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Supplier;
-
 import appeng.client.guidebook.compiler.PageCompiler;
 import appeng.client.guidebook.compiler.tags.FlowTagCompiler;
 import appeng.client.guidebook.document.flow.LytFlowParent;
 import appeng.core.AEConfig;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * Provides access to AE2 config values in guide content.

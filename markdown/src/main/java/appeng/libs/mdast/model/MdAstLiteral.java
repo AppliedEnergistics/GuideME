@@ -1,10 +1,8 @@
 package guideme.libs.mdast.model;
 
-import java.io.IOException;
-
 import com.google.gson.stream.JsonWriter;
-
 import guideme.libs.unist.UnistLiteral;
+import java.io.IOException;
 
 /**
  * Literal (UnistLiteral) represents an abstract public interface in mdast containing a value.

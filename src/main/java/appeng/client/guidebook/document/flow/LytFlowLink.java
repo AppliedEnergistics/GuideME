@@ -1,22 +1,19 @@
 package appeng.client.guidebook.document.flow;
 
+import appeng.client.guidebook.PageAnchor;
+import appeng.client.guidebook.color.SymbolicColor;
+import appeng.client.guidebook.screen.GuideScreen;
+import appeng.sounds.AppEngSounds;
 import java.net.URI;
 import java.util.function.Consumer;
-
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
-
-import appeng.client.guidebook.PageAnchor;
-import appeng.client.guidebook.color.SymbolicColor;
-import appeng.client.guidebook.screen.GuideScreen;
-import appeng.sounds.AppEngSounds;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LytFlowLink extends LytTooltipSpan {
     private static final Logger LOG = LoggerFactory.getLogger(LytFlowLink.class);

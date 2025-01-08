@@ -8,7 +8,6 @@ import static org.bytedeco.ffmpeg.global.avutil.av_dict_set_int;
 import static org.bytedeco.ffmpeg.global.avutil.av_free;
 
 import com.mojang.blaze3d.platform.NativeImage;
-
 import org.bytedeco.ffmpeg.avcodec.AVCodec;
 import org.bytedeco.ffmpeg.avcodec.AVCodecContext;
 import org.bytedeco.ffmpeg.avcodec.AVPacket;

@@ -1,8 +1,7 @@
 package appeng.client.guidebook;
 
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Points to a guidebook page with an optional anchor within that page.

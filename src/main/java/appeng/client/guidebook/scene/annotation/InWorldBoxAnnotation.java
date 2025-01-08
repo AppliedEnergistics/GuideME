@@ -1,16 +1,13 @@
 package appeng.client.guidebook.scene.annotation;
 
+import appeng.client.guidebook.color.ColorValue;
 import java.util.OptionalDouble;
-
+import net.minecraft.core.BlockPos;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joml.Intersectionf;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-
-import net.minecraft.core.BlockPos;
-
-import appeng.client.guidebook.color.ColorValue;
 
 public final class InWorldBoxAnnotation extends InWorldAnnotation {
     public static final float DEFAULT_THICKNESS = 0.5f / 16f;

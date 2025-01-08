@@ -1,18 +1,15 @@
 package appeng.client.guidebook.scene;
 
-import java.util.Objects;
-
 import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
-
-import org.joml.Vector3f;
-
+import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import org.joml.Vector3f;
 
 /**
  * A version of {@link LightTexture} which is independent of the current client level.

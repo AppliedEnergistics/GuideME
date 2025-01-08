@@ -1,12 +1,10 @@
 package appeng.client.guidebook.document.block;
 
-import org.joml.Vector2i;
-
-import net.minecraft.client.renderer.MultiBufferSource;
-
 import appeng.client.guidebook.document.LytRect;
 import appeng.client.guidebook.layout.LayoutContext;
 import appeng.client.guidebook.render.RenderContext;
+import net.minecraft.client.renderer.MultiBufferSource;
+import org.joml.Vector2i;
 
 public abstract class LytBlock extends LytNode {
     /**

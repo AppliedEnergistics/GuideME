@@ -1,7 +1,5 @@
 package appeng.client.guidebook.compiler.tags;
 
-import java.util.Set;
-
 import appeng.client.guidebook.compiler.PageCompiler;
 import appeng.client.guidebook.document.flow.LytFlowLink;
 import appeng.client.guidebook.document.flow.LytFlowParent;
@@ -9,6 +7,7 @@ import appeng.client.guidebook.document.flow.LytTooltipSpan;
 import appeng.client.guidebook.document.interaction.ItemTooltip;
 import appeng.client.guidebook.indices.ItemIndex;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import java.util.Set;
 
 public class ItemLinkCompiler extends FlowTagCompiler {
     @Override

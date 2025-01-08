@@ -1,18 +1,16 @@
 package guideme.libs.micromark;
 
+import guideme.libs.micromark.symbol.Codes;
+import guideme.libs.unist.UnistPoint;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Stack;
-
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import guideme.libs.micromark.symbol.Codes;
-import guideme.libs.unist.UnistPoint;
 
 /**
  * Create a tokenizer. Tokenizers deal with one type of data (e.g., containers, flow, text). The parser is the object

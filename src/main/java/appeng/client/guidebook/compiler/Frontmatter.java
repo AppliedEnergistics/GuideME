@@ -1,13 +1,11 @@
 package appeng.client.guidebook.compiler;
 
 import java.util.Map;
-
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
-
-import net.minecraft.resources.ResourceLocation;
 
 public record Frontmatter(
         @Nullable FrontmatterNavigation navigationEntry,

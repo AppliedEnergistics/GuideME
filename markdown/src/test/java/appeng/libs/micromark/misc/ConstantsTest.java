@@ -2,13 +2,11 @@ package guideme.libs.micromark.misc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Collection;
-
-import org.junit.jupiter.api.Test;
-
 import guideme.libs.micromark.HtmlTagName;
 import guideme.libs.micromark.NamedCharacterEntities;
 import guideme.libs.micromark.symbol.Constants;
+import java.util.Collection;
+import org.junit.jupiter.api.Test;
 
 public class ConstantsTest {
 

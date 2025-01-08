@@ -1,8 +1,7 @@
 package guideme.libs.micromark.html;
 
-import org.jetbrains.annotations.Nullable;
-
 import guideme.libs.micromark.Token;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * HTML compiler context

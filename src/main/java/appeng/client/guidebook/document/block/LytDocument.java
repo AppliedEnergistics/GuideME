@@ -1,13 +1,5 @@
 package appeng.client.guidebook.document.block;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.client.renderer.MultiBufferSource;
-
 import appeng.client.guidebook.document.LytRect;
 import appeng.client.guidebook.document.flow.LytFlowContainer;
 import appeng.client.guidebook.document.flow.LytFlowContent;
@@ -16,6 +8,11 @@ import appeng.client.guidebook.layout.LayoutContext;
 import appeng.client.guidebook.layout.Layouts;
 import appeng.client.guidebook.render.RenderContext;
 import appeng.client.guidebook.render.SimpleRenderContext;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import net.minecraft.client.renderer.MultiBufferSource;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Layout document. Has a viewport and an overall size which may exceed the document size vertically, but not

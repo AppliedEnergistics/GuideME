@@ -1,10 +1,8 @@
 package appeng.client.guidebook.style;
 
-import java.util.function.Consumer;
-
-import org.jetbrains.annotations.Nullable;
-
 import appeng.client.guidebook.document.DefaultStyles;
+import java.util.function.Consumer;
+import org.jetbrains.annotations.Nullable;
 
 public interface Styleable {
     TextStyle getStyle();

@@ -3,16 +3,6 @@ package guideme.libs.mdast;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.stream.Stream;
-
-import org.intellij.lang.annotations.Language;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
-
 import guideme.libs.mdast.model.MdAstBreak;
 import guideme.libs.mdast.model.MdAstEmphasis;
 import guideme.libs.mdast.model.MdAstNode;
@@ -20,6 +10,14 @@ import guideme.libs.mdast.model.MdAstParagraph;
 import guideme.libs.mdast.model.MdAstStrong;
 import guideme.libs.micromark.Token;
 import guideme.libs.micromark.Types;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
+import org.intellij.lang.annotations.Language;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 
 public class MdAstTest extends AbstractMdAstTest {
 

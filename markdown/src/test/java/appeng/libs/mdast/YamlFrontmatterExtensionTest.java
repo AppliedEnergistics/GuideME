@@ -1,9 +1,8 @@
 package guideme.libs.mdast;
 
-import org.junit.jupiter.api.Test;
-
 import guideme.libs.mdast.model.MdAstRoot;
 import guideme.libs.micromark.extensions.YamlFrontmatterSyntax;
+import org.junit.jupiter.api.Test;
 
 class YamlFrontmatterExtensionTest extends AbstractMdAstTest {
 

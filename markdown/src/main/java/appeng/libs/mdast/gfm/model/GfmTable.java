@@ -1,15 +1,12 @@
 package guideme.libs.mdast.gfm.model;
 
-import java.io.IOException;
-import java.util.List;
-
 import com.google.gson.stream.JsonWriter;
-
-import org.jetbrains.annotations.Nullable;
-
 import guideme.libs.mdast.model.MdAstFlowContent;
 import guideme.libs.mdast.model.MdAstParent;
 import guideme.libs.micromark.extensions.gfm.Align;
+import java.io.IOException;
+import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 public class GfmTable extends MdAstParent<GfmTableRow> implements MdAstFlowContent {
     @Nullable

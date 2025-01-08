@@ -2,21 +2,19 @@ package guideme.libs.micromark.extensions.gfm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
-
-import org.junit.jupiter.api.DynamicNode;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
-
 import guideme.libs.micromark.Extension;
 import guideme.libs.micromark.Micromark;
 import guideme.libs.micromark.html.CompileOptions;
 import guideme.libs.micromark.html.HtmlCompiler;
 import guideme.libs.micromark.html.ParseOptions;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import org.junit.jupiter.api.DynamicNode;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 
 public class GfmTableSyntaxTest {
 

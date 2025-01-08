@@ -1,8 +1,5 @@
 package guideme.libs.micromark.commonmark;
 
-import java.util.List;
-import java.util.Objects;
-
 import guideme.libs.micromark.Assert;
 import guideme.libs.micromark.CharUtil;
 import guideme.libs.micromark.Construct;
@@ -13,6 +10,8 @@ import guideme.libs.micromark.Tokenizer;
 import guideme.libs.micromark.Types;
 import guideme.libs.micromark.symbol.Codes;
 import guideme.libs.micromark.symbol.Constants;
+import java.util.List;
+import java.util.Objects;
 
 public final class HtmlFlow {
     private HtmlFlow() {

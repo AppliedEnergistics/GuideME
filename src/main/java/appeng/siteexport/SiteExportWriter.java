@@ -1,5 +1,33 @@
 package appeng.siteexport;
 
+import appeng.client.guidebook.Guide;
+import appeng.client.guidebook.compiler.MdAstNodeAdapter;
+import appeng.client.guidebook.compiler.ParsedGuidePage;
+import appeng.client.guidebook.extensions.ConfigValueTagExtension;
+import appeng.client.guidebook.indices.PageIndex;
+import appeng.items.tools.powered.MatterCannonItem;
+import appeng.recipes.entropy.EntropyRecipe;
+import appeng.recipes.handlers.ChargerRecipe;
+import appeng.recipes.handlers.InscriberProcessType;
+import appeng.recipes.handlers.InscriberRecipe;
+import appeng.recipes.mattercannon.MatterCannonAmmo;
+import appeng.recipes.transform.TransformRecipe;
+import appeng.siteexport.model.ExportedPageJson;
+import appeng.siteexport.model.FluidInfoJson;
+import appeng.siteexport.model.ItemInfoJson;
+import appeng.siteexport.model.NavigationNodeJson;
+import appeng.siteexport.model.P2PTypeInfo;
+import appeng.siteexport.model.SiteExportJson;
+import appeng.util.Platform;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.internal.bind.JsonTreeWriter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import guideme.libs.mdast.MdAstVisitor;
+import guideme.libs.mdast.model.MdAstHeading;
+import guideme.libs.mdast.model.MdAstNode;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -17,17 +45,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
-import com.google.gson.internal.bind.JsonTreeWriter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
@@ -47,29 +64,8 @@ import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
-
-import appeng.client.guidebook.Guide;
-import appeng.client.guidebook.compiler.MdAstNodeAdapter;
-import appeng.client.guidebook.compiler.ParsedGuidePage;
-import appeng.client.guidebook.extensions.ConfigValueTagExtension;
-import appeng.client.guidebook.indices.PageIndex;
-import appeng.items.tools.powered.MatterCannonItem;
-import guideme.libs.mdast.MdAstVisitor;
-import guideme.libs.mdast.model.MdAstHeading;
-import guideme.libs.mdast.model.MdAstNode;
-import appeng.recipes.entropy.EntropyRecipe;
-import appeng.recipes.handlers.ChargerRecipe;
-import appeng.recipes.handlers.InscriberProcessType;
-import appeng.recipes.handlers.InscriberRecipe;
-import appeng.recipes.mattercannon.MatterCannonAmmo;
-import appeng.recipes.transform.TransformRecipe;
-import appeng.siteexport.model.ExportedPageJson;
-import appeng.siteexport.model.FluidInfoJson;
-import appeng.siteexport.model.ItemInfoJson;
-import appeng.siteexport.model.NavigationNodeJson;
-import appeng.siteexport.model.P2PTypeInfo;
-import appeng.siteexport.model.SiteExportJson;
-import appeng.util.Platform;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SiteExportWriter {
     private static final Logger LOG = LoggerFactory.getLogger(SiteExportWriter.class);

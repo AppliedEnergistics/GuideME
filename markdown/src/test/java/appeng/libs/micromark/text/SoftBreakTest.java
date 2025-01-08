@@ -1,9 +1,8 @@
 package guideme.libs.micromark.text;
 
+import guideme.libs.micromark.TestUtil;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-
-import guideme.libs.micromark.TestUtil;
 
 public class SoftBreakTest {
     @ParameterizedTest(name = "[{index}] {2}")

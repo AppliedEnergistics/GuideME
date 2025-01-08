@@ -1,13 +1,12 @@
 package appeng.client.guidebook.compiler;
 
-import java.util.Set;
-
 import appeng.client.guidebook.document.block.LytBlockContainer;
 import appeng.client.guidebook.document.flow.LytFlowParent;
 import appeng.client.guidebook.extensions.Extension;
 import appeng.client.guidebook.extensions.ExtensionPoint;
 import guideme.libs.mdast.mdx.model.MdxJsxFlowElement;
 import guideme.libs.mdast.mdx.model.MdxJsxTextElement;
+import java.util.Set;
 
 /**
  * Tag compilers handle HTML-like tags found in Markdown content, such as <code>&lt;Image /&gt;</code> and similar.

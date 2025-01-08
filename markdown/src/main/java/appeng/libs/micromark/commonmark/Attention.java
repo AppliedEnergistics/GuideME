@@ -1,8 +1,5 @@
 package guideme.libs.micromark.commonmark;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import guideme.libs.micromark.ClassifyCharacter;
 import guideme.libs.micromark.Construct;
 import guideme.libs.micromark.ListUtils;
@@ -14,6 +11,8 @@ import guideme.libs.micromark.Tokenizer;
 import guideme.libs.micromark.Types;
 import guideme.libs.micromark.symbol.Codes;
 import guideme.libs.micromark.symbol.Constants;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class Attention {
     private Attention() {

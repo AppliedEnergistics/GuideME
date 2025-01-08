@@ -4,16 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DynamicNode;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.TestFactory;
-
 import guideme.libs.micromark.Micromark;
 import guideme.libs.micromark.ParseException;
 import guideme.libs.micromark.Token;
@@ -22,6 +12,14 @@ import guideme.libs.micromark.html.HtmlCompiler;
 import guideme.libs.micromark.html.HtmlContext;
 import guideme.libs.micromark.html.HtmlExtension;
 import guideme.libs.micromark.html.ParseOptions;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DynamicNode;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.TestFactory;
 
 public class MdxTest {
 

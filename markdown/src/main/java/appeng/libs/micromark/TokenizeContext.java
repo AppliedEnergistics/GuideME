@@ -2,8 +2,6 @@ package guideme.libs.micromark;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface TokenizeContext {
@@ -63,7 +61,7 @@ public interface TokenizeContext {
 
     String sliceSerialize(Token token, boolean expandTabs);
 
-    void defineSkip(@NotNull Point value);
+    void defineSkip(Point value);
 
     Point now();
 

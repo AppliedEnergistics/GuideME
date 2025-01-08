@@ -1,13 +1,12 @@
 package appeng.client.guidebook.scene.annotation;
 
+import appeng.client.guidebook.color.MutableColor;
+import appeng.core.AppEng;
 import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-
-import org.joml.Vector3f;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -17,9 +16,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.util.FastColor;
-
-import appeng.client.guidebook.color.MutableColor;
-import appeng.core.AppEng;
+import org.joml.Vector3f;
 
 public final class InWorldAnnotationRenderer {
 

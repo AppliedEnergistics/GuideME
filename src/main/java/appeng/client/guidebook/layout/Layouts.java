@@ -1,13 +1,11 @@
 package appeng.client.guidebook.layout;
 
-import java.util.List;
-
-import org.joml.Vector2i;
-
 import appeng.client.guidebook.document.LytRect;
 import appeng.client.guidebook.document.block.AlignItems;
 import appeng.client.guidebook.document.block.LytAxis;
 import appeng.client.guidebook.document.block.LytBlock;
+import java.util.List;
+import org.joml.Vector2i;
 
 public final class Layouts {
     private Layouts() {

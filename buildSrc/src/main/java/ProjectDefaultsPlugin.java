@@ -69,7 +69,7 @@ public class ProjectDefaultsPlugin implements Plugin<Project> {
             if (fileContents.contains("*;\n")) {
                 throw new InvalidUserDataException("No wildcard imports are allowed!");
             }
-            return null;
+            return fileContents;
         });
 
         // Mixing non-nullable annotations with non-annotated types leads to confusion
@@ -80,7 +80,7 @@ public class ProjectDefaultsPlugin implements Plugin<Project> {
             if (fileContents.contains("@NotNull") || fileContents.contains("@Nonnull")) {
                 throw new InvalidUserDataException("@NotNull and @Nonnull are disallowed.");
             }
-            return null;
+            return fileContents;
         });
 
         // JetBrains nullability annotations can be used in more contexts,

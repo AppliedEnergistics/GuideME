@@ -2,15 +2,14 @@ package guideme.libs.micromark.content;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
 import guideme.libs.micromark.Extension;
 import guideme.libs.micromark.Micromark;
 import guideme.libs.micromark.TestUtil;
 import guideme.libs.micromark.html.HtmlCompiler;
 import guideme.libs.micromark.html.ParseOptions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class DefinitionTest {
     @ParameterizedTest(name = "[{index}] {2}")

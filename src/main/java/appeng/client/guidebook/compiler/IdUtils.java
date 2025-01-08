@@ -1,7 +1,6 @@
 package appeng.client.guidebook.compiler;
 
 import java.net.URI;
-
 import net.minecraft.ResourceLocationException;
 import net.minecraft.resources.ResourceLocation;
 

@@ -1,12 +1,10 @@
 package guideme.libs.micromark;
 
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-
 import guideme.libs.micromark.commonmark.Subtokenize;
 import guideme.libs.micromark.html.CompileOptions;
 import guideme.libs.micromark.html.HtmlCompiler;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 public class EventsTest {
 

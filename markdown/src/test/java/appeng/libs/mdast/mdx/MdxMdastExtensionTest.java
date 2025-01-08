@@ -3,13 +3,12 @@ package guideme.libs.mdast.mdx;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.jupiter.api.Test;
-
 import guideme.libs.mdast.AbstractMdAstTest;
 import guideme.libs.mdast.MdAst;
 import guideme.libs.mdast.MdastOptions;
 import guideme.libs.mdast.model.MdAstRoot;
 import guideme.libs.mdx.MdxSyntax;
+import org.junit.jupiter.api.Test;
 
 public class MdxMdastExtensionTest extends AbstractMdAstTest {
 

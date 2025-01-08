@@ -1,10 +1,9 @@
 package guideme.libs.micromark.html;
 
+import guideme.libs.micromark.Extension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
-import guideme.libs.micromark.Extension;
 
 public class ParseOptions {
     private final List<Extension> extensions = new ArrayList<>();

@@ -1,10 +1,5 @@
 package guideme.libs.micromark.commonmark;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jetbrains.annotations.Nullable;
-
 import guideme.libs.micromark.Assert;
 import guideme.libs.micromark.CharUtil;
 import guideme.libs.micromark.Construct;
@@ -21,6 +16,9 @@ import guideme.libs.micromark.factory.FactoryTitle;
 import guideme.libs.micromark.factory.FactoryWhitespace;
 import guideme.libs.micromark.symbol.Codes;
 import guideme.libs.micromark.symbol.Constants;
+import java.util.ArrayList;
+import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 public final class LabelEnd {
     private LabelEnd() {

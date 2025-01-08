@@ -1,11 +1,17 @@
 package appeng.client.guidebook.render;
 
+import appeng.api.stacks.AEFluidKey;
+import appeng.client.gui.Icon;
+import appeng.client.gui.style.BackgroundGenerator;
+import appeng.client.gui.style.FluidBlitter;
+import appeng.client.guidebook.color.ColorValue;
+import appeng.client.guidebook.color.ConstantColor;
+import appeng.client.guidebook.color.LightDarkMode;
+import appeng.client.guidebook.document.LytRect;
+import appeng.client.guidebook.layout.MinecraftFontMetrics;
+import appeng.client.guidebook.style.ResolvedTextStyle;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
-
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
@@ -21,17 +27,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec2;
 import net.neoforged.neoforge.fluids.FluidStack;
-
-import appeng.api.stacks.AEFluidKey;
-import appeng.client.gui.Icon;
-import appeng.client.gui.style.BackgroundGenerator;
-import appeng.client.gui.style.FluidBlitter;
-import appeng.client.guidebook.color.ColorValue;
-import appeng.client.guidebook.color.ConstantColor;
-import appeng.client.guidebook.color.LightDarkMode;
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.layout.MinecraftFontMetrics;
-import appeng.client.guidebook.style.ResolvedTextStyle;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 public interface RenderContext {
 

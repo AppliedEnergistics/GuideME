@@ -2,7 +2,6 @@ package guideme.libs.micromark;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
-
 import org.jetbrains.annotations.Nullable;
 
 /**

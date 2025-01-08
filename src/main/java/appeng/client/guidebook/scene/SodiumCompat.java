@@ -3,13 +3,11 @@ package appeng.client.guidebook.scene;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.neoforged.fml.ModList;
 
 public class SodiumCompat {
     private static final Logger LOG = LoggerFactory.getLogger(SodiumCompat.class);

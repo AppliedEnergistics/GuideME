@@ -1,12 +1,9 @@
 package guideme.libs.mdast.mdx.model;
 
-import java.io.IOException;
-
 import com.google.gson.stream.JsonWriter;
-
-import org.jetbrains.annotations.Nullable;
-
 import guideme.libs.mdast.model.MdAstNode;
+import java.io.IOException;
+import org.jetbrains.annotations.Nullable;
 
 public class MdxJsxAttribute extends MdAstNode implements MdxJsxAttributeNode {
     public String name = "";

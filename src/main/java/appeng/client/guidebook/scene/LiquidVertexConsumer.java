@@ -2,12 +2,10 @@ package appeng.client.guidebook.scene;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.SectionPos;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 /**
  * The only purpose of this vertex consumer proxy is to transform vertex positions emitted by the

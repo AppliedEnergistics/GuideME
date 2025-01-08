@@ -1,13 +1,12 @@
 package guideme.libs.micromark.flow;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
 import guideme.libs.micromark.Extension;
 import guideme.libs.micromark.TestUtil;
 import guideme.libs.micromark.html.CompileOptions;
 import guideme.libs.micromark.html.ParseOptions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class CodeIndentedTest {
     @ParameterizedTest(name = "[{index}] {2}")

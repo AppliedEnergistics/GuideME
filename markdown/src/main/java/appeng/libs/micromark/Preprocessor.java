@@ -1,11 +1,10 @@
 package guideme.libs.micromark;
 
+import guideme.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.symbol.Constants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import guideme.libs.micromark.symbol.Codes;
-import guideme.libs.micromark.symbol.Constants;
 
 final class Preprocessor {
     private static final Pattern SEARCH = Pattern.compile("[\0\t\n\r]");

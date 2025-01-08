@@ -1,9 +1,8 @@
 package appeng.client.guidebook.layout;
 
+import appeng.client.guidebook.style.ResolvedTextStyle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-
-import appeng.client.guidebook.style.ResolvedTextStyle;
 
 public class MinecraftFontMetrics implements FontMetrics {
     private final Font font;

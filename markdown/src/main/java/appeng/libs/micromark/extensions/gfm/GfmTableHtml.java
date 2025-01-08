@@ -1,13 +1,12 @@
 package guideme.libs.micromark.extensions.gfm;
 
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import guideme.libs.micromark.Token;
 import guideme.libs.micromark.html.HtmlContext;
 import guideme.libs.micromark.html.HtmlContextProperty;
 import guideme.libs.micromark.html.HtmlExtension;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class GfmTableHtml {
 

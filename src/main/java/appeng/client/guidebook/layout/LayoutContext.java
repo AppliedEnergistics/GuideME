@@ -1,13 +1,11 @@
 package appeng.client.guidebook.layout;
 
+import appeng.client.guidebook.document.LytRect;
+import appeng.client.guidebook.style.ResolvedTextStyle;
+import com.google.common.collect.Streams;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
-
-import com.google.common.collect.Streams;
-
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.style.ResolvedTextStyle;
 
 public class LayoutContext implements FontMetrics {
     private final FontMetrics fontMetrics;

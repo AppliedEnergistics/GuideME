@@ -1,24 +1,21 @@
 package appeng.siteexport.mdastpostprocess;
 
-import java.io.IOException;
-import java.util.Objects;
-
-import com.google.common.collect.Multimap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import appeng.client.guidebook.document.block.LytNode;
 import appeng.client.guidebook.scene.BlockImageTagCompiler;
 import appeng.client.guidebook.scene.LytGuidebookScene;
 import appeng.client.guidebook.scene.SceneTagCompiler;
 import appeng.client.guidebook.scene.export.SceneExporter;
+import appeng.siteexport.CacheBusting;
+import appeng.siteexport.ResourceExporter;
+import com.google.common.collect.Multimap;
 import guideme.libs.mdast.MdAstVisitor;
 import guideme.libs.mdast.mdx.model.MdxJsxAttribute;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstNode;
-import appeng.siteexport.CacheBusting;
-import appeng.siteexport.ResourceExporter;
+import java.io.IOException;
+import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Visits all Markdown AST nodes that have a corresponding {@link LytGuidebookScene} and exports that scene.

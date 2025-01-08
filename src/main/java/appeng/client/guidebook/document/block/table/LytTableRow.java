@@ -1,10 +1,9 @@
 package appeng.client.guidebook.document.block.table;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import appeng.client.guidebook.document.LytRect;
 import appeng.client.guidebook.document.block.LytNode;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A row in {@link LytTable}. Contains {@link LytTableCell}.

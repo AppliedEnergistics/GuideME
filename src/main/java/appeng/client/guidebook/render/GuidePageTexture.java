@@ -1,25 +1,21 @@
 package appeng.client.guidebook.render;
 
+import appeng.client.guidebook.document.LytSize;
+import appeng.core.AppEng;
+import com.mojang.blaze3d.platform.NativeImage;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import com.mojang.blaze3d.platform.NativeImage;
-
-import org.jetbrains.annotations.Nullable;
-import org.lwjgl.stb.STBImage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
-
-import appeng.client.guidebook.document.LytSize;
-import appeng.core.AppEng;
+import org.jetbrains.annotations.Nullable;
+import org.lwjgl.stb.STBImage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A texture that is used in the context of a single guide page and is automatically cleared from texture memory when

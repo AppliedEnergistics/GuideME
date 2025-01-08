@@ -1,7 +1,5 @@
 package guideme.libs.micromark.extensions;
 
-import java.util.List;
-
 import guideme.libs.micromark.CharUtil;
 import guideme.libs.micromark.Construct;
 import guideme.libs.micromark.Extension;
@@ -10,6 +8,7 @@ import guideme.libs.micromark.TokenizeContext;
 import guideme.libs.micromark.Tokenizer;
 import guideme.libs.micromark.Types;
 import guideme.libs.micromark.symbol.Codes;
+import java.util.List;
 
 /**
  * Add support for parsing YAML frontmatter in markdown.

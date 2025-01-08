@@ -1,21 +1,19 @@
 package appeng.client.guidebook.render;
 
+import appeng.client.guidebook.color.ColorValue;
+import appeng.client.guidebook.color.LightDarkMode;
+import appeng.client.guidebook.document.LytRect;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
-
-import appeng.client.guidebook.color.ColorValue;
-import appeng.client.guidebook.color.LightDarkMode;
-import appeng.client.guidebook.document.LytRect;
 
 public record SimpleRenderContext(
         @Override LytRect viewport,

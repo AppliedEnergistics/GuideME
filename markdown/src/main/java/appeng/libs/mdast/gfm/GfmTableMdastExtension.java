@@ -1,8 +1,5 @@
 package guideme.libs.mdast.gfm;
 
-import java.util.regex.MatchResult;
-import java.util.regex.Pattern;
-
 import guideme.libs.mdast.MdastContext;
 import guideme.libs.mdast.MdastContextProperty;
 import guideme.libs.mdast.MdastExtension;
@@ -12,6 +9,8 @@ import guideme.libs.mdast.gfm.model.GfmTableRow;
 import guideme.libs.mdast.model.MdAstInlineCode;
 import guideme.libs.micromark.Token;
 import guideme.libs.micromark.extensions.gfm.GfmTableSyntax;
+import java.util.regex.MatchResult;
+import java.util.regex.Pattern;
 
 public final class GfmTableMdastExtension {
 

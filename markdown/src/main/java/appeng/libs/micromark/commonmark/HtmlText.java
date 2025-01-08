@@ -1,9 +1,5 @@
 package guideme.libs.micromark.commonmark;
 
-import java.util.Objects;
-
-import org.jetbrains.annotations.Nullable;
-
 import guideme.libs.micromark.Assert;
 import guideme.libs.micromark.CharUtil;
 import guideme.libs.micromark.Construct;
@@ -14,6 +10,8 @@ import guideme.libs.micromark.Types;
 import guideme.libs.micromark.factory.FactorySpace;
 import guideme.libs.micromark.symbol.Codes;
 import guideme.libs.micromark.symbol.Constants;
+import java.util.Objects;
+import org.jetbrains.annotations.Nullable;
 
 public final class HtmlText {
     private HtmlText() {

@@ -1,7 +1,5 @@
 package appeng.client.guidebook.document.flow;
 
-import java.util.Optional;
-
 import appeng.client.guidebook.document.LytSize;
 import appeng.client.guidebook.document.block.LytBlock;
 import appeng.client.guidebook.document.block.LytVisitor;
@@ -10,6 +8,7 @@ import appeng.client.guidebook.document.interaction.InteractiveElement;
 import appeng.client.guidebook.layout.LayoutContext;
 import appeng.client.guidebook.layout.MinecraftFontMetrics;
 import appeng.client.guidebook.screen.GuideScreen;
+import java.util.Optional;
 
 public class LytFlowInlineBlock extends LytFlowContent implements InteractiveElement {
 

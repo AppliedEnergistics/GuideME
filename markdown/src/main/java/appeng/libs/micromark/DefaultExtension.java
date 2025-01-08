@@ -1,9 +1,5 @@
 package guideme.libs.micromark;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import guideme.libs.micromark.commonmark.Attention;
 import guideme.libs.micromark.commonmark.AutoLink;
 import guideme.libs.micromark.commonmark.BlockQuote;
@@ -24,6 +20,9 @@ import guideme.libs.micromark.commonmark.ListConstruct;
 import guideme.libs.micromark.commonmark.SetextUnderline;
 import guideme.libs.micromark.commonmark.ThematicBreak;
 import guideme.libs.micromark.symbol.Codes;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public final class DefaultExtension {
     private DefaultExtension() {

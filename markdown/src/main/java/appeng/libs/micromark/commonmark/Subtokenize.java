@@ -1,17 +1,16 @@
 package guideme.libs.micromark.commonmark;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import guideme.libs.micromark.Assert;
 import guideme.libs.micromark.ListUtils;
 import guideme.libs.micromark.Token;
 import guideme.libs.micromark.Tokenizer;
 import guideme.libs.micromark.Types;
 import guideme.libs.micromark.symbol.Codes;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public final class Subtokenize {
     private Subtokenize() {

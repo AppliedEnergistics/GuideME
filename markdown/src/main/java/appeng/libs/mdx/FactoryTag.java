@@ -3,8 +3,6 @@ package guideme.libs.mdx;
 import static guideme.libs.mdx.EcmaScriptIdentifiers.isCont;
 import static guideme.libs.mdx.EcmaScriptIdentifiers.isStart;
 
-import java.util.Locale;
-
 import guideme.libs.micromark.Assert;
 import guideme.libs.micromark.CharUtil;
 import guideme.libs.micromark.Construct;
@@ -17,6 +15,7 @@ import guideme.libs.micromark.Types;
 import guideme.libs.micromark.factory.FactorySpace;
 import guideme.libs.micromark.symbol.Codes;
 import guideme.libs.micromark.symbol.Constants;
+import java.util.Locale;
 
 public final class FactoryTag {
     private FactoryTag() {

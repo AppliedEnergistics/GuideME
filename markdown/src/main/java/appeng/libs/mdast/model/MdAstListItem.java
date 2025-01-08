@@ -1,8 +1,7 @@
 package guideme.libs.mdast.model;
 
-import java.io.IOException;
-
 import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
 
 /**
  * An item in a {@link MdAstList}.

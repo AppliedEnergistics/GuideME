@@ -1,10 +1,8 @@
 package guideme.libs.mdast.mdx.model;
 
-import java.io.IOException;
-
 import com.google.gson.stream.JsonWriter;
-
 import guideme.libs.unist.UnistNode;
+import java.io.IOException;
 
 /**
  * Potential attributes of {@link MdxJsxElementFields}

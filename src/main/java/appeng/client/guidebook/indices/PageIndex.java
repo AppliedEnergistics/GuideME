@@ -1,12 +1,10 @@
 package appeng.client.guidebook.indices;
 
-import java.io.IOException;
-import java.util.List;
-
-import com.google.gson.stream.JsonWriter;
-
 import appeng.client.guidebook.GuidePageChange;
 import appeng.client.guidebook.compiler.ParsedGuidePage;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * A page index is an index over all guidebook pages that will be automatically built when the guidebook is reloaded,

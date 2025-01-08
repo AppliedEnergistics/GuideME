@@ -1,11 +1,9 @@
 package appeng.client.guidebook.document.interaction;
 
+import appeng.siteexport.ExportableResourceProvider;
 import java.util.List;
-
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.world.item.ItemStack;
-
-import appeng.siteexport.ExportableResourceProvider;
 
 public interface GuideTooltip extends ExportableResourceProvider {
 

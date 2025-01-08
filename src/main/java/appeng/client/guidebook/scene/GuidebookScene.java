@@ -1,20 +1,16 @@
 package appeng.client.guidebook.scene;
 
+import appeng.client.guidebook.document.LytPoint;
+import appeng.client.guidebook.document.LytRect;
+import appeng.client.guidebook.scene.annotation.InWorldAnnotation;
+import appeng.client.guidebook.scene.annotation.OverlayAnnotation;
+import appeng.client.guidebook.scene.annotation.SceneAnnotation;
+import appeng.client.guidebook.scene.level.GuidebookLevel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Intersectionf;
-import org.joml.Matrix4f;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.joml.Vector3fc;
-import org.joml.Vector4f;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
@@ -25,13 +21,13 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
-
-import appeng.client.guidebook.document.LytPoint;
-import appeng.client.guidebook.document.LytRect;
-import appeng.client.guidebook.scene.annotation.InWorldAnnotation;
-import appeng.client.guidebook.scene.annotation.OverlayAnnotation;
-import appeng.client.guidebook.scene.annotation.SceneAnnotation;
-import appeng.client.guidebook.scene.level.GuidebookLevel;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Intersectionf;
+import org.joml.Matrix4f;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.joml.Vector4f;
 
 public class GuidebookScene {
 
@@ -85,7 +81,6 @@ public class GuidebookScene {
         cameraSettings.setOffsetY(h - bounds.y);
     }
 
-    @NotNull
     private Bounds getBounds(Matrix4f viewMatrix) {
         if (!level.hasFilledBlocks()) {
             return new Bounds(new Vector3f(), new Vector3f());

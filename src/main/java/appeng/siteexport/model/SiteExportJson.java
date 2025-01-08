@@ -1,12 +1,10 @@
 package appeng.siteexport.model;
 
+import com.google.gson.JsonElement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.gson.JsonElement;
-
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 

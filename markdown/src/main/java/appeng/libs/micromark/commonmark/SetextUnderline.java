@@ -1,7 +1,5 @@
 package guideme.libs.micromark.commonmark;
 
-import java.util.List;
-
 import guideme.libs.micromark.Assert;
 import guideme.libs.micromark.CharUtil;
 import guideme.libs.micromark.Construct;
@@ -12,6 +10,7 @@ import guideme.libs.micromark.Tokenizer;
 import guideme.libs.micromark.Types;
 import guideme.libs.micromark.factory.FactorySpace;
 import guideme.libs.micromark.symbol.Codes;
+import java.util.List;
 
 public final class SetextUnderline {
     private SetextUnderline() {

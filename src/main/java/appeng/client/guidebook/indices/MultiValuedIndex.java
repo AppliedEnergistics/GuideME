@@ -1,20 +1,16 @@
 package appeng.client.guidebook.indices;
 
+import appeng.client.guidebook.GuidePageChange;
+import appeng.client.guidebook.compiler.ParsedGuidePage;
+import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.google.gson.stream.JsonWriter;
-
-import org.apache.commons.lang3.tuple.Pair;
-
 import net.minecraft.resources.ResourceLocation;
-
-import appeng.client.guidebook.GuidePageChange;
-import appeng.client.guidebook.compiler.ParsedGuidePage;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * A convenient index base-class for indices that map keys to multiple pages.

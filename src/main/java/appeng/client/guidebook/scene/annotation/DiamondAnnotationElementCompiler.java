@@ -1,15 +1,13 @@
 package appeng.client.guidebook.scene.annotation;
 
-import java.util.Set;
-
-import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
-
 import appeng.client.guidebook.color.ConstantColor;
 import appeng.client.guidebook.compiler.PageCompiler;
 import appeng.client.guidebook.compiler.tags.MdxAttrs;
 import appeng.client.guidebook.document.LytErrorSink;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import java.util.Set;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 public class DiamondAnnotationElementCompiler extends AnnotationTagCompiler {
     @Override

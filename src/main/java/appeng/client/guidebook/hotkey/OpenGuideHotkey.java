@@ -1,15 +1,14 @@
 package appeng.client.guidebook.hotkey;
 
-import java.util.List;
-import java.util.Objects;
-
+import appeng.client.guidebook.GuidebookText;
+import appeng.client.guidebook.PageAnchor;
+import appeng.client.guidebook.indices.ItemIndex;
+import appeng.client.guidebook.screen.GuideScreen;
+import appeng.core.AppEngClient;
 import com.google.common.base.Strings;
 import com.mojang.blaze3d.platform.InputConstants;
-
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.List;
+import java.util.Objects;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -23,12 +22,9 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
-
-import appeng.client.guidebook.GuidebookText;
-import appeng.client.guidebook.PageAnchor;
-import appeng.client.guidebook.indices.ItemIndex;
-import appeng.client.guidebook.screen.GuideScreen;
-import appeng.core.AppEngClient;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Adds a "Hold X to show guide" tooltip

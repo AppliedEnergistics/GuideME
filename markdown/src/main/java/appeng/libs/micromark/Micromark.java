@@ -1,10 +1,9 @@
 package guideme.libs.micromark;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import guideme.libs.micromark.commonmark.Subtokenize;
 import guideme.libs.micromark.html.ParseOptions;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class Micromark {
 

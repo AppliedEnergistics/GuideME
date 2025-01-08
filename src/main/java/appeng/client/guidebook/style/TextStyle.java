@@ -1,10 +1,8 @@
 package appeng.client.guidebook.style;
 
-import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.resources.ResourceLocation;
-
 import appeng.client.guidebook.color.ColorValue;
+import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 
 public record TextStyle(
         @Nullable Float fontScale,

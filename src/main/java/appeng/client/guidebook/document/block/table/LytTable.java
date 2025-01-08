@@ -1,15 +1,13 @@
 package appeng.client.guidebook.document.block.table;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import net.minecraft.client.renderer.MultiBufferSource;
-
 import appeng.client.guidebook.color.SymbolicColor;
 import appeng.client.guidebook.document.LytRect;
 import appeng.client.guidebook.document.block.LytBlock;
 import appeng.client.guidebook.layout.LayoutContext;
 import appeng.client.guidebook.render.RenderContext;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.client.renderer.MultiBufferSource;
 
 public class LytTable extends LytBlock {
     /**

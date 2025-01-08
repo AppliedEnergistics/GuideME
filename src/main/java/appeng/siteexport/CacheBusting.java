@@ -1,11 +1,10 @@
 package appeng.siteexport;
 
+import com.google.common.hash.Hashing;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import com.google.common.hash.Hashing;
 
 /**
  * We mark all of our assets as "immutable" when we upload them. That means the browser can cache them indefinitely

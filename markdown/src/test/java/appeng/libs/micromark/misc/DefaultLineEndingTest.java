@@ -1,11 +1,10 @@
 package guideme.libs.micromark.misc;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
 import guideme.libs.micromark.TestUtil;
 import guideme.libs.micromark.html.CompileOptions;
 import guideme.libs.micromark.html.ParseOptions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class DefaultLineEndingTest {
     @ParameterizedTest(name = "[{index}] {2}")

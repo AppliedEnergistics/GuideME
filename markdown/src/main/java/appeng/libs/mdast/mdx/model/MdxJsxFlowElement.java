@@ -1,15 +1,12 @@
 package guideme.libs.mdast.mdx.model;
 
+import com.google.gson.stream.JsonWriter;
+import guideme.libs.mdast.model.MdAstFlowContent;
+import guideme.libs.mdast.model.MdAstParent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.gson.stream.JsonWriter;
-
 import org.jetbrains.annotations.Nullable;
-
-import guideme.libs.mdast.model.MdAstFlowContent;
-import guideme.libs.mdast.model.MdAstParent;
 
 public class MdxJsxFlowElement extends MdAstParent<MdAstFlowContent> implements MdxJsxElementFields, MdAstFlowContent {
     public String name;

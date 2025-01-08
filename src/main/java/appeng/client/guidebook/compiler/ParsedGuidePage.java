@@ -1,8 +1,7 @@
 package appeng.client.guidebook.compiler;
 
-import net.minecraft.resources.ResourceLocation;
-
 import guideme.libs.mdast.model.MdAstRoot;
+import net.minecraft.resources.ResourceLocation;
 
 public class ParsedGuidePage {
     final String sourcePack;

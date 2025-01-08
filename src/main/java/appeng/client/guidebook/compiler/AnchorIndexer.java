@@ -1,16 +1,14 @@
 package appeng.client.guidebook.compiler;
 
-import java.util.Locale;
-import java.util.Stack;
-
-import org.jetbrains.annotations.Nullable;
-
 import appeng.client.guidebook.document.block.LytDocument;
 import appeng.client.guidebook.document.block.LytHeading;
 import appeng.client.guidebook.document.block.LytNode;
 import appeng.client.guidebook.document.block.LytVisitor;
 import appeng.client.guidebook.document.flow.LytFlowAnchor;
 import appeng.client.guidebook.document.flow.LytFlowContent;
+import java.util.Locale;
+import java.util.Stack;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Indexes all anchors within a page to allow faster navigation to them.

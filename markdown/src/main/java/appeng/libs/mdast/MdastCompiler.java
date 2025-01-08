@@ -1,16 +1,5 @@
 package guideme.libs.mdast;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.regex.Pattern;
-
-import org.jetbrains.annotations.Nullable;
-
 import guideme.libs.mdast.model.MdAstBlockquote;
 import guideme.libs.mdast.model.MdAstBreak;
 import guideme.libs.mdast.model.MdAstCode;
@@ -51,6 +40,15 @@ import guideme.libs.micromark.html.NumericCharacterReference;
 import guideme.libs.micromark.symbol.Codes;
 import guideme.libs.micromark.symbol.Constants;
 import guideme.libs.unist.UnistPoint;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.regex.Pattern;
+import org.jetbrains.annotations.Nullable;
 
 final class MdastCompiler implements MdastContext {
 

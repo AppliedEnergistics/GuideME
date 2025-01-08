@@ -1,16 +1,13 @@
 package guideme.libs.mdast.mdx.model;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.gson.stream.JsonWriter;
-
-import org.jetbrains.annotations.Nullable;
-
 import guideme.libs.mdast.model.MdAstParent;
 import guideme.libs.mdast.model.MdAstPhrasingContent;
 import guideme.libs.mdast.model.MdAstStaticPhrasingContent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 public class MdxJsxTextElement extends MdAstParent<MdAstPhrasingContent>
         implements MdxJsxElementFields, MdAstStaticPhrasingContent {

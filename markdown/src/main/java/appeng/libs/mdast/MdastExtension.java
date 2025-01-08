@@ -1,13 +1,12 @@
 package guideme.libs.mdast;
 
+import guideme.libs.mdast.model.MdAstRoot;
+import guideme.libs.micromark.Token;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import guideme.libs.mdast.model.MdAstRoot;
-import guideme.libs.micromark.Token;
 
 /**
  * An mdast extension changes how markdown tokens are turned into mdast.

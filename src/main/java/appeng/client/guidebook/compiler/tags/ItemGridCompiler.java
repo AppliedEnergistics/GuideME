@@ -1,11 +1,10 @@
 package appeng.client.guidebook.compiler.tags;
 
-import java.util.Set;
-
 import appeng.client.guidebook.compiler.PageCompiler;
 import appeng.client.guidebook.document.block.LytBlockContainer;
 import appeng.client.guidebook.document.block.LytItemGrid;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import java.util.Set;
 
 public class ItemGridCompiler extends BlockTagCompiler {
     @Override

@@ -1,13 +1,11 @@
 package appeng.client.guidebook.scene;
 
+import appeng.client.guidebook.document.LytSize;
+import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
-
-import net.minecraft.util.Mth;
-
-import appeng.client.guidebook.document.LytSize;
 
 public class CameraSettings {
 

@@ -1,15 +1,13 @@
 package guideme.libs.micromark.html;
 
+import guideme.libs.micromark.CharUtil;
+import guideme.libs.micromark.symbol.Codes;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-
 import org.jetbrains.annotations.Nullable;
-
-import guideme.libs.micromark.CharUtil;
-import guideme.libs.micromark.symbol.Codes;
 
 public final class SanitizeUri {
     private SanitizeUri() {

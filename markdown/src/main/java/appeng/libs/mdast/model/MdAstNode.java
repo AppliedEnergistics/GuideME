@@ -1,15 +1,12 @@
 package guideme.libs.mdast.model;
 
-import java.io.IOException;
-import java.util.function.Predicate;
-
 import com.google.gson.stream.JsonWriter;
-
-import org.jetbrains.annotations.Nullable;
-
 import guideme.libs.mdast.MdAstVisitor;
 import guideme.libs.unist.UnistNode;
 import guideme.libs.unist.UnistPosition;
+import java.io.IOException;
+import java.util.function.Predicate;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class MdAstNode implements UnistNode {
     private final String type;

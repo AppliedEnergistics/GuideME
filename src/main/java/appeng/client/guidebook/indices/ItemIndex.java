@@ -1,19 +1,16 @@
 package appeng.client.guidebook.indices;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import net.minecraft.ResourceLocationException;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-
 import appeng.client.guidebook.PageAnchor;
 import appeng.client.guidebook.compiler.IdUtils;
 import appeng.client.guidebook.compiler.ParsedGuidePage;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.ResourceLocationException;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An index of Minecraft items to the main guidebook page describing it.

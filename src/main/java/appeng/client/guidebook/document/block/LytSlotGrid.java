@@ -1,14 +1,12 @@
 package appeng.client.guidebook.document.block;
 
-import java.util.List;
-
-import net.minecraft.world.item.crafting.Ingredient;
-
 import appeng.client.gui.Icon;
 import appeng.client.guidebook.color.ConstantColor;
 import appeng.client.guidebook.document.LytRect;
 import appeng.client.guidebook.layout.LayoutContext;
 import appeng.client.guidebook.render.RenderContext;
+import java.util.List;
+import net.minecraft.world.item.crafting.Ingredient;
 
 public class LytSlotGrid extends LytBox {
     private final int width;

@@ -1,8 +1,6 @@
 package guideme.libs.micromark;
 
 import java.util.List;
-
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -57,7 +55,7 @@ class InterruptedTokenizeContext implements TokenizeContext {
     }
 
     @Override
-    public void defineSkip(@NotNull Point value) {
+    public void defineSkip(Point value) {
         parent.defineSkip(value);
     }
 

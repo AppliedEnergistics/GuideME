@@ -1,11 +1,5 @@
 package guideme.libs.mdast.mdx;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import org.jetbrains.annotations.Nullable;
-
 import guideme.libs.mdast.MdastContext;
 import guideme.libs.mdast.MdastContextProperty;
 import guideme.libs.mdast.MdastExtension;
@@ -20,6 +14,10 @@ import guideme.libs.micromark.ListUtils;
 import guideme.libs.micromark.ParseException;
 import guideme.libs.micromark.Point;
 import guideme.libs.micromark.Token;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import org.jetbrains.annotations.Nullable;
 
 public final class MdxMdastExtension {
     private static final MdastContextProperty<List<Tag>> TAG_STACK = new MdastContextProperty<>();

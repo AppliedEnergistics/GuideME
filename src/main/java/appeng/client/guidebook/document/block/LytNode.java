@@ -1,15 +1,13 @@
 package appeng.client.guidebook.document.block;
 
-import java.util.Collections;
-import java.util.List;
-
-import org.jetbrains.annotations.Nullable;
-
 import appeng.client.guidebook.document.LytRect;
 import appeng.client.guidebook.document.flow.LytFlowContent;
 import appeng.client.guidebook.style.Styleable;
 import appeng.client.guidebook.style.TextStyle;
 import guideme.libs.mdast.model.MdAstNode;
+import java.util.Collections;
+import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class LytNode implements Styleable {
     @Nullable

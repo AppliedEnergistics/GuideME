@@ -1,16 +1,13 @@
 package appeng.client.guidebook.indices;
 
+import appeng.client.guidebook.PageAnchor;
+import appeng.client.guidebook.compiler.ParsedGuidePage;
+import com.google.gson.stream.JsonWriter;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.gson.stream.JsonWriter;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import appeng.client.guidebook.PageAnchor;
-import appeng.client.guidebook.compiler.ParsedGuidePage;
 
 /**
  * Pages can declare to be part of multiple categories using the categories frontmatter.

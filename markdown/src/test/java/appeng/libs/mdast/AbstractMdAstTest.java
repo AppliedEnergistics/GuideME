@@ -2,22 +2,19 @@ package guideme.libs.mdast;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Map;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.internal.bind.JsonTreeWriter;
-
-import org.intellij.lang.annotations.Language;
-
 import guideme.libs.mdast.model.MdAstNode;
 import guideme.libs.mdast.model.MdAstParent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Map;
+import org.intellij.lang.annotations.Language;
 
 public class AbstractMdAstTest {
     protected static final Gson GSON = new GsonBuilder()

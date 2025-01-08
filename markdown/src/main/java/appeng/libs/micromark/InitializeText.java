@@ -1,11 +1,10 @@
 package guideme.libs.micromark;
 
+import guideme.libs.micromark.symbol.Codes;
+import guideme.libs.micromark.symbol.Constants;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import guideme.libs.micromark.symbol.Codes;
-import guideme.libs.micromark.symbol.Constants;
 
 final class InitializeText {
     private InitializeText() {

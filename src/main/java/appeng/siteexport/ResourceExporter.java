@@ -3,15 +3,13 @@ package appeng.siteexport;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
-
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.Fluid;
+import org.jetbrains.annotations.Nullable;
 
 public interface ResourceExporter {
     default void referenceItem(ItemLike item) {

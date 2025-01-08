@@ -1,18 +1,15 @@
 package guideme.libs.micromark;
 
+import guideme.libs.micromark.symbol.Codes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import guideme.libs.micromark.symbol.Codes;
 
 /**
  * A context object that helps w/ tokenizing markdown constructs.
@@ -132,7 +129,7 @@ class RootTokenizeContext implements TokenizeContext {
     }
 
     @Override
-    public void defineSkip(@NotNull Point value) {
+    public void defineSkip(Point value) {
         tokenizer.columnStart.put(value.line(), value.column());
         tokenizer.accountForPotentialSkip();
         if (Micromark.ENABLE_TRACE) {

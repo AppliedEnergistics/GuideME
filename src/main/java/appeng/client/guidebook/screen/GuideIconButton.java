@@ -1,18 +1,16 @@
 package appeng.client.guidebook.screen;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.network.chat.Component;
-
 import appeng.client.gui.style.Blitter;
 import appeng.client.guidebook.GuidebookText;
 import appeng.client.guidebook.color.LightDarkMode;
 import appeng.client.guidebook.color.SymbolicColor;
 import appeng.core.AppEng;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.network.chat.Component;
 
 /**
  * Button found in the toolbar at the top of {@link GuideScreen}.
