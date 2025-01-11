@@ -3,14 +3,18 @@ package guideme;
 import guideme.command.GuideIdArgument;
 import guideme.data.GuideMELanguageProvider;
 import guideme.guidebook.Guide;
-import java.util.List;
-import java.util.Objects;
+import guideme.guidebook.PageAnchor;
+import guideme.guidebook.hotkey.OpenGuideHotkey;
+import guideme.guidebook.screen.GlobalInMemoryHistory;
+import guideme.guidebook.screen.GuideScreen;
+import net.minecraft.client.Minecraft;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.neoforged.api.distmarker.Dist;
@@ -22,10 +26,17 @@ import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
+import net.neoforged.neoforge.registries.RegistryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 @Mod(value = GuideME.MOD_ID, dist = Dist.CLIENT)
 public class GuideME {
+    private static final Logger LOG = LoggerFactory.getLogger(GuideME.class);
 
     public static final String MOD_ID = "guideme";
 
@@ -34,10 +45,18 @@ public class GuideME {
     public static final ResourceLocation GUIDE_CLICK_ID = makeId("guide.click");
     public static SoundEvent GUIDE_CLICK_EVENT = SoundEvent.createVariableRangeEvent(GUIDE_CLICK_ID);
 
+    public static final ResourceKey<Registry<Guide>> GUIDES_REGISTRY = ResourceKey.createRegistryKey(makeId("guides"));
+
+    public static final Registry<Guide> GUIDES = new RegistryBuilder<>(GUIDES_REGISTRY)
+            .sync(false)
+            .create();
+
     public GuideME(ModContainer modContainer, IEventBus modBus) {
         INSTANCE = this;
 
         modContainer.registerConfig(ModConfig.Type.CLIENT, clientConfig.spec, "guideme.toml");
+
+        modBus.addListener((NewRegistryEvent e) -> e.register(GUIDES));
 
         modBus.addListener(RegisterEvent.class, e -> {
             if (e.getRegistryKey() == Registries.SOUND_EVENT) {
@@ -47,6 +66,8 @@ public class GuideME {
         modBus.addListener(this::gatherData);
 
         NeoForge.EVENT_BUS.addListener(GuideME::registerClientCommands);
+
+        OpenGuideHotkey.init();
     }
 
     public static ResourceLocation makeId(String path) {
@@ -79,17 +100,42 @@ public class GuideME {
         gen.addProvider(event.includeClient(), new GuideMELanguageProvider(packOutput));
     }
 
-    public static List<ResourceLocation> getGuides() {
-        return List.of(); // TODO
-    }
-
     public static Guide getGuideById(ResourceLocation id) {
-        // TODO
-        return null;
+        return GUIDES.get(id);
     }
 
     public boolean isShowDebugGuiOverlays() {
         return clientConfig.showDebugGuiOverlays.getAsBoolean();
+    }
+
+    public static void openGuideAtPreviousPage(Guide guide, ResourceLocation initialPage) {
+        try {
+            var screen = GuideScreen.openAtPreviousPage(guide, PageAnchor.page(initialPage),
+                    GlobalInMemoryHistory.INSTANCE);
+
+            openGuideScreen(screen);
+        } catch (Exception e) {
+            LOG.error("Failed to open guide.", e);
+        }
+    }
+
+    public static void openGuideAtAnchor(Guide guide, PageAnchor anchor) {
+        try {
+            var screen = GuideScreen.openNew(guide, anchor, GlobalInMemoryHistory.INSTANCE);
+
+            openGuideScreen(screen);
+        } catch (Exception e) {
+            LOG.error("Failed to open guide at {}.", anchor, e);
+        }
+    }
+
+    private static void openGuideScreen(GuideScreen screen) {
+        var minecraft = Minecraft.getInstance();
+        if (minecraft.screen != null) {
+            screen.setReturnToOnClose(minecraft.screen);
+        }
+
+        minecraft.setScreen(screen);
     }
 
     private static class ClientConfig {

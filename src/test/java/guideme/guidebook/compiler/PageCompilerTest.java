@@ -8,8 +8,11 @@ import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 class PageCompilerTest {
     private Path guidebookFolder;
@@ -28,7 +31,7 @@ class PageCompilerTest {
         var path = guidebookFolder.resolve(id + ".md");
         try (var in = Files.newInputStream(path)) {
             var parsed = PageCompiler.parse("ae2", GuideME.makeId(id), in);
-            var testPages = Guide.builder(GuideME.MOD_ID, "ae2guide")
+            var testPages = Guide.builder(ResourceLocation.fromNamespaceAndPath("ae2", "ae2guide"))
                     .developmentSources(guidebookFolder)
                     .watchDevelopmentSources(false)
                     .registerReloadListener(false)

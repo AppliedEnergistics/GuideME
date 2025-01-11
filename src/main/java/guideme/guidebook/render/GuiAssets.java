@@ -20,6 +20,12 @@ public final class GuiAssets {
     public static final ResourceLocation SLOT_BACKGROUND = GuideME.makeId("slot");
     public static final ResourceLocation SLOT_LARGE_BACKGROUND = GuideME.makeId("slot_large");
     public static final ResourceLocation SLOT_BORDER = GuideME.makeId("slot_border");
+    public static final ResourceLocation SLOT_LIGHT = GuideME.makeId("slot_light");
+    public static final ResourceLocation SLOT_DARK = GuideME.makeId("slot_dark");
+    public static final ResourceLocation LARGE_SLOT_LIGHT = GuideME.makeId("large_slot_light");
+    public static final ResourceLocation LARGE_SLOT_DARK = GuideME.makeId("large_slot_dark");
+    public static final ResourceLocation ARROW_LIGHT = GuideME.makeId("recipe_arrow_light");
+    public static final ResourceLocation ARROW_DARK = GuideME.makeId("recipe_arrow_dark");
 
     private GuiAssets() {
     }

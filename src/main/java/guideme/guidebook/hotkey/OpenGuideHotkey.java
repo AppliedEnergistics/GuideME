@@ -2,9 +2,14 @@ package guideme.guidebook.hotkey;
 
 import com.google.common.base.Strings;
 import com.mojang.blaze3d.platform.InputConstants;
+import guideme.GuideME;
+import guideme.guidebook.Guide;
 import guideme.guidebook.GuidebookText;
 import guideme.guidebook.PageAnchor;
+import guideme.guidebook.indices.ItemIndex;
 import guideme.guidebook.screen.GuideScreen;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.ChatFormatting;
@@ -20,7 +25,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus;
 
 /**
  * Adds a "Hold X to show guide" tooltip
@@ -36,8 +41,7 @@ public final class OpenGuideHotkey {
 
     // The previous item the tooltip was being shown for
     private static ResourceLocation previousItemId;
-    @Nullable
-    private static PageAnchor guidebookPage;
+    private static final List<FoundPage> guidebookPages = new ArrayList<>();
     // Full ticks since the button was held (reduces slowly when not held)
     private static int ticksKeyHeld;
     // Is the key to open currently held
@@ -45,6 +49,8 @@ public final class OpenGuideHotkey {
 
     private OpenGuideHotkey() {
     }
+
+    private record FoundPage(Guide guide, PageAnchor page) {}
 
     public static void init() {
         NeoForge.EVENT_BUS.addListener(
@@ -66,14 +72,18 @@ public final class OpenGuideHotkey {
             update(itemStack);
         }
 
-        if (guidebookPage == null) {
+        if (guidebookPages.isEmpty()) {
             return;
         }
+
+        var guide = guidebookPages.getFirst().guide();
+        var pageAnchor = guidebookPages.getFirst().page();
 
         // Don't do anything if we're already on the target page
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.screen instanceof GuideScreen guideScreen
-                && guideScreen.getCurrentPageId().equals(guidebookPage.pageId())) {
+                && guideScreen.getGuide() == guide
+                && guideScreen.getCurrentPageId().equals(pageAnchor.pageId())) {
             return;
         }
 
@@ -127,26 +137,34 @@ public final class OpenGuideHotkey {
 
         if (!Objects.equals(itemId, previousItemId)) {
             previousItemId = itemId;
-            guidebookPage = null;
+            guidebookPages.clear();
             ticksKeyHeld = 0;
 
             if (itemId == null) {
                 return;
             }
 
-            // TODO var itemIndex = AppEngClient.instance().getGuide().getIndex(ItemIndex.class);
-            // TODO guidebookPage = itemIndex.get(itemId);
+            for (var guide : GuideME.GUIDES) {
+                var itemIndex = guide.getIndex(ItemIndex.class);
+                var page = itemIndex.get(itemId);
+                if (page != null) {
+                    guidebookPages.add(new FoundPage(guide, page));
+                }
+            }
         }
 
         // Bump the ticks the key was held
         holding = isKeyHeld();
         if (holding) {
             if (ticksKeyHeld < TICKS_TO_OPEN && ++ticksKeyHeld == TICKS_TO_OPEN) {
-                if (guidebookPage != null) {
-                    if (Minecraft.getInstance().screen instanceof GuideScreen guideScreen) {
-                        guideScreen.navigateTo(guidebookPage);
+                if (!guidebookPages.isEmpty()) {
+                    var foundPage = guidebookPages.getFirst();
+                    var guide = foundPage.guide();
+
+                    if (Minecraft.getInstance().screen instanceof GuideScreen guideScreen && guideScreen.getGuide() == guide) {
+                        guideScreen.navigateTo(foundPage.page());
                     } else {
-                        // TODO AppEngClient.instance().openGuideAtAnchor(guidebookPage);
+                        GuideME.openGuideAtAnchor(guide, foundPage.page());
                     }
                     // Reset the ticks held immediately to avoid reopening another page if
                     // our cursors lands on an item

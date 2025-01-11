@@ -1,6 +1,5 @@
 package guideme.guidebook.render;
 
-import guideme.util.BackgroundGenerator;
 import guideme.util.FluidBlitter;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -239,7 +238,9 @@ public interface RenderContext {
     void renderItem(ItemStack stack, int x, int y, int z, float width, float height);
 
     default void renderPanel(LytRect bounds) {
-        BackgroundGenerator.draw(bounds.width(), bounds.height(), guiGraphics(), bounds.x(), bounds.y());
+        var panelBlitter = new PanelBlitter();
+        panelBlitter.addBounds(0, 0, bounds.width(), bounds.height());
+        panelBlitter.blit(guiGraphics(), bounds.x(), bounds.y());
     }
 
     default void pushScissor(LytRect bounds) {

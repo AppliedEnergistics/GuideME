@@ -1,5 +1,6 @@
 package guideme.guidebook;
 
+import guideme.GuideME;
 import guideme.guidebook.compiler.PageCompiler;
 import guideme.guidebook.compiler.ParsedGuidePage;
 import guideme.guidebook.extensions.DefaultExtensions;
@@ -13,27 +14,12 @@ import guideme.guidebook.navigation.NavigationTree;
 import guideme.guidebook.screen.GlobalInMemoryHistory;
 import guideme.guidebook.screen.GuideScreen;
 import guideme.util.Platform;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.RegistryDataLoader;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.RegistryLayer;
@@ -53,11 +39,29 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import net.neoforged.neoforge.resource.ResourcePackLoader;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Encapsulates a Guide, which consists of a collection of Markdown pages and associated content, loaded from a
@@ -66,6 +70,7 @@ import org.slf4j.LoggerFactory;
 public final class Guide implements PageCollection {
     private static final Logger LOG = LoggerFactory.getLogger(Guide.class);
 
+    private final ResourceLocation id;
     private final String defaultNamespace;
     private final String folder;
     private final Map<ResourceLocation, ParsedGuidePage> developmentPages = new HashMap<>();
@@ -73,24 +78,33 @@ public final class Guide implements PageCollection {
     private NavigationTree navigationTree = new NavigationTree();
     private Map<ResourceLocation, ParsedGuidePage> pages;
     private final ExtensionCollection extensions;
+    private final boolean availableToOpenHotkey;
 
     @Nullable
     private final Path developmentSourceFolder;
     @Nullable
     private final String developmentSourceNamespace;
 
-    private Guide(String defaultNamespace,
-            String folder,
-            @Nullable Path developmentSourceFolder,
-            @Nullable String developmentSourceNamespace,
-            Map<Class<?>, PageIndex> indices,
-            ExtensionCollection extensions) {
+    private Guide(ResourceLocation id,
+                  String defaultNamespace,
+                  String folder,
+                  @Nullable Path developmentSourceFolder,
+                  @Nullable String developmentSourceNamespace,
+                  Map<Class<?>, PageIndex> indices,
+                  ExtensionCollection extensions,
+                  boolean availableToOpenHotkey) {
         this.defaultNamespace = defaultNamespace;
         this.folder = folder;
+        this.id = id;
         this.developmentSourceFolder = developmentSourceFolder;
         this.developmentSourceNamespace = developmentSourceNamespace;
         this.indices = indices;
         this.extensions = extensions;
+        this.availableToOpenHotkey = availableToOpenHotkey;
+    }
+
+    public ResourceLocation getId() {
+        return id;
     }
 
     public String getDefaultNamespace() {
@@ -106,8 +120,8 @@ public final class Guide implements PageCollection {
         return indexClass.cast(index);
     }
 
-    public static Builder builder(IEventBus modEventBus, String defaultNamespace, String folder) {
-        return new Builder(modEventBus, defaultNamespace, folder);
+    public static Builder builder(IEventBus modEventBus, ResourceLocation id) {
+        return new Builder(modEventBus, id);
     }
 
     /**
@@ -115,8 +129,8 @@ public final class Guide implements PageCollection {
      * mod events, such as {@linkplain Builder#registerReloadListener the reload listener},
      * {@linkplain Builder#validateAllAtStartup validation} or the {@linkplain Builder#startupPage startup page}.
      */
-    public static Builder builder(String defaultNamespace, String folder) {
-        return new Builder(null, defaultNamespace, folder)
+    public static Builder builder(ResourceLocation id) {
+        return new Builder(null, id)
                 .registerReloadListener(false)
                 .validateAllAtStartup(false)
                 .startupPage(null);
@@ -255,6 +269,13 @@ public final class Guide implements PageCollection {
         return navigationTree;
     }
 
+    /**
+     * @return True if this guide should be considered for use in the global open guide hotkey.
+     */
+    public boolean isAvailableToOpenHotkey() {
+        return availableToOpenHotkey;
+    }
+
     @Override
     public boolean pageExists(ResourceLocation pageId) {
         return developmentPages.containsKey(pageId) || pages != null && pages.containsKey(pageId);
@@ -295,7 +316,7 @@ public final class Guide implements PageCollection {
 
         @Override
         protected Map<ResourceLocation, ParsedGuidePage> prepare(ResourceManager resourceManager,
-                ProfilerFiller profiler) {
+                                                                 ProfilerFiller profiler) {
             profiler.startTick();
             Map<ResourceLocation, ParsedGuidePage> pages = new HashMap<>();
 
@@ -321,7 +342,7 @@ public final class Guide implements PageCollection {
 
         @Override
         protected void apply(Map<ResourceLocation, ParsedGuidePage> pages, ResourceManager resourceManager,
-                ProfilerFiller profiler) {
+                             ProfilerFiller profiler) {
             profiler.startTick();
             Guide.this.pages = pages;
             profiler.push("indices");
@@ -404,14 +425,19 @@ public final class Guide implements PageCollection {
         }
     }
 
+    private static String getSystemPropertyName(ResourceLocation guideId, String property) {
+        return String.format(Locale.ROOT, "guideDev.%s.%s.%s", guideId.getNamespace(), guideId.getPath(), property);
+    }
+
     public static class Builder {
         @Nullable
         private final IEventBus modEventBus;
-        private final String defaultNamespace;
-        private final String folder;
+        private final ResourceLocation id;
         private final Map<Class<?>, PageIndex> indices = new IdentityHashMap<>();
         private final ExtensionCollection.Builder extensionsBuilder = ExtensionCollection.builder();
         private boolean registerReloadListener = true;
+        private String defaultNamespace;
+        private String folder;
         @Nullable
         private ResourceLocation startupPage;
         private boolean validateAtStartup;
@@ -419,23 +445,17 @@ public final class Guide implements PageCollection {
         private String developmentSourceNamespace;
         private boolean watchDevelopmentSources = true;
         private boolean disableDefaultExtensions = false;
+        private boolean availableToOpenHotkey = true;
         private final Set<ExtensionPoint<?>> disableDefaultsForExtensionPoints = Collections
                 .newSetFromMap(new IdentityHashMap<>());
 
-        private Builder(@Nullable IEventBus modEventBus, String defaultNamespace, String folder) {
+        private Builder(@Nullable IEventBus modEventBus, ResourceLocation id) {
             this.modEventBus = modEventBus;
-            this.defaultNamespace = Objects.requireNonNull(defaultNamespace, "defaultNamespace");
-            this.folder = Objects.requireNonNull(folder, "folder");
+            this.id = Objects.requireNonNull(id, "id");
+            this.defaultNamespace = id.getNamespace();
+            this.folder = id.getPath();
 
-            // Both folder and default namespace need to be valid resource paths
-            if (!ResourceLocation.isValidNamespace(defaultNamespace)) {
-                throw new IllegalArgumentException("The default namespace for a guide needs to be a valid namespace");
-            }
-            if (!ResourceLocation.isValidPath(folder)) {
-                throw new IllegalArgumentException("The folder for a guide needs to be a valid resource location");
-            }
-
-            var startupPageProperty = String.format(Locale.ROOT, "guideDev.%s.startupPage", folder);
+            var startupPageProperty = getSystemPropertyName(id, "startupPage");
             try {
                 var startupPageIdText = System.getProperty(startupPageProperty);
                 if (startupPageIdText != null) {
@@ -446,8 +466,8 @@ public final class Guide implements PageCollection {
             }
 
             // Development sources folder
-            var devSourcesFolderProperty = String.format(Locale.ROOT, "guideDev.%s.sources", folder);
-            var devSourcesNamespaceProperty = String.format(Locale.ROOT, "guideDev.%s.sourcesNamespace", folder);
+            var devSourcesFolderProperty = getSystemPropertyName(id, "sources");
+            var devSourcesNamespaceProperty = getSystemPropertyName(id, "sourcesNamespace");
             var sourceFolder = System.getProperty(devSourcesFolderProperty);
             if (sourceFolder != null) {
                 developmentSourceFolder = Paths.get(sourceFolder);
@@ -469,12 +489,50 @@ public final class Guide implements PageCollection {
         }
 
         /**
+         * Sets the default resource namespace for this guide. This namespace is used for resources
+         * loaded from a plain folder during development and defaults to the namespace of the
+         * guide id.
+         */
+        public Builder defaultNamespace(String defaultNamespace) {
+            // Both folder and default namespace need to be valid resource paths
+            if (!ResourceLocation.isValidNamespace(defaultNamespace)) {
+                throw new IllegalArgumentException("The default namespace for a guide needs to be a valid namespace");
+            }
+            this.defaultNamespace = defaultNamespace;
+            return this;
+        }
+
+        /**
+         * Sets the folder within the resource pack, from which pages for this guide will be loaded.
+         * Please note that this name must be unique across all namespaces, since it would otherwise cause
+         * pages from guides added by other mods to show up in yours.
+         * <p/>
+         * This defaults to {@code guides/<namespace>/<path>} with namespace and path coming from the guide id,
+         * which should implicitly make it unique.
+         */
+        public Builder folder(String folder) {
+            if (!ResourceLocation.isValidPath(folder)) {
+                throw new IllegalArgumentException("The folder for a guide needs to be a valid resource location");
+            }
+            this.folder = folder;
+            return this;
+        }
+
+        /**
          * Stops the builder from adding any of the default extensions. Use
          * {@link #disableDefaultExtensions(ExtensionPoint)} to disable the default extensions only for one of the
          * extension points.
          */
         public Builder disableDefaultExtensions() {
             this.disableDefaultExtensions = true;
+            return this;
+        }
+
+        /**
+         * Disables the global open hotkey from using this guide.
+         */
+        public Builder disableOpenHotkey() {
+            this.availableToOpenHotkey = false;
             return this;
         }
 
@@ -582,8 +640,8 @@ public final class Guide implements PageCollection {
         public Guide build() {
             var extensionCollection = buildExtensions();
 
-            var guide = new Guide(defaultNamespace, folder, developmentSourceFolder, developmentSourceNamespace,
-                    indices, extensionCollection);
+            var guide = new Guide(id, defaultNamespace, folder, developmentSourceFolder, developmentSourceNamespace,
+                    indices, extensionCollection, availableToOpenHotkey);
 
             if (registerReloadListener) {
                 if (this.modEventBus == null) {
@@ -614,6 +672,18 @@ public final class Guide implements PageCollection {
                             e.setNewScreen(GuideScreen.openNew(guide, PageAnchor.page(startupPage),
                                     GlobalInMemoryHistory.INSTANCE));
                         }
+                    }
+                });
+            }
+
+            if (availableToOpenHotkey && this.modEventBus == null) {
+                throw new IllegalStateException("This guide will be unavailable to the open hotkey without providing a modbus for registration");
+            }
+
+            if (this.modEventBus != null) {
+                this.modEventBus.addListener((RegisterEvent e) -> {
+                    if (e.getRegistryKey() == GuideME.GUIDES_REGISTRY) {
+                        Registry.register(GuideME.GUIDES, id, guide);
                     }
                 });
             }

@@ -25,7 +25,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes('FML-ModType': 'LIBRARY')
+        attributes('FMLModType': 'LIBRARY')
     }
 }
 

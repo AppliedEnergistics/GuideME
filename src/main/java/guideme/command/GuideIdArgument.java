@@ -8,13 +8,14 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import guideme.GuideME;
 import guideme.guidebook.Guide;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.server.command.ModIdArgument;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * An argument for commands that identifies a registered GuideME guide.
@@ -36,10 +37,10 @@ public class GuideIdArgument implements ArgumentType<ResourceLocation> {
         return GuideME.getGuideById(id);
     }
 
+    @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        // TODO: Get registered guides
-
-        return SharedSuggestionProvider.suggest(GuideME.getGuides().stream().map(ResourceLocation::toString), builder);
+        SharedSuggestionProvider.suggestResource(GuideME.GUIDES.keySet(), builder);
+        return builder.buildFuture();
     }
 
     public Collection<String> getExamples() {

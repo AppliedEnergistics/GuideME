@@ -1,11 +1,11 @@
 package guideme.guidebook.document.block;
 
-import guideme.GuideME;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.document.interaction.GuideTooltip;
 import guideme.guidebook.document.interaction.InteractiveElement;
 import guideme.guidebook.document.interaction.ItemTooltip;
 import guideme.guidebook.layout.LayoutContext;
+import guideme.guidebook.render.GuiAssets;
 import guideme.guidebook.render.RenderContext;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -18,10 +18,6 @@ import net.minecraft.world.item.crafting.Ingredient;
  * Renders a standard Minecraft GUI slot.
  */
 public class LytSlot extends LytBlock implements InteractiveElement {
-    public static final ResourceLocation SLOT_LIGHT = GuideME.makeId("ae2guide/gui/slot_light.png");
-    public static final ResourceLocation SLOT_DARK = GuideME.makeId("ae2guide/gui/slot_dark.png");
-    public static final ResourceLocation LARGE_SLOT_LIGHT = GuideME.makeId("ae2guide/gui/large_slot_light.png");
-    public static final ResourceLocation LARGE_SLOT_DARK = GuideME.makeId("ae2guide/gui/large_slot_dark.png");
 
     private static final int ITEM_SIZE = 16;
     private static final int PADDING = 1;
@@ -75,11 +71,11 @@ public class LytSlot extends LytBlock implements InteractiveElement {
 
         ResourceLocation texture;
         if (largeSlot) {
-            texture = context.isDarkMode() ? LARGE_SLOT_DARK : LARGE_SLOT_LIGHT;
+            texture = context.isDarkMode() ? GuiAssets.LARGE_SLOT_DARK : GuiAssets.LARGE_SLOT_LIGHT;
         } else {
-            texture = context.isDarkMode() ? SLOT_DARK : SLOT_LIGHT;
+            texture = context.isDarkMode() ? GuiAssets.SLOT_DARK : GuiAssets.SLOT_LIGHT;
         }
-        context.fillTexturedRect(bounds, texture);
+        context.fillIcon(bounds, texture);
 
         var padding = largeSlot ? LARGE_PADDING : PADDING;
 

@@ -68,7 +68,7 @@ public class GuideScreen extends Screen {
     private static final DashPattern DEBUG_NODE_OUTLINE = new DashPattern(1f, 4, 3, 0xFFFFFFFF, 500);
     private static final DashPattern DEBUG_CONTENT_OUTLINE = new DashPattern(0.5f, 2, 1, 0x7FFFFFFF, 500);
     private static final ColorValue DEBUG_HOVER_OUTLINE_COLOR = new ConstantColor(0x7FFFFF00);
-    private static final ResourceLocation BACKGROUND_TEXTURE = GuideME.makeId("textures/block/sky_stone_block.png");
+    private static final ResourceLocation BACKGROUND_TEXTURE = GuideME.makeId("textures/guide/background.png");
     private final Guide guide;
 
     private final GuideScrollbar scrollbar;
