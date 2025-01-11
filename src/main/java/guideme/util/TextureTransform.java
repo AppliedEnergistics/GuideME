@@ -1,4 +1,4 @@
-package appeng.client.gui.style;
+package guideme.util;
 
 /**
  * Transforms applied to the texture when {@linkplain Blitter blitting it}. This does not change the source or

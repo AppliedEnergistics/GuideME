@@ -1,32 +1,24 @@
 package guideme.siteexport;
 
-import guideme.guidebook.Guide;
-import guideme.guidebook.compiler.MdAstNodeAdapter;
-import guideme.guidebook.compiler.ParsedGuidePage;
-import guideme.guidebook.indices.PageIndex;
-import appeng.items.tools.powered.MatterCannonItem;
-import appeng.recipes.entropy.EntropyRecipe;
-import appeng.recipes.handlers.ChargerRecipe;
-import appeng.recipes.handlers.InscriberProcessType;
-import appeng.recipes.handlers.InscriberRecipe;
-import appeng.recipes.mattercannon.MatterCannonAmmo;
-import appeng.recipes.transform.TransformRecipe;
-import guideme.siteexport.model.ExportedPageJson;
-import guideme.siteexport.model.FluidInfoJson;
-import guideme.siteexport.model.ItemInfoJson;
-import guideme.siteexport.model.NavigationNodeJson;
-import guideme.siteexport.model.P2PTypeInfo;
-import guideme.siteexport.model.SiteExportJson;
-import guideme.util.Platform;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
 import com.google.gson.internal.bind.JsonTreeWriter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import guideme.guidebook.Guide;
+import guideme.guidebook.compiler.MdAstNodeAdapter;
+import guideme.guidebook.compiler.ParsedGuidePage;
+import guideme.guidebook.indices.PageIndex;
 import guideme.libs.mdast.MdAstVisitor;
 import guideme.libs.mdast.model.MdAstHeading;
 import guideme.libs.mdast.model.MdAstNode;
+import guideme.siteexport.model.ExportedPageJson;
+import guideme.siteexport.model.FluidInfoJson;
+import guideme.siteexport.model.ItemInfoJson;
+import guideme.siteexport.model.NavigationNodeJson;
+import guideme.siteexport.model.SiteExportJson;
+import guideme.util.Platform;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -39,17 +31,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.HexFormat;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
@@ -61,7 +49,6 @@ import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,6 +126,7 @@ public class SiteExportWriter {
                 }
             })
             .create();
+
     private final SiteExportJson siteExport = new SiteExportJson();
 
     public SiteExportWriter(Guide guide) {
@@ -147,10 +135,6 @@ public class SiteExportWriter {
                 .stream()
                 .map(NavigationNodeJson::of)
                 .toList();
-        siteExport.defaultConfigValues = ConfigValueTagExtension.CONFIG_VALUES.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().get()));
     }
 
     public void addItem(String id, ItemStack stack, String iconPath) {
@@ -189,63 +173,10 @@ public class SiteExportWriter {
         addRecipe(id, recipe, fields);
     }
 
-    public void addRecipe(ResourceLocation id, InscriberRecipe recipe) {
-        var resultItem = recipe.getResultItem();
-        addRecipe(id, recipe, Map.of(
-                "top", recipe.getTopOptional(),
-                "middle", recipe.getMiddleInput(),
-                "bottom", recipe.getBottomOptional(),
-                "resultItem", resultItem.getItem(),
-                "resultCount", resultItem.getCount(),
-                "consumesTopAndBottom", recipe.getProcessType() == InscriberProcessType.PRESS));
-    }
-
     public void addRecipe(ResourceLocation id, AbstractCookingRecipe recipe) {
         addRecipe(id, recipe, Map.of(
                 "resultItem", recipe.getResultItem(null),
                 "ingredient", recipe.getIngredients().get(0)));
-    }
-
-    public void addRecipe(ResourceLocation id, TransformRecipe recipe) {
-
-        Map<String, Object> circumstanceJson = new HashMap<>();
-        var circumstance = recipe.circumstance;
-        if (circumstance.isExplosion()) {
-            circumstanceJson.put("type", "explosion");
-        } else if (circumstance.isFluid()) {
-            circumstanceJson.put("type", "fluid");
-
-            // Special-case water since a lot of mods add their fluids to the tag
-            if (recipe.circumstance.isFluidTag(FluidTags.WATER)) {
-                circumstanceJson.put("fluids", List.of(Fluids.WATER));
-            } else {
-                circumstanceJson.put("fluids", circumstance.getFluidsForRendering());
-            }
-        } else {
-            throw new IllegalStateException("Unknown circumstance: " + circumstance.toJson());
-        }
-
-        addRecipe(id, recipe, Map.of(
-                "resultItem", recipe.getResultItem(null),
-                "ingredients", recipe.getIngredients(),
-                "circumstance", circumstanceJson));
-    }
-
-    public void addRecipe(ResourceLocation id, EntropyRecipe recipe) {
-        addRecipe(id, recipe, Map.of(
-                "mode", recipe.getMode().name().toLowerCase(Locale.ROOT)));
-    }
-
-    public void addRecipe(ResourceLocation id, MatterCannonAmmo recipe) {
-        addRecipe(id, recipe, Map.of(
-                "ammo", recipe.getAmmo(),
-                "damage", MatterCannonItem.getDamageFromPenetration(recipe.getWeight())));
-    }
-
-    public void addRecipe(ResourceLocation id, ChargerRecipe recipe) {
-        addRecipe(id, recipe, Map.of(
-                "resultItem", recipe.getResultItem(),
-                "ingredient", recipe.getIngredient()));
     }
 
     public void addRecipe(ResourceLocation id, SmithingTransformRecipe recipe) {
@@ -283,6 +214,10 @@ public class SiteExportWriter {
         }
     }
 
+    public void addModData(String key, Object data) {
+        siteExport.modData.put(key, data);
+    }
+
     public byte[] toByteArray() throws IOException {
         var bout = new ByteArrayOutputStream();
         try (var out = new GZIPOutputStream(bout);
@@ -290,17 +225,6 @@ public class SiteExportWriter {
             GSON.toJson(siteExport, writer);
         }
         return bout.toByteArray();
-    }
-
-    public void addP2PType(P2PTypeInfo typeInfo) {
-        siteExport.p2pTunnelTypes.add(typeInfo);
-    }
-
-    public void addColoredVersion(Item baseItem, DyeColor color, Item coloredItem) {
-        var baseItemId = BuiltInRegistries.ITEM.getKey(baseItem).toString();
-        var coloredItemId = BuiltInRegistries.ITEM.getKey(coloredItem).toString();
-        var coloredVersions = siteExport.coloredVersions.computeIfAbsent(baseItemId, key -> new HashMap<>());
-        coloredVersions.put(color, coloredItemId);
     }
 
     public void addPage(ParsedGuidePage page) {

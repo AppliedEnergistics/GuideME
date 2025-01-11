@@ -1,15 +1,15 @@
 package guideme.guidebook.render;
 
-import appeng.client.gui.style.BackgroundGenerator;
-import appeng.client.gui.style.FluidBlitter;
+import guideme.util.BackgroundGenerator;
+import guideme.util.FluidBlitter;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.guidebook.color.ColorValue;
 import guideme.guidebook.color.ConstantColor;
 import guideme.guidebook.color.LightDarkMode;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.layout.MinecraftFontMetrics;
 import guideme.guidebook.style.ResolvedTextStyle;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
@@ -47,6 +47,39 @@ public interface RenderContext {
     int resolveColor(ColorValue ref);
 
     void fillRect(LytRect rect, ColorValue topLeft, ColorValue topRight, ColorValue bottomRight, ColorValue bottomLeft);
+
+    default void drawIcon(int x, int y, ResourceLocation guiSprite) {
+        drawIcon(x, y, guiSprite, ConstantColor.WHITE);
+    }
+
+    default void drawIcon(int x, int y, ResourceLocation guiSprite, ColorValue color) {
+        var sprite = Minecraft.getInstance().getGuiSprites().getSprite(guiSprite);
+        drawIcon(x, y, sprite, color);
+    }
+
+    default void drawIcon(int x, int y, TextureAtlasSprite sprite, ColorValue color) {
+        var contents = sprite.contents();
+        fillIcon(x, y, contents.width(), contents.height(), sprite, color);
+    }
+
+    default void fillIcon(LytRect bounds, ResourceLocation guiSprite) {
+        fillIcon(bounds.x(), bounds.y(), bounds.width(), bounds.height(), guiSprite);
+    }
+
+    default void fillIcon(int x, int y, int width, int height, ResourceLocation guiSprite) {
+        fillIcon(x, y, width, height, guiSprite, ConstantColor.WHITE);
+    }
+
+    default void fillIcon(int x, int y, int width, int height, ResourceLocation guiSprite, ColorValue color) {
+        var sprite = Minecraft.getInstance().getGuiSprites().getSprite(guiSprite);
+        fillIcon(x, y, width, height, sprite, color);
+    }
+
+    default void fillIcon(int x, int y, int width, int height, TextureAtlasSprite sprite, ColorValue color) {
+        var spriteLayer = new SpriteLayer();
+        spriteLayer.fillSprite(sprite.contents().name(), 0, 0, 0, width, height, resolveColor(color));
+        spriteLayer.render(poseStack(), x, y, 0);
+    }
 
     default void fillTexturedRect(LytRect rect, AbstractTexture texture, ColorValue topLeft, ColorValue topRight,
             ColorValue bottomRight, ColorValue bottomLeft) {

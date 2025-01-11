@@ -1,15 +1,15 @@
 package guideme.siteexport.mdastpostprocess;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import guideme.guidebook.GuidePage;
 import guideme.guidebook.compiler.ParsedGuidePage;
 import guideme.guidebook.document.block.LytNode;
 import guideme.guidebook.document.block.LytVisitor;
-import guideme.siteexport.ResourceExporter;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import guideme.libs.mdast.MdAstVisitor;
 import guideme.libs.mdast.MdAstYamlFrontmatter;
 import guideme.libs.mdast.model.MdAstNode;
+import guideme.siteexport.ResourceExporter;
 
 /**
  * Post-Processes page content before exporting it.

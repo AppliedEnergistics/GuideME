@@ -1,12 +1,12 @@
 package guideme.guidebook.scene.annotation;
 
+import guideme.GuideME;
 import guideme.guidebook.color.ColorValue;
 import guideme.guidebook.color.ConstantColor;
 import guideme.guidebook.color.MutableColor;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.render.RenderContext;
 import guideme.guidebook.scene.GuidebookScene;
-import guideme.GuideME;
 import net.minecraft.client.Minecraft;
 import org.joml.Vector3f;
 

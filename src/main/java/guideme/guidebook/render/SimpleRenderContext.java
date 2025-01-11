@@ -1,13 +1,13 @@
 package guideme.guidebook.render;
 
-import guideme.guidebook.color.ColorValue;
-import guideme.guidebook.color.LightDarkMode;
-import guideme.guidebook.document.LytRect;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import guideme.guidebook.color.ColorValue;
+import guideme.guidebook.color.LightDarkMode;
+import guideme.guidebook.document.LytRect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;

@@ -11,7 +11,11 @@ import guideme.guidebook.compiler.tags.FloatingImageCompiler;
 import guideme.guidebook.compiler.tags.ItemGridCompiler;
 import guideme.guidebook.compiler.tags.ItemLinkCompiler;
 import guideme.guidebook.compiler.tags.RecipeCompiler;
+import guideme.guidebook.compiler.tags.RecipeTypeMappingSupplier;
 import guideme.guidebook.compiler.tags.SubPagesCompiler;
+import guideme.guidebook.document.block.recipes.LytCraftingRecipe;
+import guideme.guidebook.document.block.recipes.LytSmeltingRecipe;
+import guideme.guidebook.document.block.recipes.LytSmithingRecipe;
 import guideme.guidebook.scene.BlockImageTagCompiler;
 import guideme.guidebook.scene.ItemImageTagCompiler;
 import guideme.guidebook.scene.SceneTagCompiler;
@@ -27,11 +31,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import net.minecraft.world.item.crafting.RecipeType;
 
 public final class DefaultExtensions {
     private static final List<Registration<?>> EXTENSIONS = List.of(
             new Registration<>(TagCompiler.EXTENSION_POINT, DefaultExtensions::tagCompilers),
-            new Registration<>(SceneElementTagCompiler.EXTENSION_POINT, DefaultExtensions::sceneElementTagCompilers));
+            new Registration<>(SceneElementTagCompiler.EXTENSION_POINT, DefaultExtensions::sceneElementTagCompilers),
+            new Registration<>(RecipeTypeMappingSupplier.EXTENSION_POINT, DefaultExtensions::vanillaRecipeTypes));
 
     private DefaultExtensions() {
     }
@@ -80,6 +86,15 @@ public final class DefaultExtensions {
                 new BoxAnnotationElementCompiler(),
                 new LineAnnotationElementCompiler(),
                 new DiamondAnnotationElementCompiler());
+    }
+
+    private static List<RecipeTypeMappingSupplier> vanillaRecipeTypes() {
+        return List.of(
+                mappings -> {
+                    mappings.add(RecipeType.CRAFTING, LytCraftingRecipe::new);
+                    mappings.add(RecipeType.SMELTING, LytSmeltingRecipe::new);
+                    mappings.add(RecipeType.SMITHING, LytSmithingRecipe::new);
+                });
     }
 
     private record Registration<T extends Extension>(ExtensionPoint<T> extensionPoint,

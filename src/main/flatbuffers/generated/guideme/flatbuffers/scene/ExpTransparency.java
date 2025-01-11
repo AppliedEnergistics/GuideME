@@ -4,16 +4,19 @@ package guideme.flatbuffers.scene;
 
 @SuppressWarnings("unused")
 public final class ExpTransparency {
-  private ExpTransparency() { }
-  public static final int DISABLED = 0;
-  public static final int ADDITIVE = 1;
-  public static final int LIGHTNING = 2;
-  public static final int GLINT = 3;
-  public static final int CRUMBLING = 4;
-  public static final int TRANSLUCENT = 5;
+    private ExpTransparency() {
+    }
 
-  public static final String[] names = { "DISABLED", "ADDITIVE", "LIGHTNING", "GLINT", "CRUMBLING", "TRANSLUCENT", };
+    public static final int DISABLED = 0;
+    public static final int ADDITIVE = 1;
+    public static final int LIGHTNING = 2;
+    public static final int GLINT = 3;
+    public static final int CRUMBLING = 4;
+    public static final int TRANSLUCENT = 5;
 
-  public static String name(int e) { return names[e]; }
+    public static final String[] names = { "DISABLED", "ADDITIVE", "LIGHTNING", "GLINT", "CRUMBLING", "TRANSLUCENT", };
+
+    public static String name(int e) {
+        return names[e];
+    }
 }
-

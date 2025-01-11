@@ -1,21 +1,14 @@
 
 package guideme.util;
 
-import com.google.common.annotations.VisibleForTesting;
-import net.minecraft.ChatFormatting;
+import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.fml.util.thread.SidedThreadGroups;
 import net.neoforged.neoforge.fluids.FluidStack;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 public class Platform {
 

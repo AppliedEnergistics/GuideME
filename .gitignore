@@ -3,3 +3,5 @@
 build
 out
 .gradle
+/src/generated/resources/.cache
+/run

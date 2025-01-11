@@ -12,8 +12,6 @@ import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class LytFlowLink extends LytTooltipSpan {
     @Nullable

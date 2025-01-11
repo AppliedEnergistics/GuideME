@@ -1,12 +1,12 @@
 package guideme.guidebook.document.block;
 
+import guideme.GuideME;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.document.interaction.GuideTooltip;
 import guideme.guidebook.document.interaction.InteractiveElement;
 import guideme.guidebook.document.interaction.ItemTooltip;
 import guideme.guidebook.layout.LayoutContext;
 import guideme.guidebook.render.RenderContext;
-import guideme.GuideME;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.client.renderer.MultiBufferSource;

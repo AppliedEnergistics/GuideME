@@ -1,7 +1,7 @@
 package guideme.guidebook.navigation;
 
-import guideme.guidebook.compiler.ParsedGuidePage;
 import com.mojang.serialization.JavaOps;
+import guideme.guidebook.compiler.ParsedGuidePage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;

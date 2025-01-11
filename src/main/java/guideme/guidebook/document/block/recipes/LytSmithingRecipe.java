@@ -1,12 +1,12 @@
 package guideme.guidebook.document.block.recipes;
 
+import guideme.GuideME;
 import guideme.guidebook.document.DefaultStyles;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.document.block.LytSlot;
 import guideme.guidebook.document.block.LytSlotGrid;
 import guideme.guidebook.layout.LayoutContext;
 import guideme.guidebook.render.RenderContext;
-import guideme.GuideME;
 import guideme.siteexport.ExportableResourceProvider;
 import guideme.util.Platform;
 import java.util.List;

@@ -1,8 +1,11 @@
 package guideme.guidebook.screen;
 
-import appeng.client.Point;
-import appeng.client.gui.DashPattern;
-import appeng.client.gui.DashedRectangle;
+import guideme.util.Point;
+import guideme.util.DashPattern;
+import guideme.util.DashedRectangle;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import guideme.GuideME;
 import guideme.guidebook.Guide;
 import guideme.guidebook.GuidePage;
 import guideme.guidebook.GuidebookText;
@@ -34,9 +37,6 @@ import guideme.guidebook.render.GuidePageTexture;
 import guideme.guidebook.render.SimpleRenderContext;
 import guideme.guidebook.style.TextAlignment;
 import guideme.guidebook.style.TextStyle;
-import guideme.GuideME;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;

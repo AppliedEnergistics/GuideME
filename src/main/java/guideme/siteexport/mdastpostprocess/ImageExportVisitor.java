@@ -2,11 +2,11 @@ package guideme.siteexport.mdastpostprocess;
 
 import guideme.guidebook.compiler.IdUtils;
 import guideme.guidebook.compiler.tags.FloatingImageCompiler;
-import guideme.siteexport.ResourceExporter;
 import guideme.libs.mdast.MdAstVisitor;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstImage;
 import guideme.libs.mdast.model.MdAstNode;
+import guideme.siteexport.ResourceExporter;
 import java.nio.file.Path;
 
 /**

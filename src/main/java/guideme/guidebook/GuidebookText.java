@@ -1,6 +1,5 @@
 package guideme.guidebook;
 
-
 import guideme.data.LocalizationEnum;
 
 public enum GuidebookText implements LocalizationEnum {

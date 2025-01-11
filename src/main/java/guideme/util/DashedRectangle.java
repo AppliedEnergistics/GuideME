@@ -1,4 +1,4 @@
-package appeng.client.gui;
+package guideme.util;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;

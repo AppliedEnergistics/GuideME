@@ -1,12 +1,11 @@
 package guideme.guidebook.scene.export;
 
+import java.util.Map;
+import java.util.function.Consumer;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
-
-import java.util.Map;
-import java.util.function.Consumer;
 
 class SpriteFinder {
     private final Node root;
@@ -63,7 +62,7 @@ class SpriteFinder {
         }
 
         private void addInner(TextureAtlasSprite sprite, Object quadrant, int uStep, int vStep,
-                              Consumer<Object> setter) {
+                Consumer<Object> setter) {
             if (quadrant == null) {
                 setter.accept(sprite);
             } else if (quadrant instanceof Node node) {

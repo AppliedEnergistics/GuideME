@@ -3,6 +3,8 @@ plugins {
     id 'java-library'
 }
 
+group = "appeng.libs"
+
 apply plugin: ProjectDefaultsPlugin
 
 dependencies {

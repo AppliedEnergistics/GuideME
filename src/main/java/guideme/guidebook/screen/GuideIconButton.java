@@ -1,10 +1,10 @@
 package guideme.guidebook.screen;
 
-import appeng.client.gui.style.Blitter;
+import guideme.util.Blitter;
+import guideme.GuideME;
 import guideme.guidebook.GuidebookText;
 import guideme.guidebook.color.LightDarkMode;
 import guideme.guidebook.color.SymbolicColor;
-import guideme.GuideME;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.GuiGraphics;

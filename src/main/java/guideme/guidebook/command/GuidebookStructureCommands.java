@@ -6,6 +6,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import guideme.guidebook.Guide;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,8 +17,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
-
-import guideme.guidebook.Guide;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.commands.CommandSourceStack;

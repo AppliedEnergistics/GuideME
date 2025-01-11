@@ -4,12 +4,15 @@ package guideme.flatbuffers.scene;
 
 @SuppressWarnings("unused")
 public final class ExpIndexElementType {
-  private ExpIndexElementType() { }
-  public static final int UINT = 0;
-  public static final int USHORT = 1;
+    private ExpIndexElementType() {
+    }
 
-  public static final String[] names = { "UINT", "USHORT", };
+    public static final int UINT = 0;
+    public static final int USHORT = 1;
 
-  public static String name(int e) { return names[e]; }
+    public static final String[] names = { "UINT", "USHORT", };
+
+    public static String name(int e) {
+        return names[e];
+    }
 }
-

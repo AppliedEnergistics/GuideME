@@ -6,13 +6,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.DyeColor;
 
 public class SiteExportJson {
+    public int version = 2;
+
     public String defaultNamespace;
 
     public Map<ResourceLocation, ExportedPageJson> pages = new HashMap<>();
+
     public Map<String, JsonElement> pageIndices = new HashMap<>();
+
     /**
      * Recipes indexed by their recipe ID.
      */
@@ -20,13 +23,9 @@ public class SiteExportJson {
 
     public Map<String, ItemInfoJson> items = new HashMap<>();
 
-    public List<P2PTypeInfo> p2pTunnelTypes = new ArrayList<>();
-
-    public Map<String, Map<DyeColor, String>> coloredVersions = new HashMap<>();
     public List<NavigationNodeJson> navigationRootNodes = new ArrayList<>();
 
     public Map<String, FluidInfoJson> fluids = new HashMap<>();
 
-    public Map<String, String> defaultConfigValues = new HashMap<>();
-
+    public Map<String, Object> modData = new HashMap<>();
 }

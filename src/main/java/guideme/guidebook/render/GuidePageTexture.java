@@ -1,8 +1,8 @@
 package guideme.guidebook.render;
 
-import guideme.guidebook.document.LytSize;
-import guideme.GuideME;
 import com.mojang.blaze3d.platform.NativeImage;
+import guideme.GuideME;
+import guideme.guidebook.document.LytSize;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;

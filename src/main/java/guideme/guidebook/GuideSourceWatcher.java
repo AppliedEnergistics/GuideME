@@ -1,9 +1,9 @@
 package guideme.guidebook;
 
-import guideme.guidebook.compiler.PageCompiler;
-import guideme.guidebook.compiler.ParsedGuidePage;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import guideme.guidebook.compiler.PageCompiler;
+import guideme.guidebook.compiler.ParsedGuidePage;
 import io.methvin.watcher.DirectoryChangeEvent;
 import io.methvin.watcher.DirectoryChangeListener;
 import io.methvin.watcher.DirectoryWatcher;

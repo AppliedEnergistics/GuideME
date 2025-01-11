@@ -1,5 +1,8 @@
 package guideme.siteexport;
 
+import com.google.common.io.MoreFiles;
+import com.google.common.io.RecursiveDeleteOption;
+import com.mojang.blaze3d.platform.NativeImage;
 import guideme.guidebook.Guide;
 import guideme.guidebook.GuidePage;
 import guideme.guidebook.compiler.PageCompiler;
@@ -7,23 +10,12 @@ import guideme.guidebook.compiler.ParsedGuidePage;
 import guideme.guidebook.indices.CategoryIndex;
 import guideme.guidebook.indices.ItemIndex;
 import guideme.guidebook.navigation.NavigationNode;
-import appeng.core.AppEngClient;
-import appeng.core.definitions.AEBlocks;
-import appeng.recipes.entropy.EntropyRecipe;
-import appeng.recipes.handlers.ChargerRecipe;
-import appeng.recipes.handlers.InscriberRecipe;
-import appeng.recipes.mattercannon.MatterCannonAmmo;
-import appeng.recipes.transform.TransformRecipe;
 import guideme.siteexport.mdastpostprocess.PageExportPostProcessor;
 import guideme.util.Platform;
-import com.google.common.io.MoreFiles;
-import com.google.common.io.RecursiveDeleteOption;
-import com.mojang.blaze3d.platform.NativeImage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,25 +24,19 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.ChatFormatting;
 import net.minecraft.DetectedVersion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -59,17 +45,12 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.Fluids;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.apache.commons.io.FilenameUtils;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
@@ -78,8 +59,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Exports a data package for use by the website.
  */
-@OnlyIn(Dist.CLIENT)
-public final class SiteExporter implements ResourceExporter {
+public class SiteExporter implements ResourceExporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(SiteExporter.class);
 
@@ -104,62 +84,65 @@ public final class SiteExporter implements ResourceExporter {
         this.client = client;
         this.outputFolder = outputFolder;
         this.guide = guide;
-
-        // Ref items used as icons
-        referenceItem(Items.FURNACE);
-        referenceItem(AEBlocks.INSCRIBER);
-        referenceFluid(Fluids.WATER);
-        referenceFluid(Fluids.LAVA);
-        referenceItem(Items.TNT);
-        referenceItem(Blocks.SMITHING_TABLE);
     }
 
-    public static void initialize() {
-        // Automatically run the export once the client has started and then exit
-        if (Boolean.getBoolean("appeng.runGuideExportAndExit")) {
-            Path outputFolder = Paths.get(System.getProperty("appeng.guideExportFolder"));
+    public static Builder builder(Minecraft minecraft, Path outputFolder, Guide guide) {
+        return new Builder(minecraft, outputFolder, guide);
+    }
 
-            NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post evt) -> {
-                var client = Minecraft.getInstance();
-                if (client.getOverlay() instanceof LoadingOverlay) {
-                    return; // Do nothing while it's loading
-                }
+    public static final class Builder {
+        private final Minecraft minecraft;
+        private final Path outputFolder;
+        private final Guide guide;
 
-                var guide = AppEngClient.instance().getGuide();
-                try {
-                    export(client, outputFolder, guide);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.exit(1);
-                }
-                System.exit(0);
-            });
+        private Builder(Minecraft minecraft, Path outputFolder, Guide guide) {
+            this.minecraft = minecraft;
+            this.outputFolder = outputFolder;
+            this.guide = guide;
+        }
+
+        public SiteExporter build() {
+            return new SiteExporter(minecraft, outputFolder, guide);
         }
     }
-
-    public static void export(FabricClientCommandSource source) {
-        var guide = AppEngClient.instance().getGuide();
-        try {
-            Path outputFolder = Paths.get("guide-export").toAbsolutePath();
-            export(Minecraft.getInstance(), outputFolder, guide);
-
-            source.sendFeedback(Component.literal("Guide data exported to ")
-                    .append(Component.literal("[" + outputFolder.getFileName().toString() + "]")
-                            .withStyle(style -> style
-                                    .withClickEvent(
-                                            new ClickEvent(ClickEvent.Action.OPEN_FILE, outputFolder.toString()))
-                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                            Component.literal("Click to open export folder")))
-                                    .applyFormats(ChatFormatting.UNDERLINE, ChatFormatting.GREEN))));
-        } catch (Exception e) {
-            e.printStackTrace();
-            source.sendError(Component.literal(e.toString()));
-        }
-    }
-
-    private static void export(Minecraft client, Path outputFolder, Guide guide) throws Exception {
-        new SiteExporter(client, outputFolder, guide).export();
-    }
+//
+//    public void register() {
+//        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post evt) -> {
+//            var client = Minecraft.getInstance();
+//            if (client.getOverlay() instanceof LoadingOverlay) {
+//                return; // Do nothing while it's loading
+//            }
+//
+//            var guide = AppEngClient.instance().getGuide();
+//            try {
+//                export(client, outputFolder, guide);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                System.exit(1);
+//            }
+//            System.exit(0);
+//        });
+//    }
+//
+//    public static void export(FabricClientCommandSource source) {
+//        var guide = AppEngClient.instance().getGuide();
+//        try {
+//            Path outputFolder = Paths.get("guide-export").toAbsolutePath();
+//            export(Minecraft.getInstance(), outputFolder, guide);
+//
+//            source.sendFeedback(Component.literal("Guide data exported to ")
+//                    .append(Component.literal("[" + outputFolder.getFileName().toString() + "]")
+//                            .withStyle(style -> style
+//                                    .withClickEvent(
+//                                            new ClickEvent(ClickEvent.Action.OPEN_FILE, outputFolder.toString()))
+//                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+//                                            Component.literal("Click to open export folder")))
+//                                    .applyFormats(ChatFormatting.UNDERLINE, ChatFormatting.GREEN))));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            source.sendError(Component.literal(e.toString()));
+//        }
+//    }
 
     @Override
     public void referenceItem(ItemStack stack) {
@@ -220,7 +203,7 @@ public final class SiteExporter implements ResourceExporter {
 
         return recipe.getIngredients();
     }
-    
+
     private void dumpRecipes(SiteExportWriter writer) {
         for (var holder : recipes) {
             var id = holder.id();
@@ -233,26 +216,35 @@ public final class SiteExporter implements ResourceExporter {
                 writer.addRecipe(id, craftingRecipe);
             } else if (recipe instanceof AbstractCookingRecipe cookingRecipe) {
                 writer.addRecipe(id, cookingRecipe);
-            } else if (recipe instanceof InscriberRecipe inscriberRecipe) {
-                writer.addRecipe(id, inscriberRecipe);
-            } else if (recipe instanceof TransformRecipe transformRecipe) {
-                writer.addRecipe(id, transformRecipe);
             } else if (recipe instanceof SmithingTransformRecipe smithingTransformRecipe) {
                 writer.addRecipe(id, smithingTransformRecipe);
             } else if (recipe instanceof SmithingTrimRecipe smithingTrimRecipe) {
                 writer.addRecipe(id, smithingTrimRecipe);
             } else if (recipe instanceof StonecutterRecipe stonecutterRecipe) {
                 writer.addRecipe(id, stonecutterRecipe);
-            } else if (recipe instanceof EntropyRecipe entropyRecipe) {
-                writer.addRecipe(id, entropyRecipe);
-            } else if (recipe instanceof MatterCannonAmmo ammoRecipe) {
-                writer.addRecipe(id, ammoRecipe);
-            } else if (recipe instanceof ChargerRecipe chargerRecipe) {
-                writer.addRecipe(id, chargerRecipe);
             } else {
-                LOG.warn("Unable to handle recipe {} of type {}", holder.id(), recipe.getType());
+                var recipeFields = getCustomRecipeFields(id, recipe);
+                if (recipeFields != null) {
+                    writer.addRecipe(id, recipe, recipeFields);
+                } else {
+                    LOG.warn("Unable to handle recipe {} of type {}", holder.id(), recipe.getType());
+                }
             }
         }
+    }
+
+    /**
+     * Override this method to handle custom recipes by returning additional JSON fields to be added to the exported
+     * recipe object. Returning null will skip exporting this recipe.
+     */
+    @Nullable
+    @ApiStatus.OverrideOnly
+    protected Map<String, Object> getCustomRecipeFields(ResourceLocation id, Recipe<?> recipe) {
+        return null;
+    }
+
+    @ApiStatus.OverrideOnly
+    protected void postProcess(SiteExportWriter writer) {
     }
 
     @Override
@@ -356,6 +348,8 @@ public final class SiteExporter implements ResourceExporter {
 
         indexWriter.addIndex(guide, ItemIndex.class);
         indexWriter.addIndex(guide, CategoryIndex.class);
+
+        postProcess(indexWriter);
 
         var guideContent = outputFolder.resolve("guide.json.gz");
         byte[] content = indexWriter.toByteArray();

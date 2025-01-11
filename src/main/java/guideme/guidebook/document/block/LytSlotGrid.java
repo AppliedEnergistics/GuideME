@@ -1,8 +1,8 @@
 package guideme.guidebook.document.block;
 
-import guideme.guidebook.color.ConstantColor;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.layout.LayoutContext;
+import guideme.guidebook.render.GuiAssets;
 import guideme.guidebook.render.RenderContext;
 import java.util.List;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -119,8 +119,7 @@ public class LytSlotGrid extends LytBox {
                         context.drawIcon(
                                 bounds.x() + LytSlot.OUTER_SIZE * x,
                                 bounds.y() + LytSlot.OUTER_SIZE * y,
-                                Icon.SLOT_BACKGROUND,
-                                ConstantColor.WHITE);
+                                GuiAssets.SLOT_BACKGROUND);
                     }
                 }
             }

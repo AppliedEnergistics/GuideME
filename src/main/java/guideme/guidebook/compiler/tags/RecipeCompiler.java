@@ -3,12 +3,9 @@ package guideme.guidebook.compiler.tags;
 import guideme.guidebook.compiler.PageCompiler;
 import guideme.guidebook.document.block.LytBlock;
 import guideme.guidebook.document.block.LytBlockContainer;
-import guideme.guidebook.document.block.recipes.LytCraftingRecipe;
-import guideme.guidebook.document.block.recipes.LytSmeltingRecipe;
-import guideme.guidebook.document.block.recipes.LytSmithingRecipe;
-import guideme.util.Platform;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstNode;
+import guideme.util.Platform;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -25,14 +22,6 @@ import org.jetbrains.annotations.Nullable;
  * Shows a Recipe-Book-Like representation of the recipe needed to craft a given item.
  */
 public class RecipeCompiler extends BlockTagCompiler {
-    private final List<RecipeTypeMapping<?, ?>> mappings = List.of(
-            new RecipeTypeMapping<>(RecipeType.CRAFTING, LytCraftingRecipe::new),
-            new RecipeTypeMapping<>(RecipeType.SMELTING, LytSmeltingRecipe::new),
-            new RecipeTypeMapping<>(RecipeType.SMITHING, LytSmithingRecipe::new),
-            new RecipeTypeMapping<>(AERecipeTypes.INSCRIBER, LytInscriberRecipe::new),
-            new RecipeTypeMapping<>(AERecipeTypes.CHARGER, LytChargerRecipe::new),
-            new RecipeTypeMapping<>(AERecipeTypes.TRANSFORM, LytTransformRecipe::new));
-
     @Override
     public Set<String> getTagNames() {
         return Set.of("Recipe", "RecipeFor");
@@ -56,7 +45,7 @@ public class RecipeCompiler extends BlockTagCompiler {
             var id = itemAndId.getLeft();
             var item = itemAndId.getRight();
 
-            for (var mapping : mappings) {
+            for (var mapping : getMappings(compiler)) {
                 var block = mapping.tryCreate(recipeManager, item);
                 if (block != null) {
                     block.setSourceNode((MdAstNode) el);
@@ -79,7 +68,7 @@ public class RecipeCompiler extends BlockTagCompiler {
                 return;
             }
 
-            for (var mapping : mappings) {
+            for (var mapping : getMappings(compiler)) {
                 var block = mapping.tryCreate(recipe);
                 if (block != null) {
                     block.setSourceNode((MdAstNode) el);
@@ -133,5 +122,20 @@ public class RecipeCompiler extends BlockTagCompiler {
 
             return null;
         }
+    }
+
+    private Iterable<RecipeTypeMapping<?, ?>> getMappings(PageCompiler compiler) {
+        List<RecipeTypeMapping<?, ?>> result = new ArrayList<>();
+        var mappings = new RecipeTypeMappingSupplier.RecipeTypeMappings() {
+            @Override
+            public <T extends Recipe<C>, C extends RecipeInput> void add(RecipeType<T> recipeType,
+                    Function<RecipeHolder<T>, LytBlock> factory) {
+                result.add(new RecipeTypeMapping<>(recipeType, factory));
+            }
+        };
+        for (var extension : compiler.getExtensions(RecipeTypeMappingSupplier.EXTENSION_POINT)) {
+            extension.collect(mappings);
+        }
+        return result;
     }
 }

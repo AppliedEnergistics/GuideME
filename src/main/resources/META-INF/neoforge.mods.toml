@@ -1,0 +1,27 @@
+modLoader = "javafml"
+loaderVersion = "*"
+issueTrackerURL = "https://github.com/AppliedEnergistics/GuideME/issues"
+displayURL = "https://github.com/AppliedEnergistics/GuideME/"
+logoFile = "logo.png"
+authors = "shartte"
+license = "See GitHub repository for details"
+
+[[mods]]
+modId = "guideme"
+version = "0.0.0"
+displayName = "GuideME"
+description = ""
+
+[[dependencies.ae2]]
+modId = "neoforge"
+type = "REQUIRED"
+versionRange = "${neoforge_version}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.ae2]]
+modId = "minecraft"
+type = "REQUIRED"
+versionRange = "${minecraft_version}"
+ordering = "NONE"
+side = "BOTH"

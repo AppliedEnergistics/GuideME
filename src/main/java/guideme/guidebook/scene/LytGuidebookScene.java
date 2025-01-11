@@ -1,5 +1,7 @@
 package guideme.guidebook.scene;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexSorting;
 import guideme.GuideME;
 import guideme.guidebook.color.ColorValue;
 import guideme.guidebook.color.SymbolicColor;
@@ -23,8 +25,6 @@ import guideme.guidebook.scene.annotation.SceneAnnotation;
 import guideme.guidebook.screen.GuideIconButton;
 import guideme.guidebook.screen.GuideScreen;
 import guideme.siteexport.OffScreenRenderer;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;

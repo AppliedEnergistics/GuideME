@@ -1,8 +1,8 @@
 package guideme.guidebook.indices;
 
+import com.google.gson.stream.JsonWriter;
 import guideme.guidebook.PageAnchor;
 import guideme.guidebook.compiler.ParsedGuidePage;
-import com.google.gson.stream.JsonWriter;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;

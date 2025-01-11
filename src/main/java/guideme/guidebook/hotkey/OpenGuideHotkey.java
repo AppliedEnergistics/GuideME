@@ -1,12 +1,10 @@
 package guideme.guidebook.hotkey;
 
-import guideme.guidebook.GuidebookText;
-import guideme.guidebook.PageAnchor;
-import guideme.guidebook.indices.ItemIndex;
-import guideme.guidebook.screen.GuideScreen;
-import appeng.core.AppEngClient;
 import com.google.common.base.Strings;
 import com.mojang.blaze3d.platform.InputConstants;
+import guideme.guidebook.GuidebookText;
+import guideme.guidebook.PageAnchor;
+import guideme.guidebook.screen.GuideScreen;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.ChatFormatting;
@@ -23,18 +21,14 @@ import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Adds a "Hold X to show guide" tooltip
  */
 public final class OpenGuideHotkey {
     private static final KeyMapping OPEN_GUIDE_MAPPING = new KeyMapping(
-            "key.ae2.guide", KeyConflictContext.GUI, InputConstants.Type.KEYSYM, InputConstants.KEY_G,
-            "key.ae2.category");
-
-    private static final Logger LOG = LoggerFactory.getLogger(OpenGuideHotkey.class);
+            "key.guideme.guide", KeyConflictContext.GUI, InputConstants.Type.KEYSYM, InputConstants.KEY_G,
+            "key.guideme.category");
 
     private static final int TICKS_TO_OPEN = 10;
 
@@ -140,8 +134,8 @@ public final class OpenGuideHotkey {
                 return;
             }
 
-            var itemIndex = AppEngClient.instance().getGuide().getIndex(ItemIndex.class);
-            guidebookPage = itemIndex.get(itemId);
+            // TODO var itemIndex = AppEngClient.instance().getGuide().getIndex(ItemIndex.class);
+            // TODO guidebookPage = itemIndex.get(itemId);
         }
 
         // Bump the ticks the key was held
@@ -152,7 +146,7 @@ public final class OpenGuideHotkey {
                     if (Minecraft.getInstance().screen instanceof GuideScreen guideScreen) {
                         guideScreen.navigateTo(guidebookPage);
                     } else {
-                        AppEngClient.instance().openGuideAtAnchor(guidebookPage);
+                        // TODO AppEngClient.instance().openGuideAtAnchor(guidebookPage);
                     }
                     // Reset the ticks held immediately to avoid reopening another page if
                     // our cursors lands on an item

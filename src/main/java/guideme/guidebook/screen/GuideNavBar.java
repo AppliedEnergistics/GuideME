@@ -1,6 +1,6 @@
 package guideme.guidebook.screen;
 
-import appeng.client.Point;
+import guideme.util.Point;
 import guideme.GuideME;
 import guideme.guidebook.color.ColorValue;
 import guideme.guidebook.color.SymbolicColor;

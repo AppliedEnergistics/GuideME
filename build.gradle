@@ -8,6 +8,7 @@ plugins {
 apply plugin: ProjectDefaultsPlugin
 apply plugin: FlatBuffersPlugin
 
+group = "appeng"
 base {
     archivesName = "guideme"
 }
@@ -32,7 +33,7 @@ dependencies {
     shaded "org.yaml:snakeyaml:${snakeyaml_version}"
     shaded "com.google.flatbuffers:flatbuffers-java:${flatbuffers_version}"
 
-    implementation(project(':markdown')) {
+    api(project(':markdown')) {
         transitive = false
     }
     // Do not inherit any transitive dependencies here since we rely on those transitive dependencies being
@@ -104,7 +105,7 @@ neoForge {
     version = project.neoforge_version
 
     mods {
-        ae2 {
+        guideme {
             sourceSet sourceSets.main
         }
     }
@@ -143,13 +144,10 @@ neoForge {
                     "guideDev.ae2guide.startupPage": "ae2:index.md"
             ]
         }
-        server {
-            server()
-        }
         data {
             data()
             programArguments = [
-                    '--mod', 'ae2',
+                    '--mod', 'guideme',
                     '--all',
                     '--output', file('src/generated/resources/').absolutePath,
                     '--existing', file('src/main/resources').absolutePath
@@ -173,7 +171,7 @@ neoForge {
 
     unitTest {
         enable()
-        testedMod = mods.ae2
+        testedMod = mods.guideme
     }
 }
 

@@ -1,14 +1,14 @@
 package guideme.guidebook.scene;
 
-import guideme.guidebook.scene.annotation.InWorldAnnotation;
-import guideme.guidebook.scene.annotation.InWorldAnnotationRenderer;
-import guideme.guidebook.scene.level.GuidebookLevel;
 import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
+import guideme.guidebook.scene.annotation.InWorldAnnotation;
+import guideme.guidebook.scene.annotation.InWorldAnnotationRenderer;
+import guideme.guidebook.scene.level.GuidebookLevel;
 import java.util.Collection;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;

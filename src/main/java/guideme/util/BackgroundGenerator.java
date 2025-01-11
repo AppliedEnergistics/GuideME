@@ -1,4 +1,4 @@
-package appeng.client.gui.style;
+package guideme.util;
 
 import net.minecraft.client.gui.GuiGraphics;
 
