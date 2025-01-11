@@ -23,6 +23,12 @@ dependencies {
     testRuntimeOnly "org.slf4j:slf4j-simple:1.7.36"
 }
 
+jar {
+    manifest {
+        attributes('FML-ModType': 'LIBRARY')
+    }
+}
+
 test {
     useJUnitPlatform()
 }

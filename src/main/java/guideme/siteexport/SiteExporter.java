@@ -12,18 +12,6 @@ import guideme.guidebook.indices.ItemIndex;
 import guideme.guidebook.navigation.NavigationNode;
 import guideme.siteexport.mdastpostprocess.PageExportPostProcessor;
 import guideme.util.Platform;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Set;
 import net.minecraft.DetectedVersion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -55,6 +43,19 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Exports a data package for use by the website.
@@ -247,6 +248,10 @@ public class SiteExporter implements ResourceExporter {
     protected void postProcess(SiteExportWriter writer) {
     }
 
+    protected String getModVersion() {
+        return System.getProperty("appeng.version", "unknown");
+    }
+
     @Override
     public Path copyResource(ResourceLocation id) {
         try {
@@ -366,8 +371,8 @@ public class SiteExporter implements ResourceExporter {
     }
 
     private void processPage(SiteExportWriter exportWriter,
-            ParsedGuidePage page,
-            GuidePage compiledPage) {
+                             ParsedGuidePage page,
+                             GuidePage compiledPage) {
 
         // Run post-processors on the AST
         PageExportPostProcessor.postprocess(this, page, compiledPage);
@@ -376,7 +381,7 @@ public class SiteExporter implements ResourceExporter {
     }
 
     private void writeSummary(String guideDataFilename) throws IOException {
-        var modVersion = System.getProperty("appeng.version", "unknown");
+        var modVersion = getModVersion();
         var generated = Instant.now().toEpochMilli();
         var gameVersion = DetectedVersion.tryDetectVersion().getName();
 
@@ -398,8 +403,8 @@ public class SiteExporter implements ResourceExporter {
     }
 
     private void processItems(Minecraft client,
-            SiteExportWriter siteExport,
-            Path outputFolder) throws IOException {
+                              SiteExportWriter siteExport,
+                              Path outputFolder) throws IOException {
         var iconsFolder = outputFolder.resolve("!items");
         if (Files.exists(iconsFolder)) {
             MoreFiles.deleteRecursively(iconsFolder, RecursiveDeleteOption.ALLOW_INSECURE);
@@ -446,8 +451,8 @@ public class SiteExporter implements ResourceExporter {
     }
 
     private void processFluids(Minecraft client,
-            SiteExportWriter siteExport,
-            Path outputFolder) throws IOException {
+                               SiteExportWriter siteExport,
+                               Path outputFolder) throws IOException {
         var fluidsFolder = outputFolder.resolve("!fluids");
         if (Files.exists(fluidsFolder)) {
             MoreFiles.deleteRecursively(fluidsFolder, RecursiveDeleteOption.ALLOW_INSECURE);
@@ -485,9 +490,9 @@ public class SiteExporter implements ResourceExporter {
                         },
                         sprite != null ? Set.of(sprite) : Set.of(),
                         false /*
-                               * no alpha for fluids since water is translucent but there's nothing behind it in our
-                               * icons
-                               */
+                         * no alpha for fluids since water is translucent but there's nothing behind it in our
+                         * icons
+                         */
                 );
 
                 String absIconUrl = "/" + outputFolder.relativize(iconPath).toString().replace('\\', '/');
@@ -499,10 +504,10 @@ public class SiteExporter implements ResourceExporter {
 
     @Override
     public Path renderAndWrite(OffScreenRenderer renderer,
-            String baseName,
-            Runnable renderRunnable,
-            Collection<TextureAtlasSprite> sprites,
-            boolean withAlpha) throws IOException {
+                               String baseName,
+                               Runnable renderRunnable,
+                               Collection<TextureAtlasSprite> sprites,
+                               boolean withAlpha) throws IOException {
         String extension;
         byte[] content;
         if (renderer.isAnimated(sprites)) {
