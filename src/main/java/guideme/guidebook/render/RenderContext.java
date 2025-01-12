@@ -1,6 +1,5 @@
 package guideme.guidebook.render;
 
-import guideme.util.FluidBlitter;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.guidebook.color.ColorValue;
@@ -9,6 +8,7 @@ import guideme.guidebook.color.LightDarkMode;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.layout.MinecraftFontMetrics;
 import guideme.guidebook.style.ResolvedTextStyle;
+import guideme.util.FluidBlitter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;

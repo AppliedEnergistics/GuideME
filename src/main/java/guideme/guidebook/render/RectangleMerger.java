@@ -1,7 +1,6 @@
 package guideme.guidebook.render;
 
 import guideme.guidebook.document.LytRect;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;

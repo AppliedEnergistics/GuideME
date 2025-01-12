@@ -1,6 +1,5 @@
 package guideme.guidebook.document.block.recipes;
 
-import guideme.GuideME;
 import guideme.guidebook.document.DefaultStyles;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.document.block.LytSlot;
@@ -11,7 +10,6 @@ import guideme.guidebook.render.RenderContext;
 import guideme.siteexport.ExportableResourceProvider;
 import guideme.util.Platform;
 import java.util.List;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;

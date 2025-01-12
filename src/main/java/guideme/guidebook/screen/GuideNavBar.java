@@ -1,6 +1,5 @@
 package guideme.guidebook.screen;
 
-import guideme.util.Point;
 import guideme.GuideME;
 import guideme.guidebook.color.ColorValue;
 import guideme.guidebook.color.SymbolicColor;
@@ -12,6 +11,7 @@ import guideme.guidebook.layout.MinecraftFontMetrics;
 import guideme.guidebook.navigation.NavigationNode;
 import guideme.guidebook.navigation.NavigationTree;
 import guideme.guidebook.render.SimpleRenderContext;
+import guideme.util.Point;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;

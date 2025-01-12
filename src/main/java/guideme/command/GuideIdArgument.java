@@ -8,14 +8,11 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import guideme.GuideME;
 import guideme.guidebook.Guide;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.server.command.ModIdArgument;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * An argument for commands that identifies a registered GuideME guide.
@@ -23,16 +20,16 @@ import java.util.concurrent.CompletableFuture;
 public class GuideIdArgument implements ArgumentType<ResourceLocation> {
     private static final List<String> EXAMPLES = List.of("ae2:guide");
 
-    public static ModIdArgument argument() {
-        return new ModIdArgument();
+    public static GuideIdArgument argument() {
+        return new GuideIdArgument();
     }
 
     public ResourceLocation parse(StringReader reader) throws CommandSyntaxException {
         return ResourceLocation.read(reader);
     }
 
-    public static Guide getGuide(CommandContext<CommandSourceStack> context, String name) {
-        var id = (ResourceLocation) context.getArgument(name, ResourceLocation.class);
+    public static Guide getGuide(CommandContext<?> context, String name) {
+        var id = context.getArgument(name, ResourceLocation.class);
 
         return GuideME.getGuideById(id);
     }

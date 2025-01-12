@@ -8,7 +8,6 @@ import guideme.guidebook.GuidebookText;
 import guideme.guidebook.PageAnchor;
 import guideme.guidebook.indices.ItemIndex;
 import guideme.guidebook.screen.GuideScreen;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -25,7 +24,6 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
-import org.jetbrains.annotations.ApiStatus;
 
 /**
  * Adds a "Hold X to show guide" tooltip
@@ -50,7 +48,8 @@ public final class OpenGuideHotkey {
     private OpenGuideHotkey() {
     }
 
-    private record FoundPage(Guide guide, PageAnchor page) {}
+    private record FoundPage(Guide guide, PageAnchor page) {
+    }
 
     public static void init() {
         NeoForge.EVENT_BUS.addListener(
@@ -161,7 +160,8 @@ public final class OpenGuideHotkey {
                     var foundPage = guidebookPages.getFirst();
                     var guide = foundPage.guide();
 
-                    if (Minecraft.getInstance().screen instanceof GuideScreen guideScreen && guideScreen.getGuide() == guide) {
+                    if (Minecraft.getInstance().screen instanceof GuideScreen guideScreen
+                            && guideScreen.getGuide() == guide) {
                         guideScreen.navigateTo(foundPage.page());
                     } else {
                         GuideME.openGuideAtAnchor(guide, foundPage.page());

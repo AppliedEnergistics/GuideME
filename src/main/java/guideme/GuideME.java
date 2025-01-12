@@ -1,14 +1,14 @@
 package guideme;
 
-import guideme.command.GuideIdArgument;
+import guideme.command.GuideCommand;
 import guideme.data.GuideMELanguageProvider;
 import guideme.guidebook.Guide;
 import guideme.guidebook.PageAnchor;
 import guideme.guidebook.hotkey.OpenGuideHotkey;
 import guideme.guidebook.screen.GlobalInMemoryHistory;
 import guideme.guidebook.screen.GuideScreen;
+import java.util.Objects;
 import net.minecraft.client.Minecraft;
-import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -23,6 +23,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
@@ -31,8 +32,6 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 @Mod(value = GuideME.MOD_ID, dist = Dist.CLIENT)
 public class GuideME {
@@ -64,10 +63,15 @@ public class GuideME {
             }
         });
         modBus.addListener(this::gatherData);
+        modBus.addListener(this::registerHotkeys);
 
         NeoForge.EVENT_BUS.addListener(GuideME::registerClientCommands);
 
         OpenGuideHotkey.init();
+    }
+
+    private void registerHotkeys(RegisterKeyMappingsEvent e) {
+        e.register(OpenGuideHotkey.getHotkey());
     }
 
     public static ResourceLocation makeId(String path) {
@@ -82,16 +86,7 @@ public class GuideME {
 
     private static void registerClientCommands(RegisterClientCommandsEvent evt) {
         var dispatcher = evt.getDispatcher();
-
-        dispatcher.register(Commands.literal("guideme").then(
-                Commands.literal("export_site_data")
-                        .then(Commands.argument("guide", GuideIdArgument.argument()))
-                        .executes(context -> {
-                            // Do we have a registered site exporter for the guide?
-                            // TODO
-                            return 0;
-                        })));
-
+        GuideCommand.register(dispatcher);
     }
 
     private void gatherData(GatherDataEvent event) {

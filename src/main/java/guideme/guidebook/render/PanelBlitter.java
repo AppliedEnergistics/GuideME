@@ -1,11 +1,10 @@
 package guideme.guidebook.render;
 
 import guideme.guidebook.document.LytRect;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.Rect2i;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.Rect2i;
 
 public class PanelBlitter {
 

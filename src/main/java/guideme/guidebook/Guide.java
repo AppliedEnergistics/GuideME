@@ -14,6 +14,22 @@ import guideme.guidebook.navigation.NavigationTree;
 import guideme.guidebook.screen.GlobalInMemoryHistory;
 import guideme.guidebook.screen.GuideScreen;
 import guideme.util.Platform;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.LoadingOverlay;
@@ -46,23 +62,6 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-
 /**
  * Encapsulates a Guide, which consists of a collection of Markdown pages and associated content, loaded from a
  * guide-specific subdirectory of resource packs.
@@ -86,13 +85,13 @@ public final class Guide implements PageCollection {
     private final String developmentSourceNamespace;
 
     private Guide(ResourceLocation id,
-                  String defaultNamespace,
-                  String folder,
-                  @Nullable Path developmentSourceFolder,
-                  @Nullable String developmentSourceNamespace,
-                  Map<Class<?>, PageIndex> indices,
-                  ExtensionCollection extensions,
-                  boolean availableToOpenHotkey) {
+            String defaultNamespace,
+            String folder,
+            @Nullable Path developmentSourceFolder,
+            @Nullable String developmentSourceNamespace,
+            Map<Class<?>, PageIndex> indices,
+            ExtensionCollection extensions,
+            boolean availableToOpenHotkey) {
         this.defaultNamespace = defaultNamespace;
         this.folder = folder;
         this.id = id;
@@ -316,7 +315,7 @@ public final class Guide implements PageCollection {
 
         @Override
         protected Map<ResourceLocation, ParsedGuidePage> prepare(ResourceManager resourceManager,
-                                                                 ProfilerFiller profiler) {
+                ProfilerFiller profiler) {
             profiler.startTick();
             Map<ResourceLocation, ParsedGuidePage> pages = new HashMap<>();
 
@@ -342,7 +341,7 @@ public final class Guide implements PageCollection {
 
         @Override
         protected void apply(Map<ResourceLocation, ParsedGuidePage> pages, ResourceManager resourceManager,
-                             ProfilerFiller profiler) {
+                ProfilerFiller profiler) {
             profiler.startTick();
             Guide.this.pages = pages;
             profiler.push("indices");
@@ -489,9 +488,8 @@ public final class Guide implements PageCollection {
         }
 
         /**
-         * Sets the default resource namespace for this guide. This namespace is used for resources
-         * loaded from a plain folder during development and defaults to the namespace of the
-         * guide id.
+         * Sets the default resource namespace for this guide. This namespace is used for resources loaded from a plain
+         * folder during development and defaults to the namespace of the guide id.
          */
         public Builder defaultNamespace(String defaultNamespace) {
             // Both folder and default namespace need to be valid resource paths
@@ -503,12 +501,12 @@ public final class Guide implements PageCollection {
         }
 
         /**
-         * Sets the folder within the resource pack, from which pages for this guide will be loaded.
-         * Please note that this name must be unique across all namespaces, since it would otherwise cause
-         * pages from guides added by other mods to show up in yours.
+         * Sets the folder within the resource pack, from which pages for this guide will be loaded. Please note that
+         * this name must be unique across all namespaces, since it would otherwise cause pages from guides added by
+         * other mods to show up in yours.
          * <p/>
-         * This defaults to {@code guides/<namespace>/<path>} with namespace and path coming from the guide id,
-         * which should implicitly make it unique.
+         * This defaults to {@code guides/<namespace>/<path>} with namespace and path coming from the guide id, which
+         * should implicitly make it unique.
          */
         public Builder folder(String folder) {
             if (!ResourceLocation.isValidPath(folder)) {
@@ -677,7 +675,8 @@ public final class Guide implements PageCollection {
             }
 
             if (availableToOpenHotkey && this.modEventBus == null) {
-                throw new IllegalStateException("This guide will be unavailable to the open hotkey without providing a modbus for registration");
+                throw new IllegalStateException(
+                        "This guide will be unavailable to the open hotkey without providing a modbus for registration");
             }
 
             if (this.modEventBus != null) {
