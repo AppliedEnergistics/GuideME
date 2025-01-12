@@ -1,9 +1,12 @@
-package guideme.guidebook.style;
+package guideme.api.style;
 
 import guideme.guidebook.document.DefaultStyles;
 import java.util.function.Consumer;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Interface implemented on layout elements that can be styled and inherit styling from their parents.
+ */
 public interface Styleable {
     TextStyle getStyle();
 

@@ -1,8 +1,8 @@
 package guideme.guidebook.screen;
 
 import guideme.GuideME;
-import guideme.guidebook.color.ColorValue;
-import guideme.guidebook.color.SymbolicColor;
+import guideme.api.color.ColorValue;
+import guideme.api.color.SymbolicColor;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.document.block.LytParagraph;
 import guideme.guidebook.document.flow.LytFlowSpan;

@@ -1,4 +1,4 @@
-package guideme.guidebook.color;
+package guideme.api.color;
 
 public interface ColorValue {
     /**

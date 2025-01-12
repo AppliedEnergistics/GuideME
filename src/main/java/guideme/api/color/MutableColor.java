@@ -1,10 +1,11 @@
-package guideme.guidebook.color;
+package guideme.api.color;
 
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 
 /**
  * A helper for mutating color values.
+ * The color values are stored as {@code float} components between 0 and 1.
  */
 public final class MutableColor implements ColorValue {
     private float r = 1f;
@@ -12,9 +13,19 @@ public final class MutableColor implements ColorValue {
     private float b = 1f;
     private float a = 1f;
 
+    /**
+     * Initializes a mutable color that has 1 for all components.
+     */
     public MutableColor() {
     }
 
+    /**
+     * Initializes a color value with alpha=1.
+     *
+     * @param r
+     * @param g
+     * @param b
+     */
     public MutableColor(float r, float g, float b) {
         this.r = r;
         this.g = g;
@@ -48,10 +59,9 @@ public final class MutableColor implements ColorValue {
                 fromByte(a));
     }
 
-    public static MutableColor of(ColorValue color) {
-        return of(color, LightDarkMode.current());
-    }
-
+    /**
+     * Resolves a symbolic color value and copies it into a new mutable color.
+     */
     public static MutableColor of(ColorValue color, LightDarkMode mode) {
         return ofArgb32(color.resolve(mode));
     }

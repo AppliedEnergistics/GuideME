@@ -6,6 +6,7 @@ import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
+import guideme.api.color.LightDarkMode;
 import guideme.guidebook.scene.annotation.InWorldAnnotation;
 import guideme.guidebook.scene.annotation.InWorldAnnotationRenderer;
 import guideme.guidebook.scene.level.GuidebookLevel;
@@ -43,22 +44,24 @@ public class GuidebookLevelRenderer {
     }
 
     public void render(GuidebookLevel level,
-            CameraSettings cameraSettings,
-            Collection<InWorldAnnotation> annotations) {
+                       CameraSettings cameraSettings,
+                       Collection<InWorldAnnotation> annotations,
+                       LightDarkMode lightDarkMode) {
         lightmap.update(level);
 
         RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
         RenderSystem.setShaderGameTime(System.currentTimeMillis(), 0);
 
         var buffers = Minecraft.getInstance().renderBuffers().bufferSource();
-        render(level, cameraSettings, buffers, annotations);
+        render(level, cameraSettings, buffers, annotations, lightDarkMode);
         RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
     }
 
     public void render(GuidebookLevel level,
-            CameraSettings cameraSettings,
-            MultiBufferSource.BufferSource buffers,
-            Collection<InWorldAnnotation> annotations) {
+                       CameraSettings cameraSettings,
+                       MultiBufferSource.BufferSource buffers,
+                       Collection<InWorldAnnotation> annotations,
+                       LightDarkMode lightDarkMode) {
         lightmap.update(level);
 
         var lightEngine = level.getLightEngine();
@@ -93,7 +96,7 @@ public class GuidebookLevelRenderer {
 
         renderContent(level, buffers);
 
-        InWorldAnnotationRenderer.render(buffers, annotations);
+        InWorldAnnotationRenderer.render(buffers, annotations, lightDarkMode);
 
         modelViewStack.popMatrix();
         RenderSystem.applyModelViewMatrix();

@@ -6,8 +6,8 @@ import guideme.guidebook.document.flow.LytFlowSpan;
 import guideme.guidebook.document.flow.LytFlowText;
 import guideme.guidebook.layout.FontMetrics;
 import guideme.guidebook.layout.LayoutContext;
-import guideme.guidebook.style.ResolvedTextStyle;
-import guideme.guidebook.style.TextAlignment;
+import guideme.api.style.ResolvedTextStyle;
+import guideme.api.style.TextAlignment;
 import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 

@@ -1,8 +1,7 @@
-package guideme.guidebook.color;
+package guideme.api.color;
 
 /**
- * TODO Colors from WIP patchouli book "nameplate_color": "8A5BA4", "link_color": "8A5BA4", "link_hover_color":
- * "D7BBEC", "macros": { "$(item)": "$(#582E70)", "$(thing)": "$(#582E70)", "$(todo)": "$(#FF0000)" },
+ * Symbolic colors can be overridden more easily in styles and define both a light- and dark-themed color variant.
  */
 public enum SymbolicColor implements ColorValue {
     LINK(Colors.rgb(0, 213, 255), Colors.rgb(0, 213, 255)),

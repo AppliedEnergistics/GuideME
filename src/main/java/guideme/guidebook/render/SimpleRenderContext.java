@@ -5,8 +5,9 @@ import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import guideme.guidebook.color.ColorValue;
-import guideme.guidebook.color.LightDarkMode;
+import guideme.GuideME;
+import guideme.api.color.ColorValue;
+import guideme.api.color.LightDarkMode;
 import guideme.guidebook.document.LytRect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -21,7 +22,7 @@ public record SimpleRenderContext(
         @Override LightDarkMode lightDarkMode) implements RenderContext {
 
     public SimpleRenderContext(LytRect viewport, GuiGraphics guiGraphics) {
-        this(viewport, guiGraphics, LightDarkMode.current());
+        this(viewport, guiGraphics, GuideME.currentLightDarkMode());
     }
 
     @Override

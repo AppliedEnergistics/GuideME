@@ -1,4 +1,4 @@
-package guideme.guidebook.style;
+package guideme.api.style;
 
 public enum TextAlignment {
     LEFT,

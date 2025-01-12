@@ -1,8 +1,11 @@
-package guideme.guidebook.style;
+package guideme.api.style;
 
-import guideme.guidebook.color.ColorValue;
+import guideme.api.color.ColorValue;
 import net.minecraft.resources.ResourceLocation;
 
+/**
+ * Represents the styling of text for rendering.
+ */
 public record ResolvedTextStyle(
         float fontScale,
         boolean bold,

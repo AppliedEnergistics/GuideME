@@ -5,7 +5,7 @@ import guideme.guidebook.document.flow.LytFlowContent;
 import guideme.guidebook.document.flow.LytFlowSpan;
 import guideme.guidebook.layout.LayoutContext;
 import guideme.guidebook.render.RenderContext;
-import guideme.guidebook.style.TextAlignment;
+import guideme.api.style.TextAlignment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;

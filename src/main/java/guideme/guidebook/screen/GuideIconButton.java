@@ -2,8 +2,8 @@ package guideme.guidebook.screen;
 
 import guideme.GuideME;
 import guideme.guidebook.GuidebookText;
-import guideme.guidebook.color.LightDarkMode;
-import guideme.guidebook.color.SymbolicColor;
+import guideme.api.color.LightDarkMode;
+import guideme.api.color.SymbolicColor;
 import guideme.util.Blitter;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -56,7 +56,7 @@ public class GuideIconButton extends Button {
             color = SymbolicColor.ICON_BUTTON_HOVER;
         }
 
-        var resolved = color.resolve(LightDarkMode.current());
+        var resolved = color.resolve(GuideME.currentLightDarkMode());
 
         Blitter.texture(GuideME.makeId("textures/guide/buttons.png"), 64, 64)
                 .src(role.iconSrcX, role.iconSrcY, 16, 16)

@@ -2,7 +2,7 @@ package guideme.guidebook.document.flow;
 
 import guideme.GuideME;
 import guideme.guidebook.PageAnchor;
-import guideme.guidebook.color.SymbolicColor;
+import guideme.api.color.SymbolicColor;
 import guideme.guidebook.screen.GuideScreen;
 import java.net.URI;
 import java.util.function.Consumer;

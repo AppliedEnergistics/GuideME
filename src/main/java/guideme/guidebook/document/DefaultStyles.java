@@ -1,18 +1,20 @@
 package guideme.guidebook.document;
 
-import guideme.guidebook.color.ColorValue;
-import guideme.guidebook.color.ConstantColor;
-import guideme.guidebook.color.SymbolicColor;
-import guideme.guidebook.style.ResolvedTextStyle;
-import guideme.guidebook.style.TextAlignment;
-import guideme.guidebook.style.TextStyle;
-import guideme.guidebook.style.WhiteSpaceMode;
+import guideme.api.color.ConstantColor;
+import guideme.api.color.SymbolicColor;
+import guideme.api.style.ResolvedTextStyle;
+import guideme.api.style.TextAlignment;
+import guideme.api.style.TextStyle;
+import guideme.api.style.WhiteSpaceMode;
 import net.minecraft.client.Minecraft;
 
 public final class DefaultStyles {
     private DefaultStyles() {
     }
 
+    /**
+     * The base style everything else is based on.
+     */
     public static final ResolvedTextStyle BASE_STYLE = new ResolvedTextStyle(
             1,
             false,
@@ -21,19 +23,19 @@ public final class DefaultStyles {
             false,
             false,
             Minecraft.UNIFORM_FONT,
-            (ColorValue) SymbolicColor.BODY_TEXT,
+            SymbolicColor.BODY_TEXT,
             WhiteSpaceMode.NORMAL,
             TextAlignment.LEFT,
             false);
 
     public static final TextStyle BODY_TEXT = TextStyle.builder()
             .font(Minecraft.UNIFORM_FONT)
-            .color((ColorValue) SymbolicColor.BODY_TEXT)
+            .color(SymbolicColor.BODY_TEXT)
             .build();
 
     public static final TextStyle CRAFTING_RECIPE_TYPE = TextStyle.builder()
             .font(Minecraft.UNIFORM_FONT)
-            .color((ColorValue) SymbolicColor.CRAFTING_RECIPE_TYPE)
+            .color(SymbolicColor.CRAFTING_RECIPE_TYPE)
             .build();
 
     public static final TextStyle HEADING1 = TextStyle.builder()

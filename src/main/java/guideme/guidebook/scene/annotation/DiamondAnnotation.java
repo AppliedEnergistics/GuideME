@@ -1,9 +1,9 @@
 package guideme.guidebook.scene.annotation;
 
 import guideme.GuideME;
-import guideme.guidebook.color.ColorValue;
-import guideme.guidebook.color.ConstantColor;
-import guideme.guidebook.color.MutableColor;
+import guideme.api.color.ColorValue;
+import guideme.api.color.ConstantColor;
+import guideme.api.color.MutableColor;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.render.RenderContext;
 import guideme.guidebook.scene.GuidebookScene;
@@ -45,8 +45,8 @@ public class DiamondAnnotation extends OverlayAnnotation {
         var outer = outerColor;
         var inner = color;
         if (isHovered()) {
-            outer = MutableColor.of(outer).lighter(20);
-            inner = MutableColor.of(inner).lighter(20);
+            outer = context.mutableColor(outer).lighter(20);
+            inner = context.mutableColor(inner).lighter(20);
         }
 
         var texture = Minecraft.getInstance().getTextureManager()

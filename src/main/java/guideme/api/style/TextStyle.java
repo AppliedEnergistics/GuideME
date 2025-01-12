@@ -1,9 +1,12 @@
-package guideme.guidebook.style;
+package guideme.api.style;
 
-import guideme.guidebook.color.ColorValue;
+import guideme.api.color.ColorValue;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * A text style that only contains a subset of properties found in {@link ResolvedTextStyle}.
+ */
 public record TextStyle(
         @Nullable Float fontScale,
         @Nullable Boolean bold,

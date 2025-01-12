@@ -1,8 +1,8 @@
 package guideme.guidebook.document.flow;
 
 import guideme.guidebook.document.block.LytVisitor;
-import guideme.guidebook.style.Styleable;
-import guideme.guidebook.style.TextStyle;
+import guideme.api.style.Styleable;
+import guideme.api.style.TextStyle;
 import org.jetbrains.annotations.Nullable;
 
 public class LytFlowContent implements Styleable {

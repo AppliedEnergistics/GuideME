@@ -2,12 +2,13 @@ package guideme.guidebook.render;
 
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
-import guideme.guidebook.color.ColorValue;
-import guideme.guidebook.color.ConstantColor;
-import guideme.guidebook.color.LightDarkMode;
+import guideme.api.color.ColorValue;
+import guideme.api.color.ConstantColor;
+import guideme.api.color.LightDarkMode;
+import guideme.api.color.MutableColor;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.layout.MinecraftFontMetrics;
-import guideme.guidebook.style.ResolvedTextStyle;
+import guideme.api.style.ResolvedTextStyle;
 import guideme.util.FluidBlitter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
@@ -47,13 +48,12 @@ public interface RenderContext {
 
     void fillRect(LytRect rect, ColorValue topLeft, ColorValue topRight, ColorValue bottomRight, ColorValue bottomLeft);
 
-    default void drawIcon(int x, int y, ResourceLocation guiSprite) {
+    default void drawIcon(int x, int y, GuiSprite guiSprite) {
         drawIcon(x, y, guiSprite, ConstantColor.WHITE);
     }
 
-    default void drawIcon(int x, int y, ResourceLocation guiSprite, ColorValue color) {
-        var sprite = Minecraft.getInstance().getGuiSprites().getSprite(guiSprite);
-        drawIcon(x, y, sprite, color);
+    default void drawIcon(int x, int y, GuiSprite guiSprite, ColorValue color) {
+        drawIcon(x, y, guiSprite.atlasSprite(lightDarkMode()), color);
     }
 
     default void drawIcon(int x, int y, TextureAtlasSprite sprite, ColorValue color) {
@@ -61,17 +61,16 @@ public interface RenderContext {
         fillIcon(x, y, contents.width(), contents.height(), sprite, color);
     }
 
-    default void fillIcon(LytRect bounds, ResourceLocation guiSprite) {
+    default void fillIcon(LytRect bounds, GuiSprite guiSprite) {
         fillIcon(bounds.x(), bounds.y(), bounds.width(), bounds.height(), guiSprite);
     }
 
-    default void fillIcon(int x, int y, int width, int height, ResourceLocation guiSprite) {
+    default void fillIcon(int x, int y, int width, int height, GuiSprite guiSprite) {
         fillIcon(x, y, width, height, guiSprite, ConstantColor.WHITE);
     }
 
-    default void fillIcon(int x, int y, int width, int height, ResourceLocation guiSprite, ColorValue color) {
-        var sprite = Minecraft.getInstance().getGuiSprites().getSprite(guiSprite);
-        fillIcon(x, y, width, height, sprite, color);
+    default void fillIcon(int x, int y, int width, int height, GuiSprite guiSprite, ColorValue color) {
+        fillIcon(x, y, width, height, guiSprite.atlasSprite(lightDarkMode()), color);
     }
 
     default void fillIcon(int x, int y, int width, int height, TextureAtlasSprite sprite, ColorValue color) {
@@ -238,7 +237,7 @@ public interface RenderContext {
     void renderItem(ItemStack stack, int x, int y, int z, float width, float height);
 
     default void renderPanel(LytRect bounds) {
-        var panelBlitter = new PanelBlitter();
+        var panelBlitter = new PanelBlitter(lightDarkMode());
         panelBlitter.addBounds(0, 0, bounds.width(), bounds.height());
         panelBlitter.blit(guiGraphics(), bounds.x(), bounds.y());
     }
@@ -255,5 +254,9 @@ public interface RenderContext {
 
     default void popScissor() {
         guiGraphics().disableScissor();
+    }
+
+    default MutableColor mutableColor(ColorValue symbolicColor) {
+        return MutableColor.of(symbolicColor, lightDarkMode());
     }
 }

@@ -1,6 +1,6 @@
 package guideme.guidebook.scene.annotation;
 
-import guideme.guidebook.color.ConstantColor;
+import guideme.api.color.ConstantColor;
 import guideme.guidebook.compiler.PageCompiler;
 import guideme.guidebook.compiler.tags.MdxAttrs;
 import guideme.guidebook.document.LytErrorSink;

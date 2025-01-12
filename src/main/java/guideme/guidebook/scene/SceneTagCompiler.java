@@ -1,7 +1,7 @@
 
 package guideme.guidebook.scene;
 
-import guideme.guidebook.color.SymbolicColor;
+import guideme.api.color.SymbolicColor;
 import guideme.guidebook.compiler.PageCompiler;
 import guideme.guidebook.compiler.tags.BlockTagCompiler;
 import guideme.guidebook.compiler.tags.MdxAttrs;

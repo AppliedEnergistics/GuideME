@@ -3,8 +3,9 @@ package guideme.guidebook.scene;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import guideme.GuideME;
-import guideme.guidebook.color.ColorValue;
-import guideme.guidebook.color.SymbolicColor;
+import guideme.api.color.ColorValue;
+import guideme.api.color.LightDarkMode;
+import guideme.api.color.SymbolicColor;
 import guideme.guidebook.document.LytPoint;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.document.LytSize;
@@ -211,7 +212,7 @@ public class LytGuidebookScene extends LytBox {
                 scene.getCameraSettings().setViewportSize(prefSize);
                 var annotations = hideAnnotations ? Collections.<InWorldAnnotation>emptyList()
                         : scene.getInWorldAnnotations();
-                renderer.render(scene.getLevel(), scene.getCameraSettings(), annotations);
+                renderer.render(scene.getLevel(), scene.getCameraSettings(), annotations, LightDarkMode.LIGHT_MODE);
             });
         }
     }
@@ -315,7 +316,7 @@ public class LytGuidebookScene extends LytBox {
             } else {
                 inWorldAnnotations = scene.getInWorldAnnotations();
             }
-            renderer.render(scene.getLevel(), scene.getCameraSettings(), inWorldAnnotations);
+            renderer.render(scene.getLevel(), scene.getCameraSettings(), inWorldAnnotations, context.lightDarkMode());
 
             renderDebugCrosshairs();
 

@@ -1,4 +1,4 @@
-package guideme.guidebook.style;
+package guideme.api.style;
 
 /**
  * See https://developer.mozilla.org/en-US/docs/Web/CSS/white-space

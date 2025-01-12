@@ -6,7 +6,8 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import guideme.GuideME;
-import guideme.guidebook.color.MutableColor;
+import guideme.api.color.LightDarkMode;
+import guideme.api.color.MutableColor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -39,7 +40,7 @@ public final class InWorldAnnotationRenderer {
     private InWorldAnnotationRenderer() {
     }
 
-    public static void render(MultiBufferSource.BufferSource buffers, Iterable<InWorldAnnotation> annotations) {
+    public static void render(MultiBufferSource.BufferSource buffers, Iterable<InWorldAnnotation> annotations, LightDarkMode lightDarkMode) {
         var sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS)
                 .apply(GuideME.makeId("block/noise"));
 
@@ -50,7 +51,7 @@ public final class InWorldAnnotationRenderer {
             }
 
             if (annotation instanceof InWorldBoxAnnotation boxAnnotation) {
-                var color = MutableColor.of(boxAnnotation.color());
+                var color = MutableColor.of(boxAnnotation.color(), lightDarkMode);
                 color.darker(50).setAlpha(color.alpha() * 0.5f);
                 if (boxAnnotation.isHovered()) {
                     color.lighter(50);
@@ -62,7 +63,7 @@ public final class InWorldAnnotationRenderer {
                         boxAnnotation.thickness(),
                         sprite);
             } else if (annotation instanceof InWorldLineAnnotation lineAnnotation) {
-                var color = MutableColor.of(lineAnnotation.color());
+                var color = MutableColor.of(lineAnnotation.color(), lightDarkMode);
                 color.darker(50).setAlpha(color.alpha() * 0.5f);
                 if (lineAnnotation.isHovered()) {
                     color.lighter(50);
@@ -92,7 +93,7 @@ public final class InWorldAnnotationRenderer {
                 }
 
                 if (annotation instanceof InWorldBoxAnnotation boxAnnotation) {
-                    var color = MutableColor.of(boxAnnotation.color());
+                    var color = MutableColor.of(boxAnnotation.color(), lightDarkMode);
                     if (boxAnnotation.isHovered()) {
                         color.lighter(50);
                     }
@@ -103,7 +104,7 @@ public final class InWorldAnnotationRenderer {
                             boxAnnotation.thickness(),
                             sprite);
                 } else if (annotation instanceof InWorldLineAnnotation lineAnnotation) {
-                    var color = MutableColor.of(lineAnnotation.color());
+                    var color = MutableColor.of(lineAnnotation.color(), lightDarkMode);
                     if (lineAnnotation.isHovered()) {
                         color.lighter(50);
                     }

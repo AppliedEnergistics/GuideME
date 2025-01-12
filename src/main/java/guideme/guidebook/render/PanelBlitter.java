@@ -1,5 +1,6 @@
 package guideme.guidebook.render;
 
+import guideme.api.color.LightDarkMode;
 import guideme.guidebook.document.LytRect;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +27,9 @@ public class PanelBlitter {
     private final SpriteSlice INNER_BOTTOM_RIGHT;
     private final SpriteSlice INNER_BOTTOM_LEFT;
 
-    public PanelBlitter() {
-        var window = GuiAssets.getNineSliceSprite(GuiAssets.WINDOW_SPRITE);
-        var inner = GuiAssets.getNineSliceSprite(GuiAssets.INNER_BORDER_SPRITE);
+    public PanelBlitter(LightDarkMode mode) {
+        var window = GuiAssets.getNineSliceSprite(GuiAssets.WINDOW_SPRITE, mode);
+        var inner = GuiAssets.getNineSliceSprite(GuiAssets.INNER_BORDER_SPRITE, mode);
 
         CENTER = new SpriteSlice(window, 4);
         OUTER_TOP_LEFT = new SpriteSlice(window, 0);

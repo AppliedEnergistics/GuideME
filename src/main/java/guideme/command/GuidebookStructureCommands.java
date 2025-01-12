@@ -1,4 +1,4 @@
-package guideme.guidebook.command;
+package guideme.command;
 
 import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
 

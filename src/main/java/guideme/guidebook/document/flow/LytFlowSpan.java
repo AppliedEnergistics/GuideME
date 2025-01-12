@@ -1,7 +1,7 @@
 package guideme.guidebook.document.flow;
 
 import guideme.guidebook.document.block.LytVisitor;
-import guideme.guidebook.style.Styleable;
+import guideme.api.style.Styleable;
 import java.util.ArrayList;
 import java.util.List;
 

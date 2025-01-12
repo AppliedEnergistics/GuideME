@@ -6,11 +6,11 @@ import guideme.guidebook.document.interaction.InteractiveElement;
 import guideme.guidebook.document.interaction.ItemTooltip;
 import guideme.guidebook.layout.LayoutContext;
 import guideme.guidebook.render.GuiAssets;
+import guideme.guidebook.render.GuiSprite;
 import guideme.guidebook.render.RenderContext;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
@@ -69,11 +69,11 @@ public class LytSlot extends LytBlock implements InteractiveElement {
         var x = bounds.x();
         var y = bounds.y();
 
-        ResourceLocation texture;
+        GuiSprite texture;
         if (largeSlot) {
-            texture = context.isDarkMode() ? GuiAssets.LARGE_SLOT_DARK : GuiAssets.LARGE_SLOT_LIGHT;
+            texture = GuiAssets.LARGE_SLOT;
         } else {
-            texture = context.isDarkMode() ? GuiAssets.SLOT_DARK : GuiAssets.SLOT_LIGHT;
+            texture = GuiAssets.SLOT;
         }
         context.fillIcon(bounds, texture);
 

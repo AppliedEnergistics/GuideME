@@ -1,13 +1,14 @@
 package guideme;
 
+import guideme.api.color.LightDarkMode;
 import guideme.command.GuideCommand;
 import guideme.data.GuideMELanguageProvider;
 import guideme.guidebook.Guide;
 import guideme.guidebook.PageAnchor;
 import guideme.guidebook.hotkey.OpenGuideHotkey;
+import guideme.guidebook.render.GuiAssets;
 import guideme.guidebook.screen.GlobalInMemoryHistory;
 import guideme.guidebook.screen.GuideScreen;
-import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -24,6 +25,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
@@ -32,6 +34,8 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 @Mod(value = GuideME.MOD_ID, dist = Dist.CLIENT)
 public class GuideME {
@@ -66,8 +70,19 @@ public class GuideME {
         modBus.addListener(this::registerHotkeys);
 
         NeoForge.EVENT_BUS.addListener(GuideME::registerClientCommands);
+        modBus.addListener(this::resetSprites);
 
         OpenGuideHotkey.init();
+    }
+
+    public static LightDarkMode currentLightDarkMode() {
+        return LightDarkMode.LIGHT_MODE;
+    }
+
+    private void resetSprites(TextureAtlasStitchedEvent event) {
+        if (event.getAtlas().location().equals(GuiAssets.GUI_SPRITE_ATLAS)) {
+            GuiAssets.resetSprites();
+        }
     }
 
     private void registerHotkeys(RegisterKeyMappingsEvent e) {

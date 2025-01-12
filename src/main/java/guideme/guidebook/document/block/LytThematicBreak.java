@@ -1,6 +1,6 @@
 package guideme.guidebook.document.block;
 
-import guideme.guidebook.color.SymbolicColor;
+import guideme.api.color.SymbolicColor;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.layout.LayoutContext;
 import guideme.guidebook.render.RenderContext;

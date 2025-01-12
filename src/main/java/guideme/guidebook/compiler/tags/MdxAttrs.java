@@ -1,7 +1,7 @@
 package guideme.guidebook.compiler.tags;
 
-import guideme.guidebook.color.ColorValue;
-import guideme.guidebook.color.ConstantColor;
+import guideme.api.color.ColorValue;
+import guideme.api.color.ConstantColor;
 import guideme.guidebook.compiler.PageCompiler;
 import guideme.guidebook.document.LytErrorSink;
 import guideme.libs.mdast.mdx.model.MdxJsxAttribute;

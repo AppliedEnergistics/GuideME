@@ -92,7 +92,7 @@ public class LytSmithingRecipe extends LytRecipeBox implements ExportableResourc
 
         context.fillIcon(
                 new LytRect(bounds.right() - 25 - 24, bounds.y() + 10 + (bounds.height() - 27) / 2, 24, 17),
-                context.isDarkMode() ? GuiAssets.ARROW_DARK : GuiAssets.ARROW_LIGHT);
+                GuiAssets.ARROW);
 
         super.render(context);
     }

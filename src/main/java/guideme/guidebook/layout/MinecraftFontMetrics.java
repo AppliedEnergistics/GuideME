@@ -1,6 +1,6 @@
 package guideme.guidebook.layout;
 
-import guideme.guidebook.style.ResolvedTextStyle;
+import guideme.api.style.ResolvedTextStyle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 
