@@ -5,3 +5,4 @@ out
 .gradle
 /src/generated/resources/.cache
 /run
+*-autosave.kra

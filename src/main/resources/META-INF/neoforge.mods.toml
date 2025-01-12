@@ -12,14 +12,14 @@ version = "0.0.0"
 displayName = "GuideME"
 description = ""
 
-[[dependencies.ae2]]
+[[dependencies.guideme]]
 modId = "neoforge"
 type = "REQUIRED"
 versionRange = "${neoforge_version}"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.ae2]]
+[[dependencies.guideme]]
 modId = "minecraft"
 type = "REQUIRED"
 versionRange = "${minecraft_version}"
