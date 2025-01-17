@@ -44,9 +44,9 @@ public class GuidebookLevelRenderer {
     }
 
     public void render(GuidebookLevel level,
-                       CameraSettings cameraSettings,
-                       Collection<InWorldAnnotation> annotations,
-                       LightDarkMode lightDarkMode) {
+            CameraSettings cameraSettings,
+            Collection<InWorldAnnotation> annotations,
+            LightDarkMode lightDarkMode) {
         lightmap.update(level);
 
         RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
@@ -58,10 +58,10 @@ public class GuidebookLevelRenderer {
     }
 
     public void render(GuidebookLevel level,
-                       CameraSettings cameraSettings,
-                       MultiBufferSource.BufferSource buffers,
-                       Collection<InWorldAnnotation> annotations,
-                       LightDarkMode lightDarkMode) {
+            CameraSettings cameraSettings,
+            MultiBufferSource.BufferSource buffers,
+            Collection<InWorldAnnotation> annotations,
+            LightDarkMode lightDarkMode) {
         lightmap.update(level);
 
         var lightEngine = level.getLightEngine();

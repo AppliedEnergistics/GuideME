@@ -4,8 +4,7 @@ import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 
 /**
- * A helper for mutating color values.
- * The color values are stored as {@code float} components between 0 and 1.
+ * A helper for mutating color values. The color values are stored as {@code float} components between 0 and 1.
  */
 public final class MutableColor implements ColorValue {
     private float r = 1f;

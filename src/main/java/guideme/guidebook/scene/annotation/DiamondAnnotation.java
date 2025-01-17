@@ -3,7 +3,6 @@ package guideme.guidebook.scene.annotation;
 import guideme.GuideME;
 import guideme.api.color.ColorValue;
 import guideme.api.color.ConstantColor;
-import guideme.api.color.MutableColor;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.render.RenderContext;
 import guideme.guidebook.scene.GuidebookScene;

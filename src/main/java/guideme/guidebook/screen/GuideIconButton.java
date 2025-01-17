@@ -1,9 +1,8 @@
 package guideme.guidebook.screen;
 
 import guideme.GuideME;
-import guideme.guidebook.GuidebookText;
-import guideme.api.color.LightDarkMode;
 import guideme.api.color.SymbolicColor;
+import guideme.guidebook.GuidebookText;
 import guideme.util.Blitter;
 import java.util.function.Consumer;
 import java.util.function.Supplier;

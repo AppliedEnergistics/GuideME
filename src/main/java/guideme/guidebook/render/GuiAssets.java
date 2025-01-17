@@ -2,14 +2,13 @@ package guideme.guidebook.render;
 
 import guideme.GuideME;
 import guideme.api.color.LightDarkMode;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.client.gui.GuiSpriteManager;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Asset management
@@ -81,7 +80,7 @@ public final class GuiAssets {
         return new NineSliceSprite(
                 sprite.atlasLocation(),
                 new SpritePadding(border.left(), border.top(), border.right(), border.bottom()),
-                new float[]{u0, u1, u2, u3, v0, v1, v2, v3});
+                new float[] { u0, u1, u2, u3, v0, v1, v2, v3 });
     }
 
     /**
@@ -89,7 +88,7 @@ public final class GuiAssets {
      *           These values refer to the atlas.
      */
     public record NineSliceSprite(ResourceLocation atlasLocation,
-                                  SpritePadding padding,
-                                  float[] uv) {
+            SpritePadding padding,
+            float[] uv) {
     }
 }

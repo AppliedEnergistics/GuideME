@@ -1,11 +1,11 @@
 package guideme.guidebook.document.block;
 
 import guideme.api.color.SymbolicColor;
+import guideme.api.style.ResolvedTextStyle;
 import guideme.guidebook.document.DefaultStyles;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.layout.LayoutContext;
 import guideme.guidebook.render.RenderContext;
-import guideme.api.style.ResolvedTextStyle;
 import net.minecraft.client.renderer.MultiBufferSource;
 
 public class LytListItem extends LytVBox {

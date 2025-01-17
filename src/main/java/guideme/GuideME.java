@@ -9,6 +9,7 @@ import guideme.guidebook.hotkey.OpenGuideHotkey;
 import guideme.guidebook.render.GuiAssets;
 import guideme.guidebook.screen.GlobalInMemoryHistory;
 import guideme.guidebook.screen.GuideScreen;
+import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -34,8 +35,6 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 @Mod(value = GuideME.MOD_ID, dist = Dist.CLIENT)
 public class GuideME {

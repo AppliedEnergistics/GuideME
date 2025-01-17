@@ -2,12 +2,12 @@ package guideme.guidebook.layout.flow;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import guideme.api.style.ResolvedTextStyle;
+import guideme.api.style.TextAlignment;
 import guideme.guidebook.document.flow.LytFlowSpan;
 import guideme.guidebook.document.flow.LytFlowText;
 import guideme.guidebook.layout.FontMetrics;
 import guideme.guidebook.layout.LayoutContext;
-import guideme.api.style.ResolvedTextStyle;
-import guideme.api.style.TextAlignment;
 import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 

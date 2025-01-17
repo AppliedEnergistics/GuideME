@@ -1,9 +1,11 @@
 package guideme.guidebook.compiler;
 
+import guideme.api.color.SymbolicColor;
+import guideme.api.style.TextAlignment;
+import guideme.api.style.WhiteSpaceMode;
 import guideme.guidebook.GuidePage;
 import guideme.guidebook.PageAnchor;
 import guideme.guidebook.PageCollection;
-import guideme.api.color.SymbolicColor;
 import guideme.guidebook.document.LytErrorSink;
 import guideme.guidebook.document.block.LytBlock;
 import guideme.guidebook.document.block.LytBlockContainer;
@@ -27,8 +29,6 @@ import guideme.guidebook.extensions.Extension;
 import guideme.guidebook.extensions.ExtensionCollection;
 import guideme.guidebook.extensions.ExtensionPoint;
 import guideme.guidebook.indices.PageIndex;
-import guideme.api.style.TextAlignment;
-import guideme.api.style.WhiteSpaceMode;
 import guideme.libs.mdast.MdAst;
 import guideme.libs.mdast.MdAstYamlFrontmatter;
 import guideme.libs.mdast.MdastOptions;

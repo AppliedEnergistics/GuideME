@@ -40,7 +40,8 @@ public final class InWorldAnnotationRenderer {
     private InWorldAnnotationRenderer() {
     }
 
-    public static void render(MultiBufferSource.BufferSource buffers, Iterable<InWorldAnnotation> annotations, LightDarkMode lightDarkMode) {
+    public static void render(MultiBufferSource.BufferSource buffers, Iterable<InWorldAnnotation> annotations,
+            LightDarkMode lightDarkMode) {
         var sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS)
                 .apply(GuideME.makeId("block/noise"));
 

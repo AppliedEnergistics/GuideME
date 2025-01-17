@@ -1,9 +1,9 @@
 package guideme.guidebook.document.block;
 
-import guideme.guidebook.document.LytRect;
-import guideme.guidebook.document.flow.LytFlowContent;
 import guideme.api.style.Styleable;
 import guideme.api.style.TextStyle;
+import guideme.guidebook.document.LytRect;
+import guideme.guidebook.document.flow.LytFlowContent;
 import guideme.libs.mdast.model.MdAstNode;
 import java.util.Collections;
 import java.util.List;

@@ -1,5 +1,7 @@
 package guideme.guidebook.layout.flow;
 
+import guideme.api.style.ResolvedTextStyle;
+import guideme.api.style.TextAlignment;
 import guideme.guidebook.document.DefaultStyles;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.document.flow.InlineBlockAlignment;
@@ -9,8 +11,6 @@ import guideme.guidebook.document.flow.LytFlowContent;
 import guideme.guidebook.document.flow.LytFlowInlineBlock;
 import guideme.guidebook.document.flow.LytFlowText;
 import guideme.guidebook.layout.LayoutContext;
-import guideme.api.style.ResolvedTextStyle;
-import guideme.api.style.TextAlignment;
 import java.util.List;
 import java.util.function.Consumer;
 import org.jetbrains.annotations.Nullable;

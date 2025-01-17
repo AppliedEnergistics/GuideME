@@ -1,8 +1,8 @@
 package guideme.guidebook.layout;
 
 import com.google.common.collect.Streams;
-import guideme.guidebook.document.LytRect;
 import guideme.api.style.ResolvedTextStyle;
+import guideme.guidebook.document.LytRect;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;

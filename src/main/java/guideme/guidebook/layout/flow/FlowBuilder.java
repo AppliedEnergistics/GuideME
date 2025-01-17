@@ -1,11 +1,11 @@
 package guideme.guidebook.layout.flow;
 
+import guideme.api.style.TextAlignment;
 import guideme.guidebook.document.LytRect;
 import guideme.guidebook.document.flow.LytFlowContent;
 import guideme.guidebook.document.flow.LytFlowSpan;
 import guideme.guidebook.layout.LayoutContext;
 import guideme.guidebook.render.RenderContext;
-import guideme.api.style.TextAlignment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
