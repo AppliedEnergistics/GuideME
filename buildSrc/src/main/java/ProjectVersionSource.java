@@ -25,9 +25,6 @@ public abstract class ProjectVersionSource implements ValueSource<String, Projec
     private static final Logger LOG = LoggerFactory.getLogger(ProjectVersionSource.class);
 
     private static final Pattern[] VALID_VERSION_TAGS = {
-            Pattern.compile("neoforge/v(\\d+\\.\\d+\\.\\d+)(|[+-].*)?"),
-            Pattern.compile("forge/v(\\d+\\.\\d+\\.\\d+)(|[+-].*)?"),
-            Pattern.compile("fabric/v(\\d+\\.\\d+\\.\\d+)(|[+-].*)?"),
             Pattern.compile("v(\\d+\\.\\d+\\.\\d+)(|[+-].*)?")
     };
 
