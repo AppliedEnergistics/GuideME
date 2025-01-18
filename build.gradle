@@ -108,6 +108,10 @@ neoForge {
         guideme {
             sourceSet sourceSets.main
         }
+        guidemetest {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.test
+        }
     }
 
     runs {
@@ -171,7 +175,7 @@ neoForge {
 
     unitTest {
         enable()
-        testedMod = mods.guideme
+        testedMod = mods.guidemetest
     }
 }
 

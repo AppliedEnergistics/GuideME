@@ -33,6 +33,7 @@ class PageCompilerTest {
                     .developmentSources(guidebookFolder)
                     .watchDevelopmentSources(false)
                     .registerReloadListener(false)
+                    .disableOpenHotkey()
                     .build();
             return PageCompiler.compile(testPages, ExtensionCollection.empty(), parsed);
         }
