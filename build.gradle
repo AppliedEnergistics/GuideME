@@ -98,7 +98,6 @@ test {
  */
 Map<String, String> commonSystemProperties = [
         'forge.logging.console.level': 'debug',
-        'appeng.tests'               : 'true',
 ]
 
 neoForge {
@@ -129,7 +128,6 @@ neoForge {
             client()
             systemProperties = [
                     *                          : commonSystemProperties,
-                    "appeng.tests"             : "true",
                     "guideDev.ae2guide.sources": file("guidebook").absolutePath,
             ]
         }
@@ -139,7 +137,6 @@ neoForge {
                     "--username", "GuideMEDev", "--quickPlaySingleplayer", "GametestWorld"
             ]
             systemProperties = [
-                    "appeng.tests"             : "true",
                     "guideDev.ae2guide.sources": file("guidebook").absolutePath,
             ]
         }
@@ -212,8 +209,9 @@ shadowJar {
     from sourceSets.main.output.classesDirs
     from sourceSets.main.output.resourcesDir
 
-    relocate "io.methvin", "appeng.shaded.methvin"
-    relocate "org.yaml.snakeyaml", "appeng.shaded.snakeyaml"
+    relocate "io.methvin", "guideme.shaded.methvin"
+    relocate "org.yaml.snakeyaml", "guideme.shaded.snakeyaml"
+    relocate "com.google.flatbuffers", "guideme.shaded.flatbuffers"
 
     configurations = [project.configurations.shaded]
     archiveClassifier = ""
@@ -224,7 +222,7 @@ assemble.dependsOn shadowJar
 def publicApiIncludePatterns = {
     exclude "**/*Internal.*"
     exclude "**/*Internal\$*.*"
-    include "appeng/api/**"
+    include "guideme/api/**"
 }
 
 javadoc {
