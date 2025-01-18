@@ -120,6 +120,8 @@ neoForge {
             systemProperties = commonSystemProperties
             // property "mixin.debug.export", "true"
 
+            loadedMods = [mods.guideme]
+
             additionalRuntimeClasspathConfiguration.extendsFrom configurations.shaded
             additionalRuntimeClasspathConfiguration.extendsFrom configurations.guideExportOnly
         }
