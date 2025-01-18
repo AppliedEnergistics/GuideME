@@ -284,7 +284,7 @@ AE2 will merge your pages into the navigation tree as if they were within AE2 it
 
 If you want to develop the guidebook in your development environment where AE2 is only included as a dependency,
 you can do so by passing certain system properties to the game. For an example, you can see AE2s
-own [build.gradle](./build.gradle).
+own [build.gradle](https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/main/build.gradle).
 
 For the standard client run-configuration you should include:
 
