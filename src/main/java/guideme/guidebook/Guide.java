@@ -425,7 +425,7 @@ public final class Guide implements PageCollection {
     }
 
     private static String getSystemPropertyName(ResourceLocation guideId, String property) {
-        return String.format(Locale.ROOT, "guideDev.%s.%s.%s", guideId.getNamespace(), guideId.getPath(), property);
+        return String.format(Locale.ROOT, "guideme.%s.%s.%s", guideId.getNamespace(), guideId.getPath(), property);
     }
 
     public static class Builder {
