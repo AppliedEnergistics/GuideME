@@ -83,6 +83,11 @@ const config: Config = {
           label: 'Maven',
           position: 'left',
         },
+        {
+          href: 'https://discord.gg/Zd6t9ka7ne',
+          label: 'Discord',
+          position: 'left',
+        },
       ],
     },
     footer: {
