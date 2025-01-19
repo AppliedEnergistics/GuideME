@@ -1,7 +1,6 @@
+# Game Scenes
 
-### Game Scenes
-
-To show a real-time rendered in-game scene, use:
+GuideME has a custom tag for interactive, real-time views of an in-game scenario.
 
 ```
 <GameScene>
@@ -29,7 +28,7 @@ In the following example, the structure from the `test.snbt` file located next t
 
 The following subsections explain the different available tags within a `<GameScene />` tag.
 
-### ImportStructure
+## ImportStructure
 
 As explained above, this tag will load a structure from the file supplied in the `src` attribute and
 place it in the scene. Both `.nbt` and `.snbt` structure files are supported. The path given in `src`
@@ -42,7 +41,7 @@ guidebook.
 
 The `ImportScene` tag can be used multiple times within a game scene, with the same or different structure files.
 
-### Block
+## Block
 
 Example that shows a lit furnace next to an unlit one:
 
@@ -67,7 +66,7 @@ The tag also supports the following attributes:
 | z          | z coordinate of the block. Defaults to 0.                                                                           |
 | `p:<name>` | Allows setting arbitrary block state properties on the block, where `<name>` is the name of a block state property. |
 
-### IsometricCamera
+## IsometricCamera
 
 This tag allows more fine-grained control over the isometric camera used to render the scene.
 
