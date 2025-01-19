@@ -54,4 +54,4 @@ the bundle, which obviously means that "wire" isn't available further down the l
 </GameScene>
 ```
 
-![Example](example.png)
+![Example](/img/example.png)
