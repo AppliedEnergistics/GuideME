@@ -1,7 +1,7 @@
 package guideme.guidebook;
 
 import cpw.mods.modlauncher.Launcher;
-import guideme.GuideME;
+import guideme.internal.GuideME;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;

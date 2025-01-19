@@ -222,7 +222,7 @@ assemble.dependsOn shadowJar
 def publicApiIncludePatterns = {
     exclude "**/*Internal.*"
     exclude "**/*Internal\$*.*"
-    include "guideme/api/**"
+    exclude "**/internal/**"
 }
 
 javadoc {
@@ -251,6 +251,7 @@ tasks.register('apiJar', Jar) {
     // api jar ist just a development aid and serves as both a binary and source jar simultaneously
     from sourceSets.main.output
     from sourceSets.main.allJava
+    include "**/*.class"
 }
 apiJar publicApiIncludePatterns
 

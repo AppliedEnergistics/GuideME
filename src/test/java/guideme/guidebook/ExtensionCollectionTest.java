@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import guideme.guidebook.extensions.Extension;
-import guideme.guidebook.extensions.ExtensionCollection;
-import guideme.guidebook.extensions.ExtensionPoint;
+import guideme.extensions.Extension;
+import guideme.extensions.ExtensionCollection;
+import guideme.extensions.ExtensionPoint;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
