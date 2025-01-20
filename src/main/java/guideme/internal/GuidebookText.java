@@ -13,7 +13,9 @@ public enum GuidebookText implements LocalizationEnum {
     ZoomOut("Zoom Out"),
     ResetView("Reset View"),
     Search("Search"),
-    ContentFrom("Content from");
+    ContentFrom("Content from"),
+    ItemNoGuideId("No guide id set"),
+    ItemInvalidGuideId("Invalid guide id set: %s");
 
     private final String englishText;
 
@@ -23,7 +25,7 @@ public enum GuidebookText implements LocalizationEnum {
 
     @Override
     public String getTranslationKey() {
-        return "ae2.guidebook." + name();
+        return "guideme.guidebook." + name();
     }
 
     @Override

@@ -1,5 +1,5 @@
 {
   "guide.click": {
-    "sounds": ["ae2:guide_click"]
+    "sounds": ["guideme:guide_click"]
   }
 }

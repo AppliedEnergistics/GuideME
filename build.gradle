@@ -13,6 +13,15 @@ base {
     archivesName = "guideme"
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/generated/resources'
+        }
+    }
+    testmod
+}
+
 configurations {
     localRuntimeOnly
     shaded {
@@ -60,6 +69,8 @@ dependencies {
     testImplementation("org.assertj:assertj-core")
     testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
     testImplementation("net.neoforged:testframework:${neoforge_version}")
+
+    testmodRuntimeOnly sourceSets.main.output
 }
 
 ///////////////////
@@ -101,11 +112,17 @@ Map<String, String> commonSystemProperties = [
 ]
 
 neoForge {
-    version = project.neoforge_version
+    enable {
+        version = project.neoforge_version
+        enabledSourceSets = [sourceSets.main, sourceSets.testmod]
+    }
 
     mods {
         guideme {
             sourceSet sourceSets.main
+        }
+        testmod {
+            sourceSet sourceSets.testmod
         }
         guidemetest {
             sourceSet sourceSets.main
@@ -117,9 +134,9 @@ neoForge {
         configureEach {
             gameDirectory = project.file('run')
             systemProperties = commonSystemProperties
-            // property "mixin.debug.export", "true"
 
-            loadedMods = [mods.guideme]
+            loadedMods = [mods.guideme, mods.testmod]
+            sourceSet = sourceSets.testmod
 
             additionalRuntimeClasspathConfiguration.extendsFrom configurations.shaded
             additionalRuntimeClasspathConfiguration.extendsFrom configurations.guideExportOnly

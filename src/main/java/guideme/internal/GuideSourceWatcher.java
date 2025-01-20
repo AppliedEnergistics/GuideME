@@ -1,7 +1,8 @@
-package guideme;
+package guideme.internal;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import guideme.GuidePageChange;
 import guideme.compiler.PageCompiler;
 import guideme.compiler.ParsedGuidePage;
 import io.methvin.watcher.DirectoryChangeEvent;
@@ -28,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class GuideSourceWatcher {
+class GuideSourceWatcher implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(GuideSourceWatcher.class);
 
     /**

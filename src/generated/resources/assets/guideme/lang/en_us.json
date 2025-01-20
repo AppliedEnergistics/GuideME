@@ -1,13 +1,16 @@
 {
-  "ae2.guidebook.Close": "Close",
-  "ae2.guidebook.ContentFrom": "Content from",
-  "ae2.guidebook.HideAnnotations": "Hide Annotations",
-  "ae2.guidebook.HistoryGoBack": "Go back one page",
-  "ae2.guidebook.HistoryGoForward": "Go forward one page",
-  "ae2.guidebook.HoldToShow": "Hold [%s] to open guide",
-  "ae2.guidebook.ResetView": "Reset View",
-  "ae2.guidebook.Search": "Search",
-  "ae2.guidebook.ShowAnnotations": "Show Annotations",
-  "ae2.guidebook.ZoomIn": "Zoom In",
-  "ae2.guidebook.ZoomOut": "Zoom Out"
+  "guideme.guidebook.Close": "Close",
+  "guideme.guidebook.ContentFrom": "Content from",
+  "guideme.guidebook.HideAnnotations": "Hide Annotations",
+  "guideme.guidebook.HistoryGoBack": "Go back one page",
+  "guideme.guidebook.HistoryGoForward": "Go forward one page",
+  "guideme.guidebook.HoldToShow": "Hold [%s] to open guide",
+  "guideme.guidebook.ItemInvalidGuideId": "Invalid guide id set: %s",
+  "guideme.guidebook.ItemNoGuideId": "No guide id set",
+  "guideme.guidebook.ResetView": "Reset View",
+  "guideme.guidebook.Search": "Search",
+  "guideme.guidebook.ShowAnnotations": "Show Annotations",
+  "guideme.guidebook.ZoomIn": "Zoom In",
+  "guideme.guidebook.ZoomOut": "Zoom Out",
+  "item.guideme.guide": "Guide"
 }

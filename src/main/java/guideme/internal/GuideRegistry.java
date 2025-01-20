@@ -1,10 +1,10 @@
 package guideme.internal;
 
-import guideme.MutableGuide;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.resources.ResourceLocation;
@@ -27,6 +27,13 @@ public class GuideRegistry {
 
     public static Collection<MutableGuide> getAll() {
         return mergedGuides.values();
+    }
+
+    /**
+     * Return guides registered through code.
+     */
+    public static Collection<MutableGuide> getStaticGuides() {
+        return List.copyOf(guides.values());
     }
 
     public static @Nullable MutableGuide getById(ResourceLocation id) {

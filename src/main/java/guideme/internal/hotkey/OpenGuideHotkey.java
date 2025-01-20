@@ -2,12 +2,12 @@ package guideme.internal.hotkey;
 
 import com.google.common.base.Strings;
 import com.mojang.blaze3d.platform.InputConstants;
-import guideme.MutableGuide;
 import guideme.PageAnchor;
 import guideme.indices.ItemIndex;
 import guideme.internal.GuideME;
 import guideme.internal.GuideRegistry;
 import guideme.internal.GuidebookText;
+import guideme.internal.MutableGuide;
 import guideme.screen.GuideScreen;
 import java.util.ArrayList;
 import java.util.List;

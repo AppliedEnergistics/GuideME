@@ -292,7 +292,7 @@ public class GuideScreen extends Screen {
     private String getExternalSourceName() {
         var sourcePackId = currentPage.sourcePack();
         // If the pages came directly from a mod resource pack, we have to use the mod-list to resolve its name
-        if (sourcePackId.startsWith("mod:")) {
+        if (sourcePackId.startsWith("mod:") || sourcePackId.startsWith("mod/")) {
             var modId = sourcePackId.substring("mod:".length());
 
             // Only show the source marker for pages that are not native to the guides mod

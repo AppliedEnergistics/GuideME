@@ -6,7 +6,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import guideme.MutableGuide;
+import guideme.internal.MutableGuide;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;

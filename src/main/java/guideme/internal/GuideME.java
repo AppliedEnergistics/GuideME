@@ -1,28 +1,40 @@
 package guideme.internal;
 
 import guideme.Guide;
+import guideme.Guides;
 import guideme.PageAnchor;
 import guideme.color.LightDarkMode;
 import guideme.internal.command.GuideCommand;
 import guideme.internal.data.GuideMELanguageProvider;
+import guideme.internal.data.GuideMEModelProvider;
 import guideme.internal.hotkey.OpenGuideHotkey;
+import guideme.internal.item.GuideItem;
+import guideme.internal.item.GuideItemDispatchModelLoader;
 import guideme.render.GuiAssets;
 import guideme.screen.GlobalInMemoryHistory;
 import guideme.screen.GuideScreen;
+import java.util.List;
 import java.util.Objects;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.TooltipFlag;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
@@ -30,12 +42,13 @@ import net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Mod(value = GuideME.MOD_ID, dist = Dist.CLIENT)
-public class GuideME {
+public class GuideME implements GuideMEProxy {
     private static final Logger LOG = LoggerFactory.getLogger(GuideME.class);
 
     public static final String MOD_ID = "guideme";
@@ -47,6 +60,7 @@ public class GuideME {
 
     public GuideME(ModContainer modContainer, IEventBus modBus) {
         INSTANCE = this;
+        GuideMECommon.PROXY = this;
 
         modContainer.registerConfig(ModConfig.Type.CLIENT, clientConfig.spec, "guideme.toml");
 
@@ -63,8 +77,20 @@ public class GuideME {
 
         OpenGuideHotkey.init();
 
+        modBus.addListener((ModelEvent.RegisterAdditional e) -> {
+            e.register(new ModelResourceLocation(GuideItem.BASE_MODEL_ID, ModelResourceLocation.STANDALONE_VARIANT));
+        });
+        modBus.addListener((ModelEvent.RegisterGeometryLoaders e) -> e.register(
+                GuideItemDispatchModelLoader.ID, new GuideItemDispatchModelLoader()));
+
         modBus.addListener((RegisterClientReloadListenersEvent evt) -> {
             evt.registerReloadListener(new GuideReloadListener());
+        });
+
+        GuideOnStartup.init(modBus);
+
+        modBus.addListener((BuildCreativeModeTabContentsEvent e) -> {
+            System.out.println();
         });
     }
 
@@ -101,20 +127,23 @@ public class GuideME {
         DataGenerator gen = event.getGenerator();
         PackOutput packOutput = gen.getPackOutput();
         gen.addProvider(event.includeClient(), new GuideMELanguageProvider(packOutput));
+        gen.addProvider(event.includeClient(), new GuideMEModelProvider(packOutput, event.getExistingFileHelper()));
     }
 
     public boolean isShowDebugGuiOverlays() {
         return clientConfig.showDebugGuiOverlays.getAsBoolean();
     }
 
-    public static void openGuideAtPreviousPage(Guide guide, ResourceLocation initialPage) {
+    public static boolean openGuideAtPreviousPage(Guide guide, ResourceLocation initialPage) {
         try {
             var screen = GuideScreen.openAtPreviousPage(guide, PageAnchor.page(initialPage),
                     GlobalInMemoryHistory.INSTANCE);
 
             openGuideScreen(screen);
+            return true;
         } catch (Exception e) {
             LOG.error("Failed to open guide.", e);
+            return false;
         }
     }
 
@@ -149,6 +178,27 @@ public class GuideME {
             builder.pop();
 
             spec = builder.build();
+        }
+    }
+
+    @Override
+    public void getDataDrivenItemTooltip(ResourceLocation guideId, Item.TooltipContext context, List<Component> lines,
+            TooltipFlag tooltipFlag) {
+        var guide = Guides.getById(guideId);
+        if (guide == null) {
+            lines.add(GuidebookText.ItemInvalidGuideId.text().withStyle(ChatFormatting.RED));
+            return;
+        }
+    }
+
+    @Override
+    public boolean openGuide(Player player, ResourceLocation id) {
+        var guide = Guides.getById(id);
+        if (guide == null) {
+            player.sendSystemMessage(GuidebookText.ItemInvalidGuideId.text(id.toString()));
+            return false;
+        } else {
+            return openGuideAtPreviousPage(guide, guide.getStartPage());
         }
     }
 }

@@ -1,12 +1,20 @@
 package guideme.internal;
 
+import guideme.Guides;
+import guideme.PageAnchor;
 import guideme.internal.util.Platform;
+import guideme.screen.GlobalInMemoryHistory;
+import guideme.screen.GuideScreen;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.LoadingOverlay;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.commands.Commands;
 import net.minecraft.resources.RegistryDataLoader;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.PackType;
@@ -17,12 +25,86 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.resource.ResourcePackLoader;
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for facilitating the use of the Guide without entering the game.
  */
 public final class GuideOnStartup {
+    private static final Logger LOG = LoggerFactory.getLogger(GuideOnStartup.class);
+
+    private GuideOnStartup() {
+    }
+
+    public static void init(IEventBus modBus) {
+
+        var guidesToValidate = getGuideIdsToValidate();
+        var showOnStartup = getShowOnStartup();
+
+        if (!guidesToValidate.isEmpty() || showOnStartup != null) {
+            var guideOpenedOnce = new MutableBoolean(false);
+            NeoForge.EVENT_BUS.addListener((ScreenEvent.Opening e) -> {
+                if (e.getNewScreen() instanceof TitleScreen && !guideOpenedOnce.booleanValue()) {
+                    guideOpenedOnce.setTrue();
+                    GuideOnStartup.runDatapackReload();
+
+                    for (var guideId : guidesToValidate) {
+                        var guide = GuideRegistry.getById(guideId);
+                        if (guide == null) {
+                            LOG.error("Cannot validate guide '{}' since it does not exist.", guideId);
+                        } else {
+                            guide.validateAll();
+                        }
+                    }
+
+                    if (showOnStartup != null) {
+                        var guide = Guides.getById(showOnStartup.guideId);
+                        if (guide == null) {
+                            LOG.error("Cannot show guide '{}' since it does not exist.", showOnStartup.guideId);
+                        } else {
+                            e.setNewScreen(GuideScreen.openNew(guide, showOnStartup.anchor,
+                                    GlobalInMemoryHistory.INSTANCE));
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    private record ShowOnStartup(ResourceLocation guideId, PageAnchor anchor) {
+    }
+
+    private static ShowOnStartup getShowOnStartup() {
+        var showOnStartup = System.getProperty("guideme.showOnStartup");
+        if (showOnStartup == null) {
+            return null;
+        }
+
+        var parts = showOnStartup.split("!", 2);
+        var guideId = ResourceLocation.parse(parts[0]);
+        PageAnchor page = null;
+        if (parts.length > 1) {
+            page = PageAnchor.parse(parts[1]);
+        }
+        return new ShowOnStartup(guideId, page);
+    }
+
+    private static Set<ResourceLocation> getGuideIdsToValidate() {
+        Set<ResourceLocation> guidesToValidate = new LinkedHashSet<>();
+        var validateGuideIds = System.getProperty("guideme.validateAtStartup");
+        if (validateGuideIds != null) {
+            var guideIds = validateGuideIds.split(",");
+            for (String guideId : guideIds) {
+                guidesToValidate.add(ResourceLocation.parse(guideId));
+            }
+        }
+        return guidesToValidate;
+    }
 
     /**
      * Returns a future that resolves when the client finished starting up.

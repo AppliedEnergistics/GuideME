@@ -1,5 +1,9 @@
-package guideme;
+package guideme.internal;
 
+import guideme.Guide;
+import guideme.GuideItemSettings;
+import guideme.GuidePage;
+import guideme.GuidePageChange;
 import guideme.compiler.PageCompiler;
 import guideme.compiler.ParsedGuidePage;
 import guideme.extensions.ExtensionCollection;
@@ -34,39 +38,53 @@ public final class MutableGuide implements Guide {
     private final ResourceLocation id;
     private final String defaultNamespace;
     private final String folder;
+    private final ResourceLocation startPage;
     private final Map<ResourceLocation, ParsedGuidePage> developmentPages = new HashMap<>();
     private final Map<Class<?>, PageIndex> indices;
     private NavigationTree navigationTree = new NavigationTree();
     private Map<ResourceLocation, ParsedGuidePage> pages;
     private final ExtensionCollection extensions;
     private final boolean availableToOpenHotkey;
+    private final GuideItemSettings itemSettings;
 
     @Nullable
     private final Path developmentSourceFolder;
     @Nullable
     private final String developmentSourceNamespace;
 
-    MutableGuide(ResourceLocation id,
+    @Nullable
+    private GuideSourceWatcher watcher;
+
+    public MutableGuide(ResourceLocation id,
             String defaultNamespace,
             String folder,
+            ResourceLocation startPage,
             @Nullable Path developmentSourceFolder,
             @Nullable String developmentSourceNamespace,
             Map<Class<?>, PageIndex> indices,
             ExtensionCollection extensions,
-            boolean availableToOpenHotkey) {
+            boolean availableToOpenHotkey,
+            GuideItemSettings itemSettings) {
+        this.id = id;
         this.defaultNamespace = defaultNamespace;
         this.folder = folder;
-        this.id = id;
+        this.startPage = startPage;
         this.developmentSourceFolder = developmentSourceFolder;
         this.developmentSourceNamespace = developmentSourceNamespace;
         this.indices = indices;
         this.extensions = extensions;
         this.availableToOpenHotkey = availableToOpenHotkey;
+        this.itemSettings = itemSettings;
     }
 
     @Override
     public ResourceLocation getId() {
         return id;
+    }
+
+    @Override
+    public ResourceLocation getStartPage() {
+        return startPage;
     }
 
     @Override
@@ -194,8 +212,12 @@ public final class MutableGuide implements Guide {
         return availableToOpenHotkey;
     }
 
-    void watchDevelopmentSources() {
-        var watcher = new GuideSourceWatcher(developmentSourceNamespace, developmentSourceFolder);
+    public void watchDevelopmentSources() {
+        if (watcher != null) {
+            return;
+        }
+
+        watcher = new GuideSourceWatcher(developmentSourceNamespace, developmentSourceFolder);
 
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre evt) -> {
             var changes = watcher.takeChanges();
@@ -254,7 +276,7 @@ public final class MutableGuide implements Guide {
         }
     }
 
-    void validateAll() {
+    public void validateAll() {
         // Iterate and compile all pages to warn about errors on startup
         for (var entry : developmentPages.entrySet()) {
             LOG.info("Compiling {}", entry.getKey());
@@ -276,5 +298,9 @@ public final class MutableGuide implements Guide {
         this.pages = Map.copyOf(pages);
         rebuildIndices();
         navigationTree = buildNavigation();
+    }
+
+    public GuideItemSettings getItemSettings() {
+        return itemSettings;
     }
 }

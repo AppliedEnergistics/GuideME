@@ -6,11 +6,9 @@ import guideme.extensions.ExtensionPoint;
 import guideme.indices.CategoryIndex;
 import guideme.indices.ItemIndex;
 import guideme.indices.PageIndex;
-import guideme.internal.GuideOnStartup;
 import guideme.internal.GuideRegistry;
+import guideme.internal.MutableGuide;
 import guideme.internal.extensions.DefaultExtensions;
-import guideme.screen.GlobalInMemoryHistory;
-import guideme.screen.GuideScreen;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -19,26 +17,16 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.event.ScreenEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class GuideBuilder {
-    private static final Logger LOG = LoggerFactory.getLogger(GuideBuilder.class);
-
     private final ResourceLocation id;
     private final Map<Class<?>, PageIndex> indices = new IdentityHashMap<>();
     private final ExtensionCollection.Builder extensionsBuilder = ExtensionCollection.builder();
     private String defaultNamespace;
     private String folder;
-    @Nullable
-    private ResourceLocation startupPage;
-    private boolean validateAtStartup;
+    private ResourceLocation startPage;
     private Path developmentSourceFolder;
     private String developmentSourceNamespace;
     private boolean watchDevelopmentSources = true;
@@ -47,21 +35,13 @@ public class GuideBuilder {
     private final Set<ExtensionPoint<?>> disableDefaultsForExtensionPoints = Collections
             .newSetFromMap(new IdentityHashMap<>());
     private boolean register = true;
+    private GuideItemSettings itemSettings = GuideItemSettings.DEFAULT;
 
     GuideBuilder(ResourceLocation id) {
         this.id = Objects.requireNonNull(id, "id");
         this.defaultNamespace = id.getNamespace();
-        this.folder = id.getPath();
-
-        var startupPageProperty = getSystemPropertyName(id, "startupPage");
-        try {
-            var startupPageIdText = System.getProperty(startupPageProperty);
-            if (startupPageIdText != null) {
-                this.startupPage = ResourceLocation.parse(startupPageIdText);
-            }
-        } catch (Exception e) {
-            LOG.error("Specified invalid page id in system property {}", startupPageProperty);
-        }
+        this.folder = "guides/" + id.getNamespace() + "/" + id.getPath();
+        this.startPage = ResourceLocation.fromNamespaceAndPath(defaultNamespace, "index.md");
 
         // Development sources folder
         var devSourcesFolderProperty = getSystemPropertyName(id, "sources");
@@ -151,30 +131,11 @@ public class GuideBuilder {
     }
 
     /**
-     * Sets the page that should be shown directly after launching the client. This will cause a datapack reload to
-     * happen automatically so that recipes can be shown. This page can also be set via system property
-     * <code>guideDev.&lt;FOLDER>.startupPage</code>, where &lt;FOLDER> is replaced with the folder given to
-     * {@link Guide#builder}.
-     * <p/>
-     * Setting the page to null will disable this feature and overwrite a page set via system properties.
+     * Set the page to show when this guide is being opened without any previous page or target page. Defaults to
+     * {@code index.md} in the {@link #defaultNamespace(String) default namespace}.
      */
-    public GuideBuilder startupPage(@Nullable ResourceLocation pageId) {
-        this.startupPage = pageId;
-        return this;
-    }
-
-    /**
-     * Enables or disables validation of all discovered pages at startup. This will cause a datapack reload to happen
-     * automatically so that recipes can be validated. This page can also be set via system property
-     * <code>guideDev.&lt;FOLDER>.validateAtStartup</code>, where &lt;FOLDER> is replaced with the folder given to
-     * {@link Guide#builder}.
-     * <p/>
-     * Changing this setting overrides the system property.
-     * <p/>
-     * Validation results will be written to the log.
-     */
-    public GuideBuilder validateAllAtStartup(boolean enable) {
-        this.validateAtStartup = enable;
+    public GuideBuilder startPage(ResourceLocation pageId) {
+        this.startPage = pageId;
         return this;
     }
 
@@ -240,33 +201,34 @@ public class GuideBuilder {
     }
 
     /**
+     * Configure the generic guide item provided by GuideME. If you are using this code API to register your guide, you
+     * are encouraged to register your own guide item instead of using the generic one.
+     */
+    public GuideBuilder itemSettings(GuideItemSettings settings) {
+        this.itemSettings = settings;
+        return this;
+    }
+
+    /**
      * Creates the guide.
      */
     public MutableGuide build() {
         var extensionCollection = buildExtensions();
 
-        var guide = new MutableGuide(id, defaultNamespace, folder, developmentSourceFolder, developmentSourceNamespace,
-                indices, extensionCollection, availableToOpenHotkey);
+        var guide = new MutableGuide(
+                id,
+                defaultNamespace,
+                folder,
+                startPage,
+                developmentSourceFolder,
+                developmentSourceNamespace,
+                indices,
+                extensionCollection,
+                availableToOpenHotkey,
+                itemSettings);
 
         if (developmentSourceFolder != null && watchDevelopmentSources) {
             guide.watchDevelopmentSources();
-        }
-
-        if (validateAtStartup || startupPage != null) {
-            var guideOpenedOnce = new MutableBoolean(false);
-            NeoForge.EVENT_BUS.addListener((ScreenEvent.Opening e) -> {
-                if (e.getNewScreen() instanceof TitleScreen && !guideOpenedOnce.booleanValue()) {
-                    guideOpenedOnce.setTrue();
-                    GuideOnStartup.runDatapackReload();
-                    if (validateAtStartup) {
-                        guide.validateAll();
-                    }
-                    if (startupPage != null) {
-                        e.setNewScreen(GuideScreen.openNew(guide, PageAnchor.page(startupPage),
-                                GlobalInMemoryHistory.INSTANCE));
-                    }
-                }
-            });
         }
 
         if (register) {
