@@ -299,3 +299,7 @@ publishing {
         }
     }
 }
+
+afterEvaluate {
+    println('Version: ' + project.version)
+}

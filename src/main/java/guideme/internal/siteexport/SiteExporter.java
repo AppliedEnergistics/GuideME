@@ -25,14 +25,19 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import net.minecraft.ChatFormatting;
 import net.minecraft.DetectedVersion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -48,9 +53,12 @@ import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.Fluid;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -87,63 +95,47 @@ public class SiteExporter implements ResourceExporter {
         this.guide = guide;
     }
 
-    public static Builder builder(Minecraft minecraft, Path outputFolder, MutableGuide guide) {
-        return new Builder(minecraft, outputFolder, guide);
+    /**
+     * Export on the next tick.
+     */
+    public void exportOnNextTickAndExit() {
+        var exportDone = new MutableBoolean();
+        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post evt) -> {
+            if (client.getOverlay() instanceof LoadingOverlay) {
+                return; // Do nothing while it's loading
+            }
+
+            if (!exportDone.getValue()) {
+                exportDone.setTrue();
+
+                try {
+                    export();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+                client.stop();
+            }
+        });
     }
 
-    public static final class Builder {
-        private final Minecraft minecraft;
-        private final Path outputFolder;
-        private final MutableGuide guide;
+    public void export(ExportFeedbackSink feedback) {
+        try {
+            export();
 
-        private Builder(Minecraft minecraft, Path outputFolder, MutableGuide guide) {
-            this.minecraft = minecraft;
-            this.outputFolder = outputFolder;
-            this.guide = guide;
-        }
-
-        public SiteExporter build() {
-            return new SiteExporter(minecraft, outputFolder, guide);
+            feedback.sendFeedback(Component.literal("Guide data exported to ")
+                    .append(Component.literal("[" + outputFolder.getFileName().toString() + "]")
+                            .withStyle(style -> style
+                                    .withClickEvent(
+                                            new ClickEvent(ClickEvent.Action.OPEN_FILE, outputFolder.toString()))
+                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                            Component.literal("Click to open export folder")))
+                                    .applyFormats(ChatFormatting.UNDERLINE, ChatFormatting.GREEN))));
+        } catch (Exception e) {
+            e.printStackTrace();
+            feedback.sendError(Component.literal(e.toString()));
         }
     }
-//
-//    public void register() {
-//        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post evt) -> {
-//            var client = Minecraft.getInstance();
-//            if (client.getOverlay() instanceof LoadingOverlay) {
-//                return; // Do nothing while it's loading
-//            }
-//
-//            var guide = AppEngClient.instance().getGuide();
-//            try {
-//                export(client, outputFolder, guide);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                System.exit(1);
-//            }
-//            System.exit(0);
-//        });
-//    }
-//
-//    public static void export(FabricClientCommandSource source) {
-//        var guide = AppEngClient.instance().getGuide();
-//        try {
-//            Path outputFolder = Paths.get("guide-export").toAbsolutePath();
-//            export(Minecraft.getInstance(), outputFolder, guide);
-//
-//            source.sendFeedback(Component.literal("Guide data exported to ")
-//                    .append(Component.literal("[" + outputFolder.getFileName().toString() + "]")
-//                            .withStyle(style -> style
-//                                    .withClickEvent(
-//                                            new ClickEvent(ClickEvent.Action.OPEN_FILE, outputFolder.toString()))
-//                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-//                                            Component.literal("Click to open export folder")))
-//                                    .applyFormats(ChatFormatting.UNDERLINE, ChatFormatting.GREEN))));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            source.sendError(Component.literal(e.toString()));
-//        }
-//    }
 
     @Override
     public void referenceItem(ItemStack stack) {
