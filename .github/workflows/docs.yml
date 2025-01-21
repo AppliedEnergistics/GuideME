@@ -13,6 +13,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: ./.github/actions/gradle-setup
+      - name: Generate Javadoc
+        run: ./gradlew :javadoc
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -25,6 +28,9 @@ jobs:
       - name: Build website
         run: npm run build
         working-directory: ./docs
+
+      - name: Copy Javadoc
+        run: cp -R ./build/docs/javadoc ./docs/build
 
       - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v3

@@ -15,7 +15,7 @@ public enum ContentType {
     DOCUMENT,
     /**
      * `flow` represents the sections, such as headings, code, and content, which is also parsed per line An example is
-     * HTML, which has a certain starting condition (such as `<script>` on its own line), then continues for a while,
+     * HTML, which has a certain starting condition (such as `&lt;script>` on its own line), then continues for a while,
      * until an end condition is found (such as `</style>`). If that line with an end condition is never found, that
      * flow goes until the end.
      */
