@@ -29,6 +29,7 @@ import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.resource.ResourcePackLoader;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,8 +68,17 @@ public final class GuideOnStartup {
                         if (guide == null) {
                             LOG.error("Cannot show guide '{}' since it does not exist.", showOnStartup.guideId);
                         } else {
-                            e.setNewScreen(GuideScreen.openNew(guide, showOnStartup.anchor,
-                                    GlobalInMemoryHistory.INSTANCE));
+                            try {
+                                var anchor = showOnStartup.anchor;
+                                if (anchor == null) {
+                                    anchor = PageAnchor.page(guide.getStartPage());
+                                }
+                                e.setNewScreen(GuideScreen.openNew(guide, anchor,
+                                        GlobalInMemoryHistory.INSTANCE));
+                            } catch (Exception ex) {
+                                LOG.error("Failed to open {}", showOnStartup, ex);
+                                System.exit(1);
+                            }
                         }
                     }
                 }
@@ -76,7 +86,7 @@ public final class GuideOnStartup {
         }
     }
 
-    private record ShowOnStartup(ResourceLocation guideId, PageAnchor anchor) {
+    private record ShowOnStartup(ResourceLocation guideId, @Nullable PageAnchor anchor) {
     }
 
     private static ShowOnStartup getShowOnStartup() {
