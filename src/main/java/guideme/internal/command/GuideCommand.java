@@ -1,7 +1,7 @@
 package guideme.internal.command;
 
 import com.mojang.brigadier.CommandDispatcher;
-import guideme.internal.GuideME;
+import guideme.internal.GuideMEClient;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +24,7 @@ public final class GuideCommand {
                                 .executes(context -> {
                                     var guide = GuideIdArgument.getGuide(context, "guide");
 
-                                    GuideME.openGuideAtPreviousPage(guide, ResourceLocation.fromNamespaceAndPath(
+                                    GuideMEClient.openGuideAtPreviousPage(guide, ResourceLocation.fromNamespaceAndPath(
                                             guide.getDefaultNamespace(),
                                             "index.md"));
 
@@ -35,7 +35,7 @@ public final class GuideCommand {
                                                 .executes(context -> {
                                                     var guide = GuideIdArgument.getGuide(context, "guide");
                                                     var anchor = PageAnchorArgument.getPageAnchor(context, "page");
-                                                    GuideME.openGuideAtAnchor(guide, anchor);
+                                                    GuideMEClient.openGuideAtAnchor(guide, anchor);
                                                     return 0;
                                                 }))
 

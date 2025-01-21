@@ -2,7 +2,7 @@ package guideme.document.flow;
 
 import guideme.PageAnchor;
 import guideme.color.SymbolicColor;
-import guideme.internal.GuideME;
+import guideme.internal.GuideMEClient;
 import guideme.screen.GuideScreen;
 import java.net.URI;
 import java.util.function.Consumer;
@@ -18,7 +18,7 @@ public class LytFlowLink extends LytTooltipSpan {
     private Consumer<GuideScreen> clickCallback;
 
     @Nullable
-    private SoundEvent clickSound = GuideME.GUIDE_CLICK_EVENT;
+    private SoundEvent clickSound = GuideMEClient.GUIDE_CLICK_EVENT;
 
     public LytFlowLink() {
         modifyStyle(style -> style.color(SymbolicColor.LINK));

@@ -1,12 +1,12 @@
 package guideme.color;
 
-import guideme.internal.GuideME;
+import guideme.internal.GuideMEClient;
 
 public enum LightDarkMode {
     LIGHT_MODE,
     DARK_MODE;
 
     public static LightDarkMode current() {
-        return GuideME.currentLightDarkMode();
+        return GuideMEClient.currentLightDarkMode();
     }
 }

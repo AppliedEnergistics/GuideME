@@ -5,7 +5,7 @@ import guideme.color.SymbolicColor;
 import guideme.document.LytRect;
 import guideme.document.block.LytParagraph;
 import guideme.document.flow.LytFlowSpan;
-import guideme.internal.GuideME;
+import guideme.internal.GuideMEClient;
 import guideme.internal.util.Point;
 import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
@@ -64,7 +64,7 @@ public class GuideNavBar extends AbstractWidget {
             updateLayout();
 
             var handler = Minecraft.getInstance().getSoundManager();
-            handler.play(SimpleSoundInstance.forUI(GuideME.GUIDE_CLICK_EVENT, 1.0F));
+            handler.play(SimpleSoundInstance.forUI(GuideMEClient.GUIDE_CLICK_EVENT, 1.0F));
             if (row.node.pageId() != null) {
                 screen.navigateTo(row.node.pageId());
             }

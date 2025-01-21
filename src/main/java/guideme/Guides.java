@@ -1,6 +1,6 @@
 package guideme;
 
-import guideme.internal.GuideMECommon;
+import guideme.internal.GuideME;
 import guideme.internal.GuideRegistry;
 import java.util.Collection;
 import net.minecraft.resources.ResourceLocation;
@@ -27,8 +27,8 @@ public final class Guides {
      * Create a generic guide item that will open the given guide.
      */
     public static ItemStack createGuideItem(ResourceLocation guideId) {
-        var stack = new ItemStack(GuideMECommon.GUIDE_ITEM.get());
-        stack.set(GuideMECommon.GUIDE_ID_COMPONENT, guideId);
+        var stack = new ItemStack(GuideME.GUIDE_ITEM.get());
+        stack.set(GuideME.GUIDE_ID_COMPONENT, guideId);
         return stack;
     }
 }

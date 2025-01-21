@@ -27,6 +27,7 @@ import guideme.document.flow.LytFlowSpan;
 import guideme.document.interaction.GuideTooltip;
 import guideme.document.interaction.InteractiveElement;
 import guideme.internal.GuideME;
+import guideme.internal.GuideMEClient;
 import guideme.internal.GuidebookText;
 import guideme.internal.util.DashPattern;
 import guideme.internal.util.DashedRectangle;
@@ -240,7 +241,7 @@ public class GuideScreen extends Screen {
 
         guiGraphics.disableScissor();
 
-        if (GuideME.instance().isShowDebugGuiOverlays()) {
+        if (GuideMEClient.instance().isShowDebugGuiOverlays()) {
             renderHoverOutline(document, context);
         }
 

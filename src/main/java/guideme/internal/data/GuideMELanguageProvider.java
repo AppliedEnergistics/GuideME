@@ -1,7 +1,6 @@
 package guideme.internal.data;
 
 import guideme.internal.GuideME;
-import guideme.internal.GuideMECommon;
 import guideme.internal.GuidebookText;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.LanguageProvider;
@@ -15,7 +14,7 @@ public final class GuideMELanguageProvider extends LanguageProvider {
     protected void addTranslations() {
         addEnum(GuidebookText.class);
 
-        addItem(GuideMECommon.GUIDE_ITEM, "Guide");
+        addItem(GuideME.GUIDE_ITEM, "Guide");
     }
 
     public <T extends Enum<T> & LocalizationEnum> void addEnum(Class<T> localizedEnum) {

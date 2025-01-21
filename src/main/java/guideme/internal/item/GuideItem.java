@@ -1,13 +1,9 @@
 package guideme.internal.item;
 
 import guideme.internal.GuideME;
-import guideme.internal.GuideMECommon;
 import guideme.internal.GuideMEProxy;
-import guideme.internal.GuideRegistry;
 import guideme.internal.GuidebookText;
-import guideme.internal.MutableGuide;
 import java.util.List;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -30,9 +26,10 @@ public class GuideItem extends Item {
 
     @Override
     public Component getName(ItemStack stack) {
-        var guide = getGuide(stack);
-        if (guide != null && guide.getItemSettings().displayName().isPresent()) {
-            return guide.getItemSettings().displayName().get();
+        var guideId = stack.get(GuideME.GUIDE_ID_COMPONENT);
+        var name = GuideMEProxy.instance().getGuideDisplayName(guideId);
+        if (name != null) {
+            return name;
         }
         return super.getName(stack);
     }
@@ -40,28 +37,19 @@ public class GuideItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines,
             TooltipFlag tooltipFlag) {
-        var guide = getGuide(stack);
-        if (guide == null) {
-            lines.add(GuidebookText.ItemNoGuideId.text().withStyle(ChatFormatting.RED));
-            return;
-        }
-
-        lines.addAll(guide.getItemSettings().tooltipLines());
-    }
-
-    private static MutableGuide getGuide(ItemStack stack) {
-        var guideId = stack.get(GuideMECommon.GUIDE_ID_COMPONENT);
-        if (guideId == null) {
-            return null;
-        }
-        return GuideRegistry.getById(guideId);
+        var guideId = stack.get(GuideME.GUIDE_ID_COMPONENT);
+        GuideMEProxy.instance().addGuideTooltip(
+                guideId,
+                context,
+                lines,
+                tooltipFlag);
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
 
-        var guideId = player.getItemInHand(hand).get(GuideMECommon.GUIDE_ID_COMPONENT);
+        var guideId = player.getItemInHand(hand).get(GuideME.GUIDE_ID_COMPONENT);
 
         if (level.isClientSide) {
             if (guideId == null) {

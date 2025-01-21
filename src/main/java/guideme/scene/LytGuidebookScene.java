@@ -17,7 +17,7 @@ import guideme.document.interaction.GuideTooltip;
 import guideme.document.interaction.InteractiveElement;
 import guideme.document.interaction.LytWidget;
 import guideme.extensions.ExtensionCollection;
-import guideme.internal.GuideME;
+import guideme.internal.GuideMEClient;
 import guideme.internal.siteexport.OffScreenRenderer;
 import guideme.layout.LayoutContext;
 import guideme.render.RenderContext;
@@ -335,7 +335,7 @@ public class LytGuidebookScene extends LytBox {
          * Render one in 2D space at 0,0. And render one in 3D space at 0,0,0.
          */
         private void renderDebugCrosshairs() {
-            if (!GuideME.instance().isShowDebugGuiOverlays()) {
+            if (!GuideMEClient.instance().isShowDebugGuiOverlays()) {
                 return;
             }
 

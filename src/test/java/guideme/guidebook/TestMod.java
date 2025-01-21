@@ -2,6 +2,7 @@ package guideme.guidebook;
 
 import cpw.mods.modlauncher.Launcher;
 import guideme.internal.GuideME;
+import guideme.internal.GuideMEClient;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -14,6 +15,6 @@ public class TestMod {
         var cleaner = (RuntimeDistCleaner) Launcher.INSTANCE.environment().findLaunchPlugin("runtimedistcleaner").get();
         cleaner.setDistribution(Dist.CLIENT);
 
-        new GuideME(modContainer, modBus);
+        new GuideMEClient(modContainer, modBus);
     }
 }

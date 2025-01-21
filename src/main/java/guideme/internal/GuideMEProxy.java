@@ -7,14 +7,20 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
+import org.jetbrains.annotations.Nullable;
 
 public interface GuideMEProxy {
     static GuideMEProxy instance() {
-        return GuideMECommon.PROXY;
+        return GuideME.PROXY;
     }
 
-    default void getDataDrivenItemTooltip(ResourceLocation guideId, Item.TooltipContext context, List<Component> lines,
+    default void addGuideTooltip(ResourceLocation guideId, Item.TooltipContext context, List<Component> lines,
             TooltipFlag tooltipFlag) {
+    }
+
+    @Nullable
+    default Component getGuideDisplayName(ResourceLocation guideId) {
+        return null;
     }
 
     default boolean openGuide(Player player, ResourceLocation id) {

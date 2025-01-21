@@ -4,7 +4,7 @@ import com.google.common.base.Strings;
 import com.mojang.blaze3d.platform.InputConstants;
 import guideme.PageAnchor;
 import guideme.indices.ItemIndex;
-import guideme.internal.GuideME;
+import guideme.internal.GuideMEClient;
 import guideme.internal.GuideRegistry;
 import guideme.internal.GuidebookText;
 import guideme.internal.MutableGuide;
@@ -165,7 +165,7 @@ public final class OpenGuideHotkey {
                             && guideScreen.getGuide() == guide) {
                         guideScreen.navigateTo(foundPage.page());
                     } else {
-                        GuideME.openGuideAtAnchor(guide, foundPage.page());
+                        GuideMEClient.openGuideAtAnchor(guide, foundPage.page());
                     }
                     // Reset the ticks held immediately to avoid reopening another page if
                     // our cursors lands on an item

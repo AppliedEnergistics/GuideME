@@ -2,7 +2,7 @@ package guideme.internal.item;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
-import guideme.internal.GuideMECommon;
+import guideme.internal.GuideME;
 import guideme.internal.GuideRegistry;
 import java.util.function.Function;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -43,7 +43,7 @@ public class GuideItemDispatchUnbakedModel implements IUnbakedGeometry<GuideItem
             @Override
             public @Nullable BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level,
                     @Nullable LivingEntity entity, int seed) {
-                var guideId = stack.get(GuideMECommon.GUIDE_ID_COMPONENT);
+                var guideId = stack.get(GuideME.GUIDE_ID_COMPONENT);
                 if (guideId != null) {
                     var guide = GuideRegistry.getById(guideId);
                     if (guide != null && guide.getItemSettings().itemModel().isPresent()) {
