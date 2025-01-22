@@ -12,6 +12,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import net.minecraft.Util;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -73,14 +75,21 @@ public class GuidebookLevel extends Level {
     private final DataLayer defaultDataLayer;
 
     private final TickRateManager tickRateManager = new TickRateManager();
+    private final ClientLevel.ClientLevelData clientLevelData;
+    private final DeltaTracker.Timer tracker = new DeltaTracker.Timer(20.0F, 0L, def -> def);
+    private float partialTick;
 
     public GuidebookLevel() {
         this(Platform.getClientRegistryAccess());
     }
 
     public GuidebookLevel(RegistryAccess registryAccess) {
+        this(createLevelData(), registryAccess);
+    }
+
+    private GuidebookLevel(ClientLevel.ClientLevelData levelData, RegistryAccess registryAccess) {
         super(
-                createLevelData(),
+                levelData,
                 LEVEL_ID,
                 registryAccess,
                 registryAccess.registryOrThrow(Registries.DIMENSION_TYPE)
@@ -91,6 +100,7 @@ public class GuidebookLevel extends Level {
                 0 /* seed */,
                 1000000 /* max neighbor updates */
         );
+        this.clientLevelData = levelData;
         this.registryAccess = registryAccess;
         this.biome = registryAccess.registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.PLAINS);
 
@@ -169,6 +179,19 @@ public class GuidebookLevel extends Level {
         levelData.setDayTime(6000);
 
         return levelData;
+    }
+
+    public float getPartialTick() {
+        return partialTick;
+    }
+
+    public void onRenderFrame() {
+        var ticksElapsed = tracker.advanceTime(Util.getMillis(), true);
+        if (ticksElapsed > 0) {
+            clientLevelData.setGameTime(clientLevelData.getGameTime() + ticksElapsed);
+        }
+
+        partialTick = tracker.getGameTimeDeltaPartialTick(false);
     }
 
     public boolean hasFilledBlocks() {

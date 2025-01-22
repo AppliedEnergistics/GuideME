@@ -50,10 +50,15 @@ public class GuidebookLevelRenderer {
         lightmap.update(level);
 
         RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
-        RenderSystem.setShaderGameTime(System.currentTimeMillis(), 0);
+
+        level.onRenderFrame();
+
+        RenderSystem.setShaderGameTime(level.getGameTime(), level.getPartialTick());
 
         var buffers = Minecraft.getInstance().renderBuffers().bufferSource();
         render(level, cameraSettings, buffers, annotations, lightDarkMode);
+        buffers.endBatch();
+
         RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
     }
 

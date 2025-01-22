@@ -10,3 +10,7 @@ You may need a door!
 <GameScene>
   <ImportStructure src="test.nbt" />
 </GameScene>
+
+<GameScene zoom="8">
+  <ImportStructure src="end_portal.nbt" />
+</GameScene>
