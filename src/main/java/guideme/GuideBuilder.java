@@ -20,6 +20,11 @@ import java.util.Set;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Constructs new guides.
+ * <p/>
+ * Use {@link Guide#builder(ResourceLocation)} to obtain a new builder.
+ */
 public class GuideBuilder {
     private final ResourceLocation id;
     private final Map<Class<?>, PageIndex> indices = new IdentityHashMap<>();

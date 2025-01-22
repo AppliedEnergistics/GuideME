@@ -64,6 +64,11 @@ const config: Config = {
           label: 'Documentation',
         },
         {
+          href: '/javadoc/',
+          label: 'Javadoc',
+          position: 'left',
+        },
+        {
           href: 'https://github.com/AppliedEnergistics/GuideME',
           label: 'GitHub',
           position: 'left',

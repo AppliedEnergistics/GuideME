@@ -4,6 +4,10 @@ GuideME supports a live-preview mode where a local directory is designated as th
 In this mode, any change to files in this directory is immediately reflected in-game, without having to copy
 resources.
 
+<video controls>
+  <source src={require('./live-preview.mp4').default}/>
+</video>
+
 This mode can be enabled by passing system properties (`-D<prop>=<value>` if you're using a launcher).
 
 | System Property                                                 | Description                                                                                                                                                             |

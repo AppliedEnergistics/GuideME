@@ -10,6 +10,13 @@ is `guides/<guide_id_namespace>/<guide_id_path>`. For a guidebook with the id `m
 `guides/mod/guide`.
 Each file with the extension `.md` in this directory and any subdirectory is considered a page.
 
+:::note
+
+Like all files in Minecraft resource packs, page filenames must be [valid resource ids](https://minecraft.wiki/w/Resource_location).
+Your filenames must all be lowercase, for example.
+
+:::
+
 Pages are written in Markdown and follow the [Commonmark](https://commonmark.org/) specification.
 We also support [Github Tables](https://github.github.com/gfm/#tables-extension-).
 

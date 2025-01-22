@@ -104,13 +104,6 @@ test {
     systemProperty "guideDev.ae2guide.sources", file("guidebook").absolutePath
 }
 
-/**
- * Configures properties common to all run configurations
- */
-Map<String, String> commonSystemProperties = [
-        'forge.logging.console.level': 'debug',
-]
-
 neoForge {
     enable {
         version = project.neoforge_version
@@ -133,36 +126,27 @@ neoForge {
     runs {
         configureEach {
             gameDirectory = project.file('run')
-            systemProperties = commonSystemProperties
 
             loadedMods = [mods.guideme, mods.testmod]
             sourceSet = sourceSets.testmod
 
             additionalRuntimeClasspathConfiguration.extendsFrom configurations.shaded
             additionalRuntimeClasspathConfiguration.extendsFrom configurations.guideExportOnly
+
+            systemProperty("guideme.testmod.guide.sources", file("src/testmod/resources/assets/testmod/guides/testmod/guide").absolutePath)
         }
         client {
             client()
-            systemProperties = [
-                    *                          : commonSystemProperties,
-                    "guideDev.ae2guide.sources": file("guidebook").absolutePath,
-            ]
         }
         gametestWorld {
             client()
             programArguments = [
                     "--username", "GuideMEDev", "--quickPlaySingleplayer", "GametestWorld"
             ]
-            systemProperties = [
-                    "guideDev.ae2guide.sources": file("guidebook").absolutePath,
-            ]
         }
         guide {
             client()
-            systemProperties = [
-                    "guideDev.ae2guide.sources"    : file("guidebook").absolutePath,
-                    "guideDev.ae2guide.startupPage": "ae2:index.md"
-            ]
+            systemProperty('guideme.showOnStartup', 'testmod:guide')
         }
         data {
             data()
@@ -171,15 +155,6 @@ neoForge {
                     '--all',
                     '--output', file('src/generated/resources/').absolutePath,
                     '--existing', file('src/main/resources').absolutePath
-            ]
-        }
-        guideexport {
-            client()
-            systemProperties = [
-                    "appeng.runGuideExportAndExit": "true",
-                    "appeng.guideExportFolder"    : file("$buildDir/guide").absolutePath,
-                    "guideDev.ae2guide.sources"   : file("guidebook").absolutePath,
-                    "appeng.version"              : project.version
             ]
         }
         // Use to run the tests
