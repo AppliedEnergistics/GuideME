@@ -1,6 +1,6 @@
 package guideme.document.interaction;
 
-import guideme.internal.siteexport.ResourceExporter;
+import guideme.siteexport.ResourceExporter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

@@ -2,10 +2,10 @@ package guideme.scene;
 
 import guideme.document.LytRect;
 import guideme.document.block.LytBlock;
-import guideme.internal.siteexport.ExportableResourceProvider;
-import guideme.internal.siteexport.ResourceExporter;
 import guideme.layout.LayoutContext;
 import guideme.render.RenderContext;
+import guideme.siteexport.ExportableResourceProvider;
+import guideme.siteexport.ResourceExporter;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;

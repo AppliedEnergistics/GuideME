@@ -2,9 +2,9 @@ package guideme.internal;
 
 import guideme.Guides;
 import guideme.PageAnchor;
+import guideme.internal.screen.GlobalInMemoryHistory;
+import guideme.internal.screen.GuideScreen;
 import guideme.internal.util.Platform;
-import guideme.screen.GlobalInMemoryHistory;
-import guideme.screen.GuideScreen;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;

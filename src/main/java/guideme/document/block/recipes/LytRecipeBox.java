@@ -1,8 +1,8 @@
 package guideme.document.block.recipes;
 
 import guideme.document.block.LytBox;
-import guideme.internal.siteexport.ExportableResourceProvider;
-import guideme.internal.siteexport.ResourceExporter;
+import guideme.siteexport.ExportableResourceProvider;
+import guideme.siteexport.ResourceExporter;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
 public abstract class LytRecipeBox extends LytBox implements ExportableResourceProvider {

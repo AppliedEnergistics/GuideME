@@ -1,17 +1,18 @@
-package guideme.screen;
+package guideme.internal.screen;
 
 import guideme.color.ColorValue;
 import guideme.color.SymbolicColor;
+import guideme.document.LytPoint;
 import guideme.document.LytRect;
 import guideme.document.block.LytParagraph;
 import guideme.document.flow.LytFlowSpan;
 import guideme.internal.GuideMEClient;
-import guideme.internal.util.Point;
 import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
 import guideme.navigation.NavigationNode;
 import guideme.navigation.NavigationTree;
 import guideme.render.SimpleRenderContext;
+import guideme.ui.GuideUiHost;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
@@ -37,7 +38,7 @@ public class GuideNavBar extends AbstractWidget {
 
     private final List<Row> rows = new ArrayList<>();
 
-    private final GuideScreen screen;
+    private final GuideUiHost screen;
 
     private int scrollOffset;
 
@@ -247,7 +248,7 @@ public class GuideNavBar extends AbstractWidget {
         var vpPos = getViewportPoint(x, y);
         if (vpPos != null) {
             for (var row : rows) {
-                if (row.isVisible() && vpPos.getY() >= row.top && vpPos.getY() < row.bottom) {
+                if (row.isVisible() && vpPos.y() >= row.top && vpPos.y() < row.bottom) {
                     return row;
                 }
             }
@@ -262,7 +263,7 @@ public class GuideNavBar extends AbstractWidget {
                 continue;
             }
 
-            if (vpPos != null && row.contains(vpPos.getX(), vpPos.getY())) {
+            if (vpPos != null && row.contains(vpPos.x(), vpPos.y())) {
                 row.paragraph.onMouseEnter(row.span);
             } else {
                 row.paragraph.onMouseLeave();
@@ -327,7 +328,7 @@ public class GuideNavBar extends AbstractWidget {
      * Gets a point in the coordinate space of the scrollable viewport.
      */
     @Nullable
-    private Point getViewportPoint(double screenX, double screenY) {
+    private LytPoint getViewportPoint(double screenX, double screenY) {
         if (state != State.OPENING && state != State.OPEN) {
             return null;
         }
@@ -336,7 +337,7 @@ public class GuideNavBar extends AbstractWidget {
                 && screenY >= getY() && screenY < getY() + height) {
             var vpX = (int) Math.round(screenX - getX());
             var vpY = (int) Math.round(screenY + scrollOffset - getY());
-            return new Point(vpX, vpY);
+            return new LytPoint(vpX, vpY);
         }
 
         return null; // Outside the viewport
@@ -367,7 +368,7 @@ public class GuideNavBar extends AbstractWidget {
             return new LytRect(0, top, width, bottom - top);
         }
 
-        public boolean contains(int x, int y) {
+        public boolean contains(float x, float y) {
             return x >= 0 && x < width && y >= top && y < bottom;
         }
 

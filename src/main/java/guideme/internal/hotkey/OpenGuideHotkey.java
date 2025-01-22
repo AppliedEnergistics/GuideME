@@ -8,7 +8,8 @@ import guideme.internal.GuideMEClient;
 import guideme.internal.GuideRegistry;
 import guideme.internal.GuidebookText;
 import guideme.internal.MutableGuide;
-import guideme.screen.GuideScreen;
+import guideme.internal.screen.GuideScreen;
+import guideme.ui.GuideUiHost;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -161,9 +162,9 @@ public final class OpenGuideHotkey {
                     var foundPage = guidebookPages.getFirst();
                     var guide = foundPage.guide();
 
-                    if (Minecraft.getInstance().screen instanceof GuideScreen guideScreen
-                            && guideScreen.getGuide() == guide) {
-                        guideScreen.navigateTo(foundPage.page());
+                    if (Minecraft.getInstance().screen instanceof GuideUiHost uiHost
+                            && uiHost.getGuide() == guide) {
+                        uiHost.navigateTo(foundPage.page());
                     } else {
                         GuideMEClient.openGuideAtAnchor(guide, foundPage.page());
                     }

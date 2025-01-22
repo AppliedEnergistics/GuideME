@@ -86,7 +86,7 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
 
             var guideSpec = result.getOrThrow();
 
-            var guide = Guide.builder(guideId)
+            var guide = (MutableGuide) Guide.builder(guideId)
                     .register(false)
                     .itemSettings(guideSpec.itemSettings())
                     .build();

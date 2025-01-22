@@ -6,10 +6,10 @@ import guideme.GuidePage;
 import guideme.compiler.ParsedGuidePage;
 import guideme.document.block.LytNode;
 import guideme.document.block.LytVisitor;
-import guideme.internal.siteexport.ResourceExporter;
 import guideme.libs.mdast.MdAstVisitor;
 import guideme.libs.mdast.MdAstYamlFrontmatter;
 import guideme.libs.mdast.model.MdAstNode;
+import guideme.siteexport.ResourceExporter;
 
 /**
  * Post-Processes page content before exporting it.

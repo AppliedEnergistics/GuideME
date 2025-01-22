@@ -1,4 +1,4 @@
-package guideme.screen;
+package guideme.internal.screen;
 
 import guideme.color.SymbolicColor;
 import guideme.internal.GuideME;

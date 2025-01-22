@@ -4,7 +4,7 @@ import guideme.document.LytRect;
 import guideme.document.block.LytBlock;
 import guideme.layout.LayoutContext;
 import guideme.render.RenderContext;
-import guideme.screen.GuideScreen;
+import guideme.ui.GuideUiHost;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -43,7 +43,7 @@ public class LytWidget extends LytBlock implements InteractiveElement {
 
         var minecraft = Minecraft.getInstance();
 
-        if (!(minecraft.screen instanceof GuideScreen guideScreen)) {
+        if (!(minecraft.screen instanceof GuideUiHost uiHost)) {
             return; // Can't render if we can't translate
         }
 
@@ -52,12 +52,12 @@ public class LytWidget extends LytBlock implements InteractiveElement {
         var mouseY = (minecraft.mouseHandler.ypos() * minecraft.getWindow().getGuiScaledHeight()
                 / minecraft.getWindow().getScreenHeight());
 
-        var mouseDocPos = guideScreen.getDocumentPoint(mouseX, mouseY);
+        var mouseDocPos = uiHost.getDocumentPoint(mouseX, mouseY);
 
         widget.render(
                 context.guiGraphics(),
-                mouseDocPos != null ? mouseDocPos.getX() : -100,
-                mouseDocPos != null ? mouseDocPos.getY() : -100,
+                mouseDocPos != null ? mouseDocPos.x() : -100,
+                mouseDocPos != null ? mouseDocPos.y() : -100,
                 minecraft.getTimer().getRealtimeDeltaTicks());
     }
 
@@ -66,18 +66,18 @@ public class LytWidget extends LytBlock implements InteractiveElement {
     }
 
     @Override
-    public boolean mouseMoved(GuideScreen screen, int x, int y) {
+    public boolean mouseMoved(GuideUiHost screen, int x, int y) {
         widget.mouseMoved(x, y);
         return true;
     }
 
     @Override
-    public boolean mouseClicked(GuideScreen screen, int x, int y, int button) {
+    public boolean mouseClicked(GuideUiHost screen, int x, int y, int button) {
         return widget.mouseClicked(x, y, button);
     }
 
     @Override
-    public boolean mouseReleased(GuideScreen screen, int x, int y, int button) {
+    public boolean mouseReleased(GuideUiHost screen, int x, int y, int button) {
         return widget.mouseReleased(x, y, button);
     }
 

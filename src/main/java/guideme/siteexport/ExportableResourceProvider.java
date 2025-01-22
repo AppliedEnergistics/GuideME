@@ -1,4 +1,4 @@
-package guideme.internal.siteexport;
+package guideme.siteexport;
 
 import guideme.document.block.LytNode;
 import guideme.document.block.LytVisitor;

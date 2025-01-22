@@ -18,14 +18,14 @@ import guideme.document.interaction.InteractiveElement;
 import guideme.document.interaction.LytWidget;
 import guideme.extensions.ExtensionCollection;
 import guideme.internal.GuideMEClient;
+import guideme.internal.screen.GuideIconButton;
 import guideme.internal.siteexport.OffScreenRenderer;
 import guideme.layout.LayoutContext;
 import guideme.render.RenderContext;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldBoxAnnotation;
 import guideme.scene.annotation.SceneAnnotation;
-import guideme.screen.GuideIconButton;
-import guideme.screen.GuideScreen;
+import guideme.ui.GuideUiHost;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -413,7 +413,7 @@ public class LytGuidebookScene extends LytBox {
         }
 
         @Override
-        public boolean mouseClicked(GuideScreen screen, int x, int y, int button) {
+        public boolean mouseClicked(GuideUiHost screen, int x, int y, int button) {
             if (interactive) {
                 if (button == 0 || button == 1) {
                     var cameraSettings = scene.getCameraSettings();
@@ -430,7 +430,7 @@ public class LytGuidebookScene extends LytBox {
         }
 
         @Override
-        public boolean mouseReleased(GuideScreen screen, int x, int y, int button) {
+        public boolean mouseReleased(GuideUiHost screen, int x, int y, int button) {
             pointDown = null;
             return true;
         }
@@ -441,7 +441,7 @@ public class LytGuidebookScene extends LytBox {
         }
 
         @Override
-        public boolean mouseMoved(GuideScreen screen, int x, int y) {
+        public boolean mouseMoved(GuideUiHost screen, int x, int y) {
             if (interactive && pointDown != null) {
                 var dx = x - pointDown.x;
                 var dy = y - pointDown.y;

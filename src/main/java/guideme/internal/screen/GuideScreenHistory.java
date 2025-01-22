@@ -1,4 +1,4 @@
-package guideme.screen;
+package guideme.internal.screen;
 
 import guideme.PageAnchor;
 import java.util.Optional;

@@ -16,39 +16,22 @@
  * along with Applied Energistics 2.  If not, see <http://www.gnu.org/licenses/lgpl>.
  */
 
-package guideme.internal.util;
+package guideme.ui;
 
 import net.minecraft.client.renderer.Rect2i;
 
 /**
- * Represents a x,y coordinate in the UI.
+ * Represents an integer x,y coordinate in the UI.
  */
-public final class Point {
+public record UiPoint(int x, int y) {
+    public static final UiPoint ZERO = new UiPoint(0, 0);
 
-    public static final Point ZERO = new Point(0, 0);
-
-    private final int x;
-    private final int y;
-
-    public Point(int x, int y) {
-        this.x = x;
-        this.y = y;
+    public static UiPoint fromTopLeft(Rect2i bounds) {
+        return new UiPoint(bounds.getX(), bounds.getY());
     }
 
-    public static Point fromTopLeft(Rect2i bounds) {
-        return new Point(bounds.getX(), bounds.getY());
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public Point move(int x, int y) {
-        return new Point(this.x + x, this.y + y);
+    public UiPoint move(int x, int y) {
+        return new UiPoint(this.x + x, this.y + y);
     }
 
     public boolean isIn(Rect2i rect) {
@@ -57,5 +40,4 @@ public final class Point {
                 && x < rect.getX() + rect.getWidth()
                 && y < rect.getY() + rect.getHeight();
     }
-
 }

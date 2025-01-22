@@ -1,6 +1,6 @@
 package guideme.document.interaction;
 
-import guideme.internal.siteexport.ResourceExporter;
+import guideme.siteexport.ResourceExporter;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;

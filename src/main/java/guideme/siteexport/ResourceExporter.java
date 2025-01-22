@@ -1,16 +1,15 @@
-package guideme.internal.siteexport;
+package guideme.siteexport;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collection;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.Fluid;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+@ApiStatus.NonExtendable
 public interface ResourceExporter {
     default void referenceItem(ItemLike item) {
         referenceItem(new ItemStack(item));
@@ -19,12 +18,6 @@ public interface ResourceExporter {
     void referenceItem(ItemStack stack);
 
     void referenceFluid(Fluid fluid);
-
-    Path renderAndWrite(OffScreenRenderer renderer,
-            String baseName,
-            Runnable renderRunnable,
-            Collection<TextureAtlasSprite> sprites,
-            boolean withAlpha) throws IOException;
 
     String exportTexture(ResourceLocation texture);
 

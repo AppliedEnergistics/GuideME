@@ -1,4 +1,4 @@
-package guideme.screen;
+package guideme.internal.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferUploader;

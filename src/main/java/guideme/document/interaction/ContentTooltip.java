@@ -2,11 +2,11 @@ package guideme.document.interaction;
 
 import guideme.document.LytRect;
 import guideme.document.block.LytBlock;
-import guideme.internal.siteexport.ExportableResourceProvider;
-import guideme.internal.siteexport.ResourceExporter;
 import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
 import guideme.render.SimpleRenderContext;
+import guideme.siteexport.ExportableResourceProvider;
+import guideme.siteexport.ResourceExporter;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

@@ -13,6 +13,8 @@ import guideme.internal.MutableGuide;
 import guideme.internal.siteexport.mdastpostprocess.PageExportPostProcessor;
 import guideme.internal.util.Platform;
 import guideme.navigation.NavigationNode;
+import guideme.siteexport.ExportableResourceProvider;
+import guideme.siteexport.ResourceExporter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -494,7 +496,6 @@ public class SiteExporter implements ResourceExporter {
 
     }
 
-    @Override
     public Path renderAndWrite(OffScreenRenderer renderer,
             String baseName,
             Runnable renderRunnable,

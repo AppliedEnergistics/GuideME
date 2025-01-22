@@ -2,8 +2,8 @@ package guideme.document.flow;
 
 import guideme.document.interaction.GuideTooltip;
 import guideme.document.interaction.InteractiveElement;
-import guideme.internal.siteexport.ExportableResourceProvider;
-import guideme.internal.siteexport.ResourceExporter;
+import guideme.siteexport.ExportableResourceProvider;
+import guideme.siteexport.ResourceExporter;
 import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
 

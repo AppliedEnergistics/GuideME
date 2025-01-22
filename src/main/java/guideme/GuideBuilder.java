@@ -217,7 +217,7 @@ public class GuideBuilder {
     /**
      * Creates the guide.
      */
-    public MutableGuide build() {
+    public Guide build() {
         var extensionCollection = buildExtensions();
 
         var guide = new MutableGuide(

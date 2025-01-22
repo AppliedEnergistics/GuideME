@@ -1,4 +1,4 @@
-package guideme.screen;
+package guideme.internal.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
@@ -31,13 +31,14 @@ import guideme.internal.GuideMEClient;
 import guideme.internal.GuidebookText;
 import guideme.internal.util.DashPattern;
 import guideme.internal.util.DashedRectangle;
-import guideme.internal.util.Point;
 import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
 import guideme.render.GuidePageTexture;
 import guideme.render.SimpleRenderContext;
 import guideme.style.TextAlignment;
 import guideme.style.TextStyle;
+import guideme.ui.GuideUiHost;
+import guideme.ui.UiPoint;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -59,7 +60,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GuideScreen extends Screen {
+public class GuideScreen extends Screen implements GuideUiHost {
     private static final Logger LOG = LoggerFactory.getLogger(GuideScreen.class);
 
     // 20 virtual px margin around the document
@@ -352,7 +353,7 @@ public class GuideScreen extends Screen {
         if (hoveredElement != null) {
             dispatchInteraction(
                     hoveredElement,
-                    el -> el.getTooltip(docPos.getX(), docPos.getY()))
+                    el -> el.getTooltip(docPos.x(), docPos.y()))
                     .ifPresent(tooltip -> renderTooltip(guiGraphics, tooltip, x, y));
         }
     }
@@ -414,13 +415,13 @@ public class GuideScreen extends Screen {
 
         if (mouseCaptureTarget != null) {
             var docPointUnclamped = getDocumentPointUnclamped(mouseX, mouseY);
-            mouseCaptureTarget.mouseMoved(this, docPointUnclamped.getX(), docPointUnclamped.getY());
+            mouseCaptureTarget.mouseMoved(this, docPointUnclamped.x(), docPointUnclamped.y());
         }
 
         var docPoint = getDocumentPoint(mouseX, mouseY);
         if (docPoint != null) {
-            dispatchEvent(docPoint.getX(), docPoint.getY(), el -> {
-                return el.mouseMoved(this, docPoint.getX(), docPoint.getY());
+            dispatchEvent(docPoint.x(), docPoint.y(), el -> {
+                return el.mouseMoved(this, docPoint.x(), docPoint.y());
             });
         }
     }
@@ -439,8 +440,8 @@ public class GuideScreen extends Screen {
                 navigateForward();
             }
 
-            return dispatchEvent(docPoint.getX(), docPoint.getY(), el -> {
-                return el.mouseClicked(this, docPoint.getX(), docPoint.getY(), button);
+            return dispatchEvent(docPoint.x(), docPoint.y(), el -> {
+                return el.mouseClicked(this, docPoint.x(), docPoint.y(), button);
             });
         } else {
             return false;
@@ -457,25 +458,27 @@ public class GuideScreen extends Screen {
             var currentTarget = mouseCaptureTarget;
 
             var docPointUnclamped = getDocumentPointUnclamped(mouseX, mouseY);
-            currentTarget.mouseReleased(this, docPointUnclamped.getX(), docPointUnclamped.getY(), button);
+            currentTarget.mouseReleased(this, docPointUnclamped.x(), docPointUnclamped.y(), button);
 
             releaseMouseCapture(currentTarget);
         }
 
         var docPoint = getDocumentPoint(mouseX, mouseY);
         if (docPoint != null) {
-            return dispatchEvent(docPoint.getX(), docPoint.getY(), el -> {
-                return el.mouseReleased(this, docPoint.getX(), docPoint.getY(), button);
+            return dispatchEvent(docPoint.x(), docPoint.y(), el -> {
+                return el.mouseReleased(this, docPoint.x(), docPoint.y(), button);
             });
         } else {
             return false;
         }
     }
 
+    @Override
     public void navigateTo(ResourceLocation pageId) {
         navigateTo(new PageAnchor(pageId, null));
     }
 
+    @Override
     public void navigateTo(PageAnchor anchor) {
         if (currentPage.id().equals(anchor.pageId())) {
             pendingScrollToAnchor = anchor.anchor();
@@ -508,6 +511,7 @@ public class GuideScreen extends Screen {
         pendingScrollToAnchor = anchor.anchor();
     }
 
+    @Override
     public void reloadPage() {
         loadPage(currentPage.id());
         updatePageLayout();
@@ -578,6 +582,7 @@ public class GuideScreen extends Screen {
         this.returnToOnClose = screen;
     }
 
+    @Override
     public void openUrl(String href) {
         URI uri;
         try {
@@ -676,15 +681,15 @@ public class GuideScreen extends Screen {
 
         var docPoint = getDocumentPoint(x, y);
         if (docPoint != null) {
-            var hoveredEl = document.pick(docPoint.getX(), docPoint.getY());
+            var hoveredEl = document.pick(docPoint.x(), docPoint.y());
             document.setHoveredElement(hoveredEl);
         } else {
             document.setHoveredElement(null);
         }
     }
 
-    @Nullable
-    public Point getDocumentPoint(double screenX, double screenY) {
+    @Override
+    public @Nullable UiPoint getDocumentPoint(double screenX, double screenY) {
         var documentRect = getDocumentRect();
 
         if (screenX >= documentRect.x() && screenX < documentRect.right()
@@ -695,16 +700,18 @@ public class GuideScreen extends Screen {
         return null; // Outside the document
     }
 
-    private Point getDocumentPointUnclamped(double screenX, double screenY) {
+    @Override
+    public UiPoint getDocumentPointUnclamped(double screenX, double screenY) {
         var documentRect = getDocumentRect();
         var docX = (int) Math.round(screenX - documentRect.x());
         var docY = (int) Math.round(screenY + scrollbar.getScrollAmount() - documentRect.y());
-        return new Point(docX, docY);
+        return new UiPoint(docX, docY);
     }
 
     /**
      * Translate a point from within the document into the screen coordinate system.
      */
+    @Override
     public LytPoint getScreenPoint(LytPoint documentPoint) {
         var documentRect = getDocumentRect();
         var documentViewport = getDocumentViewport();
@@ -715,7 +722,8 @@ public class GuideScreen extends Screen {
                 documentRect.y() + y);
     }
 
-    private LytRect getDocumentRect() {
+    @Override
+    public LytRect getDocumentRect() {
         var margin = DOCUMENT_RECT_MARGIN;
 
         // The page title may need more space than the default margin provides
@@ -730,7 +738,8 @@ public class GuideScreen extends Screen {
                 height - margin - marginTop);
     }
 
-    private LytRect getDocumentViewport() {
+    @Override
+    public LytRect getDocumentViewport() {
         var documentRect = getDocumentRect();
         return new LytRect(0, scrollbar.getScrollAmount(), documentRect.width(), documentRect.height());
     }
@@ -867,15 +876,17 @@ public class GuideScreen extends Screen {
         forwardButton.active = history.peekForward().isPresent();
     }
 
+    @Override
     public PageCollection getGuide() {
         return guide;
     }
 
-    @Nullable
-    public InteractiveElement getMouseCaptureTarget() {
+    @Override
+    public @Nullable InteractiveElement getMouseCaptureTarget() {
         return mouseCaptureTarget;
     }
 
+    @Override
     public void captureMouse(InteractiveElement element) {
         if (mouseCaptureTarget != element) {
             if (mouseCaptureTarget != null) {
@@ -885,6 +896,7 @@ public class GuideScreen extends Screen {
         }
     }
 
+    @Override
     public void releaseMouseCapture(InteractiveElement element) {
         if (mouseCaptureTarget == element) {
             mouseCaptureTarget = null;

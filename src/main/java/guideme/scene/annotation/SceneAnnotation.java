@@ -4,8 +4,8 @@ import guideme.document.block.LytBlock;
 import guideme.document.interaction.ContentTooltip;
 import guideme.document.interaction.GuideTooltip;
 import guideme.document.interaction.TextTooltip;
-import guideme.internal.siteexport.ExportableResourceProvider;
-import guideme.internal.siteexport.ResourceExporter;
+import guideme.siteexport.ExportableResourceProvider;
+import guideme.siteexport.ResourceExporter;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
