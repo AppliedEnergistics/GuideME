@@ -4,6 +4,14 @@ import guideme.internal.GuideME;
 import guideme.internal.util.Platform;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.minecraft.Util;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -47,15 +55,6 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.LevelTickAccess;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class GuidebookLevel extends Level {
 
@@ -189,7 +188,7 @@ public class GuidebookLevel extends Level {
     public void onRenderFrame() {
         var ticksElapsed = tracker.advanceTime(Util.getMillis(), true);
         if (ticksElapsed > 0) {
-            clientLevelData.setGameTime(clientLevelData.getGameTime()+ticksElapsed);
+            clientLevelData.setGameTime(clientLevelData.getGameTime() + ticksElapsed);
         }
 
         partialTick = tracker.getGameTimeDeltaPartialTick(false);
@@ -241,12 +240,12 @@ public class GuidebookLevel extends Level {
 
     @Override
     public void playSeededSound(@Nullable Player player, double d, double e, double f, Holder<SoundEvent> holder,
-                                SoundSource soundSource, float g, float h, long l) {
+            SoundSource soundSource, float g, float h, long l) {
     }
 
     @Override
     public void playSeededSound(@Nullable Player player, Entity entity, Holder<SoundEvent> holder,
-                                SoundSource soundSource, float f, float g, long l) {
+            SoundSource soundSource, float f, float g, long l) {
     }
 
     @Override
