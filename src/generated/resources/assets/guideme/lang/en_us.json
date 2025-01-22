@@ -12,5 +12,7 @@
   "guideme.guidebook.ShowAnnotations": "Show Annotations",
   "guideme.guidebook.ZoomIn": "Zoom In",
   "guideme.guidebook.ZoomOut": "Zoom Out",
-  "item.guideme.guide": "Guide"
+  "item.guideme.guide": "Guide",
+  "key.guideme.category": "GuideME",
+  "key.guideme.guide": "Open Guide for Items"
 }

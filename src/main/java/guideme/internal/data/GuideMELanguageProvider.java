@@ -15,6 +15,9 @@ public final class GuideMELanguageProvider extends LanguageProvider {
         addEnum(GuidebookText.class);
 
         addItem(GuideME.GUIDE_ITEM, "Guide");
+
+        add("key.guideme.category", "GuideME");
+        add("key.guideme.guide", "Open Guide for Items");
     }
 
     public <T extends Enum<T> & LocalizationEnum> void addEnum(Class<T> localizedEnum) {
