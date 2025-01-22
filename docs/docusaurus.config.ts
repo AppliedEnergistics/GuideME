@@ -64,7 +64,7 @@ const config: Config = {
           label: 'Documentation',
         },
         {
-          href: '/javadoc/',
+          href: 'https://guideme.appliedenergistics.org/javadoc/',
           label: 'Javadoc',
           position: 'left',
         },

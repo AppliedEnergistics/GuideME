@@ -40,17 +40,18 @@ class PageCompilerTest {
     }
 
     private static Path findGuidebookFolder() throws Exception {
-        var sources = System.getProperty("guideDev.ae2guide.sources");
+        var sources = System.getProperty("guideme.testmod.guide.sources");
         if (sources != null) {
             return Paths.get(sources);
         }
 
         // Search up for the guidebook folder
-        var url = PageCompilerTest.class.getProtectionDomain().getCodeSource().getLocation();
+        var url = ClassLoader.getSystemClassLoader()
+                .getResource(PageCompilerTest.class.getName().replace('.', '/') + ".class");
         var jarPath = Paths.get(url.toURI());
         var current = jarPath.getParent();
         while (current != null) {
-            var guidebookFolder = current.resolve("guideme/guidebook");
+            var guidebookFolder = current.resolve("src/testmod/resources/assets/testmod/guides/testmod/guide");
             if (Files.isDirectory(guidebookFolder) && Files.exists(guidebookFolder.resolve("index.md"))) {
                 return guidebookFolder;
             }

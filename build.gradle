@@ -97,11 +97,12 @@ if (ext.tag) {
 
 tasks.register("printProjectVersion", PrintProjectVersion.class);
 
+final testModGuidePath = file('src/testmod/resources/assets/testmod/guides/testmod/guide').absolutePath
+
 test {
     useJUnitPlatform()
 
-    // Might not need this anymore...
-    systemProperty "guideDev.ae2guide.sources", file("guidebook").absolutePath
+    systemProperty 'guideme.testmod.guide.sources', testModGuidePath
 }
 
 neoForge {
@@ -133,7 +134,7 @@ neoForge {
             additionalRuntimeClasspathConfiguration.extendsFrom configurations.shaded
             additionalRuntimeClasspathConfiguration.extendsFrom configurations.guideExportOnly
 
-            systemProperty("guideme.testmod.guide.sources", file("src/testmod/resources/assets/testmod/guides/testmod/guide").absolutePath)
+            systemProperty("guideme.testmod.guide.sources", testModGuidePath)
         }
         client {
             client()
