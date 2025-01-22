@@ -10,7 +10,6 @@ import guideme.color.LightDarkMode;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
-import java.util.Collection;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -29,6 +28,8 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import java.util.Collection;
+
 public class GuidebookLevelRenderer {
 
     private static GuidebookLevelRenderer instance;
@@ -44,24 +45,29 @@ public class GuidebookLevelRenderer {
     }
 
     public void render(GuidebookLevel level,
-            CameraSettings cameraSettings,
-            Collection<InWorldAnnotation> annotations,
-            LightDarkMode lightDarkMode) {
+                       CameraSettings cameraSettings,
+                       Collection<InWorldAnnotation> annotations,
+                       LightDarkMode lightDarkMode) {
         lightmap.update(level);
 
         RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
-        RenderSystem.setShaderGameTime(System.currentTimeMillis(), 0);
+
+        level.onRenderFrame();
+
+        RenderSystem.setShaderGameTime(level.getGameTime(), level.getPartialTick());
 
         var buffers = Minecraft.getInstance().renderBuffers().bufferSource();
         render(level, cameraSettings, buffers, annotations, lightDarkMode);
+        buffers.endBatch();
+
         RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
     }
 
     public void render(GuidebookLevel level,
-            CameraSettings cameraSettings,
-            MultiBufferSource.BufferSource buffers,
-            Collection<InWorldAnnotation> annotations,
-            LightDarkMode lightDarkMode) {
+                       CameraSettings cameraSettings,
+                       MultiBufferSource.BufferSource buffers,
+                       Collection<InWorldAnnotation> annotations,
+                       LightDarkMode lightDarkMode) {
         lightmap.update(level);
 
         var lightEngine = level.getLightEngine();
@@ -217,8 +223,8 @@ public class GuidebookLevelRenderer {
     }
 
     private <E extends BlockEntity> void handleBlockEntity(PoseStack stack,
-            E blockEntity,
-            MultiBufferSource buffers) {
+                                                           E blockEntity,
+                                                           MultiBufferSource buffers) {
         var dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
         var renderer = dispatcher.getRenderer(blockEntity);
         if (renderer != null && renderer.shouldRender(blockEntity, blockEntity.getBlockPos().getCenter())) {

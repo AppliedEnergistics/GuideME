@@ -4,14 +4,8 @@ import guideme.internal.GuideME;
 import guideme.internal.util.Platform;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import net.minecraft.Util;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -54,6 +48,15 @@ import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.LevelTickAccess;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 public class GuidebookLevel extends Level {
 
     private static final ResourceKey<Level> LEVEL_ID = ResourceKey.create(Registries.DIMENSION,
@@ -73,14 +76,21 @@ public class GuidebookLevel extends Level {
     private final DataLayer defaultDataLayer;
 
     private final TickRateManager tickRateManager = new TickRateManager();
+    private final ClientLevel.ClientLevelData clientLevelData;
+    private final DeltaTracker.Timer tracker = new DeltaTracker.Timer(20.0F, 0L, def -> def);
+    private float partialTick;
 
     public GuidebookLevel() {
         this(Platform.getClientRegistryAccess());
     }
 
     public GuidebookLevel(RegistryAccess registryAccess) {
+        this(createLevelData(), registryAccess);
+    }
+
+    private GuidebookLevel(ClientLevel.ClientLevelData levelData, RegistryAccess registryAccess) {
         super(
-                createLevelData(),
+                levelData,
                 LEVEL_ID,
                 registryAccess,
                 registryAccess.registryOrThrow(Registries.DIMENSION_TYPE)
@@ -91,6 +101,7 @@ public class GuidebookLevel extends Level {
                 0 /* seed */,
                 1000000 /* max neighbor updates */
         );
+        this.clientLevelData = levelData;
         this.registryAccess = registryAccess;
         this.biome = registryAccess.registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.PLAINS);
 
@@ -171,6 +182,19 @@ public class GuidebookLevel extends Level {
         return levelData;
     }
 
+    public float getPartialTick() {
+        return partialTick;
+    }
+
+    public void onRenderFrame() {
+        var ticksElapsed = tracker.advanceTime(Util.getMillis(), true);
+        if (ticksElapsed > 0) {
+            clientLevelData.setGameTime(clientLevelData.getGameTime()+ticksElapsed);
+        }
+
+        partialTick = tracker.getGameTimeDeltaPartialTick(false);
+    }
+
     public boolean hasFilledBlocks() {
         return !filledBlocks.isEmpty();
     }
@@ -217,12 +241,12 @@ public class GuidebookLevel extends Level {
 
     @Override
     public void playSeededSound(@Nullable Player player, double d, double e, double f, Holder<SoundEvent> holder,
-            SoundSource soundSource, float g, float h, long l) {
+                                SoundSource soundSource, float g, float h, long l) {
     }
 
     @Override
     public void playSeededSound(@Nullable Player player, Entity entity, Holder<SoundEvent> holder,
-            SoundSource soundSource, float f, float g, long l) {
+                                SoundSource soundSource, float f, float g, long l) {
     }
 
     @Override
