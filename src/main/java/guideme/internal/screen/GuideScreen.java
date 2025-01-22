@@ -1,7 +1,6 @@
 package guideme.internal.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import guideme.Guide;
 import guideme.GuidePage;
 import guideme.PageAnchor;
@@ -50,7 +49,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.ModContainer;
@@ -253,7 +251,7 @@ public class GuideScreen extends Screen implements GuideUiHost {
 
         renderTitle(documentRect, context);
 
-        renderExternalpageSource(documentRect, context);
+        renderExternalPageSource(documentRect, context);
 
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
@@ -266,7 +264,7 @@ public class GuideScreen extends Screen implements GuideUiHost {
 
     }
 
-    private void renderExternalpageSource(LytRect documentRect, SimpleRenderContext context) {
+    private void renderExternalPageSource(LytRect documentRect, SimpleRenderContext context) {
         // Render the source of the content
         var externalSource = getExternalSourceName();
         if (externalSource != null) {
@@ -792,7 +790,7 @@ public class GuideScreen extends Screen implements GuideUiHost {
         }
 
         var poseStack = guiGraphics.pose();
-        var bufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(512));
+        var bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
         poseStack.pushPose();
         poseStack.translate(0.0, 0.0, zOffset);
         int currentY = y;

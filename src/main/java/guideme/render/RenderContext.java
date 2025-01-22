@@ -1,6 +1,5 @@
 package guideme.render;
 
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
@@ -157,9 +156,9 @@ public interface RenderContext {
     }
 
     default void renderText(String text, ResolvedTextStyle style, float x, float y) {
-        var bufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(512));
+        var bufferSource = beginBatch();
         renderTextInBatch(text, style, x, y, bufferSource);
-        bufferSource.endBatch();
+        endBatch(bufferSource);
     }
 
     default void renderTextInBatch(String text, ResolvedTextStyle style, float x, float y, MultiBufferSource buffers) {
@@ -210,7 +209,7 @@ public interface RenderContext {
     }
 
     default MultiBufferSource.BufferSource beginBatch() {
-        return MultiBufferSource.immediate(new ByteBufferBuilder(512));
+        return Minecraft.getInstance().renderBuffers().bufferSource();
     }
 
     default void endBatch(MultiBufferSource.BufferSource batch) {
