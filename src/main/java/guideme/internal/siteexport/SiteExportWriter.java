@@ -6,10 +6,10 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.internal.bind.JsonTreeWriter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import guideme.Guide;
 import guideme.compiler.MdAstNodeAdapter;
 import guideme.compiler.ParsedGuidePage;
 import guideme.indices.PageIndex;
-import guideme.internal.MutableGuide;
 import guideme.internal.siteexport.model.ExportedPageJson;
 import guideme.internal.siteexport.model.FluidInfoJson;
 import guideme.internal.siteexport.model.ItemInfoJson;
@@ -129,7 +129,7 @@ public class SiteExportWriter {
 
     private final SiteExportJson siteExport = new SiteExportJson();
 
-    public SiteExportWriter(MutableGuide guide) {
+    public SiteExportWriter(Guide guide) {
         siteExport.defaultNamespace = guide.getDefaultNamespace();
         siteExport.navigationRootNodes = guide.getNavigationTree().getRootNodes()
                 .stream()
@@ -285,7 +285,7 @@ public class SiteExportWriter {
         return itemId + "-" + HexFormat.of().formatHex(digest.digest());
     }
 
-    public void addIndex(MutableGuide guide, Class<? extends PageIndex> indexClass) {
+    public void addIndex(Guide guide, Class<? extends PageIndex> indexClass) {
         try (var jsonWriter = new JsonTreeWriter()) {
             var index = guide.getIndex(indexClass);
             index.export(jsonWriter);

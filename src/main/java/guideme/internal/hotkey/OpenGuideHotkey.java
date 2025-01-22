@@ -2,12 +2,12 @@ package guideme.internal.hotkey;
 
 import com.google.common.base.Strings;
 import com.mojang.blaze3d.platform.InputConstants;
+import guideme.Guide;
 import guideme.PageAnchor;
 import guideme.indices.ItemIndex;
 import guideme.internal.GuideMEClient;
 import guideme.internal.GuideRegistry;
 import guideme.internal.GuidebookText;
-import guideme.internal.MutableGuide;
 import guideme.internal.screen.GuideScreen;
 import guideme.ui.GuideUiHost;
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public final class OpenGuideHotkey {
     private OpenGuideHotkey() {
     }
 
-    private record FoundPage(MutableGuide guide, PageAnchor page) {
+    private record FoundPage(Guide guide, PageAnchor page) {
     }
 
     public static void init() {

@@ -6,6 +6,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import guideme.Guide;
 import guideme.internal.MutableGuide;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -64,9 +65,9 @@ public class GuidebookStructureCommands {
     private final String commandName;
     private final MutableGuide guide;
 
-    public GuidebookStructureCommands(String commandName, MutableGuide guide) {
+    public GuidebookStructureCommands(String commandName, Guide guide) {
         this.commandName = commandName;
-        this.guide = guide;
+        this.guide = (MutableGuide) guide;
     }
 
     public void register(CommandDispatcher<CommandSourceStack> dispatcher) {

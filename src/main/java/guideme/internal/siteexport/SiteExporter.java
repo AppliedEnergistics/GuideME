@@ -3,13 +3,13 @@ package guideme.internal.siteexport;
 import com.google.common.io.MoreFiles;
 import com.google.common.io.RecursiveDeleteOption;
 import com.mojang.blaze3d.platform.NativeImage;
+import guideme.Guide;
 import guideme.GuidePage;
 import guideme.compiler.PageCompiler;
 import guideme.compiler.ParsedGuidePage;
 import guideme.indices.CategoryIndex;
 import guideme.indices.ItemIndex;
 import guideme.internal.GuideOnStartup;
-import guideme.internal.MutableGuide;
 import guideme.internal.siteexport.mdastpostprocess.PageExportPostProcessor;
 import guideme.internal.util.Platform;
 import guideme.navigation.NavigationNode;
@@ -81,7 +81,7 @@ public class SiteExporter implements ResourceExporter {
 
     private final Path outputFolder;
 
-    private final MutableGuide guide;
+    private final Guide guide;
 
     private ParsedGuidePage currentPage;
 
@@ -91,7 +91,7 @@ public class SiteExporter implements ResourceExporter {
 
     private final Set<Fluid> fluids = new HashSet<>();
 
-    public SiteExporter(Minecraft client, Path outputFolder, MutableGuide guide) {
+    public SiteExporter(Minecraft client, Path outputFolder, Guide guide) {
         this.client = client;
         this.outputFolder = outputFolder;
         this.guide = guide;
