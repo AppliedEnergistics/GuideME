@@ -7,7 +7,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import guideme.Guide;
-import guideme.Guides;
 import guideme.internal.GuideRegistry;
 import java.util.Collection;
 import java.util.List;
@@ -29,10 +28,8 @@ public class GuideIdArgument implements ArgumentType<ResourceLocation> {
         return ResourceLocation.read(reader);
     }
 
-    public static Guide getGuide(CommandContext<?> context, String name) {
-        var id = context.getArgument(name, ResourceLocation.class);
-
-        return Guides.getById(id);
+    public static ResourceLocation getGuide(CommandContext<?> context, String name) {
+        return context.getArgument(name, ResourceLocation.class);
     }
 
     @Override

@@ -23,13 +23,9 @@ public interface GuideMEProxy {
         return null;
     }
 
-    default boolean openGuide(Player player, ResourceLocation id) {
-        return true;
-    }
+    boolean openGuide(Player player, ResourceLocation guideId);
 
-    default void openGuideAtPreviousPage(ResourceLocation guide) {
-    }
+    boolean openGuide(Player player, ResourceLocation guideId, PageAnchor anchor);
 
-    default void openGuideAtAnchor(ResourceLocation guide, PageAnchor anchor) {
-    }
+    List<GuideMetadata> getAvailableGuides();
 }
