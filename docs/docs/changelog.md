@@ -16,4 +16,4 @@
 
 ## 2.0.1
 
-- Removes superflous log spam when opening the creative menu.
+- Removes superfluous log spam when opening the creative menu.

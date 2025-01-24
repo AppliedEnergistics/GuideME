@@ -8,20 +8,20 @@ license = "See GitHub repository for details"
 
 [[mods]]
 modId = "guideme"
-version = "${file.jarVersion}"
+version = "${version}"
 displayName = "GuideME"
 description = "GuideME offers the foundation for your mods or modpacks guidebook."
 
 [[dependencies.guideme]]
 modId = "neoforge"
 type = "REQUIRED"
-versionRange = "${neoforge_version}"
+versionRange = "${neoforge_version_range}"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.guideme]]
 modId = "minecraft"
 type = "REQUIRED"
-versionRange = "${minecraft_version}"
+versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"
