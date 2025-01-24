@@ -139,6 +139,9 @@ neoForge {
         client {
             client()
         }
+        server {
+            server()
+        }
         gametestWorld {
             client()
             programArguments = [
@@ -157,11 +160,6 @@ neoForge {
                     '--output', file('src/generated/resources/').absolutePath,
                     '--existing', file('src/main/resources').absolutePath
             ]
-        }
-        // Use to run the tests
-        gametest {
-            type = "gameTestServer"
-            gameDirectory = project.file("build/gametest")
         }
     }
 

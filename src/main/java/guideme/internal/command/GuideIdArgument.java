@@ -6,9 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import guideme.Guide;
-import guideme.Guides;
-import guideme.internal.GuideRegistry;
+import guideme.internal.GuideMEProxy;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -29,15 +27,13 @@ public class GuideIdArgument implements ArgumentType<ResourceLocation> {
         return ResourceLocation.read(reader);
     }
 
-    public static Guide getGuide(CommandContext<?> context, String name) {
-        var id = context.getArgument(name, ResourceLocation.class);
-
-        return Guides.getById(id);
+    public static ResourceLocation getGuide(CommandContext<?> context, String name) {
+        return context.getArgument(name, ResourceLocation.class);
     }
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        SharedSuggestionProvider.suggestResource(GuideRegistry.getAll().stream().map(Guide::getId), builder);
+        SharedSuggestionProvider.suggestResource(GuideMEProxy.instance().getAvailableGuides(), builder);
         return builder.buildFuture();
     }
 

@@ -1,10 +1,9 @@
 package guideme.internal;
 
 import guideme.Guide;
-import guideme.Guides;
 import guideme.PageAnchor;
 import guideme.color.LightDarkMode;
-import guideme.internal.command.GuideCommand;
+import guideme.internal.command.GuideClientCommand;
 import guideme.internal.data.GuideMELanguageProvider;
 import guideme.internal.data.GuideMEModelProvider;
 import guideme.internal.hotkey.OpenGuideHotkey;
@@ -13,9 +12,7 @@ import guideme.internal.item.GuideItemDispatchModelLoader;
 import guideme.internal.screen.GlobalInMemoryHistory;
 import guideme.internal.screen.GuideScreen;
 import guideme.render.GuiAssets;
-import java.util.List;
 import java.util.Objects;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Registry;
@@ -23,12 +20,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.TooltipFlag;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -43,12 +36,11 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Mod(value = GuideME.MOD_ID, dist = Dist.CLIENT)
-public class GuideMEClient implements GuideMEProxy {
+public class GuideMEClient {
     private static final Logger LOG = LoggerFactory.getLogger(GuideMEClient.class);
 
     private static GuideMEClient INSTANCE;
@@ -58,7 +50,7 @@ public class GuideMEClient implements GuideMEProxy {
 
     public GuideMEClient(ModContainer modContainer, IEventBus modBus) {
         INSTANCE = this;
-        GuideME.PROXY = this;
+        GuideME.PROXY = new GuideMEClientProxy();
 
         modContainer.registerConfig(ModConfig.Type.CLIENT, clientConfig.spec, "guideme.toml");
 
@@ -110,7 +102,7 @@ public class GuideMEClient implements GuideMEProxy {
 
     private static void registerClientCommands(RegisterClientCommandsEvent evt) {
         var dispatcher = evt.getDispatcher();
-        GuideCommand.register(dispatcher);
+        GuideClientCommand.register(dispatcher);
     }
 
     private void gatherData(GatherDataEvent event) {
@@ -137,13 +129,15 @@ public class GuideMEClient implements GuideMEProxy {
         }
     }
 
-    public static void openGuideAtAnchor(Guide guide, PageAnchor anchor) {
+    public static boolean openGuideAtAnchor(Guide guide, PageAnchor anchor) {
         try {
             var screen = GuideScreen.openNew(guide, anchor, GlobalInMemoryHistory.INSTANCE);
 
             openGuideScreen(screen);
+            return true;
         } catch (Exception e) {
             LOG.error("Failed to open guide at {}.", anchor, e);
+            return false;
         }
     }
 
@@ -168,39 +162,6 @@ public class GuideMEClient implements GuideMEProxy {
             builder.pop();
 
             spec = builder.build();
-        }
-    }
-
-    @Override
-    public void addGuideTooltip(ResourceLocation guideId, Item.TooltipContext context, List<Component> lines,
-            TooltipFlag tooltipFlag) {
-        var guide = GuideRegistry.getById(guideId);
-        if (guide == null) {
-            lines.add(GuidebookText.ItemInvalidGuideId.text().withStyle(ChatFormatting.RED));
-            return;
-        }
-
-        lines.addAll(guide.getItemSettings().tooltipLines());
-    }
-
-    @Override
-    public @Nullable Component getGuideDisplayName(ResourceLocation guideId) {
-        var guide = GuideRegistry.getById(guideId);
-        if (guide != null) {
-            return guide.getItemSettings().displayName().orElse(null);
-        }
-
-        return null;
-    }
-
-    @Override
-    public boolean openGuide(Player player, ResourceLocation id) {
-        var guide = Guides.getById(id);
-        if (guide == null) {
-            player.sendSystemMessage(GuidebookText.ItemInvalidGuideId.text(id.toString()));
-            return false;
-        } else {
-            return openGuideAtPreviousPage(guide, guide.getStartPage());
         }
     }
 }
