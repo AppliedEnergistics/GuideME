@@ -8,9 +8,9 @@ license = "See GitHub repository for details"
 
 [[mods]]
 modId = "guideme"
-version = "0.0.0"
+version = "${file.jarVersion}"
 displayName = "GuideME"
-description = ""
+description = "GuideME offers the foundation for your mods or modpacks guidebook."
 
 [[dependencies.guideme]]
 modId = "neoforge"

@@ -172,7 +172,9 @@ neoForge {
 //////////////
 // Artifacts
 Map<String, String> expansionVariables = [
-        'project_version': project.version,
+        'file': [
+                'jarVersion': '${file.jarVersion}'
+        ],
         'minecraft_version': project.minecraft_version_range,
         'neoforge_version': project.neoforge_version_range,
 ]
@@ -185,15 +187,15 @@ processResources {
 
     filesMatching("META-INF/neoforge.mods.toml") {
         expand expansionVariables
-        filter { line ->
-            line.replace('version="0.0.0"', "version=\"${expansionVariables['project_version']}\"")
-        }
     }
 }
 
 jar {
     finalizedBy shadowJar
     archiveClassifier = "plain"
+    manifest {
+        attributes.put("Implementation-Version", project.version)
+    }
 }
 
 shadowJar {

@@ -12,6 +12,7 @@
   <p><video controls><source src={require('./command-block-guide.mp4').default}/></video></p>
   Example: `/guideme open @s testmod:guide` to open the start page
   or `/guideme open @s testmod:guide page.md#anchor` to open a specific page at an anchor.
+- Fix mod version being shown as 0.0.0
 
 ## 2.0.1
 
