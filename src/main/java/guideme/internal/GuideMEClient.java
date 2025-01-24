@@ -42,7 +42,6 @@ import net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -87,10 +86,6 @@ public class GuideMEClient implements GuideMEProxy {
         });
 
         GuideOnStartup.init(modBus);
-
-        modBus.addListener((BuildCreativeModeTabContentsEvent e) -> {
-            System.out.println();
-        });
     }
 
     public static LightDarkMode currentLightDarkMode() {
