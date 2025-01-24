@@ -7,9 +7,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import guideme.Guides;
 import guideme.PageAnchor;
-import guideme.compiler.ParsedGuidePage;
+import guideme.internal.GuideMEProxy;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -61,11 +60,7 @@ public class PageAnchorArgument implements ArgumentType<PageAnchor> {
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         var guideId = GuideIdArgument.getGuide(context, "guide");
-        var guide = Guides.getById(guideId);
-        var ids = guide.getPages().stream()
-                .map(ParsedGuidePage::getId)
-                .map(ResourceLocation::toString);
-        SharedSuggestionProvider.suggest(ids, builder);
+        SharedSuggestionProvider.suggestResource(GuideMEProxy.instance().getAvailablePages(guideId), builder);
         return builder.buildFuture();
     }
 

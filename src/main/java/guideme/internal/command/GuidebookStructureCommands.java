@@ -6,7 +6,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import guideme.Guide;
+import guideme.internal.GuideRegistry;
 import guideme.internal.MutableGuide;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -38,6 +38,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -63,11 +64,9 @@ public class GuidebookStructureCommands {
     private static final String FILE_PATTERN_DESC = "Structure NBT Files (*.snbt, *.nbt)";
 
     private final String commandName;
-    private final MutableGuide guide;
 
-    public GuidebookStructureCommands(String commandName, Guide guide) {
+    public GuidebookStructureCommands(String commandName) {
         this.commandName = commandName;
-        this.guide = (MutableGuide) guide;
     }
 
     public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -111,6 +110,16 @@ public class GuidebookStructureCommands {
     }
 
     private void placeAllStructures(ServerLevel level, BlockPos origin) {
+
+        var currentPos = new MutableObject<>(origin);
+
+        for (var guide : GuideRegistry.getAll()) {
+            placeAllStructures(level, currentPos, guide);
+        }
+
+    }
+
+    private void placeAllStructures(ServerLevel level, MutableObject<BlockPos> origin, MutableGuide guide) {
         var sourceFolder = guide.getDevelopmentSourceFolder();
         if (sourceFolder == null) {
             return;
@@ -142,17 +151,18 @@ public class GuidebookStructureCommands {
                 compound = NbtUtils.snbtToStructure(textInFile);
 
                 var structure = manager.readStructure(compound);
+                var pos = origin.getValue();
                 if (!structure.placeInWorld(
                         level,
-                        origin,
-                        origin,
+                        pos,
+                        pos,
                         new StructurePlaceSettings(),
                         new SingleThreadedRandomSource(0L),
                         Block.UPDATE_CLIENTS)) {
                     player.sendSystemMessage(Component.literal("Failed to place " + snbtFile));
                 }
 
-                origin = origin.offset(structure.getSize().getX() + 2, 0, 0);
+                origin.setValue(origin.getValue().offset(structure.getSize().getX() + 2, 0, 0));
             } catch (Exception e) {
                 LOG.error("Failed to place {}.", snbtFile, e);
                 player.sendSystemMessage(Component.literal("Failed to place " + snbtFile + ": " + e));

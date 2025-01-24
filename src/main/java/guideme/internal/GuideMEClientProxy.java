@@ -3,22 +3,19 @@ package guideme.internal;
 import guideme.Guide;
 import guideme.Guides;
 import guideme.PageAnchor;
+import guideme.compiler.ParsedGuidePage;
 import java.util.List;
+import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class GuideMEClientProxy extends GuideMEServerProxy {
-    private static final Logger LOG = LoggerFactory.getLogger(GuideMEClientProxy.class);
-
     @Override
     public void addGuideTooltip(ResourceLocation guideId, Item.TooltipContext context, List<Component> lines,
             TooltipFlag tooltipFlag) {
@@ -72,13 +69,17 @@ class GuideMEClientProxy extends GuideMEServerProxy {
     }
 
     @Override
-    public List<GuideMetadata> getAvailableGuides() {
-        // On the client, this only works for yourself
-        return Guides.getAll().stream().map(
-                guide -> new GuideMetadata(guide.getId(), getRepresentativeItem(guide))).toList();
+    public Stream<ResourceLocation> getAvailableGuides() {
+        return Guides.getAll().stream().map(Guide::getId);
     }
 
-    private ItemStack getRepresentativeItem(Guide guide) {
-        return Guides.createGuideItem(guide.getId());
+    @Override
+    public Stream<ResourceLocation> getAvailablePages(ResourceLocation guideId) {
+        var guide = Guides.getById(guideId);
+        if (guide == null) {
+            return Stream.empty();
+        }
+
+        return guide.getPages().stream().map(ParsedGuidePage::getId);
     }
 }

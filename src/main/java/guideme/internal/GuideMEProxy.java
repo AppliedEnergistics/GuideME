@@ -2,6 +2,7 @@ package guideme.internal;
 
 import guideme.PageAnchor;
 import java.util.List;
+import java.util.stream.Stream;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -27,5 +28,7 @@ public interface GuideMEProxy {
 
     boolean openGuide(Player player, ResourceLocation guideId, PageAnchor anchor);
 
-    List<GuideMetadata> getAvailableGuides();
+    Stream<ResourceLocation> getAvailableGuides();
+
+    Stream<ResourceLocation> getAvailablePages(ResourceLocation guideId);
 }

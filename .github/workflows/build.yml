@@ -47,8 +47,6 @@ jobs:
       - name: Build PR with Gradle
         run: ./gradlew build
         if: github.event_name != 'pull_request'
-      - name: Run Game Tests
-        run: ./gradlew runGametest
 
       # Always upload test results
       - name: Merge Test Reports

@@ -2,8 +2,8 @@ package guideme.internal;
 
 import guideme.PageAnchor;
 import guideme.internal.network.OpenGuideRequest;
-import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -32,7 +32,12 @@ class GuideMEServerProxy implements GuideMEProxy {
     }
 
     @Override
-    public List<GuideMetadata> getAvailableGuides() {
-        return List.of();
+    public Stream<ResourceLocation> getAvailableGuides() {
+        return Stream.empty();
+    }
+
+    @Override
+    public Stream<ResourceLocation> getAvailablePages(ResourceLocation guideId) {
+        return Stream.empty();
     }
 }

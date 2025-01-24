@@ -12,6 +12,7 @@ public final class GuideCommand {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("guideme")
+                .requires(p -> p.hasPermission(2))
                 .then(Commands.literal("open")
                         .then(
                                 Commands.argument("targets", EntityArgument.players())
@@ -19,7 +20,9 @@ public final class GuideCommand {
                                                 .executes(context -> {
                                                     var guideId = GuideIdArgument.getGuide(context, "guide");
 
-                                                    GuidesCommon.openGuide(context.getSource().getPlayer(), guideId);
+                                                    for (var target : EntityArgument.getPlayers(context, "targets")) {
+                                                        GuidesCommon.openGuide(target, guideId);
+                                                    }
                                                     return 0;
                                                 })
                                                 .then(
@@ -29,9 +32,11 @@ public final class GuideCommand {
                                                                             "guide");
                                                                     var anchor = PageAnchorArgument
                                                                             .getPageAnchor(context, "page");
-                                                                    GuidesCommon.openGuide(
-                                                                            context.getSource().getPlayer(), guideId,
-                                                                            anchor);
+
+                                                                    for (var target : EntityArgument.getPlayers(context,
+                                                                            "targets")) {
+                                                                        GuidesCommon.openGuide(target, guideId, anchor);
+                                                                    }
                                                                     return 0;
                                                                 }))
 
