@@ -8,8 +8,8 @@ import guideme.compiler.PageCompiler;
 import guideme.compiler.ParsedGuidePage;
 import guideme.extensions.ExtensionCollection;
 import guideme.indices.PageIndex;
-import guideme.internal.screen.GuideScreen;
 import guideme.navigation.NavigationTree;
+import guideme.ui.GuideUiHost;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -262,10 +262,10 @@ public final class MutableGuide implements Guide {
         this.navigationTree = buildNavigation();
 
         // Reload the current page if it has been changed
-        if (Minecraft.getInstance().screen instanceof GuideScreen guideScreen) {
-            var currentPageId = guideScreen.getCurrentPageId();
+        if (Minecraft.getInstance().screen instanceof GuideUiHost uiHost) {
+            var currentPageId = uiHost.getCurrentPageId();
             if (changes.stream().anyMatch(c -> c.pageId().equals(currentPageId))) {
-                guideScreen.reloadPage();
+                uiHost.reloadPage();
             }
         }
     }

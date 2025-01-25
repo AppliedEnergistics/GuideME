@@ -1,6 +1,7 @@
 package guideme.document.flow;
 
 import guideme.document.block.LytVisitor;
+import java.util.Objects;
 
 public class LytFlowText extends LytFlowContent {
     private String text = "";
@@ -10,7 +11,7 @@ public class LytFlowText extends LytFlowContent {
     }
 
     public void setText(String text) {
-        this.text = text;
+        this.text = Objects.requireNonNull(text, "text");
     }
 
     public static LytFlowText of(String text) {

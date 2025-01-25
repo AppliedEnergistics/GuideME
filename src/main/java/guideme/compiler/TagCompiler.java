@@ -26,4 +26,10 @@ public interface TagCompiler extends Extension {
     default void compileFlowContext(PageCompiler compiler, LytFlowParent parent, MdxJsxTextElement el) {
         parent.append(compiler.createErrorFlowContent("Cannot use MDX tag " + el.name() + " in flow context", el));
     }
+
+    default void indexBlockContext(IndexingContext context, MdxJsxFlowElement el, IndexingSink sink) {
+    }
+
+    default void indexFlowContext(IndexingContext context, MdxJsxTextElement el, IndexingSink sink) {
+    }
 }

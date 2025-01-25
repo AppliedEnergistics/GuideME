@@ -13,6 +13,8 @@ public enum GuidebookText implements LocalizationEnum {
     ZoomOut("Zoom Out"),
     ResetView("Reset View"),
     Search("Search"),
+    SearchNoQuery("Enter a Search Query"),
+    SearchNoResults("No Results"),
     ContentFrom("Content from"),
     ItemNoGuideId("No guide id set"),
     ItemInvalidGuideId("Invalid guide id set: %s");

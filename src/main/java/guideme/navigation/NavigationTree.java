@@ -1,7 +1,7 @@
 package guideme.navigation;
 
-import com.mojang.serialization.JavaOps;
 import guideme.compiler.ParsedGuidePage;
+import guideme.internal.util.NavigationUtil;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -9,10 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -110,23 +107,7 @@ public class NavigationTree {
         var navigationEntry = Objects.requireNonNull(page.getFrontmatter().navigationEntry(), "navigation frontmatter");
 
         // Construct the icon if set
-        var icon = ItemStack.EMPTY;
-        if (navigationEntry.iconItemId() != null) {
-            var iconItem = BuiltInRegistries.ITEM.getHolder(navigationEntry.iconItemId()).orElseThrow();
-
-            if (navigationEntry.iconComponents() != null) {
-                var patch = DataComponentPatch.CODEC.parse(JavaOps.INSTANCE, navigationEntry.iconComponents())
-                        .resultOrPartial(err -> LOG.error("Failed to deserialize component patch {} for icon {}: {}",
-                                navigationEntry.iconComponents(), navigationEntry.iconItemId(), err));
-                icon = new ItemStack(iconItem, 1, patch.orElse(DataComponentPatch.EMPTY));
-            } else {
-                icon = new ItemStack(iconItem);
-            }
-
-            if (icon.isEmpty()) {
-                LOG.error("Couldn't find icon {} for icon of page {}", navigationEntry.iconItemId(), page);
-            }
-        }
+        var icon = NavigationUtil.createNavigationIcon(page);
 
         var childNodes = new ArrayList<NavigationNode>(children.size());
         for (var childPage : children) {

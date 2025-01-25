@@ -1,18 +1,18 @@
 package guideme.document.interaction;
 
-import guideme.ui.GuideUiHost;
+import guideme.ui.DocumentUiHost;
 import java.util.Optional;
 
 public interface InteractiveElement {
-    default boolean mouseMoved(GuideUiHost screen, int x, int y) {
+    default boolean mouseMoved(DocumentUiHost screen, int x, int y) {
         return false;
     }
 
-    default boolean mouseClicked(GuideUiHost screen, int x, int y, int button) {
+    default boolean mouseClicked(DocumentUiHost screen, int x, int y, int button) {
         return false;
     }
 
-    default boolean mouseReleased(GuideUiHost screen, int x, int y, int button) {
+    default boolean mouseReleased(DocumentUiHost screen, int x, int y, int button) {
         return false;
     }
 
