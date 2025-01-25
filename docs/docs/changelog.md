@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 2.1.1
+
+- Fix race-condition crash when local file-system changes were processed before the resource reload was finished.
+
 ## 2.1.0
 
 - Adds API to open guides for players from both server- and client-side
