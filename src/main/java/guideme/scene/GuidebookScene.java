@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -91,6 +92,11 @@ public class GuidebookScene {
         var min = new Vector3f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
         var max = new Vector3f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
         level.getFilledBlocks().forEach(pos -> {
+            var state = level.getBlockState(pos);
+            if (!state.hasBlockEntity() && state.getRenderShape() == RenderShape.INVISIBLE) {
+                return; // Skip invisible blocks (i.e. minecraft:light)
+            }
+
             for (var xCorner = 0; xCorner <= 1; xCorner++) {
                 for (var yCorner = 0; yCorner <= 1; yCorner++) {
                     for (var zCorner = 0; zCorner <= 1; zCorner++) {

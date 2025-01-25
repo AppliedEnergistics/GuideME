@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 2.1.2
+
+- Skip fully invisible blocks (without block entities) when calculating the bounding box of a game scene. Fixes inexplicably larger bounds when blocks like `minecraft:light` where included in the exported structure.
+
 ## 2.1.1
 
 - Fix race-condition crash when local file-system changes were processed before the resource reload was finished.
