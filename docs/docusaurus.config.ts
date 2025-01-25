@@ -84,7 +84,7 @@ const config: Config = {
           position: 'left',
         },
         {
-          href: 'https://github.com/AppliedEnergistics/GuideME',
+          href: 'https://modmaven.dev/appeng/guideme/',
           label: 'Maven',
           position: 'left',
         },
