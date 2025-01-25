@@ -242,6 +242,10 @@ public final class MutableGuide implements Guide {
             changes.set(i, new GuidePageChange(pageId, oldPage, change.newPage()));
         }
 
+        if (pages == null) {
+            return; // We have received FS changes before pages have fully loaded
+        }
+
         // Allow indices to rebuild
         var allPages = new ArrayList<ParsedGuidePage>(pages.size() + developmentPages.size());
         allPages.addAll(pages.values());
