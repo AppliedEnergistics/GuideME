@@ -1,6 +1,12 @@
 
 # Changelog
 
+## 2.2.0
+
+- Added `alignItems="start|center|end"` to the `Row` and `Column` tags to align content along the layout axis.
+- Added `fullWidth={true}` to the `Row` and `Column` axis to stretch them to the full width.
+- This enables `<Column alignItems="center" fullWidth={true}>...</Column>` to center content like images horizontally.
+
 ## 2.1.2
 
 - Skip fully invisible blocks (without block entities) when calculating the bounding box of a game scene. Fixes inexplicably larger bounds when blocks like `minecraft:light` where included in the exported structure.

@@ -97,6 +97,11 @@ page is in AE2s guidebook, all ids automatically use the `ae2` namespace, unless
 To lay out other tags (such as item images) in a row or column, use the `<Row></Row>`
 and `<Column></Column>` tags. You can set a custom gap between items using the `gap` attribute.
 It defaults to 5.
+The alignment of items perpendicular to the layout axis (for `Column` that means horizontally,
+for `Row` vertically), you can use the `alignItems` attribute with the values `start`, `center` and `end`.
+Since rows and columns automatically size themselves to their content, you might also have to
+expand the size of the row or column to the full page width using `fullWidth={true}` to get the desired effect
+of horizontally centering items relative to the page.
 
 Example:
 
@@ -105,6 +110,14 @@ Example:
   <ItemImage id="interface" />
   <ItemImage id="stick" />
 </Row>
+```
+
+Example for horizontally centering an image on the page:
+
+```markdown
+<Column alignItems="center" fullWidth={true}>
+  <ItemImage id="interface" />
+</Column>
 ```
 
 ### Item Links

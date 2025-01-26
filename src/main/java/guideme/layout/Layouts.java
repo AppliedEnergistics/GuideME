@@ -11,6 +11,18 @@ public final class Layouts {
     private Layouts() {
     }
 
+    public static LytRect verticalLayout(
+            LayoutContext context,
+            List<LytBlock> children,
+            int x, int y, int availableWidth,
+            int paddingLeft, int paddingTop, int paddingRight, int paddingBottom,
+            int gap,
+            AlignItems alignItems) {
+        return verticalLayout(
+                context, children, x, y, availableWidth, false, paddingLeft, paddingTop, paddingRight, paddingBottom,
+                gap, alignItems);
+    }
+
     /**
      * Lays out all children along the vertical axis, and returns the bounding box of the content area.
      */
@@ -18,6 +30,7 @@ public final class Layouts {
             LayoutContext context,
             List<LytBlock> children,
             int x, int y, int availableWidth,
+            boolean fullWidth,
             int paddingLeft, int paddingTop, int paddingRight, int paddingBottom,
             int gap,
             AlignItems alignItems) {
@@ -42,6 +55,10 @@ public final class Layouts {
             previousBlock = child;
         }
 
+        if (fullWidth) {
+            contentWidth = availableWidth;
+        }
+
         // Align on the orthogonal axis
         alignChildren(LytAxis.HORIZONTAL, children, alignItems, x + paddingLeft, x + contentWidth);
 
@@ -51,13 +68,25 @@ public final class Layouts {
                 contentHeight + paddingBottom);
     }
 
+    public static LytRect horizontalLayout(
+            LayoutContext context,
+            List<LytBlock> children,
+            int x, int y, int availableWidth,
+            int paddingLeft, int paddingTop, int paddingRight, int paddingBottom,
+            int gap,
+            AlignItems alignItems) {
+        return horizontalLayout(
+                context, children, x, y, availableWidth, false, paddingLeft, paddingTop, paddingRight, paddingBottom,
+                gap, alignItems);
+    }
+
     /**
      * Lays out all children along the horizontal axis, and returns the bounding box of the content area.
      */
     public static LytRect horizontalLayout(
             LayoutContext context,
             List<LytBlock> children,
-            int x, int y, int availableWidth,
+            int x, int y, int availableWidth, boolean fullWidth,
             int paddingLeft, int paddingTop, int paddingRight, int paddingBottom,
             int gap,
             AlignItems alignItems) {
@@ -85,6 +114,10 @@ public final class Layouts {
                 innerX = x + paddingLeft;
                 innerY = y + contentHeight + gap;
             }
+        }
+
+        if (fullWidth) {
+            contentWidth = availableWidth;
         }
 
         // Align on the orthogonal axis

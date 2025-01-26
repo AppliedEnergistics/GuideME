@@ -1,8 +1,9 @@
 package guideme.compiler.tags;
 
 import guideme.compiler.PageCompiler;
+import guideme.document.block.AlignItems;
+import guideme.document.block.LytAxisBox;
 import guideme.document.block.LytBlockContainer;
-import guideme.document.block.LytBox;
 import guideme.document.block.LytHBox;
 import guideme.document.block.LytVBox;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
@@ -22,9 +23,11 @@ public class BoxTagCompiler extends BlockTagCompiler {
 
     @Override
     protected void compile(PageCompiler compiler, LytBlockContainer parent, MdxJsxElementFields el) {
-        int gap = MdxAttrs.getInt(compiler, parent, el, "gap", 5);
+        var gap = MdxAttrs.getInt(compiler, parent, el, "gap", 5);
+        var alignItems = MdxAttrs.getEnum(compiler, parent, el, "alignItems", AlignItems.START);
+        var fullWidth = MdxAttrs.getBoolean(compiler, parent, el, "fullWidth", false);
 
-        LytBox box = switch (this.direction) {
+        LytAxisBox box = switch (this.direction) {
             case ROW -> {
                 var hbox = new LytHBox();
                 hbox.setGap(gap);
@@ -36,6 +39,9 @@ public class BoxTagCompiler extends BlockTagCompiler {
                 yield vbox;
             }
         };
+
+        box.setAlignItems(alignItems);
+        box.setFullWidth(fullWidth);
 
         compiler.compileBlockContext(el.children(), box);
 

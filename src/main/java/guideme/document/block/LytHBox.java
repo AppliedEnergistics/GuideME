@@ -16,6 +16,7 @@ public class LytHBox extends LytAxisBox {
                 x,
                 y,
                 availableWidth,
+                isFullWidth(),
                 0,
                 0,
                 0,

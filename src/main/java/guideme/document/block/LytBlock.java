@@ -17,6 +17,11 @@ public abstract class LytBlock extends LytNode {
     private int marginRight;
     private int marginBottom;
 
+    /**
+     * Always expand this block to the full available width.
+     */
+    private boolean fullWidth;
+
     @Override
     public LytRect getBounds() {
         return bounds;
@@ -37,6 +42,9 @@ public abstract class LytBlock extends LytNode {
 
     public final LytRect layout(LayoutContext context, int x, int y, int availableWidth) {
         bounds = computeLayout(context, x, y, availableWidth);
+        if (fullWidth) {
+            bounds = bounds.withWidth(availableWidth);
+        }
         return bounds;
     }
 
@@ -84,6 +92,14 @@ public abstract class LytBlock extends LytNode {
             case HORIZONTAL -> getMarginRight();
             case VERTICAL -> getMarginBottom();
         };
+    }
+
+    public boolean isFullWidth() {
+        return fullWidth;
+    }
+
+    public void setFullWidth(boolean fullWidth) {
+        this.fullWidth = fullWidth;
     }
 
     protected abstract LytRect computeLayout(LayoutContext context, int x, int y, int availableWidth);
