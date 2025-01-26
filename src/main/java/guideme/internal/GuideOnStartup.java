@@ -2,7 +2,6 @@ package guideme.internal;
 
 import guideme.Guides;
 import guideme.PageAnchor;
-import guideme.internal.screen.GlobalInMemoryHistory;
 import guideme.internal.screen.GuideScreen;
 import guideme.internal.util.Platform;
 import java.util.LinkedHashSet;
@@ -73,8 +72,7 @@ public final class GuideOnStartup {
                                 if (anchor == null) {
                                     anchor = PageAnchor.page(guide.getStartPage());
                                 }
-                                e.setNewScreen(GuideScreen.openNew(guide, anchor,
-                                        GlobalInMemoryHistory.get(guide)));
+                                e.setNewScreen(GuideScreen.openNew(guide, anchor));
                             } catch (Exception ex) {
                                 LOG.error("Failed to open {}", showOnStartup, ex);
                                 System.exit(1);

@@ -19,17 +19,15 @@ import guideme.layout.MinecraftFontMetrics;
 import guideme.render.SimpleRenderContext;
 import guideme.ui.DocumentUiHost;
 import guideme.ui.UiPoint;
-import java.net.URI;
-import java.util.Optional;
-import java.util.function.Function;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
+import java.util.function.Function;
 
 public abstract class DocumentScreen extends Screen implements DocumentUiHost {
     private static final DashPattern DEBUG_NODE_OUTLINE = new DashPattern(1f, 4, 3, 0xFFFFFFFF, 500);
@@ -266,19 +264,6 @@ public abstract class DocumentScreen extends Screen implements DocumentUiHost {
         }
     }
 
-    protected void openExternalUrl(String href, URI uri) {
-        if (minecraft.options.chatLinksPrompt().get().booleanValue()) {
-            this.minecraft.setScreen(new ConfirmLinkScreen(doOpen -> {
-                if (doOpen) {
-                    Util.getPlatform().openUri(uri);
-                }
-                this.minecraft.setScreen(this);
-            }, href, false));
-        } else {
-            Util.getPlatform().openUri(uri);
-        }
-    }
-
     @FunctionalInterface
     interface EventInvoker {
         boolean invoke(InteractiveElement el);
@@ -307,7 +292,7 @@ public abstract class DocumentScreen extends Screen implements DocumentUiHost {
     }
 
     private static <T> Optional<T> dispatchInteraction(LytDocument.HitTestResult receiver,
-            Function<InteractiveElement, Optional<T>> invoker) {
+                                                       Function<InteractiveElement, Optional<T>> invoker) {
         // Iterate through content ancestors
         for (var el = receiver.content(); el != null; el = el.getFlowParent()) {
             if (el instanceof InteractiveElement interactiveEl) {

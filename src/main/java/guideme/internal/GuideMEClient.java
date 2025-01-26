@@ -9,11 +9,11 @@ import guideme.internal.data.GuideMEModelProvider;
 import guideme.internal.hotkey.OpenGuideHotkey;
 import guideme.internal.item.GuideItem;
 import guideme.internal.item.GuideItemDispatchModelLoader;
-import guideme.internal.screen.GuideScreen;
+import guideme.internal.screen.GlobalInMemoryHistory;
+import guideme.internal.screen.GuideNavigation;
 import guideme.internal.search.GuideSearch;
 import guideme.render.GuiAssets;
 import java.util.Objects;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -124,9 +124,13 @@ public class GuideMEClient {
 
     public static boolean openGuideAtPreviousPage(Guide guide, ResourceLocation initialPage) {
         try {
-            var screen = GuideScreen.openAtPreviousPage(guide, PageAnchor.page(initialPage));
-
-            openGuideScreen(screen);
+            var history = GlobalInMemoryHistory.get(guide);
+            var historyPage = history.current();
+            if (historyPage.isPresent()) {
+                GuideNavigation.navigateTo(guide, historyPage.get());
+            } else {
+                GuideNavigation.navigateTo(guide, PageAnchor.page(initialPage));
+            }
             return true;
         } catch (Exception e) {
             LOG.error("Failed to open guide.", e);
@@ -136,23 +140,12 @@ public class GuideMEClient {
 
     public static boolean openGuideAtAnchor(Guide guide, PageAnchor anchor) {
         try {
-            var screen = GuideScreen.openNew(guide, anchor);
-
-            openGuideScreen(screen);
+            GuideNavigation.navigateTo(guide, anchor);
             return true;
         } catch (Exception e) {
             LOG.error("Failed to open guide at {}.", anchor, e);
             return false;
         }
-    }
-
-    private static void openGuideScreen(GuideScreen screen) {
-        var minecraft = Minecraft.getInstance();
-        if (minecraft.screen != null) {
-            screen.setReturnToOnClose(minecraft.screen);
-        }
-
-        minecraft.setScreen(screen);
     }
 
     public GuideSearch getSearch() {

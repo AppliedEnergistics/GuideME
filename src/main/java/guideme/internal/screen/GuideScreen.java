@@ -28,10 +28,8 @@ import guideme.style.TextAlignment;
 import guideme.style.TextStyle;
 import guideme.ui.GuideUiHost;
 import guideme.ui.UiPoint;
-import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -42,6 +40,8 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 public class GuideScreen extends DocumentScreen implements GuideUiHost {
     private static final Logger LOG = LoggerFactory.getLogger(GuideScreen.class);
 
@@ -49,15 +49,14 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     public static final int DOCUMENT_RECT_MARGIN = 20;
 
     private static final ResourceLocation BACKGROUND_TEXTURE = GuideME.makeId("textures/guide/background.png");
+
     private final Guide guide;
 
-    private final GuideScreenHistory history;
     private GuidePage currentPage;
     private final LytParagraph pageTitle;
 
-    private Button searchButton;
-    private Button backButton;
-    private Button forwardButton;
+    private final NavigationToolbar toolbar;
+
     @Nullable
     private Screen returnToOnClose;
 
@@ -69,14 +68,16 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     @Nullable
     private String pendingScrollToAnchor;
 
-    private GuideScreen(GuideScreenHistory history, Guide guide, PageAnchor anchor) {
+    private GuideScreen(Guide guide, PageAnchor anchor) {
         super(Component.literal("AE2 Guidebook"));
-        this.history = history;
         this.guide = guide;
 
         this.pageTitle = new LytParagraph();
         this.pageTitle.setStyle(DefaultStyles.HEADING1);
         loadPageAndScrollTo(anchor);
+
+        toolbar = new NavigationToolbar(guide);
+        toolbar.setCloseCallback(this::onClose);
     }
 
     /**
@@ -92,32 +93,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     public static GuideScreen openNew(Guide guide, PageAnchor anchor, GuideScreenHistory history) {
         history.push(anchor);
 
-        return new GuideScreen(history, guide, anchor);
-    }
-
-    /**
-     * Opens at current history position and only falls back to the index if the history is empty. Uses per-guide
-     * in-memory history by default.
-     */
-    public static GuideScreen openAtPreviousPage(
-            Guide guide,
-            PageAnchor fallbackPage) {
-        return openAtPreviousPage(guide, fallbackPage, GlobalInMemoryHistory.get(guide));
-    }
-
-    /**
-     * Opens at current history position and only falls back to the index if the history is empty.
-     */
-    public static GuideScreen openAtPreviousPage(
-            Guide guide,
-            PageAnchor fallbackPage,
-            GuideScreenHistory history) {
-        var historyPage = history.current();
-        if (historyPage.isPresent()) {
-            return new GuideScreen(history, guide, historyPage.get());
-        } else {
-            return openNew(guide, fallbackPage, history);
-        }
+        return new GuideScreen(guide, anchor);
     }
 
     @Override
@@ -129,37 +105,14 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         GuideNavBar navbar = new GuideNavBar(this);
         addRenderableWidget(navbar);
 
-        // Center them vertically in the margin
-        searchButton = new GuideIconButton(
-                width - DOCUMENT_RECT_MARGIN - GuideIconButton.WIDTH * 4 - 10,
-                2,
-                GuideIconButton.Role.SEARCH,
-                this::startSearch);
-        addRenderableWidget(searchButton);
-        backButton = new GuideIconButton(
-                width - DOCUMENT_RECT_MARGIN - GuideIconButton.WIDTH * 3 - 10,
-                2,
-                GuideIconButton.Role.BACK,
-                this::navigateBack);
-        addRenderableWidget(backButton);
-        forwardButton = new GuideIconButton(
-                width - DOCUMENT_RECT_MARGIN - GuideIconButton.WIDTH * 2 - 5,
-                2,
-                GuideIconButton.Role.FORWARD,
-                this::navigateForward);
-        addRenderableWidget(forwardButton);
-        var closeButton = new GuideIconButton(
-                width - DOCUMENT_RECT_MARGIN - GuideIconButton.WIDTH,
-                2,
-                GuideIconButton.Role.CLOSE,
-                this::onClose);
-        addRenderableWidget(closeButton);
-        updateTopNavButtons();
+        toolbar.addToScreen(this::addRenderableWidget, 2, width - DOCUMENT_RECT_MARGIN);
     }
 
     @Override
     public void tick() {
         super.tick();
+
+        toolbar.update();
 
         processPendingScrollTo();
     }
@@ -167,10 +120,10 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     @Override
     protected boolean documentClicked(UiPoint documentPoint, int button) {
         if (button == 3) {
-            navigateBack();
+            GuideNavigation.navigateBack(guide);
             return true;
         } else if (button == 4) {
-            navigateForward();
+            GuideNavigation.navigateForward(guide);
             return true;
         }
 
@@ -206,8 +159,6 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        updateTopNavButtons();
-
         renderSkyStoneBackground(guiGraphics);
 
         var context = new SimpleRenderContext(new LytRect(0, 0, width, height), guiGraphics);
@@ -312,37 +263,12 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
     @Override
     public void navigateTo(ResourceLocation pageId) {
-        navigateTo(new PageAnchor(pageId, null));
+        navigateTo(PageAnchor.page(pageId));
     }
 
     @Override
     public void navigateTo(PageAnchor anchor) {
-        if (currentPage.id().equals(anchor.pageId())) {
-            pendingScrollToAnchor = anchor.anchor();
-            if (anchor.anchor() != null) {
-                history.push(anchor);
-            }
-            return;
-        }
-
-        loadPageAndScrollTo(anchor);
-        history.push(anchor);
-    }
-
-    // Navigate to next page in history (only possible if we've navigated back previously)
-    private void navigateForward() {
-        history.forward().ifPresent(this::loadPageAndScrollTo);
-    }
-
-    // Navigate to previous page in history
-    private void navigateBack() {
-        history.back().ifPresent(this::loadPageAndScrollTo);
-    }
-
-    private void startSearch() {
-        var guiScreen = new GuideSearchScreen(guide);
-        guiScreen.setReturnToOnClose(this);
-        minecraft.setScreen(guiScreen);
+        GuideNavigation.navigateTo(guide, anchor);
     }
 
     private void loadPageAndScrollTo(PageAnchor anchor) {
@@ -416,6 +342,10 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         this.returnToOnClose = screen;
     }
 
+    public @Nullable Screen getReturnToOnClose() {
+        return returnToOnClose;
+    }
+
     @Override
     public LytRect getDocumentRect() {
         var margin = DOCUMENT_RECT_MARGIN;
@@ -474,9 +404,11 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         pageTitle.layout(context, documentRect.x() + 5, titleY, availableWidth);
     }
 
-    private void updateTopNavButtons() {
-        backButton.active = history.peekBack().isPresent();
-        forwardButton.active = history.peekForward().isPresent();
+    public void scrollToAnchor(@Nullable String anchor) {
+        pendingScrollToAnchor = anchor;
+        if (anchor == null) {
+            setDocumentScrollY(0);
+        }
     }
 
     @Override

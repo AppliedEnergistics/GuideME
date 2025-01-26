@@ -233,7 +233,7 @@ public class GuideSearch implements AutoCloseable {
                     continue;
                 }
 
-                var page = guide.getPage(pageId);
+                var page = guide.getParsedPage(pageId);
                 if (page == null) {
                     LOG.warn("Search index produced page {} in guide {}, which couldn't be found.", pageId, guideId);
                     continue;
