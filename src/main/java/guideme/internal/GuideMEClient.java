@@ -9,7 +9,6 @@ import guideme.internal.data.GuideMEModelProvider;
 import guideme.internal.hotkey.OpenGuideHotkey;
 import guideme.internal.item.GuideItem;
 import guideme.internal.item.GuideItemDispatchModelLoader;
-import guideme.internal.screen.GlobalInMemoryHistory;
 import guideme.internal.screen.GuideScreen;
 import guideme.render.GuiAssets;
 import java.util.Objects;
@@ -118,8 +117,7 @@ public class GuideMEClient {
 
     public static boolean openGuideAtPreviousPage(Guide guide, ResourceLocation initialPage) {
         try {
-            var screen = GuideScreen.openAtPreviousPage(guide, PageAnchor.page(initialPage),
-                    GlobalInMemoryHistory.INSTANCE);
+            var screen = GuideScreen.openAtPreviousPage(guide, PageAnchor.page(initialPage));
 
             openGuideScreen(screen);
             return true;
@@ -131,7 +129,7 @@ public class GuideMEClient {
 
     public static boolean openGuideAtAnchor(Guide guide, PageAnchor anchor) {
         try {
-            var screen = GuideScreen.openNew(guide, anchor, GlobalInMemoryHistory.INSTANCE);
+            var screen = GuideScreen.openNew(guide, anchor);
 
             openGuideScreen(screen);
             return true;

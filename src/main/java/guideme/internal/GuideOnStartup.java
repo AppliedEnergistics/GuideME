@@ -74,7 +74,7 @@ public final class GuideOnStartup {
                                     anchor = PageAnchor.page(guide.getStartPage());
                                 }
                                 e.setNewScreen(GuideScreen.openNew(guide, anchor,
-                                        GlobalInMemoryHistory.INSTANCE));
+                                        GlobalInMemoryHistory.get(guide)));
                             } catch (Exception ex) {
                                 LOG.error("Failed to open {}", showOnStartup, ex);
                                 System.exit(1);

@@ -1,16 +1,24 @@
 package guideme.internal.screen;
 
+import guideme.Guide;
 import guideme.PageAnchor;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import net.minecraft.resources.ResourceLocation;
 
 public class GlobalInMemoryHistory implements GuideScreenHistory {
-    public static final GuideScreenHistory INSTANCE = new GlobalInMemoryHistory();
+    private static final Map<ResourceLocation, GuideScreenHistory> PER_GUIDE_HISTORY = new HashMap<>();
 
     private static final int HISTORY_SIZE = 100;
-    private static final List<PageAnchor> history = new ArrayList<>();
-    private static int historyPosition;
+    private final List<PageAnchor> history = new ArrayList<>();
+    private int historyPosition;
+
+    public static GuideScreenHistory get(Guide guide) {
+        return PER_GUIDE_HISTORY.computeIfAbsent(guide.getId(), ignored -> new GlobalInMemoryHistory());
+    }
 
     @Override
     public PageAnchor get(int index) {

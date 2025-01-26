@@ -101,12 +101,29 @@ public class GuideScreen extends Screen implements GuideUiHost {
     }
 
     /**
+     * Opens and resets history. Uses per-guide history by default.
+     */
+    public static GuideScreen openNew(Guide guide, PageAnchor anchor) {
+        return openNew(guide, anchor, GlobalInMemoryHistory.get(guide));
+    }
+
+    /**
      * Opens and resets history.
      */
     public static GuideScreen openNew(Guide guide, PageAnchor anchor, GuideScreenHistory history) {
         history.push(anchor);
 
         return new GuideScreen(history, guide, anchor);
+    }
+
+    /**
+     * Opens at current history position and only falls back to the index if the history is empty. Uses per-guide
+     * in-memory history by default.
+     */
+    public static GuideScreen openAtPreviousPage(
+            Guide guide,
+            PageAnchor fallbackPage) {
+        return openAtPreviousPage(guide, fallbackPage, GlobalInMemoryHistory.get(guide));
     }
 
     /**

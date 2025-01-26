@@ -7,6 +7,7 @@
 - Added `fullWidth={true}` to the `Row` and `Column` axis to stretch them to the full width.
 - This enables `<Column alignItems="center" fullWidth={true}>...</Column>` to center content like images horizontally.
 - Fix the navigation bar sometimes opening and closing very slowly.
+- Store the navigation history on a per-guide basis, fixing "page not found" errors when switching back and forth between different guides.
 
 ## 2.1.2
 
