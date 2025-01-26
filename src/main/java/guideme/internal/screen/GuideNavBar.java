@@ -7,6 +7,7 @@ import guideme.document.LytRect;
 import guideme.document.block.LytParagraph;
 import guideme.document.flow.LytFlowSpan;
 import guideme.internal.GuideMEClient;
+import guideme.internal.util.Transition;
 import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
 import guideme.navigation.NavigationNode;
@@ -33,6 +34,13 @@ public class GuideNavBar extends AbstractWidget {
     private static final int CHILD_ROW_INDENT = 10;
     private static final int PARENT_ROW_INDENT = 7;
     private static boolean neverInteracted = true;
+
+    private final Transition widthTransition = new Transition(
+            WIDTH_CLOSED,
+            WIDTH_OPEN,
+            0.1,
+            () -> width,
+            value -> width = (int) Math.round(value));
 
     private NavigationTree navTree;
 
@@ -109,8 +117,12 @@ public class GuideNavBar extends AbstractWidget {
 
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        widthTransition.update();
+
         var viewport = new LytRect(0, scrollOffset, width, height);
         var renderContext = new SimpleRenderContext(viewport, graphics);
+
+        double currentTime = GLFW.glfwGetTime();
 
         boolean containsMouse = (mouseX >= getX() && mouseY >= getY() && mouseX < getX() + width
                 && mouseY <= getY() + height);
@@ -118,10 +130,11 @@ public class GuideNavBar extends AbstractWidget {
             case CLOSED -> {
                 if (containsMouse) {
                     state = State.OPENING;
+                    widthTransition.set(WIDTH_OPEN);
                     neverInteracted = false;
                 } else if (neverInteracted) {
                     // Show animation on 6 second interval
-                    var ot = Math.abs((GLFW.glfwGetTime() % 6) / 3 - 1);
+                    var ot = Math.abs((currentTime % 6) / 3 - 1);
                     // only play the animation for 6/10*2=1.2 seconds of it
                     if (ot >= 0.9) {
                         var t = (ot - 0.9) * 10;
@@ -133,8 +146,10 @@ public class GuideNavBar extends AbstractWidget {
                 }
             }
             case OPENING -> {
-                width = Math.round(width + Math.max(1, partialTick * (WIDTH_OPEN - WIDTH_CLOSED)));
-                if (width >= WIDTH_OPEN) {
+                if (!containsMouse) {
+                    state = State.CLOSING;
+                    widthTransition.set(WIDTH_CLOSED);
+                } else if (width >= WIDTH_OPEN) {
                     width = WIDTH_OPEN;
                     state = State.OPEN;
                 }
@@ -142,11 +157,14 @@ public class GuideNavBar extends AbstractWidget {
             case OPEN -> {
                 if (!containsMouse) {
                     state = State.CLOSING;
+                    widthTransition.set(WIDTH_CLOSED);
                 }
             }
             case CLOSING -> {
-                width = Math.round(width - Math.max(1, partialTick * (WIDTH_OPEN - WIDTH_CLOSED)));
-                if (width <= WIDTH_CLOSED) {
+                if (containsMouse) {
+                    state = State.OPENING;
+                    widthTransition.set(WIDTH_OPEN);
+                } else if (width <= WIDTH_CLOSED) {
                     width = WIDTH_CLOSED;
                     state = State.CLOSED;
                 }

@@ -6,6 +6,7 @@
 - Added `alignItems="start|center|end"` to the `Row` and `Column` tags to align content along the layout axis.
 - Added `fullWidth={true}` to the `Row` and `Column` axis to stretch them to the full width.
 - This enables `<Column alignItems="center" fullWidth={true}>...</Column>` to center content like images horizontally.
+- Fix the navigation bar sometimes opening and closing very slowly.
 
 ## 2.1.2
 
