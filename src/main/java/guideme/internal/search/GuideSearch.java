@@ -87,7 +87,7 @@ public class GuideSearch implements AutoCloseable {
         var config = new IndexWriterConfig(analyzer);
         try {
             indexWriter = new IndexWriter(directory, config);
-            // Flushing and comitting immediately will create the necessary files for IndexReader to open successfully
+            // Flushing and committing immediately will create the necessary files for IndexReader to open successfully
             indexWriter.flush();
             indexWriter.commit();
             indexReader = DirectoryReader.open(directory);

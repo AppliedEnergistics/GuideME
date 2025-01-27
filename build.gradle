@@ -1,3 +1,8 @@
+buildscript {
+    dependencies {
+        classpath 'com.guardsquare:proguard-gradle:7.5.0'
+    }
+}
 
 plugins {
     id 'net.neoforged.moddev'
@@ -182,7 +187,7 @@ neoForge {
 
 final generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
     group = 'build'
-    from ('src/main/neoforge.mods.toml') {
+    from('src/main/neoforge.mods.toml') {
         rename '(.*)', 'META-INF/$1'
     }
     into 'build/generated/modMetadata'
@@ -192,7 +197,7 @@ final generateModMetadata = tasks.register('generateModMetadata', ProcessResourc
             'version',
             'neoforge_version_range',
             'minecraft_version_range'
-    ].collectEntries{ [it, project[it]] }
+    ].collectEntries { [it, project[it]] }
 
     // Ensure the resources get re-evaluate when the version changes
     inputs.properties projectProperties
@@ -218,17 +223,40 @@ shadowJar {
     }
     mergeServiceFiles()
 
-    relocate "io.methvin", "guideme.shaded.methvin"
-    relocate "org.yaml.snakeyaml", "guideme.shaded.snakeyaml"
-    relocate "com.google.flatbuffers", "guideme.shaded.flatbuffers"
-    relocate "org.apache.lucene", "guideme.shaded.lucene"
-    relocate "org.tartarus.snowball", "guideme.shaded.snowball"
+    relocate "io.methvin", "guideme.internal.shaded.methvin"
+    relocate "org.yaml.snakeyaml", "guideme.internal.shaded.snakeyaml"
+    relocate "com.google.flatbuffers", "guideme.internal.shaded.flatbuffers"
+    relocate "org.apache.lucene", "guideme.internal.shaded.lucene"
+    relocate "org.tartarus.snowball", "guideme.internal.shaded.snowball"
 
     configurations = [project.configurations.shaded]
-    archiveClassifier = ""
+    archiveClassifier = ''
 }
 
-assemble.dependsOn shadowJar
+File proguardFile = file("build/libs/${jar.archiveBaseName.get()}-proguard-${version}.jar")
+
+final proguardConfig = tasks.register('generateProguardConfig', GenerateProGuardConfig) {
+    template = file('proguard.conf')
+    sourceDir = layout.projectDirectory.dir('src/main/java')
+    output = layout.buildDirectory.file('generated/proguard.conf')
+}
+
+final proguardJar = tasks.register('proguardJar', proguard.gradle.ProGuardTask) {
+    dependsOn shadowJar
+    outputs.upToDateWhen { false }
+
+    if (JavaLanguageVersion.current().asInt() <= 8) {
+        libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
+    } else {
+        libraryjars "${System.getProperty('java.home')}/jmods"
+    }
+    libraryjars(configurations.compileClasspath)
+
+    injars(shadowJar.archiveFile)
+    outjars proguardFile
+    configuration proguardConfig
+}
+assemble.dependsOn proguardJar
 
 def publicApiIncludePatterns = {
     exclude "**/*Internal.*"
@@ -280,7 +308,9 @@ publishing {
             artifactId = "guideme"
             version = project.version
 
-            artifact shadowJar
+            artifact(proguardFile) {
+                builtBy(proguardJar)
+            }
             artifact sourcesJar
             artifact javadocJar
             artifact apiJar

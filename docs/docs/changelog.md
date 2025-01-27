@@ -3,6 +3,8 @@
 
 ## 2.2.0
 
+- Added full-text search based on Apache Lucene, which is enabled for all guides:
+  <p><video controls><source src={require('./guide-search.mp4').default}/></video></p>
 - Added `alignItems="start|center|end"` to the `Row` and `Column` tags to align content along the layout axis.
 - Added `fullWidth={true}` to the `Row` and `Column` axis to stretch them to the full width.
 - This enables `<Column alignItems="center" fullWidth={true}>...</Column>` to center content like images horizontally.

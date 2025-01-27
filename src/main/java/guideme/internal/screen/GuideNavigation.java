@@ -2,16 +2,14 @@ package guideme.internal.screen;
 
 import guideme.Guide;
 import guideme.PageAnchor;
+import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
-
 /**
- * Extracts the history navigation logic from GuideScreen to allow for
- * jumping between search and guide display seamlessly without duplicating
- * all the nav logic.
+ * Extracts the history navigation logic from GuideScreen to allow for jumping between search and guide display
+ * seamlessly without duplicating all the nav logic.
  */
 public final class GuideNavigation {
     private GuideNavigation() {
@@ -28,7 +26,8 @@ public final class GuideNavigation {
         }
 
         // Handle navigation within the same page
-        if (currentScreen instanceof GuideScreen guideScreen && guideScreen.getGuide() == guide && Objects.equals(guideScreen.getCurrentPageId(), anchor.pageId())) {
+        if (currentScreen instanceof GuideScreen guideScreen && guideScreen.getGuide() == guide
+                && Objects.equals(guideScreen.getCurrentPageId(), anchor.pageId())) {
             guideScreen.scrollToAnchor(anchor.anchor());
             if (anchor.anchor() != null) {
                 history.push(anchor);

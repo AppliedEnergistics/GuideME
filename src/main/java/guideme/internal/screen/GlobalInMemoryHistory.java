@@ -2,15 +2,14 @@ package guideme.internal.screen;
 
 import guideme.Guide;
 import guideme.PageAnchor;
-import net.minecraft.resources.ResourceLocation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import net.minecraft.resources.ResourceLocation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GlobalInMemoryHistory implements GuideScreenHistory {
     private static final int HISTORY_SIZE = 100;
@@ -37,11 +36,11 @@ public class GlobalInMemoryHistory implements GuideScreenHistory {
 
     @Override
     public void push(PageAnchor anchor) {
-        LOG.info("Pushing {} to history of {}", anchor, guideId);
+        LOG.debug("Pushing {} to history of {}", anchor, guideId);
 
         // If we're on the same page, replace the anchor
         if (historyPosition < history.size() && history.get(historyPosition).pageId().equals(anchor.pageId())) {
-            LOG.info("Replacing {} with {}", history.get(historyPosition), anchor);
+            LOG.debug("Replacing {} with {}", history.get(historyPosition), anchor);
             history.set(historyPosition, anchor);
             return; // Don't duplicate entries
         }
@@ -49,13 +48,13 @@ public class GlobalInMemoryHistory implements GuideScreenHistory {
         // Remove anything from the history after the current page when we navigate to a new one
         if (historyPosition + 1 < history.size()) {
             var followingEntries = history.subList(historyPosition + 1, history.size());
-            LOG.info("Cutting tail from history: {}", followingEntries);
+            LOG.debug("Cutting tail from history: {}", followingEntries);
             followingEntries.clear();
         }
         // Clamp history length
         if (history.size() >= HISTORY_SIZE) {
             var prunedEntries = history.subList(0, history.size() - HISTORY_SIZE);
-            LOG.info("Pruning from history: {}", prunedEntries);
+            LOG.debug("Pruning from history: {}", prunedEntries);
             prunedEntries.clear();
         }
         // Append to history
@@ -75,7 +74,7 @@ public class GlobalInMemoryHistory implements GuideScreenHistory {
         var page = peekForward();
         if (page.isPresent()) {
             ++historyPosition;
-            LOG.info("Going forward in history of {}. Position: {}/{}", guideId, historyPosition + 1, history.size());
+            LOG.debug("Going forward in history of {}. Position: {}/{}", guideId, historyPosition + 1, history.size());
         }
         return page;
     }
@@ -85,7 +84,7 @@ public class GlobalInMemoryHistory implements GuideScreenHistory {
         var page = peekBack();
         if (page.isPresent()) {
             --historyPosition;
-            LOG.info("Going back in history of {}. Position: {}/{}", guideId, historyPosition + 1, history.size());
+            LOG.debug("Going back in history of {}. Position: {}/{}", guideId, historyPosition + 1, history.size());
         }
         return page;
     }

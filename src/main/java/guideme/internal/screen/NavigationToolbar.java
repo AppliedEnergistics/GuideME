@@ -2,12 +2,11 @@ package guideme.internal.screen;
 
 import guideme.Guide;
 import guideme.PageAnchor;
+import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.function.Consumer;
 
 public class NavigationToolbar {
     private static final int GAP = 5;
@@ -41,8 +40,7 @@ public class NavigationToolbar {
                     rightEdge - GuideIconButton.WIDTH,
                     topEdge,
                     GuideIconButton.Role.CLOSE,
-                    closeCallback
-            );
+                    closeCallback);
             addWidget.accept(closeButton);
             rightEdge = closeButton.getX() - GAP;
         }
@@ -52,8 +50,7 @@ public class NavigationToolbar {
                     rightEdge - GuideIconButton.WIDTH,
                     topEdge,
                     GuideIconButton.Role.FORWARD,
-                    () -> GuideNavigation.navigateForward(guide)
-            );
+                    () -> GuideNavigation.navigateForward(guide));
             addWidget.accept(forwardButton);
             rightEdge = forwardButton.getX() - GAP;
 
@@ -61,8 +58,7 @@ public class NavigationToolbar {
                     rightEdge - GuideIconButton.WIDTH,
                     topEdge,
                     GuideIconButton.Role.BACK,
-                    () -> GuideNavigation.navigateBack(guide)
-            );
+                    () -> GuideNavigation.navigateBack(guide));
             addWidget.accept(backButton);
             rightEdge = backButton.getX() - GAP;
         }
@@ -73,8 +69,7 @@ public class NavigationToolbar {
                     rightEdge - GuideIconButton.WIDTH,
                     topEdge,
                     GuideIconButton.Role.SEARCH,
-                    this::startSearch
-            );
+                    this::startSearch);
             addWidget.accept(searchButton);
             rightEdge = searchButton.getX() - GAP;
         }

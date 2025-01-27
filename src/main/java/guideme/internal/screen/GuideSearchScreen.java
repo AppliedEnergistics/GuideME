@@ -26,6 +26,8 @@ import guideme.scene.LytItemImage;
 import guideme.style.BorderStyle;
 import guideme.ui.GuideUiHost;
 import guideme.ui.UiPoint;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -34,9 +36,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class GuideSearchScreen extends DocumentScreen {
     /**
@@ -78,7 +77,8 @@ public class GuideSearchScreen extends DocumentScreen {
                 DOCUMENT_RECT_MARGIN,
                 GuidebookText.Search.text());
         searchField.setBordered(false);
-        searchField.setHint(GuidebookText.Search.text().withStyle(ChatFormatting.DARK_GRAY).withStyle(ChatFormatting.ITALIC));
+        searchField.setHint(
+                GuidebookText.Search.text().withStyle(ChatFormatting.DARK_GRAY).withStyle(ChatFormatting.ITALIC));
         searchField.setResponder(this::search);
         setInitialFocus(searchField);
     }
@@ -170,7 +170,7 @@ public class GuideSearchScreen extends DocumentScreen {
     }
 
     private LytFlowLink buildLinkToSearchResult(GuideSearch.SearchResult searchResult, Guide guide,
-                                                ParsedGuidePage page) {
+            ParsedGuidePage page) {
         var documentLink = new LytFlowLink();
         documentLink.appendText(searchResult.pageTitle());
         documentLink.setClickCallback(ignored -> {
