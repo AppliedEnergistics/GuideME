@@ -313,8 +313,8 @@ publishing {
                 url = "https://guideme.appliedenergistics.org"
                 scm {
                     connection = "scm:git:git://github.com/AppliedEnergistics/GuideME.git"
-                    developerConnection = "scm:git:git://github.com/AppliedEnergistics/GuideME.git"
-                    url = "https://github.com/AppliedEnergistics/GuideME"
+                    developerConnection = "scm:git:ssh://github.com:AppliedEnergistics/GuideME.git"
+                    url = "https://github.com/AppliedEnergistics/GuideME/tree/main"
                 }
                 licenses {
                     license {
