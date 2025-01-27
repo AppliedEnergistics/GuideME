@@ -10,6 +10,10 @@
 - This enables `<Column alignItems="center" fullWidth={true}>...</Column>` to center content like images horizontally.
 - Fix the navigation bar sometimes opening and closing very slowly.
 - Store the navigation history on a per-guide basis, fixing "page not found" errors when switching back and forth between different guides.
+- To limit the increase in Jar size due to Lucenes rather large volume, starting with this release,
+  Proguard is enabled to strip unused parts of GuideMEs bundled dependencies (this saves about 5MB). There
+  is some potential for `ClassNotFoundErrors` in cases where we missed required Proguard configuration.
+  Please let us know if you find any errors!
 
 ## 2.1.2
 
