@@ -1,6 +1,12 @@
 
 # Changelog
 
+## 2.3.0
+
+- GuideME is now published on Maven Central instead of Modmaven
+- The group id of the Maven artifact has changed from `appeng` to `org.appliedenergistics` 
+  to enable publishing on Maven Central
+
 ## 2.2.0
 
 - Added full-text search based on Apache Lucene, which is enabled for all guides:

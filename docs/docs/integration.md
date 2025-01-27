@@ -8,13 +8,7 @@ You can find a list of versions on the [GitHub releases page](https://github.com
 
 ```gradle
 repositories {
-  maven {
-    name = "ModMaven"
-    url = "https://modmaven.dev/"
-    content {
-      includeGroupAndSubgroups "appeng"
-    }
-  }
+  mavenCentral()
 }
 
 dependencies {
