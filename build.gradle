@@ -307,6 +307,30 @@ publishing {
         maven(MavenPublication) {
             artifactId = "guideme"
             version = project.version
+            pom {
+                name = "GuideME"
+                description = "GuideME offers the foundation for your Minecraft guidebook needs, be it for mods or modpacks."
+                url = "https://guideme.appliedenergistics.org"
+                scm {
+                    connection = "scm:git:git://github.com/AppliedEnergistics/GuideME.git"
+                    developerConnection = "scm:git:git://github.com/AppliedEnergistics/GuideME.git"
+                    url = "https://github.com/AppliedEnergistics/GuideME"
+                }
+                licenses {
+                    license {
+                        name = "LGPLv3, MIT, and Apache License v2"
+                        url = "https://guideme.appliedenergistics.org/license"
+                    }
+                }
+                developers {
+                    developer {
+                        name = "shartte"
+                        email = "sebastian@hartte.de"
+                        organization = "Applied Energistics"
+                        organizationUrl = "https://github.com/AppliedEnergistics/"
+                    }
+                }
+            }
 
             artifact(proguardFile) {
                 builtBy(proguardJar)

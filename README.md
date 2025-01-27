@@ -4,8 +4,8 @@
 > [!TIP]  
 > Find detailed documentation on our website [https://guideme.appliedenergistics.org](https://guideme.appliedenergistics.org)!
 
-GuideME offers the foundation for your mods or modpacks guidebook. Based on the technology powering [Applied Energistics
-2](https://appliedenergistics.org)s guidebook, it allows you to write your guide in simple Markdown, while embedding 3d scenes straight from structure
+GuideME offers the foundation for your Minecraft guidebook needs, be it for mods or modpacks.
+Based on the technology powering [Applied Energistics 2](https://appliedenergistics.org)s guidebook, it allows you to write your guide in simple Markdown, while embedding 3d scenes straight from structure
 files.
 
 For your players, guides based on GuideME offer:
@@ -28,8 +28,9 @@ For modders, it offers a rich extensibility API, allowing you to:
 
 ## License
 
-GuideME itself is published under the [LGPL license](LICENSE.MD), while some of the
-embedded libraries use the [MIT license](markdown/LICENSE).
+GuideME itself is published under the [LGPL license](LICENSE), while some of the
+embedded libraries use the [MIT license](markdown/LICENSE) and 
+[Apache License Version 2.0](https://github.com/apache/lucene/blob/main/LICENSE.txt).
 
 ## Example
 

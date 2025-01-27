@@ -5,8 +5,8 @@ slug: /
 
 # Overview
 
-GuideME offers the foundation for your mods or modpacks guidebook. Based on the technology powering [Applied Energistics
-2](https://appliedenergistics.org)s guidebook, it allows you to write your guide in simple Markdown, while embedding 3d scenes straight from structure
+GuideME offers the foundation for your Minecraft guidebook needs, be it for mods or modpacks.
+Based on the technology powering [Applied Energistics 2](https://appliedenergistics.org)s guidebook, it allows you to write your guide in simple Markdown, while embedding 3d scenes straight from structure
 files.
 
 For your players, guides based on GuideME offer:
