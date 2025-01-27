@@ -1,8 +1,7 @@
 name: 'Release'
 
 on:
-  release:
-    types: [ published ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -26,6 +25,9 @@ jobs:
       - uses: ./.github/actions/gradle-setup
       - name: Build with Gradle
         run: ./gradlew printProjectVersion build publish -x check --max-workers 1
+        env:
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_KEY_PASSWORD }}
       - name: Prepare artifact metadata. Note that VERSION is set by the gradle script.
         id: prepare_artifact_metadata
         run: |
@@ -46,93 +48,8 @@ jobs:
           if-no-files-found: error
           retention-days: 3
 
-  upload-release-artifacts:
-    name: Upload Release Artifacts
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-      - name: Unpack build artifact
-        run: tar axf build.tar.zst
-      - name: Upload Release Artifact
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ needs.build.outputs.ARTIFACT_PATH }}
-          asset_name: ${{ needs.build.outputs.ARTIFACT_NAME }}
-          asset_content_type: application/zip
-      - name: Upload Javadocs Artifact
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ needs.build.outputs.JAVADOC_PATH }}
-          asset_name: ${{ needs.build.outputs.JAVADOC_NAME }}
-          asset_content_type: application/zip
-      - name: Upload API
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ${{ needs.build.outputs.API_PATH }}
-          asset_name: ${{ needs.build.outputs.API_NAME }}
-          asset_content_type: application/zip
-
-  deploy-github-packages:
-    name: Deploy to Github Packages
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-      - name: Unpack build artifact
-        run: tar axf build.tar.zst
-      - name: Validate artifacts exist
-        run: test -d ./build
-      - name: Publish to Github Packages
-        uses: AppliedEnergistics/maven-publish-action@main
-        with:
-          local-repository-path: build/repo
-          remote-repository-url: https://maven.pkg.github.com/AppliedEnergistics/GuideME/
-          remote-repository-username: ${{ github.actor }}
-          remote-repository-password: ${{ github.token }}
-
-  deploy-curseforge:
-    name: Deploy to Curseforge
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-      - name: Unpack build artifact
-        run: tar axf build.tar.zst
-      - name: Validate artifacts exist
-        run: test -d ./build
-      - name: Upload to Curseforge
-        uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
-        with:
-          name: GuideME ${{ needs.build.outputs.VERSION }}
-          version: ${{ needs.build.outputs.VERSION }}
-          files: ${{ needs.build.outputs.ARTIFACT_PATH }}
-          curseforge-id: 1173950
-          curseforge-token: ${{ secrets.CURSEFORGE }}
-          loaders: neoforge
-
   deploy-modmaven:
-    name: Deploy to Modmaven
+    name: Deploy to Maven Central
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -145,32 +62,9 @@ jobs:
       - name: Validate artifacts exist
         run: test -d ./build
       - name: Publish to Modmaven
-        uses: AppliedEnergistics/maven-publish-action@main
+        uses: AppliedEnergistics/maven-central-publish-action@main
         with:
           local-repository-path: build/repo
-          remote-repository-url: https://modmaven.dev/artifactory/local-releases/
-          remote-repository-username: ${{ secrets.MODMAVEN_USER }}
-          remote-repository-password: ${{ secrets.MODMAVEN_PASSWORD }}
-
-  deploy-modrinth:
-    name: Deploy to Modrinth
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-      - name: Unpack build artifact
-        run: tar axf build.tar.zst
-      - name: Validate artifacts exist
-        run: test -d ./build
-      - name: Upload to Modrinth
-        uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
-        with:
-          name: GuideME ${{ needs.build.outputs.VERSION }}
-          version: ${{ needs.build.outputs.VERSION }}
-          files: ${{ needs.build.outputs.ARTIFACT_PATH }}
-          modrinth-id: Ck4E7v7R
-          modrinth-token: ${{ secrets.MODRINTH }}
-          loaders: neoforge
+          manual-publishing: true
+          remote-repository-username: ${{ secrets.MAVEN_CENTRAL_USER }}
+          remote-repository-password: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
