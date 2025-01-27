@@ -28,7 +28,6 @@ import guideme.style.TextAlignment;
 import guideme.style.TextStyle;
 import guideme.ui.GuideUiHost;
 import guideme.ui.UiPoint;
-import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -40,6 +39,8 @@ import net.neoforged.neoforgespi.language.IModInfo;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class GuideScreen extends DocumentScreen implements GuideUiHost {
     private static final Logger LOG = LoggerFactory.getLogger(GuideScreen.class);
@@ -66,6 +67,8 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
      */
     @Nullable
     private String pendingScrollToAnchor;
+
+    private LytRect screenRect = LytRect.empty();
 
     private GuideScreen(Guide guide, PageAnchor anchor) {
         super(Component.literal("AE2 Guidebook"));
@@ -100,10 +103,17 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     protected void init() {
         super.init();
 
+        var screenWidth = Math.min(400, width);
+        var left = (width - screenWidth) / 2;
+
+        screenRect = new LytRect(left, 0, screenWidth, height);
+
+        updateDocumentLayout();
+
         GuideNavBar navbar = new GuideNavBar(this);
         addRenderableWidget(navbar);
 
-        toolbar.addToScreen(this::addRenderableWidget, 2, width - DOCUMENT_RECT_MARGIN);
+        toolbar.addToScreen(this::addRenderableWidget, 2, screenRect.right() - DOCUMENT_RECT_MARGIN);
 
         updateDocumentLayout();
     }
@@ -160,6 +170,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     @Override
     public void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
+        renderBlurredBackground(partialTick);
         renderSkyStoneBackground(guiGraphics);
 
         var documentRect = getDocumentRect();
@@ -255,8 +266,9 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     }
 
     private void renderSkyStoneBackground(GuiGraphics guiGraphics) {
-        RenderSystem.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
-        guiGraphics.blit(BACKGROUND_TEXTURE, 0, 0, 0, 0.0F, 0.0F, this.width, this.height, 32, 32);
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(0.25F, 0.25F, 0.25F, 0.9F);
+        guiGraphics.blit(BACKGROUND_TEXTURE, screenRect.x(), screenRect.y(), 0, 0.0F, 0.0F, screenRect.width(), screenRect.height(), 32, 32);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
@@ -355,10 +367,10 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
                 5 + pageTitle.getBounds().height());
 
         return new LytRect(
-                margin,
+                screenRect.x() + margin,
                 marginTop,
-                width - 2 * margin,
-                height - margin - marginTop);
+                screenRect.width() - 2 * margin,
+                screenRect.height() - margin - marginTop);
     }
 
     @Override
