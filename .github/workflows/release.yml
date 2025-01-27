@@ -69,5 +69,5 @@ jobs:
         with:
           local-repository-path: build/repo
           manual-publishing: true
-          remote-repository-username: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          remote-repository-password: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          username: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          password: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
