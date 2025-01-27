@@ -57,7 +57,9 @@ public abstract class GenerateProGuardConfig extends DefaultTask {
             @Override
             public FileVisitResult visitFile(@NotNull Path file, BasicFileAttributes attrs) throws IOException {
                 if (file.getFileName().toString().endsWith(".java")) {
-                    var packageName = root.relativize(file.getParent()).toString().replace('\\', '.');
+                    var packageName = root.relativize(file.getParent()).toString()
+                            .replace('\\', '/')
+                            .replace('/', '.');
                     packages.add(packageName);
                 }
                 return FileVisitResult.CONTINUE;
