@@ -8,6 +8,7 @@ plugins {
     id 'net.neoforged.moddev'
     id 'maven-publish'
     id 'com.gradleup.shadow'
+    id 'signing'
 }
 
 apply plugin: ProjectDefaultsPlugin
@@ -346,6 +347,14 @@ publishing {
             url = file("build/repo").toURI()
         }
     }
+}
+
+signing {
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+    required = signingKey != null && signingPassword != null
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications.maven
 }
 
 afterEvaluate {
