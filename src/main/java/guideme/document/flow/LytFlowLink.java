@@ -3,7 +3,7 @@ package guideme.document.flow;
 import guideme.PageAnchor;
 import guideme.color.SymbolicColor;
 import guideme.internal.GuideMEClient;
-import guideme.ui.DocumentUiHost;
+import guideme.ui.GuideUiHost;
 import java.net.URI;
 import java.util.function.Consumer;
 import net.minecraft.Util;
@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class LytFlowLink extends LytTooltipSpan {
     @Nullable
-    private Consumer<DocumentUiHost> clickCallback;
+    private Consumer<GuideUiHost> clickCallback;
 
     @Nullable
     private SoundEvent clickSound = GuideMEClient.GUIDE_CLICK_EVENT;
@@ -25,12 +25,12 @@ public class LytFlowLink extends LytTooltipSpan {
         modifyHoverStyle(style -> style.underlined(true));
     }
 
-    public void setClickCallback(@Nullable Consumer<DocumentUiHost> clickCallback) {
+    public void setClickCallback(@Nullable Consumer<GuideUiHost> clickCallback) {
         this.clickCallback = clickCallback;
     }
 
     @Override
-    public boolean mouseClicked(DocumentUiHost screen, int x, int y, int button) {
+    public boolean mouseClicked(GuideUiHost screen, int x, int y, int button) {
         if (button == 0 && clickCallback != null) {
             if (clickSound != null) {
                 var handler = Minecraft.getInstance().getSoundManager();

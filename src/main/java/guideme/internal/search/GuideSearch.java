@@ -8,7 +8,7 @@ import guideme.document.DefaultStyles;
 import guideme.document.flow.LytFlowContent;
 import guideme.document.flow.LytFlowSpan;
 import guideme.libs.mdast.model.MdAstHeading;
-import guideme.libs.mdast.model.MdAstPosition;
+import guideme.libs.unist.UnistNode;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Duration;
@@ -320,7 +320,7 @@ public class GuideSearch implements AutoCloseable {
                 var pageTitle = new StringBuilder();
                 var sink = new IndexingSink() {
                     @Override
-                    public void appendText(MdAstPosition position, String text) {
+                    public void appendText(UnistNode parent, String text) {
                         pageTitle.append(text);
                     }
 
@@ -329,7 +329,7 @@ public class GuideSearch implements AutoCloseable {
                         pageTitle.append(' ');
                     }
                 };
-                new PageIndexer(guide, guide.getExtensions(), page.getId()).indexFlowChildren(heading, sink);
+                new PageIndexer(guide, guide.getExtensions(), page.getId()).indexContent(heading.children(), sink);
                 return pageTitle.toString();
             }
         }
@@ -342,7 +342,7 @@ public class GuideSearch implements AutoCloseable {
 
         var sink = new IndexingSink() {
             @Override
-            public void appendText(MdAstPosition position, String text) {
+            public void appendText(UnistNode parent, String text) {
                 searchableText.append(text);
             }
 

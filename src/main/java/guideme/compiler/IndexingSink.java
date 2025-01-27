@@ -1,14 +1,14 @@
 package guideme.compiler;
 
-import guideme.libs.mdast.model.MdAstNode;
-import guideme.libs.mdast.model.MdAstPosition;
+import guideme.libs.unist.UnistNode;
+import org.jetbrains.annotations.ApiStatus;
 
+/**
+ * Sink for indexing page content.
+ */
+@ApiStatus.NonExtendable
 public interface IndexingSink {
-    default void appendText(MdAstNode node, String text) {
-        appendText(node.position, text);
-    }
-
-    void appendText(MdAstPosition position, String text);
+    void appendText(UnistNode parent, String text);
 
     void appendBreak();
 }

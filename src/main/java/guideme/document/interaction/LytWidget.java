@@ -4,7 +4,7 @@ import guideme.document.LytRect;
 import guideme.document.block.LytBlock;
 import guideme.layout.LayoutContext;
 import guideme.render.RenderContext;
-import guideme.ui.DocumentUiHost;
+import guideme.ui.GuideUiHost;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -43,7 +43,7 @@ public class LytWidget extends LytBlock implements InteractiveElement {
 
         var minecraft = Minecraft.getInstance();
 
-        if (!(minecraft.screen instanceof DocumentUiHost uiHost)) {
+        if (!(minecraft.screen instanceof GuideUiHost uiHost)) {
             return; // Can't render if we can't translate
         }
 
@@ -66,18 +66,18 @@ public class LytWidget extends LytBlock implements InteractiveElement {
     }
 
     @Override
-    public boolean mouseMoved(DocumentUiHost screen, int x, int y) {
+    public boolean mouseMoved(GuideUiHost screen, int x, int y) {
         widget.mouseMoved(x, y);
         return true;
     }
 
     @Override
-    public boolean mouseClicked(DocumentUiHost screen, int x, int y, int button) {
+    public boolean mouseClicked(GuideUiHost screen, int x, int y, int button) {
         return widget.mouseClicked(x, y, button);
     }
 
     @Override
-    public boolean mouseReleased(DocumentUiHost screen, int x, int y, int button) {
+    public boolean mouseReleased(GuideUiHost screen, int x, int y, int button) {
         return widget.mouseReleased(x, y, button);
     }
 

@@ -4,6 +4,7 @@ import guideme.document.block.LytBlockContainer;
 import guideme.document.flow.LytFlowParent;
 import guideme.extensions.Extension;
 import guideme.extensions.ExtensionPoint;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.mdx.model.MdxJsxFlowElement;
 import guideme.libs.mdast.mdx.model.MdxJsxTextElement;
 import java.util.Set;
@@ -27,9 +28,7 @@ public interface TagCompiler extends Extension {
         parent.append(compiler.createErrorFlowContent("Cannot use MDX tag " + el.name() + " in flow context", el));
     }
 
-    default void indexBlockContext(IndexingContext context, MdxJsxFlowElement el, IndexingSink sink) {
-    }
-
-    default void indexFlowContext(IndexingContext context, MdxJsxTextElement el, IndexingSink sink) {
+    default void index(IndexingContext indexer, MdxJsxElementFields el, IndexingSink sink) {
+        indexer.indexContent(el.children(), sink);
     }
 }

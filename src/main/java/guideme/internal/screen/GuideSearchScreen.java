@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import guideme.Guide;
 import guideme.Guides;
 import guideme.PageAnchor;
+import guideme.PageCollection;
 import guideme.color.ConstantColor;
 import guideme.color.SymbolicColor;
 import guideme.compiler.ParsedGuidePage;
@@ -302,5 +303,14 @@ public class GuideSearchScreen extends DocumentScreen {
 
     public @Nullable Screen getReturnToOnClose() {
         return returnToOnClose;
+    }
+
+    @Override
+    public PageCollection getGuide() {
+        return guide;
+    }
+
+    @Override
+    public void reloadPage() {
     }
 }

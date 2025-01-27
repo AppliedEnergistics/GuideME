@@ -17,7 +17,7 @@ import guideme.internal.util.DashedRectangle;
 import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
 import guideme.render.SimpleRenderContext;
-import guideme.ui.DocumentUiHost;
+import guideme.ui.GuideUiHost;
 import guideme.ui.UiPoint;
 import java.util.Optional;
 import java.util.function.Function;
@@ -28,7 +28,7 @@ import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class DocumentScreen extends Screen implements DocumentUiHost {
+public abstract class DocumentScreen extends Screen implements GuideUiHost {
     private static final DashPattern DEBUG_NODE_OUTLINE = new DashPattern(1f, 4, 3, 0xFFFFFFFF, 500);
     private static final DashPattern DEBUG_CONTENT_OUTLINE = new DashPattern(0.5f, 2, 1, 0x7FFFFFFF, 500);
     private static final ColorValue DEBUG_HOVER_OUTLINE_COLOR = new ConstantColor(0x7FFFFF00);

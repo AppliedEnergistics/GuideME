@@ -25,7 +25,7 @@ import guideme.render.RenderContext;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldBoxAnnotation;
 import guideme.scene.annotation.SceneAnnotation;
-import guideme.ui.DocumentUiHost;
+import guideme.ui.GuideUiHost;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -413,7 +413,7 @@ public class LytGuidebookScene extends LytBox {
         }
 
         @Override
-        public boolean mouseClicked(DocumentUiHost screen, int x, int y, int button) {
+        public boolean mouseClicked(GuideUiHost screen, int x, int y, int button) {
             if (interactive) {
                 if (button == 0 || button == 1) {
                     var cameraSettings = scene.getCameraSettings();
@@ -430,7 +430,7 @@ public class LytGuidebookScene extends LytBox {
         }
 
         @Override
-        public boolean mouseReleased(DocumentUiHost screen, int x, int y, int button) {
+        public boolean mouseReleased(GuideUiHost screen, int x, int y, int button) {
             pointDown = null;
             return true;
         }
@@ -441,7 +441,7 @@ public class LytGuidebookScene extends LytBox {
         }
 
         @Override
-        public boolean mouseMoved(DocumentUiHost screen, int x, int y) {
+        public boolean mouseMoved(GuideUiHost screen, int x, int y) {
             if (interactive && pointDown != null) {
                 var dx = x - pointDown.x;
                 var dy = y - pointDown.y;

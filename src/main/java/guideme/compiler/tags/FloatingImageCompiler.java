@@ -1,13 +1,14 @@
 package guideme.compiler.tags;
 
 import guideme.compiler.IdUtils;
+import guideme.compiler.IndexingContext;
+import guideme.compiler.IndexingSink;
 import guideme.compiler.PageCompiler;
 import guideme.document.block.LytImage;
 import guideme.document.flow.InlineBlockAlignment;
 import guideme.document.flow.LytFlowInlineBlock;
 import guideme.document.flow.LytFlowParent;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
-import guideme.libs.mdast.model.MdAstNode;
 import java.util.Set;
 import net.minecraft.ResourceLocationException;
 import org.slf4j.Logger;
@@ -60,11 +61,19 @@ public class FloatingImageCompiler extends FlowTagCompiler {
                 image.setMarginBottom(5);
             }
             default -> {
-                parent.append(compiler.createErrorFlowContent("Invalid align. Must be left or right.", (MdAstNode) el));
+                parent.append(compiler.createErrorFlowContent("Invalid align. Must be left or right.", el));
                 return;
             }
         }
 
         parent.append(inlineBlock);
+    }
+
+    @Override
+    public void index(IndexingContext indexer, MdxJsxElementFields el, IndexingSink sink) {
+        var title = el.getAttributeString("title", null);
+        if (title != null) {
+            sink.appendText(el, title);
+        }
     }
 }

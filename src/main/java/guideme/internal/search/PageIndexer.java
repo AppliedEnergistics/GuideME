@@ -11,7 +11,6 @@ import guideme.extensions.ExtensionPoint;
 import guideme.libs.mdast.MdAstYamlFrontmatter;
 import guideme.libs.mdast.gfm.model.GfmTable;
 import guideme.libs.mdast.mdx.model.MdxJsxFlowElement;
-import guideme.libs.mdast.mdx.model.MdxJsxTextElement;
 import guideme.libs.mdast.model.MdAstAnyContent;
 import guideme.libs.mdast.model.MdAstBreak;
 import guideme.libs.mdast.model.MdAstCode;
@@ -23,13 +22,10 @@ import guideme.libs.mdast.model.MdAstLink;
 import guideme.libs.mdast.model.MdAstList;
 import guideme.libs.mdast.model.MdAstListItem;
 import guideme.libs.mdast.model.MdAstParagraph;
-import guideme.libs.mdast.model.MdAstParent;
-import guideme.libs.mdast.model.MdAstPhrasingContent;
 import guideme.libs.mdast.model.MdAstRoot;
 import guideme.libs.mdast.model.MdAstStrong;
 import guideme.libs.mdast.model.MdAstText;
 import guideme.libs.mdast.model.MdAstThematicBreak;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,49 +66,56 @@ public final class PageIndexer implements IndexingContext {
     }
 
     public void index(MdAstRoot root, IndexingSink sink) {
-        indexBlockContext(root, sink);
+        indexContent(root.children(), sink);
     }
 
-    public void indexBlockContext(MdAstParent<?> markdownParent, IndexingSink sink) {
-        indexBlockContext(markdownParent.children(), sink);
-    }
-
-    public void indexBlockContext(List<? extends MdAstAnyContent> children, IndexingSink sink) {
-        for (var child : children) {
-            if (child instanceof MdAstThematicBreak) {
-                sink.appendBreak();
-            } else if (child instanceof MdAstList astList) {
-                indexList(astList, sink);
-            } else if (child instanceof MdAstCode astCode) {
-                sink.appendText(astCode, astCode.value);
-            } else if (child instanceof MdAstHeading astHeading) {
-                indexFlowChildren(astHeading, sink);
-            } else if (child instanceof MdAstParagraph astParagraph) {
-                indexFlowChildren(astParagraph, sink);
-            } else if (child instanceof MdAstYamlFrontmatter) {
-                // This is handled by compile directly
-            } else if (child instanceof GfmTable astTable) {
-                indexTable(astTable, sink);
-            } else if (child instanceof MdxJsxFlowElement el) {
-                var compiler = tagCompilers.get(el.name());
-                if (compiler == null) {
-                    LOG.warn("Unhandled MDX element in block context: {}", child);
-                } else {
-                    compiler.indexBlockContext(this, el, sink);
-                }
-            } else if (child instanceof MdAstPhrasingContent phrasingContent) {
-                indexFlowContext(sink, phrasingContent);
-            } else {
-                LOG.warn("Unhandled node type in guide search indexing: {}", child);
-            }
+    @Override
+    public void indexContent(MdAstAnyContent content, IndexingSink sink) {
+        if (content instanceof MdAstThematicBreak) {
             sink.appendBreak();
+        } else if (content instanceof MdAstList astList) {
+            indexList(astList, sink);
+        } else if (content instanceof MdAstCode astCode) {
+            sink.appendText(astCode, astCode.value);
+        } else if (content instanceof MdAstHeading astHeading) {
+            indexContent(astHeading.children(), sink);
+        } else if (content instanceof MdAstParagraph astParagraph) {
+            indexContent(astParagraph.children(), sink);
+        } else if (content instanceof MdAstYamlFrontmatter) {
+            // This is handled by compile directly
+        } else if (content instanceof GfmTable astTable) {
+            indexTable(astTable, sink);
+        } else if (content instanceof MdAstText astText) {
+            sink.appendText(astText, astText.value);
+        } else if (content instanceof MdAstInlineCode astCode) {
+            sink.appendText(astCode, astCode.value);
+        } else if (content instanceof MdAstStrong astStrong) {
+            indexContent(astStrong.children(), sink);
+        } else if (content instanceof MdAstEmphasis astEmphasis) {
+            indexContent(astEmphasis.children(), sink);
+        } else if (content instanceof MdAstBreak) {
+            sink.appendBreak();
+        } else if (content instanceof MdAstLink astLink) {
+            indexLink(astLink, sink);
+        } else if (content instanceof MdAstImage astImage) {
+            indexImage(astImage, sink);
+        } else if (content instanceof MdxJsxFlowElement el) {
+            var compiler = tagCompilers.get(el.name());
+            if (compiler == null) {
+                LOG.warn("Unhandled MDX element in block context: {}", content);
+            } else {
+                compiler.index(this, el, sink);
+            }
+        } else {
+            LOG.warn("Unhandled node type in guide search indexing: {}", content);
         }
+        sink.appendBreak();
     }
 
     private void indexList(MdAstList astList, IndexingSink sink) {
         for (var listContent : astList.children()) {
             if (listContent instanceof MdAstListItem astListItem) {
-                indexBlockContext(astListItem, sink);
+                indexContent(astListItem, sink);
             } else {
                 LOG.warn("Cannot handle list content: {}", listContent);
             }
@@ -123,45 +126,8 @@ public final class PageIndexer implements IndexingContext {
         for (var astRow : astTable.children()) {
             var astCells = astRow.children();
             for (var astCell : astCells) {
-                indexBlockContext(astCell, sink);
+                indexContent(astCell, sink);
             }
-        }
-    }
-
-    public void indexFlowChildren(MdAstParent<?> markdownParent, IndexingSink sink) {
-        indexFlowContext(markdownParent.children(), sink);
-    }
-
-    public void indexFlowContext(Collection<? extends MdAstAnyContent> children, IndexingSink sink) {
-        for (var child : children) {
-            indexFlowContext(sink, child);
-        }
-    }
-
-    private void indexFlowContext(IndexingSink sink, MdAstAnyContent content) {
-        if (content instanceof MdAstText astText) {
-            sink.appendText(astText.position, astText.value);
-        } else if (content instanceof MdAstInlineCode astCode) {
-            sink.appendText(astCode.position, astCode.value);
-        } else if (content instanceof MdAstStrong astStrong) {
-            indexFlowChildren(astStrong, sink);
-        } else if (content instanceof MdAstEmphasis astEmphasis) {
-            indexFlowChildren(astEmphasis, sink);
-        } else if (content instanceof MdAstBreak) {
-            sink.appendBreak();
-        } else if (content instanceof MdAstLink astLink) {
-            indexLink(astLink, sink);
-        } else if (content instanceof MdAstImage astImage) {
-            indexImage(astImage, sink);
-        } else if (content instanceof MdxJsxTextElement el) {
-            var compiler = tagCompilers.get(el.name());
-            if (compiler == null) {
-                LOG.warn("Unhandled MDX element in flow context: {}", content);
-            } else {
-                compiler.indexFlowContext(this, el, sink);
-            }
-        } else {
-            LOG.warn("Unhandled Markdown node in flow context: {}", content);
         }
     }
 
@@ -169,7 +135,7 @@ public final class PageIndexer implements IndexingContext {
         if (astLink.title != null && !astLink.title.isEmpty()) {
             sink.appendText(astLink, astLink.title);
         }
-        indexFlowContext(astLink.children(), sink);
+        indexContent(astLink.children(), sink);
     }
 
     private void indexImage(MdAstImage astImage, IndexingSink sink) {

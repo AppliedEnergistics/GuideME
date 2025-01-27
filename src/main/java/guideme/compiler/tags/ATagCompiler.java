@@ -1,6 +1,8 @@
 package guideme.compiler.tags;
 
 import guideme.PageAnchor;
+import guideme.compiler.IndexingContext;
+import guideme.compiler.IndexingSink;
 import guideme.compiler.LinkParser;
 import guideme.compiler.PageCompiler;
 import guideme.document.flow.LytFlowAnchor;
@@ -55,5 +57,15 @@ public class ATagCompiler extends FlowTagCompiler {
         } else {
             compiler.compileFlowContext(el.children(), parent);
         }
+    }
+
+    @Override
+    public void index(IndexingContext indexer, MdxJsxElementFields el, IndexingSink sink) {
+        var title = el.getAttributeString("title", "");
+        if (!title.isBlank()) {
+            sink.appendText(el, title);
+        }
+
+        indexer.indexContent(el.children(), sink);
     }
 }

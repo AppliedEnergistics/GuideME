@@ -415,7 +415,6 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         return guide;
     }
 
-    @Override
     public ResourceLocation getCurrentPageId() {
         return currentPage.id();
     }
