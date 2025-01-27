@@ -1,5 +1,7 @@
 package guideme.compiler.tags;
 
+import guideme.compiler.IndexingContext;
+import guideme.compiler.IndexingSink;
 import guideme.compiler.PageCompiler;
 import guideme.document.block.LytBlockContainer;
 import guideme.document.block.LytItemGrid;
@@ -30,5 +32,9 @@ public class ItemGridCompiler extends BlockTagCompiler {
         }
 
         parent.append(itemGrid);
+    }
+
+    @Override
+    public void index(IndexingContext indexer, MdxJsxElementFields el, IndexingSink sink) {
     }
 }

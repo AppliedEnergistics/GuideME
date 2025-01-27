@@ -2,6 +2,8 @@
 package guideme.scene;
 
 import guideme.color.SymbolicColor;
+import guideme.compiler.IndexingContext;
+import guideme.compiler.IndexingSink;
 import guideme.compiler.PageCompiler;
 import guideme.compiler.tags.BlockTagCompiler;
 import guideme.compiler.tags.MdxAttrs;
@@ -76,5 +78,9 @@ public class SceneTagCompiler extends BlockTagCompiler implements Extension {
                 elementTagCompilers.put(tagName, sceneElementTag);
             }
         }
+    }
+
+    @Override
+    public void index(IndexingContext indexer, MdxJsxElementFields el, IndexingSink sink) {
     }
 }

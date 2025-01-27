@@ -10,7 +10,7 @@ import guideme.extensions.ExtensionCollection;
 import guideme.extensions.ExtensionPoint;
 import guideme.libs.mdast.MdAstYamlFrontmatter;
 import guideme.libs.mdast.gfm.model.GfmTable;
-import guideme.libs.mdast.mdx.model.MdxJsxFlowElement;
+import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstAnyContent;
 import guideme.libs.mdast.model.MdAstBreak;
 import guideme.libs.mdast.model.MdAstCode;
@@ -99,15 +99,15 @@ public final class PageIndexer implements IndexingContext {
             indexLink(astLink, sink);
         } else if (content instanceof MdAstImage astImage) {
             indexImage(astImage, sink);
-        } else if (content instanceof MdxJsxFlowElement el) {
+        } else if (content instanceof MdxJsxElementFields el) {
             var compiler = tagCompilers.get(el.name());
             if (compiler == null) {
-                LOG.warn("Unhandled MDX element in block context: {}", content);
+                LOG.warn("Unhandled custom MDX element in guide search indexing: {}", el.name());
             } else {
                 compiler.index(this, el, sink);
             }
         } else {
-            LOG.warn("Unhandled node type in guide search indexing: {}", content);
+            LOG.warn("Unhandled node type in guide search indexing: {}", content.type());
         }
         sink.appendBreak();
     }
@@ -115,7 +115,7 @@ public final class PageIndexer implements IndexingContext {
     private void indexList(MdAstList astList, IndexingSink sink) {
         for (var listContent : astList.children()) {
             if (listContent instanceof MdAstListItem astListItem) {
-                indexContent(astListItem, sink);
+                indexContent(astListItem.children(), sink);
             } else {
                 LOG.warn("Cannot handle list content: {}", listContent);
             }
@@ -126,7 +126,7 @@ public final class PageIndexer implements IndexingContext {
         for (var astRow : astTable.children()) {
             var astCells = astRow.children();
             for (var astCell : astCells) {
-                indexContent(astCell, sink);
+                indexContent(astCell.children(), sink);
             }
         }
     }
