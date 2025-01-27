@@ -18,8 +18,8 @@ repositories {
 }
 
 dependencies {
-  compileOnly "appeng:guideme:${guideme_version}:api"
-  runtimeOnly "appeng:guideme:${guideme_version}"
+  compileOnly "org.appliedenergistics:guideme:${guideme_version}:api"
+  runtimeOnly "org.appliedenergistics:guideme:${guideme_version}"
 }
 ```
 

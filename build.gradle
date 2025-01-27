@@ -13,7 +13,7 @@ plugins {
 apply plugin: ProjectDefaultsPlugin
 apply plugin: FlatBuffersPlugin
 
-group = "appeng"
+group = "org.appliedenergistics"
 base {
     archivesName = "guideme"
 }
