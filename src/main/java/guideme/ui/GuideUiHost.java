@@ -5,6 +5,7 @@ import guideme.PageCollection;
 import guideme.document.LytPoint;
 import guideme.document.LytRect;
 import guideme.document.interaction.InteractiveElement;
+import guideme.internal.screen.GuideNavigation;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,7 +16,9 @@ public interface GuideUiHost {
 
     void reloadPage();
 
-    void openUrl(String href);
+    default void openUrl(String href) {
+        GuideNavigation.openUrl(href);
+    }
 
     @Nullable
     UiPoint getDocumentPoint(double screenX, double screenY);

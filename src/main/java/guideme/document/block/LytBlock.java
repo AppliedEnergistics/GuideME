@@ -3,6 +3,7 @@ package guideme.document.block;
 import guideme.document.LytRect;
 import guideme.layout.LayoutContext;
 import guideme.render.RenderContext;
+import guideme.style.BorderStyle;
 import net.minecraft.client.renderer.MultiBufferSource;
 import org.joml.Vector2i;
 
@@ -16,6 +17,11 @@ public abstract class LytBlock extends LytNode {
     private int marginLeft;
     private int marginRight;
     private int marginBottom;
+
+    private BorderStyle borderTop = BorderStyle.NONE;
+    private BorderStyle borderLeft = BorderStyle.NONE;
+    private BorderStyle borderRight = BorderStyle.NONE;
+    private BorderStyle borderBottom = BorderStyle.NONE;
 
     /**
      * Always expand this block to the full available width.
@@ -92,6 +98,45 @@ public abstract class LytBlock extends LytNode {
             case HORIZONTAL -> getMarginRight();
             case VERTICAL -> getMarginBottom();
         };
+    }
+
+    public BorderStyle getBorderTop() {
+        return borderTop;
+    }
+
+    public void setBorderTop(BorderStyle borderTop) {
+        this.borderTop = borderTop;
+    }
+
+    public BorderStyle getBorderLeft() {
+        return borderLeft;
+    }
+
+    public void setBorderLeft(BorderStyle borderLeft) {
+        this.borderLeft = borderLeft;
+    }
+
+    public BorderStyle getBorderRight() {
+        return borderRight;
+    }
+
+    public void setBorderRight(BorderStyle borderRight) {
+        this.borderRight = borderRight;
+    }
+
+    public BorderStyle getBorderBottom() {
+        return borderBottom;
+    }
+
+    public void setBorderBottom(BorderStyle borderBottom) {
+        this.borderBottom = borderBottom;
+    }
+
+    public void setBorder(BorderStyle style) {
+        setBorderTop(style);
+        setBorderLeft(style);
+        setBorderRight(style);
+        setBorderBottom(style);
     }
 
     public boolean isFullWidth() {

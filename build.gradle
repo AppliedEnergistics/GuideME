@@ -1,3 +1,8 @@
+buildscript {
+    dependencies {
+        classpath 'com.guardsquare:proguard-gradle:7.5.0'
+    }
+}
 
 plugins {
     id 'net.neoforged.moddev'
@@ -23,7 +28,7 @@ sourceSets {
 }
 
 configurations {
-    localRuntimeOnly
+    localImplementation
     shaded {
         transitive = false
     }
@@ -32,7 +37,10 @@ configurations {
     configurations.compileClasspath.extendsFrom(guideExportOnly)
     configurations.runtimeClasspath.extendsFrom(guideExportOnly)
 
-    runtimeClasspath.extendsFrom localRuntimeOnly
+    compileClasspath.extendsFrom localImplementation
+    runtimeClasspath.extendsFrom localImplementation
+    testCompileClasspath.extendsFrom localImplementation
+    testRuntimeClasspath.extendsFrom localImplementation
 }
 
 dependencies {
@@ -47,15 +55,23 @@ dependencies {
     }
     // Do not inherit any transitive dependencies here since we rely on those transitive dependencies being
     // present in Minecrafts own dependencies already.
-    implementation("io.methvin:directory-watcher:${directory_watcher_version}") {
+    localImplementation("io.methvin:directory-watcher:${directory_watcher_version}") {
         transitive = false
     }
-    implementation("org.yaml:snakeyaml:${snakeyaml_version}") {
+    localImplementation("org.yaml:snakeyaml:${snakeyaml_version}") {
         transitive = false
     }
-    implementation("com.google.flatbuffers:flatbuffers-java:${flatbuffers_version}") {
+    localImplementation("com.google.flatbuffers:flatbuffers-java:${flatbuffers_version}") {
         transitive = false
     }
+    shaded(localImplementation("org.apache.lucene:lucene-core:${lucene_version}"))
+    shaded(localImplementation("org.apache.lucene:lucene-analysis-common:${lucene_version}"))
+    shaded(localImplementation("org.apache.lucene:lucene-queryparser:${lucene_version}"))
+    shaded(localImplementation("org.apache.lucene:lucene-facet:${lucene_version}"))
+    shaded(localImplementation("org.apache.lucene:lucene-queries:${lucene_version}"))
+    shaded(localImplementation("org.apache.lucene:lucene-highlighter:${lucene_version}"))
+    shaded(localImplementation("org.apache.lucene:lucene-memory:${lucene_version}"))
+
     // Used for the guide export
     guideExportOnly("org.bytedeco:ffmpeg-platform:${ffmpeg_version}")
 
@@ -171,7 +187,7 @@ neoForge {
 
 final generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
     group = 'build'
-    from ('src/main/neoforge.mods.toml') {
+    from('src/main/neoforge.mods.toml') {
         rename '(.*)', 'META-INF/$1'
     }
     into 'build/generated/modMetadata'
@@ -181,7 +197,7 @@ final generateModMetadata = tasks.register('generateModMetadata', ProcessResourc
             'version',
             'neoforge_version_range',
             'minecraft_version_range'
-    ].collectEntries{ [it, project[it]] }
+    ].collectEntries { [it, project[it]] }
 
     // Ensure the resources get re-evaluate when the version changes
     inputs.properties projectProperties
@@ -202,15 +218,45 @@ shadowJar {
     from sourceSets.main.output.classesDirs
     from sourceSets.main.output.resourcesDir
 
-    relocate "io.methvin", "guideme.shaded.methvin"
-    relocate "org.yaml.snakeyaml", "guideme.shaded.snakeyaml"
-    relocate "com.google.flatbuffers", "guideme.shaded.flatbuffers"
+    dependencies {
+        exclude 'META-INF/maven/**'
+    }
+    mergeServiceFiles()
+
+    relocate "io.methvin", "guideme.internal.shaded.methvin"
+    relocate "org.yaml.snakeyaml", "guideme.internal.shaded.snakeyaml"
+    relocate "com.google.flatbuffers", "guideme.internal.shaded.flatbuffers"
+    relocate "org.apache.lucene", "guideme.internal.shaded.lucene"
+    relocate "org.tartarus.snowball", "guideme.internal.shaded.snowball"
 
     configurations = [project.configurations.shaded]
-    archiveClassifier = ""
+    archiveClassifier = ''
 }
 
-assemble.dependsOn shadowJar
+File proguardFile = file("build/libs/${jar.archiveBaseName.get()}-proguard-${version}.jar")
+
+final proguardConfig = tasks.register('generateProguardConfig', GenerateProGuardConfig) {
+    template = file('proguard.conf')
+    sourceDir = layout.projectDirectory.dir('src/main/java')
+    output = layout.buildDirectory.file('generated/proguard.conf')
+}
+
+final proguardJar = tasks.register('proguardJar', proguard.gradle.ProGuardTask) {
+    dependsOn shadowJar
+    outputs.upToDateWhen { false }
+
+    if (JavaLanguageVersion.current().asInt() <= 8) {
+        libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
+    } else {
+        libraryjars "${System.getProperty('java.home')}/jmods"
+    }
+    libraryjars(configurations.compileClasspath)
+
+    injars(shadowJar.archiveFile)
+    outjars proguardFile
+    configuration proguardConfig
+}
+assemble.dependsOn proguardJar
 
 def publicApiIncludePatterns = {
     exclude "**/*Internal.*"
@@ -262,7 +308,9 @@ publishing {
             artifactId = "guideme"
             version = project.version
 
-            artifact shadowJar
+            artifact(proguardFile) {
+                builtBy(proguardJar)
+            }
             artifact sourcesJar
             artifact javadocJar
             artifact apiJar

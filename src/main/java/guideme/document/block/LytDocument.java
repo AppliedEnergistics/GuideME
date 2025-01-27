@@ -56,6 +56,7 @@ public class LytDocument extends LytNode implements LytBlockContainer {
                 block.parent = null;
             }
             blocks.remove(block);
+            invalidateLayout();
         }
     }
 
@@ -66,6 +67,7 @@ public class LytDocument extends LytNode implements LytBlockContainer {
         }
         block.parent = this;
         blocks.add(block);
+        invalidateLayout();
     }
 
     public void clearContent() {
@@ -73,6 +75,11 @@ public class LytDocument extends LytNode implements LytBlockContainer {
             block.parent = null;
         }
         blocks.clear();
+        invalidateLayout();
+    }
+
+    private void invalidateLayout() {
+        layout = null;
     }
 
     public void updateLayout(LayoutContext context, int availableWidth) {

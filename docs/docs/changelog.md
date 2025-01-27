@@ -3,12 +3,23 @@
 
 ## 2.2.0
 
+- Added full-text search based on Apache Lucene, which is enabled for all guides:
+  <p><video controls><source src={require('./guide-search.mp4').default}/></video></p>
 - Added `alignItems="start|center|end"` to the `Row` and `Column` tags to align content along the layout axis.
 - Added `fullWidth={true}` to the `Row` and `Column` axis to stretch them to the full width.
 - This enables `<Column alignItems="center" fullWidth={true}>...</Column>` to center content like images horizontally.
 - Fix the navigation bar sometimes opening and closing very slowly.
 - Store the navigation history on a per-guide basis, fixing "page not found" errors when switching back and forth between different guides.
-
+- To limit the increase in Jar size due to Lucenes rather large volume, starting with this release,
+  Proguard is enabled to strip unused parts of GuideMEs bundled dependencies (this saves about 5MB). There
+  is some potential for `ClassNotFoundErrors` in cases where we missed required Proguard configuration.
+  Please let us know if you find any errors!
+- API additions
+  - `ConstantColor#TRANSPARENT`
+  - Added `index` method to `TagCompiler` to allow custom tags to control how they are indxed by search.
+    By default, all custom tags simply add their children to the indexer.
+  - Added the ability to set borders for `LytBox`.
+  - Generalized `GuideUiHost` into `DocumentUiHost`.
 ## 2.1.2
 
 - Skip fully invisible blocks (without block entities) when calculating the bounding box of a game scene. Fixes inexplicably larger bounds when blocks like `minecraft:light` where included in the exported structure.

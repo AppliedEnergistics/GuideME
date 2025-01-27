@@ -9,6 +9,8 @@
   "guideme.guidebook.ItemNoGuideId": "No guide id set",
   "guideme.guidebook.ResetView": "Reset View",
   "guideme.guidebook.Search": "Search",
+  "guideme.guidebook.SearchNoQuery": "Enter a Search Query",
+  "guideme.guidebook.SearchNoResults": "No Results",
   "guideme.guidebook.ShowAnnotations": "Show Annotations",
   "guideme.guidebook.ZoomIn": "Zoom In",
   "guideme.guidebook.ZoomOut": "Zoom Out",

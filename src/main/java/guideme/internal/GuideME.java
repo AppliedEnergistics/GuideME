@@ -47,7 +47,7 @@ public class GuideME {
         DR_ARGUMENT_TYPE_INFOS.register("page_anchor", () -> ArgumentTypeInfos.registerByClass(PageAnchorArgument.class,
                 SingletonArgumentInfo.contextFree(PageAnchorArgument::argument)));
 
-        var drDataComponents = DeferredRegister.createDataComponents(MOD_ID);
+        var drDataComponents = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, MOD_ID);
         drDataComponents.register("guide_id", () -> GUIDE_ID_COMPONENT);
 
         DR_ARGUMENT_TYPE_INFOS.register(modBus);

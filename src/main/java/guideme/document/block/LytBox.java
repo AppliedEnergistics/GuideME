@@ -15,6 +15,8 @@ public abstract class LytBox extends LytBlock implements LytBlockContainer {
     protected int paddingRight;
     protected int paddingBottom;
 
+    private final BorderRenderer borderRenderer = new BorderRenderer();
+
     @Override
     public void removeChild(LytNode node) {
         if (node instanceof LytBlock block && block.parent == this) {
@@ -43,14 +45,23 @@ public abstract class LytBox extends LytBlock implements LytBlockContainer {
 
     @Override
     protected final LytRect computeLayout(LayoutContext context, int x, int y, int availableWidth) {
-        // Apply adding
+        int borderTop = getBorderTop().width();
+        int borderLeft = getBorderLeft().width();
+        int borderRight = getBorderRight().width();
+        int borderBottom = getBorderBottom().width();
+
+        // Apply padding and border
         var innerLayout = computeBoxLayout(
                 context,
-                x + paddingLeft,
-                y + paddingTop,
-                availableWidth - paddingLeft - paddingRight);
+                x + paddingLeft + borderLeft,
+                y + paddingTop + borderTop,
+                availableWidth - paddingLeft - paddingRight - borderLeft - borderRight);
 
-        return innerLayout.expand(paddingLeft, paddingTop, paddingRight, paddingBottom);
+        return innerLayout.expand(
+                paddingLeft + borderLeft,
+                paddingTop + borderTop,
+                paddingRight + borderRight,
+                paddingBottom + borderBottom);
     }
 
     @Override
@@ -84,5 +95,14 @@ public abstract class LytBox extends LytBlock implements LytBlockContainer {
         for (var child : children) {
             child.render(context);
         }
+
+        // Render border on top of children
+        borderRenderer.render(
+                context,
+                bounds,
+                getBorderTop(),
+                getBorderLeft(),
+                getBorderRight(),
+                getBorderBottom());
     }
 }

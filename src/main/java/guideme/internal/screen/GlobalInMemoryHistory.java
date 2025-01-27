@@ -8,16 +8,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.resources.ResourceLocation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GlobalInMemoryHistory implements GuideScreenHistory {
+    private static final int HISTORY_SIZE = 100;
+    private static final Logger LOG = LoggerFactory.getLogger(GlobalInMemoryHistory.class);
+
     private static final Map<ResourceLocation, GuideScreenHistory> PER_GUIDE_HISTORY = new HashMap<>();
 
-    private static final int HISTORY_SIZE = 100;
+    private final ResourceLocation guideId;
     private final List<PageAnchor> history = new ArrayList<>();
     private int historyPosition;
 
+    private GlobalInMemoryHistory(ResourceLocation guideId) {
+        this.guideId = guideId;
+    }
+
     public static GuideScreenHistory get(Guide guide) {
-        return PER_GUIDE_HISTORY.computeIfAbsent(guide.getId(), ignored -> new GlobalInMemoryHistory());
+        return PER_GUIDE_HISTORY.computeIfAbsent(guide.getId(), GlobalInMemoryHistory::new);
     }
 
     @Override
@@ -27,13 +36,26 @@ public class GlobalInMemoryHistory implements GuideScreenHistory {
 
     @Override
     public void push(PageAnchor anchor) {
+        LOG.debug("Pushing {} to history of {}", anchor, guideId);
+
+        // If we're on the same page, replace the anchor
+        if (historyPosition < history.size() && history.get(historyPosition).pageId().equals(anchor.pageId())) {
+            LOG.debug("Replacing {} with {}", history.get(historyPosition), anchor);
+            history.set(historyPosition, anchor);
+            return; // Don't duplicate entries
+        }
+
         // Remove anything from the history after the current page when we navigate to a new one
         if (historyPosition + 1 < history.size()) {
-            history.subList(historyPosition + 1, history.size()).clear();
+            var followingEntries = history.subList(historyPosition + 1, history.size());
+            LOG.debug("Cutting tail from history: {}", followingEntries);
+            followingEntries.clear();
         }
         // Clamp history length
         if (history.size() >= HISTORY_SIZE) {
-            history.subList(0, history.size() - HISTORY_SIZE).clear();
+            var prunedEntries = history.subList(0, history.size() - HISTORY_SIZE);
+            LOG.debug("Pruning from history: {}", prunedEntries);
+            prunedEntries.clear();
         }
         // Append to history
         historyPosition = history.size();
@@ -52,6 +74,7 @@ public class GlobalInMemoryHistory implements GuideScreenHistory {
         var page = peekForward();
         if (page.isPresent()) {
             ++historyPosition;
+            LOG.debug("Going forward in history of {}. Position: {}/{}", guideId, historyPosition + 1, history.size());
         }
         return page;
     }
@@ -61,6 +84,7 @@ public class GlobalInMemoryHistory implements GuideScreenHistory {
         var page = peekBack();
         if (page.isPresent()) {
             --historyPosition;
+            LOG.debug("Going back in history of {}. Position: {}/{}", guideId, historyPosition + 1, history.size());
         }
         return page;
     }

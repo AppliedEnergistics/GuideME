@@ -1,7 +1,5 @@
 modLoader = "javafml"
 loaderVersion = "*"
-issueTrackerURL = "https://github.com/AppliedEnergistics/GuideME/issues"
-displayURL = "https://github.com/AppliedEnergistics/GuideME/"
 logoFile = "logo.png"
 authors = "shartte"
 license = "See GitHub repository for details"
@@ -11,6 +9,8 @@ modId = "guideme"
 version = "${version}"
 displayName = "GuideME"
 description = "GuideME offers the foundation for your mods or modpacks guidebook."
+issueTrackerURL = "https://github.com/AppliedEnergistics/GuideME/issues"
+displayURL = "https://github.com/AppliedEnergistics/GuideME/"
 
 [[dependencies.guideme]]
 modId = "neoforge"

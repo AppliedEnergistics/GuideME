@@ -65,4 +65,9 @@ public final class DefaultStyles {
             .fontScale(1f)
             .font(Minecraft.UNIFORM_FONT)
             .build();
+
+    public static final TextStyle SEARCH_RESULT_HIGHLIGHT = TextStyle.builder()
+            .bold(true)
+            .underlined(true)
+            .build();
 }
