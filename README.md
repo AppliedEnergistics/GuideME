@@ -8,7 +8,7 @@ GuideME offers the foundation for your mods or modpacks guidebook. Based on the 
 2](https://appliedenergistics.org)s guidebook, it allows you to write your guide in simple Markdown, while embedding 3d scenes straight from structure
 files.
 
-For players, guides based on GuideME offer:
+For your players, guides based on GuideME offer:
 
 - Smooth scrolling goodness
 - Content being front and center, with an advanced text layout engine supporting reflow and inline elements
@@ -16,6 +16,7 @@ For players, guides based on GuideME offer:
 - Cross-linking between topics and quick information in link tooltips
 - Showing inline-recipes in your guidebook "JEI-Style"
 - Offers the ability to "hold G" to quickly jump to the relevant guidebook page in any item tooltip
+- Full-text search
 
 For modders, it offers a rich extensibility API, allowing you to:
 
