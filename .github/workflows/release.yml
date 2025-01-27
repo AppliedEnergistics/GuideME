@@ -1,7 +1,10 @@
 name: 'Release'
 
 on:
-  workflow_dispatch:
+  push:
+    # Only on branches, not tags/releases
+    branches:
+      - '**'
 
 jobs:
   build:
