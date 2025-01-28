@@ -37,16 +37,12 @@ jobs:
           # Print status for easier debugging
           git status
           if [ -n "$(git status --porcelain)" ]; then exit 1; fi
-      # Gradle Step for PRs
-      - name: Build PR with Gradle
-        run: ./gradlew build
+
+      - name: Build with Gradle
+        run: ./gradlew printProjectVersion build publish -x check --max-workers 1
         env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        if: github.event_name == 'pull_request'
-      # Gradle Step for normal branch pushes
-      - name: Build PR with Gradle
-        run: ./gradlew build
-        if: github.event_name != 'pull_request'
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_KEY_PASSWORD }}
 
       # Always upload test results
       - name: Merge Test Reports
@@ -63,6 +59,26 @@ jobs:
         with:
           name: dist
           path: build/libs/
+
+      - name: Prepare artifact metadata. Note that VERSION is set by the gradle script.
+        id: prepare_artifact_metadata
+        run: |
+          echo ARTIFACT_PATH=./build/libs/guideme-${VERSION}.jar >> $GITHUB_OUTPUT
+          echo ARTIFACT_NAME=guideme-${VERSION}.jar >> $GITHUB_OUTPUT
+          echo JAVADOC_PATH=./build/libs/guideme-${VERSION}-javadoc.jar >> $GITHUB_OUTPUT
+          echo JAVADOC_NAME=guideme-${VERSION}-javadoc.jar >> $GITHUB_OUTPUT
+          echo API_PATH=./build/libs/guideme-${VERSION}-api.jar >> $GITHUB_OUTPUT
+          echo API_NAME=guideme-${VERSION}-api.jar >> $GITHUB_OUTPUT
+          echo VERSION=${VERSION} >> $GITHUB_OUTPUT
+      - name: Archive build results
+        run: tar -I zstd -cf build.tar.zst build/libs build/repo
+      - name: Upload build and gradle folders
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: build.tar.zst
+          if-no-files-found: error
+          retention-days: 3
 
   publish:
     name: Publish Snapshot to Maven Central
