@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 2.3.2
+
+- Fixes a resource reload crash when a page references a non-existing item as its navigation icon
+
 ## 2.3.1
 
 - Fixes a crash with the generic guide item if it has no guide id attached

@@ -19,15 +19,17 @@ public final class NavigationUtil {
 
         var icon = ItemStack.EMPTY;
         if (navigation != null && navigation.iconItemId() != null) {
-            var iconItem = BuiltInRegistries.ITEM.getHolder(navigation.iconItemId()).orElseThrow();
-
-            if (navigation.iconComponents() != null) {
-                var patch = DataComponentPatch.CODEC.parse(JavaOps.INSTANCE, navigation.iconComponents())
-                        .resultOrPartial(err -> LOG.error("Failed to deserialize component patch {} for icon {}: {}",
-                                navigation.iconComponents(), navigation.iconItemId(), err));
-                icon = new ItemStack(iconItem, 1, patch.orElse(DataComponentPatch.EMPTY));
-            } else {
-                icon = new ItemStack(iconItem);
+            var iconItem = BuiltInRegistries.ITEM.getHolder(navigation.iconItemId()).orElse(null);
+            if (iconItem != null) {
+                if (navigation.iconComponents() != null) {
+                    var patch = DataComponentPatch.CODEC.parse(JavaOps.INSTANCE, navigation.iconComponents())
+                            .resultOrPartial(
+                                    err -> LOG.error("Failed to deserialize component patch {} for icon {}: {}",
+                                            navigation.iconComponents(), navigation.iconItemId(), err));
+                    icon = new ItemStack(iconItem, 1, patch.orElse(DataComponentPatch.EMPTY));
+                } else {
+                    icon = new ItemStack(iconItem);
+                }
             }
 
             if (icon.isEmpty()) {
