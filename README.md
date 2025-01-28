@@ -26,6 +26,24 @@ For modders, it offers a rich extensibility API, allowing you to:
 - Use custom indices to quickly find pages based on custom attributes
 - Allow resource packs or addons to add their own content to your guide
 
+## Snapshots
+
+We publish every commit on the main branch to the Maven Central Snapshot repository.
+
+You can see the [list of versions](https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/org/appliedenergistics/guideme/).
+
+To use these versions, you can use this repository in Gradle:
+
+```gradle
+maven {
+    name = 'GuideME Snapshots'
+    url = 'https://central.sonatype.com/repository/maven-snapshots/'
+    content {
+        includeModule('org.appliedenergistics', 'guideme')
+    }
+}
+```
+
 ## License
 
 GuideME itself is published under the [LGPL license](LICENSE), while some of the
