@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 2.3.1
+
+- Fixes a crash with the generic guide item if it has no guide id attached
+
 ## 2.3.0
 
 - GuideME is now published on Maven Central instead of Modmaven

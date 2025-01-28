@@ -13,6 +13,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 public class GuideItem extends Item {
     public static final ResourceLocation ID = GuideME.makeId("guide");
@@ -26,10 +27,12 @@ public class GuideItem extends Item {
 
     @Override
     public Component getName(ItemStack stack) {
-        var guideId = stack.get(GuideME.GUIDE_ID_COMPONENT);
-        var name = GuideMEProxy.instance().getGuideDisplayName(guideId);
-        if (name != null) {
-            return name;
+        var guideId = getGuideId(stack);
+        if (guideId != null) {
+            var name = GuideMEProxy.instance().getGuideDisplayName(guideId);
+            if (name != null) {
+                return name;
+            }
         }
         return super.getName(stack);
     }
@@ -37,19 +40,21 @@ public class GuideItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines,
             TooltipFlag tooltipFlag) {
-        var guideId = stack.get(GuideME.GUIDE_ID_COMPONENT);
-        GuideMEProxy.instance().addGuideTooltip(
-                guideId,
-                context,
-                lines,
-                tooltipFlag);
+        var guideId = getGuideId(stack);
+        if (guideId != null) {
+            GuideMEProxy.instance().addGuideTooltip(
+                    guideId,
+                    context,
+                    lines,
+                    tooltipFlag);
+        }
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
 
-        var guideId = player.getItemInHand(hand).get(GuideME.GUIDE_ID_COMPONENT);
+        var guideId = getGuideId(player.getItemInHand(hand));
 
         if (level.isClientSide) {
             if (guideId == null) {
@@ -60,5 +65,10 @@ public class GuideItem extends Item {
         }
 
         return InteractionResultHolder.success(stack);
+    }
+
+    @Nullable
+    public static ResourceLocation getGuideId(ItemStack stack) {
+        return stack.get(GuideME.GUIDE_ID_COMPONENT);
     }
 }
