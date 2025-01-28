@@ -3,6 +3,7 @@ package guideme.internal.command;
 import com.mojang.brigadier.CommandDispatcher;
 import guideme.Guides;
 import guideme.internal.GuideMEClient;
+import guideme.internal.GuidebookText;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 
@@ -11,7 +12,11 @@ public final class GuideClientCommand {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("guidemec").then(
+        var rootCommand = Commands.literal("guidemec");
+
+        GuidebookStructureCommands.register(rootCommand);
+
+        rootCommand.then(
                 Commands.argument("guide", GuideIdArgument.argument())
                         .then(Commands.literal("export")
                                 .executes(context -> {
@@ -24,6 +29,11 @@ public final class GuideClientCommand {
                                 .executes(context -> {
                                     var guideId = GuideIdArgument.getGuide(context, "guide");
                                     var guide = Guides.getById(guideId);
+                                    if (guide == null) {
+                                        context.getSource()
+                                                .sendFailure(GuidebookText.ItemInvalidGuideId.text(guideId.toString()));
+                                        return 1;
+                                    }
 
                                     GuideMEClient.openGuideAtPreviousPage(guide, guide.getStartPage());
                                     return 0;
@@ -38,6 +48,8 @@ public final class GuideClientCommand {
                                                     return 0;
                                                 }))
 
-                        )));
+                        ));
+
+        dispatcher.register(rootCommand);
     }
 }

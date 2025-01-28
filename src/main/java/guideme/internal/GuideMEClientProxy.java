@@ -61,6 +61,9 @@ class GuideMEClientProxy extends GuideMEServerProxy {
                 player.sendSystemMessage(GuidebookText.ItemInvalidGuideId.text(id.toString()));
                 return false;
             } else {
+                if (anchor == null) {
+                    return GuideMEClient.openGuideAtPreviousPage(guide, guide.getStartPage());
+                }
                 return GuideMEClient.openGuideAtAnchor(guide, anchor);
             }
         }

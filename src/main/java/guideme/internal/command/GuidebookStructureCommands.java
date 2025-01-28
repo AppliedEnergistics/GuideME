@@ -2,22 +2,24 @@ package guideme.internal.command;
 
 import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
 
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import guideme.internal.GuideRegistry;
+import guideme.internal.GuidebookText;
 import guideme.internal.MutableGuide;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.commands.CommandSourceStack;
@@ -39,6 +41,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -52,9 +55,12 @@ import org.slf4j.LoggerFactory;
  * {@link appeng.server.testplots.GuidebookPlot}.
  */
 @OnlyIn(Dist.CLIENT)
-public class GuidebookStructureCommands {
+final class GuidebookStructureCommands {
 
     private static final Logger LOG = LoggerFactory.getLogger(GuidebookStructureCommands.class);
+
+    private GuidebookStructureCommands() {
+    }
 
     @Nullable
     private static String lastOpenedOrSavedPath;
@@ -63,53 +69,85 @@ public class GuidebookStructureCommands {
 
     private static final String FILE_PATTERN_DESC = "Structure NBT Files (*.snbt, *.nbt)";
 
-    private final String commandName;
-
-    public GuidebookStructureCommands(String commandName) {
-        this.commandName = commandName;
-    }
-
-    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        LiteralArgumentBuilder<CommandSourceStack> rootCommand = literal(this.commandName);
-
+    public static void register(LiteralArgumentBuilder<CommandSourceStack> rootCommand) {
         registerPlaceAllStructures(rootCommand);
 
         registerImportCommand(rootCommand);
 
         registerExportCommand(rootCommand);
-
-        dispatcher.register(rootCommand);
     }
 
-    private void registerPlaceAllStructures(LiteralArgumentBuilder<CommandSourceStack> rootCommand) {
+    @Nullable
+    private static ServerLevel getIntegratedServerLevel(CommandContext<CommandSourceStack> context) {
+        var minecraft = Minecraft.getInstance();
+        if (!minecraft.hasSingleplayerServer()) {
+            context.getSource().sendFailure(GuidebookText.CommandOnlyWorksInSinglePlayer.text());
+            return null;
+        }
+        return minecraft.getSingleplayerServer().getLevel(
+                Minecraft.getInstance().player.level().dimension());
+    }
+
+    private static void registerPlaceAllStructures(LiteralArgumentBuilder<CommandSourceStack> rootCommand) {
         LiteralArgumentBuilder<CommandSourceStack> subcommand = literal("placeallstructures");
         // Only usable on singleplayer worlds and only by the local player (in case it is opened to LAN)
-        subcommand.requires(source -> Minecraft.getInstance().hasSingleplayerServer());
+        subcommand = subcommand.requires(c -> c.hasPermission(2));
+
+        subcommand.then(Commands.argument("origin", BlockPosArgument.blockPos())
+                .executes(context -> {
+                    var level = getIntegratedServerLevel(context);
+                    if (level == null) {
+                        return 1;
+                    }
+
+                    var origin = BlockPosArgument.getBlockPos(context, "origin");
+                    placeAllStructures(level, origin);
+                    return 0;
+                }));
+
         subcommand
                 .then(Commands.argument("origin", BlockPosArgument.blockPos())
-                        .executes(context -> {
-                            var origin = BlockPosArgument.getBlockPos(context, "origin");
-                            placeAllStructures(context.getSource().getLevel(), origin);
-                            return 0;
-                        }));
+                        .then(Commands.argument("guide", GuideIdArgument.argument())
+                                .executes(context -> {
+                                    var level = getIntegratedServerLevel(context);
+                                    if (level == null) {
+                                        return 1;
+                                    }
+
+                                    var guideId = GuideIdArgument.getGuide(context, "guide");
+                                    var guide = GuideRegistry.getById(guideId);
+                                    if (guide == null) {
+                                        return 1;
+                                    }
+
+                                    var origin = BlockPosArgument.getBlockPos(context, "origin");
+                                    placeAllStructures(level, new MutableObject<>(origin), guide);
+                                    return 0;
+                                })));
+
         rootCommand.then(subcommand);
     }
 
-    private void registerImportCommand(LiteralArgumentBuilder<CommandSourceStack> rootCommand) {
+    private static void registerImportCommand(LiteralArgumentBuilder<CommandSourceStack> rootCommand) {
         LiteralArgumentBuilder<CommandSourceStack> importSubcommand = literal("importstructure");
         // Only usable on singleplayer worlds and only by the local player (in case it is opened to LAN)
-        importSubcommand.requires(source -> Minecraft.getInstance().hasSingleplayerServer());
         importSubcommand
+                .requires(c -> c.hasPermission(2))
                 .then(Commands.argument("origin", BlockPosArgument.blockPos())
                         .executes(context -> {
+                            var level = getIntegratedServerLevel(context);
+                            if (level == null) {
+                                return 1;
+                            }
+
                             var origin = BlockPosArgument.getBlockPos(context, "origin");
-                            importStructure(context.getSource().getLevel(), origin);
+                            importStructure(getIntegratedServerLevel(context), origin);
                             return 0;
                         }));
         rootCommand.then(importSubcommand);
     }
 
-    private void placeAllStructures(ServerLevel level, BlockPos origin) {
+    private static void placeAllStructures(ServerLevel level, BlockPos origin) {
 
         var currentPos = new MutableObject<>(origin);
 
@@ -119,12 +157,7 @@ public class GuidebookStructureCommands {
 
     }
 
-    private void placeAllStructures(ServerLevel level, MutableObject<BlockPos> origin, MutableGuide guide) {
-        var sourceFolder = guide.getDevelopmentSourceFolder();
-        if (sourceFolder == null) {
-            return;
-        }
-
+    private static void placeAllStructures(ServerLevel level, MutableObject<BlockPos> origin, MutableGuide guide) {
         var minecraft = Minecraft.getInstance();
         var server = minecraft.getSingleplayerServer();
         var player = minecraft.player;
@@ -132,22 +165,57 @@ public class GuidebookStructureCommands {
             return;
         }
 
-        List<Path> snbtFiles;
-        try (var s = Files.walk(sourceFolder)
-                .filter(p -> Files.isRegularFile(p) && p.getFileName().toString().endsWith(".snbt"))) {
-            snbtFiles = s.toList();
-        } catch (IOException e) {
-            LOG.error("Failed to find all structures.", e);
-            player.sendSystemMessage(Component.literal(e.toString()));
-            return;
+        var sourceFolder = guide.getDevelopmentSourceFolder();
+
+        List<Pair<String, Supplier<String>>> structures = new ArrayList<>();
+        if (sourceFolder == null) {
+            var resourceManager = Minecraft.getInstance().getResourceManager();
+            var resources = resourceManager.listResources(
+                    guide.getContentRootFolder(),
+                    location -> location.getPath().endsWith(".snbt"));
+            for (var entry : resources.entrySet()) {
+                structures.add(Pair.of(entry.getKey().toString(), () -> {
+                    try (var in = entry.getValue().open()) {
+                        return new String(in.readAllBytes());
+                    } catch (IOException e) {
+                        LOG.error("Failed to read structure {}", entry.getKey(), e);
+                        return null;
+                    }
+                }));
+            }
+        } else {
+            try (var s = Files.walk(sourceFolder)
+                    .filter(p -> Files.isRegularFile(p) && p.getFileName().toString().endsWith(".snbt"))) {
+                s.forEach(path -> {
+                    structures.add(Pair.of(
+                            path.toString(),
+                            () -> {
+                                try {
+                                    return Files.readString(path);
+                                } catch (IOException e) {
+                                    LOG.error("Failed to read structure {}", path, e);
+                                    return null;
+                                }
+                            }));
+                });
+            } catch (IOException e) {
+                LOG.error("Failed to find all structures.", e);
+                player.sendSystemMessage(Component.literal(e.toString()));
+                return;
+            }
         }
 
-        for (var snbtFile : snbtFiles) {
+        for (var pair : structures) {
+            var snbtFile = pair.getLeft();
+            var contentSupplier = pair.getRight();
             LOG.info("Placing {}", snbtFile);
             try {
                 var manager = level.getServer().getStructureManager();
                 CompoundTag compound;
-                var textInFile = Files.readString(snbtFile, StandardCharsets.UTF_8);
+                var textInFile = contentSupplier.get();
+                if (textInFile == null) {
+                    continue;
+                }
                 compound = NbtUtils.snbtToStructure(textInFile);
 
                 var structure = manager.readStructure(compound);
@@ -170,7 +238,7 @@ public class GuidebookStructureCommands {
         }
     }
 
-    private void importStructure(ServerLevel level, BlockPos origin) {
+    private static void importStructure(ServerLevel level, BlockPos origin) {
         var minecraft = Minecraft.getInstance();
         var server = minecraft.getSingleplayerServer();
         var player = minecraft.player;
@@ -206,7 +274,7 @@ public class GuidebookStructureCommands {
                 }, minecraft);
     }
 
-    private boolean placeStructure(ServerLevel level,
+    private static boolean placeStructure(ServerLevel level,
             BlockPos origin,
             String structurePath) throws CommandSyntaxException, IOException {
         var manager = level.getServer().getStructureManager();
@@ -232,19 +300,24 @@ public class GuidebookStructureCommands {
     private static void registerExportCommand(LiteralArgumentBuilder<CommandSourceStack> rootCommand) {
         LiteralArgumentBuilder<CommandSourceStack> exportSubcommand = literal("exportstructure");
         // Only usable on singleplayer worlds and only by the local player (in case it is opened to LAN)
-        exportSubcommand.requires(source -> Minecraft.getInstance().hasSingleplayerServer());
         exportSubcommand
+                .requires(c -> c.hasPermission(2))
                 .then(Commands.argument("origin", BlockPosArgument.blockPos())
                         .then(Commands.argument("sizeX", IntegerArgumentType.integer(1))
                                 .then(Commands.argument("sizeY", IntegerArgumentType.integer(1))
                                         .then(Commands.argument("sizeZ", IntegerArgumentType.integer(1))
                                                 .executes(context -> {
+                                                    var level = getIntegratedServerLevel(context);
+                                                    if (level == null) {
+                                                        return 1;
+                                                    }
+
                                                     var origin = BlockPosArgument.getBlockPos(context, "origin");
                                                     var sizeX = IntegerArgumentType.getInteger(context, "sizeX");
                                                     var sizeY = IntegerArgumentType.getInteger(context, "sizeY");
                                                     var sizeZ = IntegerArgumentType.getInteger(context, "sizeZ");
                                                     var size = new Vec3i(sizeX, sizeY, sizeZ);
-                                                    exportStructure(context.getSource().getLevel(), origin, size);
+                                                    exportStructure(level, origin, size);
                                                     return 0;
                                                 })))));
         rootCommand.then(exportSubcommand);

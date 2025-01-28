@@ -1,5 +1,6 @@
 {
   "guideme.guidebook.Close": "Close",
+  "guideme.guidebook.CommandOnlyWorksInSinglePlayer": "This command only works in single-player.",
   "guideme.guidebook.ContentFrom": "Content from",
   "guideme.guidebook.HideAnnotations": "Hide Annotations",
   "guideme.guidebook.HistoryGoBack": "Go back one page",

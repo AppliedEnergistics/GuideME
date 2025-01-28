@@ -14,6 +14,8 @@ plugins {
 apply plugin: ProjectDefaultsPlugin
 apply plugin: FlatBuffersPlugin
 
+evaluationDependsOn ":markdown"
+
 group = "org.appliedenergistics"
 base {
     archivesName = "guideme"
@@ -291,6 +293,7 @@ tasks.register('apiJar', Jar) {
     // api jar ist just a development aid and serves as both a binary and source jar simultaneously
     from sourceSets.main.output
     from sourceSets.main.allJava
+    from project(":markdown").sourceSets.main.output
     include "**/*.class"
 }
 apiJar publicApiIncludePatterns
