@@ -32,12 +32,15 @@ public final class GuideNavigation {
             screenToReturnTo = searchScreen.getReturnToOnClose();
         }
 
-        // Handle navigation within the same page
-        if (currentScreen instanceof GuideScreen guideScreen && guideScreen.getGuide() == guide
-                && Objects.equals(guideScreen.getCurrentPageId(), anchor.pageId())) {
-            guideScreen.scrollToAnchor(anchor.anchor());
-            if (anchor.anchor() != null) {
-                history.push(anchor);
+        // Handle navigation within the same guide
+        if (currentScreen instanceof GuideScreen guideScreen && guideScreen.getGuide() == guide) {
+            if (Objects.equals(guideScreen.getCurrentPageId(), anchor.pageId())) {
+                guideScreen.scrollToAnchor(anchor.anchor());
+                if (anchor.anchor() != null) {
+                    history.push(anchor);
+                }
+            } else {
+                guideScreen.loadPageAndScrollTo(anchor);
             }
             return;
         }

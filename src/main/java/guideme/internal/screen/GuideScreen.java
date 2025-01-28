@@ -270,7 +270,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         GuideNavigation.navigateTo(guide, anchor);
     }
 
-    private void loadPageAndScrollTo(PageAnchor anchor) {
+    void loadPageAndScrollTo(PageAnchor anchor) {
         loadPage(anchor.pageId());
 
         setDocumentScrollY(0);

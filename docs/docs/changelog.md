@@ -5,6 +5,7 @@
 
 - Fixes a resource reload crash when a page references a non-existing item as its navigation icon
 - Added op command `/guideme give <target> <guide>` to quickly give a guide item to an entity target (i.e. `@s`)
+- Fix guidebook navbar closing when clicking links
 
 ## 2.3.1
 
