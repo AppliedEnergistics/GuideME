@@ -1,9 +1,10 @@
 
 # Changelog
 
-## 2.3.2
+## 2.4.0
 
 - Fixes a resource reload crash when a page references a non-existing item as its navigation icon
+- Added op command `/guideme give <target> <guide>` to quickly give a guide item to an entity target (i.e. `@s`)
 
 ## 2.3.1
 
