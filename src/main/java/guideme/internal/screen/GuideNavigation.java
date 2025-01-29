@@ -32,6 +32,14 @@ public final class GuideNavigation {
             screenToReturnTo = searchScreen.getReturnToOnClose();
         }
 
+        // Handle built-in pages
+        if (GuideSearchScreen.PAGE_ID.equals(anchor.pageId())) {
+            var guiScreen = GuideSearchScreen.open(guide, anchor.anchor());
+            guiScreen.setReturnToOnClose(screenToReturnTo);
+            Minecraft.getInstance().setScreen(guiScreen);
+            return;
+        }
+
         // Handle navigation within the same guide
         if (currentScreen instanceof GuideScreen guideScreen && guideScreen.getGuide() == guide) {
             if (Objects.equals(guideScreen.getCurrentPageId(), anchor.pageId())) {
@@ -42,14 +50,6 @@ public final class GuideNavigation {
             } else {
                 guideScreen.loadPageAndScrollTo(anchor);
             }
-            return;
-        }
-
-        // Handle built-in pages
-        if (GuideSearchScreen.PAGE_ID.equals(anchor.pageId())) {
-            var guiScreen = GuideSearchScreen.open(guide, anchor.anchor());
-            guiScreen.setReturnToOnClose(screenToReturnTo);
-            Minecraft.getInstance().setScreen(guiScreen);
             return;
         }
 

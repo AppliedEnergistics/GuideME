@@ -1,6 +1,11 @@
 
 # Changelog
 
+## 2.5.0
+
+- Added an extension point for mods to add support for [custom recipe types](./integration/recipe-types.md) to all guides.
+- Fixed an issue with navigating to the search screen.
+
 ## 2.4.0
 
 - Add missing Markdown node classes to API jar
