@@ -5,10 +5,10 @@
 
 - Add missing Markdown node classes to API jar
 - Add structure editing commands that only work in singleplayer:
-    - `/guidemec placeallstructures x y z` will place all structures found in all guidebooks.
-    - `/guidemec placeallstructures x y z <guide>` will place all structures found in a given guidebook.
-    - `/guidemc importstructure <origin>` opens a system file open dialog and places the selected structure file at the given origin.
-    - `/guidemc exportstructure <origin> <size>` opens a system file save dialog and exports the given bounds as a structure file at the chosen location.
+    - `/guideme placeallstructures x y z` will place all structures found in all guidebooks.
+    - `/guideme placeallstructures x y z <guide>` will place all structures found in a given guidebook.
+    - `/guideme importstructure <origin>` opens a system file open dialog and places the selected structure file at the given origin.
+    - `/guideme exportstructure <origin> <size>` opens a system file save dialog and exports the given bounds as a structure file at the chosen location.
 - Fixes a resource reload crash when a page references a non-existing item as its navigation icon
 - Added op command `/guideme give <target> <guide>` to quickly give a guide item to an entity target (i.e. `@s`)
 - Fix guidebook navbar closing when clicking links

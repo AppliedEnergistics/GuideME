@@ -4,6 +4,7 @@ import guideme.Guide;
 import guideme.PageAnchor;
 import guideme.color.LightDarkMode;
 import guideme.internal.command.GuideClientCommand;
+import guideme.internal.command.StructureCommands;
 import guideme.internal.data.GuideMELanguageProvider;
 import guideme.internal.data.GuideMEModelProvider;
 import guideme.internal.hotkey.OpenGuideHotkey;
@@ -36,6 +37,7 @@ import net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +67,8 @@ public class GuideMEClient {
         modBus.addListener(this::gatherData);
         modBus.addListener(this::registerHotkeys);
 
-        NeoForge.EVENT_BUS.addListener(GuideMEClient::registerClientCommands);
+        NeoForge.EVENT_BUS.addListener(this::registerClientCommands);
+        NeoForge.EVENT_BUS.addListener(this::registerCommands);
         modBus.addListener(this::resetSprites);
 
         OpenGuideHotkey.init();
@@ -106,9 +109,14 @@ public class GuideMEClient {
 
     private final ClientConfig clientConfig = new ClientConfig();
 
-    private static void registerClientCommands(RegisterClientCommandsEvent evt) {
+    private void registerClientCommands(RegisterClientCommandsEvent evt) {
         var dispatcher = evt.getDispatcher();
         GuideClientCommand.register(dispatcher);
+    }
+
+    // These are meant for command blocks only usable in single player
+    private void registerCommands(RegisterCommandsEvent event) {
+        StructureCommands.register(event.getDispatcher());
     }
 
     private void gatherData(GatherDataEvent event) {

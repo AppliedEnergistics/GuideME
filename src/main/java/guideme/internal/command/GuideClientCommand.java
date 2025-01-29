@@ -14,8 +14,6 @@ public final class GuideClientCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         var rootCommand = Commands.literal("guidemec");
 
-        GuidebookStructureCommands.register(rootCommand);
-
         rootCommand.then(
                 Commands.argument("guide", GuideIdArgument.argument())
                         .then(Commands.literal("export")

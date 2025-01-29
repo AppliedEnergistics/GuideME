@@ -2,6 +2,7 @@ package guideme.internal.command;
 
 import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -38,8 +39,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
@@ -54,12 +53,11 @@ import org.slf4j.LoggerFactory;
  * will not be used directly by users, but rather by command blocks built by
  * {@link appeng.server.testplots.GuidebookPlot}.
  */
-@OnlyIn(Dist.CLIENT)
-final class GuidebookStructureCommands {
+public final class StructureCommands {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GuidebookStructureCommands.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StructureCommands.class);
 
-    private GuidebookStructureCommands() {
+    private StructureCommands() {
     }
 
     @Nullable
@@ -69,12 +67,16 @@ final class GuidebookStructureCommands {
 
     private static final String FILE_PATTERN_DESC = "Structure NBT Files (*.snbt, *.nbt)";
 
-    public static void register(LiteralArgumentBuilder<CommandSourceStack> rootCommand) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        var rootCommand = Commands.literal("guideme");
+
         registerPlaceAllStructures(rootCommand);
 
         registerImportCommand(rootCommand);
 
         registerExportCommand(rootCommand);
+
+        dispatcher.register(rootCommand);
     }
 
     @Nullable
@@ -247,7 +249,7 @@ final class GuidebookStructureCommands {
         }
 
         CompletableFuture
-                .supplyAsync(GuidebookStructureCommands::pickFileForOpen, minecraft)
+                .supplyAsync(StructureCommands::pickFileForOpen, minecraft)
                 .thenApplyAsync(selectedPath -> {
                     if (selectedPath == null) {
                         return null;
@@ -332,7 +334,7 @@ final class GuidebookStructureCommands {
         }
 
         CompletableFuture
-                .supplyAsync(GuidebookStructureCommands::pickFileForSave, minecraft)
+                .supplyAsync(StructureCommands::pickFileForSave, minecraft)
                 .thenApplyAsync(selectedPath -> {
                     if (selectedPath == null) {
                         return null;
