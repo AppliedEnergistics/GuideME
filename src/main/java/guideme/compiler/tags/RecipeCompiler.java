@@ -7,9 +7,15 @@ import guideme.internal.util.Platform;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstNode;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Function;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -17,11 +23,18 @@ import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Shows a Recipe-Book-Like representation of the recipe needed to craft a given item.
  */
 public class RecipeCompiler extends BlockTagCompiler {
+    private static final Logger LOG = LoggerFactory.getLogger(RecipeCompiler.class);
+
+    @Nullable
+    private List<RecipeTypeMapping<?, ?>> sharedMappings;
+
     @Override
     public Set<String> getTagNames() {
         return Set.of("Recipe", "RecipeFor");
@@ -136,6 +149,45 @@ public class RecipeCompiler extends BlockTagCompiler {
         for (var extension : compiler.getExtensions(RecipeTypeMappingSupplier.EXTENSION_POINT)) {
             extension.collect(mappings);
         }
+
+        result.addAll(getSharedMappings());
+
         return result;
+    }
+
+    private List<? extends RecipeTypeMapping<?, ?>> getSharedMappings() {
+        if (sharedMappings != null) {
+            return sharedMappings;
+        }
+
+        Set<ResourceLocation> recipeTypes = new HashSet<>();
+        List<RecipeTypeMapping<?, ?>> result = new ArrayList<>();
+        var mappings = new RecipeTypeMappingSupplier.RecipeTypeMappings() {
+            @Override
+            public <T extends Recipe<C>, C extends RecipeInput> void add(RecipeType<T> recipeType,
+                    Function<RecipeHolder<T>, LytBlock> factory) {
+                Objects.requireNonNull(recipeType, "recipeType");
+                Objects.requireNonNull(factory, "factory");
+
+                recipeTypes.add(BuiltInRegistries.RECIPE_TYPE.getKey(recipeType));
+                result.add(new RecipeTypeMapping<>(recipeType, factory));
+            }
+        };
+
+        var it = ServiceLoader.load(RecipeTypeMappingSupplier.class).stream().iterator();
+        while (it.hasNext()) {
+            var provider = it.next();
+            try {
+                provider.get().collect(mappings);
+            } catch (Exception e) {
+                LOG.error("Failed to collect shared recipe type mappings from {}", provider.type(), e);
+            }
+        }
+
+        var recipeTypesSorted = new ArrayList<>(recipeTypes);
+        Collections.sort(recipeTypesSorted);
+        LOG.info("Discovered shared recipe type mappings: {}", recipeTypesSorted);
+
+        return sharedMappings = List.copyOf(result);
     }
 }
