@@ -84,7 +84,7 @@ const config: Config = {
           position: 'left',
         },
         {
-          href: 'https://modmaven.dev/appeng/guideme/',
+          href: 'https://central.sonatype.com/artifact/org.appliedenergistics/guideme',
           label: 'Maven',
           position: 'left',
         },
