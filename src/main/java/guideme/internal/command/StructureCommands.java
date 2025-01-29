@@ -11,6 +11,7 @@ import guideme.internal.GuideRegistry;
 import guideme.internal.GuidebookText;
 import guideme.internal.MutableGuide;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -391,6 +392,8 @@ public final class StructureCommands {
     }
 
     private static String pickFileForOpen() {
+        setDefaultFolder();
+
         try (var stack = MemoryStack.stackPush()) {
 
             return TinyFileDialogs.tinyfd_openFileDialog(
@@ -403,6 +406,8 @@ public final class StructureCommands {
     }
 
     private static String pickFileForSave() {
+        setDefaultFolder();
+
         try (var stack = MemoryStack.stackPush()) {
 
             return TinyFileDialogs.tinyfd_saveFileDialog(
@@ -420,5 +425,20 @@ public final class StructureCommands {
         }
         filterPatternsBuffer.flip();
         return filterPatternsBuffer;
+    }
+
+    private static void setDefaultFolder() {
+        // If any guide has development sources, default to that folder
+        if (lastOpenedOrSavedPath == null) {
+            for (var guide : GuideRegistry.getAll()) {
+                if (guide.getDevelopmentSourceFolder() != null) {
+                    lastOpenedOrSavedPath = guide.getDevelopmentSourceFolder().toString();
+                    if (!lastOpenedOrSavedPath.endsWith("/") && !lastOpenedOrSavedPath.endsWith("\\")) {
+                        lastOpenedOrSavedPath += File.separator;
+                    }
+                    break;
+                }
+            }
+        }
     }
 }
