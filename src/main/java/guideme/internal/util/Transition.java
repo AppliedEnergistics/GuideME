@@ -58,10 +58,14 @@ public final class Transition {
 
         var timeNow = ticker.currentSeconds();
         double elapsed = timeNow - lastUpdated;
-        lastUpdated = timeNow;
+        if (Double.isNaN(elapsed)) {
+            lastUpdated = timeNow;
+            return; // First update
+        }
         if (elapsed < MIN_UPDATE_DURATION) {
             return; // Do not update too often otherwise we get too small fractions
         }
+        lastUpdated = timeNow;
 
         var distanceTraveled = speed * elapsed;
         var currentValue = getter.get();

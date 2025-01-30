@@ -46,7 +46,9 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     private static final Logger LOG = LoggerFactory.getLogger(GuideScreen.class);
 
     // 20 virtual px margin around the document
-    public static final int DOCUMENT_RECT_MARGIN = 20;
+    private static final int FULL_SCREEN_MARGIN = 20;
+
+    private static final int CENTERED_HORIZONTAL_MARGIN = 10;
 
     private static final ResourceLocation BACKGROUND_TEXTURE = GuideME.makeId("textures/guide/background.png");
 
@@ -70,6 +72,9 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
     private LytRect screenRect = LytRect.empty();
 
+    private boolean fullScreen = false;
+    private GuideNavBar navbar;
+
     private GuideScreen(Guide guide, PageAnchor anchor) {
         super(Component.literal("AE2 Guidebook"));
         this.guide = guide;
@@ -79,6 +84,8 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
         toolbar = new NavigationToolbar(guide);
         toolbar.setCloseCallback(this::onClose);
+
+        navbar = new GuideNavBar(this);
 
         loadPageAndScrollTo(anchor);
     }
@@ -103,17 +110,30 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     protected void init() {
         super.init();
 
-        var screenWidth = Math.min(400, width);
-        var left = (width - screenWidth) / 2;
-
-        screenRect = new LytRect(left, 0, screenWidth, height);
+        if (fullScreen) {
+            screenRect = new LytRect(0, 0, width, height);
+        } else {
+            var screenWidth = Math.min(400, width);
+            var left = (width - screenWidth) / 2;
+            screenRect = new LytRect(left, 0, screenWidth, height);
+        }
 
         updateDocumentLayout();
 
-        GuideNavBar navbar = new GuideNavBar(this);
+        navbar.setY(screenRect.y());
+        navbar.setHeight(screenRect.height());
         addRenderableWidget(navbar);
 
-        toolbar.addToScreen(this::addRenderableWidget, 2, screenRect.right() - DOCUMENT_RECT_MARGIN);
+        // If there is enough space, always expand the navbar
+        if (screenRect.x() >= GuideNavBar.WIDTH_OPEN) {
+            navbar.setPinned(true);
+            navbar.setX(screenRect.x() - navbar.getWidth());
+        } else {
+            navbar.setPinned(false);
+            navbar.setX(0);
+        }
+
+        toolbar.addToScreen(this::addRenderableWidget, 2, screenRect.right() - getMarginRight());
 
         updateDocumentLayout();
     }
@@ -184,7 +204,9 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
         renderTitle(documentRect, context);
 
-        renderExternalPageSource(documentRect, context);
+        if (hasFooter()) {
+            renderFooter(documentRect, context);
+        }
 
         super.scaledRender(guiGraphics, context, mouseX, mouseY, partialTick);
 
@@ -193,7 +215,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         renderDocumentTooltip(guiGraphics, mouseX, mouseY, partialTick);
     }
 
-    private void renderExternalPageSource(LytRect documentRect, RenderContext context) {
+    private void renderFooter(LytRect documentRect, RenderContext context) {
         // Render the source of the content
         var externalSource = getExternalSourceName();
         if (externalSource != null) {
@@ -211,6 +233,10 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
             paragraph.renderBatch(context, buffers);
             context.endBatch(buffers);
         }
+    }
+
+    private boolean hasFooter() {
+        return getExternalSourceName() != null;
     }
 
     /**
@@ -359,18 +385,11 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
     @Override
     public LytRect getDocumentRect() {
-        var margin = DOCUMENT_RECT_MARGIN;
-
-        // The page title may need more space than the default margin provides
-        var marginTop = Math.max(
-                margin,
-                5 + pageTitle.getBounds().height());
-
         return new LytRect(
-                screenRect.x() + margin,
-                marginTop,
-                screenRect.width() - 2 * margin,
-                screenRect.height() - margin - marginTop);
+                screenRect.x() + getMarginLeft(),
+                getMarginTop(),
+                screenRect.width() - getMarginLeft() - getMarginRight(),
+                screenRect.height() - getMarginBottom() - getMarginTop());
     }
 
     @Override
@@ -431,5 +450,22 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
             return;
         }
         super.onClose();
+    }
+
+    private int getMarginRight() {
+        return fullScreen ? FULL_SCREEN_MARGIN : CENTERED_HORIZONTAL_MARGIN;
+    }
+
+    private int getMarginLeft() {
+        return fullScreen ? FULL_SCREEN_MARGIN : CENTERED_HORIZONTAL_MARGIN;
+    }
+
+    private int getMarginTop() {
+        // The page title may need more space than the default margin provides
+        return Math.max(20, 5 + pageTitle.getBounds().height());
+    }
+
+    private int getMarginBottom() {
+        return hasFooter() ? FULL_SCREEN_MARGIN : 0;
     }
 }

@@ -2,8 +2,6 @@ package guideme.internal.screen;
 
 import guideme.Guide;
 import guideme.PageAnchor;
-import java.net.URI;
-import java.util.Objects;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
@@ -11,6 +9,9 @@ import net.minecraft.client.gui.screens.Screen;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+import java.util.Objects;
 
 /**
  * Extracts the history navigation logic from GuideScreen to allow for jumping between search and guide display
