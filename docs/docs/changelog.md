@@ -1,6 +1,10 @@
 
 # Changelog
 
+## 2.5.2
+
+- Fix navigating between guide pages not appending to navigation history
+
 ## 2.5.1
 
 - Fix shared recipe types not being collected correctly from the service loader

@@ -49,6 +49,7 @@ public final class GuideNavigation {
                 }
             } else {
                 guideScreen.loadPageAndScrollTo(anchor);
+                history.push(anchor);
             }
             return;
         }
