@@ -178,7 +178,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
         poseStack.popPose();
 
-        renderDocumentTooltip(guiGraphics, context, mouseX, mouseY, partialTick);
+        renderDocumentTooltip(guiGraphics, mouseX, mouseY, partialTick);
     }
 
     private void renderExternalPageSource(LytRect documentRect, RenderContext context) {

@@ -33,6 +33,10 @@ public final class SimpleRenderContext implements RenderContext {
         this.lightDarkMode = lightDarkMode;
     }
 
+    public SimpleRenderContext(LytRect viewport, GuiGraphics guiGraphics) {
+        this(viewport, guiGraphics, GuideMEClient.currentLightDarkMode());
+    }
+
     public SimpleRenderContext(GuiGraphics guiGraphics) {
         this(getDefaultViewport(), guiGraphics, GuideMEClient.currentLightDarkMode());
     }

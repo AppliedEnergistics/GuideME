@@ -26,7 +26,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector2i;
 
 public abstract class DocumentScreen extends IndepentScaleScreen implements GuideUiHost {
     private static final DashPattern DEBUG_NODE_OUTLINE = new DashPattern(1f, 4, 3, 0xFFFFFFFF, 500);
@@ -394,49 +393,42 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         return true;
     }
 
-    protected final void renderDocumentTooltip(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
-            float partialTick) {
+    protected final void renderDocumentTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         var document = getDocument();
-        if (document == null) {
-            return;
-        }
-
-        var hoveredElement = getDocument().getHoveredElement();
-        if (hoveredElement == null) {
-            return;
-        }
-
-        var docPos = getDocumentPoint(mouseX, mouseY);
-        if (docPos == null) {
-            return;
-        }
-
-        var tooltip = dispatchInteraction(
-                hoveredElement,
-                el -> el.getTooltip(docPos.x(), docPos.y()))
-                .orElse(null);
-        if (tooltip != null) {
-            renderTooltip(guiGraphics, context, tooltip, mouseX, mouseY);
+        // Render tooltip
+        if (document != null && document.getHoveredElement() != null) {
+            renderTooltip(guiGraphics, mouseX, mouseY);
         }
     }
 
-    private void renderTooltip(GuiGraphics guiGraphics, RenderContext context, GuideTooltip tooltip, int mouseX,
-            int mouseY) {
-        var blocks = tooltip.geLayoutContent();
+    private void renderTooltip(GuiGraphics guiGraphics, int x, int y) {
+        var docPos = getDocumentPoint(x, y);
+        if (docPos == null) {
+            return;
+        }
+        var hoveredElement = getDocument().getHoveredElement();
+        if (hoveredElement != null) {
+            dispatchInteraction(
+                    hoveredElement,
+                    el -> el.getTooltip(docPos.x(), docPos.y()))
+                    .ifPresent(tooltip -> renderTooltip(guiGraphics, tooltip, x, y));
+        }
+    }
 
-        if (blocks.isEmpty()) {
+    private void renderTooltip(GuiGraphics guiGraphics, GuideTooltip tooltip, int mouseX, int mouseY) {
+        var minecraft = Minecraft.getInstance();
+        var clientLines = tooltip.getLines();
+
+        if (clientLines.isEmpty()) {
             return;
         }
 
         int frameWidth = 0;
-        int frameHeight = blocks.size() == 1 ? -2 : 0;
+        int frameHeight = clientLines.size() == 1 ? -2 : 0;
 
-        var viewport = context.viewport();
-        var layoutContext = new LayoutContext(new MinecraftFontMetrics());
-        for (var block : blocks) {
-            var bounds = block.layout(layoutContext, 0, 0, viewport.width() / 2);
-            frameWidth = Math.max(frameWidth, bounds.width());
-            frameHeight += bounds.height();
+        for (var clientTooltipComponent : clientLines) {
+            frameWidth = Math.max(frameWidth, clientTooltipComponent.getWidth(minecraft.font));
+            frameHeight += clientTooltipComponent.getHeight();
         }
 
         if (!tooltip.getIcon().isEmpty()) {
@@ -446,12 +438,12 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
 
         int x = mouseX + 12;
         int y = mouseY - 12;
-        if (x + frameWidth > viewport.width()) {
+        if (x + frameWidth > this.width) {
             x -= 28 + frameWidth;
         }
 
-        if (y + frameHeight + 6 > viewport.height()) {
-            y = viewport.height() - frameHeight - 6;
+        if (y + frameHeight + 6 > this.height) {
+            y = this.height - frameHeight - 6;
         }
 
         int zOffset = 400;
@@ -462,26 +454,23 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
             x += 18;
         }
 
-        var currentY = y;
-        for (int i = 0; i < blocks.size(); i++) {
-            var block = blocks.get(i);
-            block.setLayoutPos(new Vector2i(x, currentY));
-            currentY += block.getBounds().height() + (i == 0 ? 2 : 0);
-        }
-
         var poseStack = guiGraphics.pose();
         var bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
         poseStack.pushPose();
         poseStack.translate(0.0, 0.0, zOffset);
+        int currentY = y;
 
         // Batch-render tooltip text first
-        for (var block : blocks) {
-            block.renderBatch(context, guiGraphics.bufferSource());
+        for (int i = 0; i < clientLines.size(); ++i) {
+            var line = clientLines.get(i);
+            line.renderText(minecraft.font, x, currentY, poseStack.last().pose(), bufferSource);
+            currentY += line.getHeight() + (i == 0 ? 2 : 0);
         }
 
         bufferSource.endBatch();
 
         // Then render tooltip decorations, items, etc.
+        currentY = y;
         if (!tooltip.getIcon().isEmpty()) {
             poseStack.pushPose();
             poseStack.translate(0, 0, zOffset);
@@ -489,8 +478,10 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
             poseStack.popPose();
         }
 
-        for (var block : blocks) {
-            block.render(context);
+        for (int i = 0; i < clientLines.size(); ++i) {
+            var line = clientLines.get(i);
+            line.renderImage(minecraft.font, x, currentY, guiGraphics);
+            currentY += line.getHeight() + (i == 0 ? 2 : 0);
         }
         poseStack.popPose();
     }

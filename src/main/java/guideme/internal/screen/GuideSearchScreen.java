@@ -229,7 +229,7 @@ public class GuideSearchScreen extends DocumentScreen {
 
         poseStack.popPose();
 
-        renderDocumentTooltip(guiGraphics, context, mouseX, mouseY, partialTick);
+        renderDocumentTooltip(guiGraphics, mouseX, mouseY, partialTick);
     }
 
     @Override

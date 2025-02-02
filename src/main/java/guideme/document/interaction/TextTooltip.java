@@ -1,24 +1,23 @@
 package guideme.document.interaction;
 
-import guideme.document.block.LytBlock;
 import guideme.siteexport.ResourceExporter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 
 public class TextTooltip implements GuideTooltip {
-    private final List<LytBlock> content;
+    private final List<ClientTooltipComponent> lines;
 
     public TextTooltip(String text) {
         this(Component.literal(text));
     }
 
     public TextTooltip(List<Component> lines) {
-        this.content = lines.stream()
-                .map(line -> new ClientTextTooltip(line.getVisualOrderText()))
-                .<LytBlock>map(LytClientTooltipComponentAdapter::new)
+        this.lines = lines.stream()
+                .<ClientTooltipComponent>map(line -> new ClientTextTooltip(line.getVisualOrderText()))
                 .toList();
     }
 
@@ -34,8 +33,8 @@ public class TextTooltip implements GuideTooltip {
     }
 
     @Override
-    public List<LytBlock> geLayoutContent() {
-        return content;
+    public List<ClientTooltipComponent> getLines() {
+        return lines;
     }
 
     @Override
