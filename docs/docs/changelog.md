@@ -1,10 +1,12 @@
 
 # Changelog
 
-## 2.5.2
+## 2.6.0
 
 - Fix navigating between guide pages not appending to navigation history
 - Add configuration screen
+- Make scaling of Guide UI independent of UI scale for scales 1 and 3, where the uniform Minecraft font
+  has severe rendering issues. This behavior can be disabled in the config screen (Adaptive Scaling).
 
 ## 2.5.1
 
