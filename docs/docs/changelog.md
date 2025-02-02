@@ -4,6 +4,7 @@
 ## 2.5.2
 
 - Fix navigating between guide pages not appending to navigation history
+- Add configuration screen
 
 ## 2.5.1
 

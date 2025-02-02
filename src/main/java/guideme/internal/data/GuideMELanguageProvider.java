@@ -2,6 +2,7 @@ package guideme.internal.data;
 
 import guideme.internal.GuideME;
 import guideme.internal.GuidebookText;
+import java.util.Map;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 
@@ -18,6 +19,20 @@ public final class GuideMELanguageProvider extends LanguageProvider {
 
         add("key.guideme.category", "GuideME");
         add("key.guideme.guide", "Open Guide for Items");
+
+        addConfigTranslations();
+    }
+
+    private void addConfigTranslations() {
+        var translations = Map.of(
+                "title", "GuideME Configuration",
+                "debug", "Debug",
+                "debug.tooltip", "Advanced Debugging Settings for Guide development",
+                "showDebugGuiOverlays", "Debug GUI Overlays",
+                "showDebugGuiOverlays.tooltip", "Show debugging overlays in GUI on mouse-over.");
+        for (var entry : translations.entrySet()) {
+            add("guideme.configuration." + entry.getKey(), entry.getValue());
+        }
     }
 
     public <T extends Enum<T> & LocalizationEnum> void addEnum(Class<T> localizedEnum) {
