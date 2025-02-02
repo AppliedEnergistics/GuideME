@@ -43,6 +43,13 @@ public interface RenderContext {
 
     LytRect viewport();
 
+    /**
+     * Checks if the given rectangle intersects with the current viewport, after applying the active pose.
+     */
+    default boolean intersectsViewport(LytRect bounds) {
+        return bounds.intersects(viewport());
+    }
+
     int resolveColor(ColorValue ref);
 
     void fillRect(LytRect rect, ColorValue topLeft, ColorValue topRight, ColorValue bottomRight, ColorValue bottomLeft);
@@ -243,12 +250,16 @@ public interface RenderContext {
 
     default void pushScissor(LytRect bounds) {
         var dest = new Vector3f();
-        poseStack().last().pose().transformPosition(bounds.x(), bounds.y(), 0, dest);
+        var pose = poseStack().last().pose();
+        pose.transformPosition(bounds.x(), bounds.y(), 0, dest);
+        var left = dest.x;
+        var top = dest.y;
+        pose.transformPosition(bounds.right(), bounds.bottom(), 0, dest);
         guiGraphics().enableScissor(
-                (int) dest.x(),
-                (int) dest.y(),
-                (int) (dest.x() + bounds.width()),
-                (int) (dest.y() + bounds.height()));
+                (int) left,
+                (int) top,
+                (int) dest.x,
+                (int) dest.y);
     }
 
     default void popScissor() {

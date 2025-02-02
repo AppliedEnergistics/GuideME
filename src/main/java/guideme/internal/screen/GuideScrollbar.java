@@ -11,6 +11,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import org.joml.Vector3f;
 
 public class GuideScrollbar extends AbstractWidget {
     private static final int WIDTH = 8;
@@ -46,16 +47,23 @@ public class GuideScrollbar extends AbstractWidget {
         int right = left + 8;
         int top = getY() + getThumbTop();
         int bottom = top + thumbHeight;
+
+        var pose = guiGraphics.pose().last().pose();
+        var min = new Vector3f();
+        pose.transformPosition(left, top, 0, min);
+        var max = new Vector3f();
+        pose.transformPosition(right, bottom, 0, max);
+
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         var builder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        builder.addVertex(left, bottom, 0.0f).setColor(128, 128, 128, 255);
-        builder.addVertex(right, bottom, 0.0f).setColor(128, 128, 128, 255);
-        builder.addVertex(right, top, 0.0f).setColor(128, 128, 128, 255);
-        builder.addVertex(left, top, 0.0f).setColor(128, 128, 128, 255);
-        builder.addVertex(left, bottom - 1, 0.0f).setColor(192, 192, 192, 255);
-        builder.addVertex(right - 1, bottom - 1, 0.0f).setColor(192, 192, 192, 255);
-        builder.addVertex(right - 1, top, 0.0f).setColor(192, 192, 192, 255);
-        builder.addVertex(left, top, 0.0f).setColor(192, 192, 192, 255);
+        builder.addVertex(min.x, max.y, 0.0f).setColor(128, 128, 128, 255);
+        builder.addVertex(max.x, max.y, 0.0f).setColor(128, 128, 128, 255);
+        builder.addVertex(max.x, min.y, 0.0f).setColor(128, 128, 128, 255);
+        builder.addVertex(min.x, min.y, 0.0f).setColor(128, 128, 128, 255);
+        builder.addVertex(min.x, max.y - 1, 0.0f).setColor(192, 192, 192, 255);
+        builder.addVertex(max.x - 1, max.y - 1, 0.0f).setColor(192, 192, 192, 255);
+        builder.addVertex(max.x - 1, min.y, 0.0f).setColor(192, 192, 192, 255);
+        builder.addVertex(min.x, min.y, 0.0f).setColor(192, 192, 192, 255);
         BufferUploader.drawWithShader(builder.buildOrThrow());
     }
 

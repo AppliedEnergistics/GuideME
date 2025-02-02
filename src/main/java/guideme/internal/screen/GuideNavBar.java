@@ -119,8 +119,8 @@ public class GuideNavBar extends AbstractWidget {
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         widthTransition.update();
 
-        var viewport = new LytRect(0, scrollOffset, width, height);
-        var renderContext = new SimpleRenderContext(viewport, graphics);
+        var renderContext = new SimpleRenderContext(graphics);
+        var viewport = renderContext.viewport();
 
         double currentTime = GLFW.glfwGetTime();
 

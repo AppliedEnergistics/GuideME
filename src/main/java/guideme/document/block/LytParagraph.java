@@ -85,7 +85,7 @@ public class LytParagraph extends LytBlock implements LytFlowContainer {
     @Override
     public void renderBatch(RenderContext context, MultiBufferSource buffers) {
         // Since we overwrite isCulled, we render even if our actual line content is culled, for floats
-        if (bounds.intersects(context.viewport())) {
+        if (context.intersectsViewport(bounds)) {
             content.renderBatch(context, buffers, hoveredContent);
         }
 
@@ -95,7 +95,7 @@ public class LytParagraph extends LytBlock implements LytFlowContainer {
     @Override
     public void render(RenderContext context) {
         // Since we overwrite isCulled, we render even if our actual line content is culled, for floats
-        if (bounds.intersects(context.viewport())) {
+        if (context.intersectsViewport(bounds)) {
             content.render(context, hoveredContent);
         }
 

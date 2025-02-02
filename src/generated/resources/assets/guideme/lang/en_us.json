@@ -1,8 +1,9 @@
 {
+  "guideme.configuration.adaptiveScaling": "Adaptive UI Scaling",
   "guideme.configuration.debug": "Debug",
   "guideme.configuration.debug.tooltip": "Advanced Debugging Settings for Guide development",
+  "guideme.configuration.gui": "User Interface",
   "guideme.configuration.showDebugGuiOverlays": "Debug GUI Overlays",
-  "guideme.configuration.showDebugGuiOverlays.tooltip": "Show debugging overlays in GUI on mouse-over.",
   "guideme.configuration.title": "GuideME Configuration",
   "guideme.guidebook.Close": "Close",
   "guideme.guidebook.CommandOnlyWorksInSinglePlayer": "This command only works in single-player.",

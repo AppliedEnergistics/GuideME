@@ -9,20 +9,42 @@ import guideme.color.ColorValue;
 import guideme.color.LightDarkMode;
 import guideme.document.LytRect;
 import guideme.internal.GuideMEClient;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
+import org.joml.Matrix4f;
 
-public record SimpleRenderContext(
-        @Override LytRect viewport,
-        @Override GuiGraphics guiGraphics,
-        @Override LightDarkMode lightDarkMode) implements RenderContext {
+public final class SimpleRenderContext implements RenderContext {
+    private final List<LytRect> viewportStack = new ArrayList<>();
+    private final GuiGraphics guiGraphics;
+    private final LightDarkMode lightDarkMode;
+
+    public SimpleRenderContext(
+            LytRect viewport,
+            GuiGraphics guiGraphics,
+            LightDarkMode lightDarkMode) {
+        this.viewportStack.add(viewport);
+        this.guiGraphics = guiGraphics;
+        this.lightDarkMode = lightDarkMode;
+    }
 
     public SimpleRenderContext(LytRect viewport, GuiGraphics guiGraphics) {
         this(viewport, guiGraphics, GuideMEClient.currentLightDarkMode());
+    }
+
+    public SimpleRenderContext(GuiGraphics guiGraphics) {
+        this(getDefaultViewport(), guiGraphics, GuideMEClient.currentLightDarkMode());
+    }
+
+    private static LytRect getDefaultViewport() {
+        var width = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+        var height = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+        return new LytRect(0, 0, width, height);
     }
 
     @Override
@@ -93,5 +115,42 @@ public record SimpleRenderContext(
         guiGraphics().renderItem(stack, 0, 0);
         guiGraphics().renderItemDecorations(mc.font, stack, 0, 0);
         pose.popPose();
+    }
+
+    @Override
+    public void pushScissor(LytRect bounds) {
+
+        var rootBounds = bounds.transform(poseStack().last().pose());
+
+        viewportStack.add(rootBounds);
+        RenderContext.super.pushScissor(bounds);
+    }
+
+    @Override
+    public void popScissor() {
+        if (viewportStack.size() <= 1) {
+            throw new IllegalStateException("There is no active scissor rectangle.");
+        }
+        viewportStack.removeLast();
+        RenderContext.super.popScissor();
+    }
+
+    @Override
+    public LytRect viewport() {
+        var viewport = viewportStack.getLast();
+        var pose = new Matrix4f(guiGraphics().pose().last().pose());
+        pose.invert();
+        var vp = viewport.transform(pose);
+        return vp;
+    }
+
+    @Override
+    public GuiGraphics guiGraphics() {
+        return guiGraphics;
+    }
+
+    @Override
+    public LightDarkMode lightDarkMode() {
+        return lightDarkMode;
     }
 }

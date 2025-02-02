@@ -1,5 +1,6 @@
 package guideme.internal.screen;
 
+import com.mojang.blaze3d.platform.Window;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.document.DefaultStyles;
@@ -16,19 +17,23 @@ import guideme.internal.util.DashPattern;
 import guideme.internal.util.DashedRectangle;
 import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
-import guideme.render.SimpleRenderContext;
+import guideme.render.RenderContext;
 import guideme.ui.GuideUiHost;
 import guideme.ui.UiPoint;
-import java.util.Optional;
-import java.util.function.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public abstract class DocumentScreen extends Screen implements GuideUiHost {
+import java.util.Optional;
+import java.util.function.Function;
+
+public abstract class DocumentScreen extends IndepentScaleScreen implements GuideUiHost {
+    private static final Logger LOG = LoggerFactory.getLogger(DocumentScreen.class);
+
     private static final DashPattern DEBUG_NODE_OUTLINE = new DashPattern(1f, 4, 3, 0xFFFFFFFF, 500);
     private static final DashPattern DEBUG_CONTENT_OUTLINE = new DashPattern(0.5f, 2, 1, 0x7FFFFFFF, 500);
     private static final ColorValue DEBUG_HOVER_OUTLINE_COLOR = new ConstantColor(0x7FFFFF00);
@@ -52,6 +57,37 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
         // Add and re-position scrollbar
         addRenderableWidget(scrollbar);
         updateDocumentLayout();
+    }
+
+    @Override
+    protected float calculateEffectiveScale() {
+        if (!GuideMEClient.instance().isAdaptiveScalingEnabled()) {
+            return 1f;
+        }
+
+        // The unifont is already scaled down by half at gui scale 1
+        // and at scale 3 it is scaled to 150%, both look bad
+        // For GUI scales 1 and 3 scale up the entire screen by 1
+        var window = Minecraft.getInstance().getWindow();
+        var currentScale = window.getGuiScale();
+        var effectiveScale = currentScale;
+        if (currentScale == 1) {
+            effectiveScale = 2;
+        } else if (currentScale == 3) {
+            effectiveScale = 4;
+        }
+
+        // Validate that when we scale up, we still are above the base width/height
+        var virtualWidth = window.getWidth() / effectiveScale;
+        var virtualHeight = window.getHeight() / effectiveScale;
+        if (virtualWidth < Window.BASE_WIDTH || virtualHeight < Window.BASE_HEIGHT) {
+            var reducedEffectiveScale = Math.max(2, currentScale - 1);
+            LOG.debug("Not enough screen space ({}x{}) to increase GUI scale from {} to {}. Decreasing to {} instead.",
+                    virtualWidth, virtualHeight, currentScale, effectiveScale, reducedEffectiveScale);
+            effectiveScale = reducedEffectiveScale;
+        }
+
+        return (float) (effectiveScale / currentScale);
     }
 
     protected void updateDocumentLayout() {
@@ -109,7 +145,7 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
         scrollbar.setScrollAmount(scrollY);
     }
 
-    protected final void renderDocument(GuiGraphics guiGraphics) {
+    protected final void renderDocument(RenderContext context) {
 
         // Set scissor rectangle to rect that we show the document in
         var documentRect = getDocumentRect();
@@ -121,13 +157,12 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
 
         // Move rendering to anchor @ 0,0 in the document rect
         var documentViewport = getDocumentViewport();
-        var poseStack = guiGraphics.pose();
+        var poseStack = context.poseStack();
+
+        // guiGraphics.enableScissor(documentRect.x(), documentRect.y(), documentRect.right(), documentRect.bottom());
+        context.pushScissor(documentRect);
         poseStack.pushPose();
         poseStack.translate(documentRect.x() - documentViewport.x(), documentRect.y() - documentViewport.y(), 0);
-
-        var context = new SimpleRenderContext(documentViewport, guiGraphics);
-
-        guiGraphics.enableScissor(documentRect.x(), documentRect.y(), documentRect.right(), documentRect.bottom());
 
         // Render all text content in one large batch to improve performance
         var buffers = context.beginBatch();
@@ -136,7 +171,7 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
 
         document.render(context);
 
-        guiGraphics.disableScissor();
+        context.popScissor();
 
         if (GuideMEClient.instance().isShowDebugGuiOverlays()) {
             renderHoverOutline(document, context);
@@ -146,7 +181,7 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
 
     }
 
-    private static void renderHoverOutline(LytDocument document, SimpleRenderContext context) {
+    private static void renderHoverOutline(LytDocument document, RenderContext context) {
         var hoveredElement = document.getHoveredElement();
         if (hoveredElement != null) {
             // Fill a rectangle highlighting margins
@@ -198,8 +233,8 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
     }
 
     @Override
-    public void mouseMoved(double mouseX, double mouseY) {
-        super.mouseMoved(mouseX, mouseY);
+    public void scaledMouseMoved(double mouseX, double mouseY) {
+        super.scaledMouseMoved(mouseX, mouseY);
 
         if (mouseCaptureTarget != null) {
             var docPointUnclamped = getDocumentPointUnclamped(mouseX, mouseY);
@@ -215,8 +250,8 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (super.mouseClicked(mouseX, mouseY, button)) {
+    public boolean scaledMouseClicked(double mouseX, double mouseY, int button) {
+        if (super.scaledMouseClicked(mouseX, mouseY, button)) {
             return true;
         }
 
@@ -239,8 +274,8 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (super.mouseReleased(mouseX, mouseY, button)) {
+    public boolean scaledMouseReleased(double mouseX, double mouseY, int button) {
+        if (super.scaledMouseReleased(mouseX, mouseY, button)) {
             return true;
         }
 
@@ -291,7 +326,7 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
     }
 
     private static <T> Optional<T> dispatchInteraction(LytDocument.HitTestResult receiver,
-            Function<InteractiveElement, Optional<T>> invoker) {
+                                                       Function<InteractiveElement, Optional<T>> invoker) {
         // Iterate through content ancestors
         for (var el = receiver.content(); el != null; el = el.getFlowParent()) {
             if (el instanceof InteractiveElement interactiveEl) {
@@ -322,13 +357,14 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
         var document = getDocument();
         if (document != null) {
             var mouseHandler = minecraft.mouseHandler;
-            var scale = (double) minecraft.getWindow().getGuiScaledWidth()
-                    / (double) minecraft.getWindow().getScreenWidth();
-            var x = mouseHandler.xpos() * scale;
-            var y = mouseHandler.ypos() * scale;
+            // We use screen here so it accounts for our gui-scale independent scaling screen.
+            var xScale = (double) minecraft.screen.width / (double) minecraft.getWindow().getScreenWidth();
+            var yScale = (double) minecraft.screen.height / (double) minecraft.getWindow().getScreenHeight();
+            var x = mouseHandler.xpos() * xScale;
+            var y = mouseHandler.ypos() * yScale;
 
             // If there's a widget under the cursor, ignore document hit-testing
-            if (getChildAt(x, y).isPresent()) {
+            if (getScaledChildAt(x, y).isPresent()) {
                 document.setHoveredElement(null);
                 return;
             }
@@ -378,8 +414,8 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
-        if (!super.mouseScrolled(mouseX, mouseY, deltaX, deltaY)) {
+    public boolean scaledMouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
+        if (!super.scaledMouseScrolled(mouseX, mouseY, deltaX, deltaY)) {
             return scrollbar.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
         }
         return true;

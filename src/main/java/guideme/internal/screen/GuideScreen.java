@@ -23,7 +23,7 @@ import guideme.internal.GuidebookText;
 import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
 import guideme.render.GuidePageTexture;
-import guideme.render.SimpleRenderContext;
+import guideme.render.RenderContext;
 import guideme.style.TextAlignment;
 import guideme.style.TextStyle;
 import guideme.ui.GuideUiHost;
@@ -157,15 +157,14 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
+            float partialTick) {
         renderSkyStoneBackground(guiGraphics);
-
-        var context = new SimpleRenderContext(new LytRect(0, 0, width, height), guiGraphics);
 
         var documentRect = getDocumentRect();
         context.fillRect(documentRect, new ConstantColor(0x80333333));
 
-        renderDocument(guiGraphics);
+        renderDocument(context);
 
         var poseStack = guiGraphics.pose();
         poseStack.pushPose();
@@ -175,14 +174,14 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
         renderExternalPageSource(documentRect, context);
 
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        super.scaledRender(guiGraphics, context, mouseX, mouseY, partialTick);
 
         poseStack.popPose();
 
         renderDocumentTooltip(guiGraphics, mouseX, mouseY, partialTick);
     }
 
-    private void renderExternalPageSource(LytRect documentRect, SimpleRenderContext context) {
+    private void renderExternalPageSource(LytRect documentRect, RenderContext context) {
         // Render the source of the content
         var externalSource = getExternalSourceName();
         if (externalSource != null) {
@@ -242,7 +241,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         // Stub this out otherwise vanilla renders a background on top of our content
     }
 
-    private void renderTitle(LytRect documentRect, SimpleRenderContext context) {
+    private void renderTitle(LytRect documentRect, RenderContext context) {
         var buffers = context.beginBatch();
         pageTitle.renderBatch(context, buffers);
         context.endBatch(buffers);
@@ -377,16 +376,8 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     private void updateTitleLayout() {
         var context = new LayoutContext(new MinecraftFontMetrics());
         // Compute the fake layout to find out how high it would be
-        int availableWidth = width;
-
-        // Remove the document viewport margin
-        availableWidth -= 2 * DOCUMENT_RECT_MARGIN;
-
         // Account for the navigation buttons on the right
-        availableWidth -= GuideIconButton.WIDTH * 2 + 5;
-
-        // Remove 2 * 5 as margin
-        availableWidth -= 10;
+        var availableWidth = toolbar.getLeft() - DOCUMENT_RECT_MARGIN - 5;
 
         if (availableWidth < 0) {
             availableWidth = 0;
