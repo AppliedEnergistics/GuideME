@@ -28,6 +28,7 @@ import guideme.style.TextAlignment;
 import guideme.style.TextStyle;
 import guideme.ui.GuideUiHost;
 import guideme.ui.UiPoint;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -39,8 +40,6 @@ import net.neoforged.neoforgespi.language.IModInfo;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class GuideScreen extends DocumentScreen implements GuideUiHost {
     private static final Logger LOG = LoggerFactory.getLogger(GuideScreen.class);
@@ -294,7 +293,8 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     private void renderSkyStoneBackground(GuiGraphics guiGraphics) {
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(0.25F, 0.25F, 0.25F, 0.9F);
-        guiGraphics.blit(BACKGROUND_TEXTURE, screenRect.x(), screenRect.y(), 0, 0.0F, 0.0F, screenRect.width(), screenRect.height(), 32, 32);
+        guiGraphics.blit(BACKGROUND_TEXTURE, screenRect.x(), screenRect.y(), 0, 0.0F, 0.0F, screenRect.width(),
+                screenRect.height(), 32, 32);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
@@ -409,7 +409,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         var context = new LayoutContext(new MinecraftFontMetrics());
         // Compute the fake layout to find out how high it would be
         // Account for the navigation buttons on the right
-        var availableWidth = toolbar.getLeft() - DOCUMENT_RECT_MARGIN - 5;
+        var availableWidth = toolbar.getLeft() - screenRect.x() - 5;
 
         if (availableWidth < 0) {
             availableWidth = 0;

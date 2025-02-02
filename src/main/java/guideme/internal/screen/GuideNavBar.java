@@ -13,6 +13,8 @@ import guideme.navigation.NavigationNode;
 import guideme.navigation.NavigationTree;
 import guideme.render.SimpleRenderContext;
 import guideme.ui.GuideUiHost;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -24,9 +26,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class GuideNavBar extends AbstractWidget {
     public static final int WIDTH_OPEN = 150;
@@ -178,6 +177,10 @@ public class GuideNavBar extends AbstractWidget {
         var currentNavTree = screen.getGuide().getNavigationTree();
         if (currentNavTree != this.navTree) {
             recreateRows();
+        }
+
+        if (this.rows.isEmpty()) {
+            return; // do not render the navbar if there are no nodes.
         }
 
         if (state == State.CLOSED) {
