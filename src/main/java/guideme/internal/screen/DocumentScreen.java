@@ -55,8 +55,13 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
 
     @Override
     protected float calculateEffectiveScale() {
+        // The unifont is already scaled down by half at gui scale 1
+        // and at scale 3 it is scaled to 150%, both look bad
+        // For GUI scales 1 and 3 scale up the entire screen by 1
         if (Minecraft.getInstance().getWindow().getGuiScale() == 1) {
             return 2f;
+        } else if (Minecraft.getInstance().getWindow().getGuiScale() == 3) {
+            return 4 / 3f;
         } else {
             return 1f;
         }
