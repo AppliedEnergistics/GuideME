@@ -106,7 +106,12 @@ public class LytDocument extends LytNode implements LytBlockContainer {
         return new Layout(availableWidth, bounds.height());
     }
 
+    @Deprecated(forRemoval = true)
     public void render(SimpleRenderContext context) {
+        this.render((RenderContext) context);
+    }
+
+    public void render(RenderContext context) {
         for (var block : blocks) {
             if (block.isCulled(context.viewport())) {
                 continue;
@@ -117,7 +122,7 @@ public class LytDocument extends LytNode implements LytBlockContainer {
 
     public void renderBatch(RenderContext context, MultiBufferSource buffers) {
         for (var block : blocks) {
-            if (!block.getBounds().intersects(context.viewport())) {
+            if (!context.intersectsViewport(block.getBounds())) {
                 continue;
             }
             block.renderBatch(context, buffers);

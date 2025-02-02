@@ -116,10 +116,18 @@ public record LytRect(int x, int y, int width, int height) {
         var tmp = new Vector3f();
         pose.transformPosition(x, y, 0, tmp);
 
-        var left = (int) tmp.x;
-        var top = (int) tmp.y;
+        var left = tmp.x;
+        var top = tmp.y;
 
-        return new LytRect(left, top, width, height);
+        pose.transformPosition(x + width, y + height, 0, tmp);
+
+        var width = Math.ceil(tmp.x - left);
+        var height = Math.ceil(tmp.y - top);
+        return new LytRect(
+                (int) Math.floor(left),
+                (int) Math.floor(top),
+                (int) Math.ceil(width),
+                (int) Math.ceil(height));
     }
 
     public LytSize size() {

@@ -16,19 +16,19 @@ import guideme.internal.util.DashPattern;
 import guideme.internal.util.DashedRectangle;
 import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
-import guideme.render.SimpleRenderContext;
+import guideme.render.RenderContext;
 import guideme.ui.GuideUiHost;
 import guideme.ui.UiPoint;
 import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2i;
 
-public abstract class DocumentScreen extends Screen implements GuideUiHost {
+public abstract class DocumentScreen extends IndepentScaleScreen implements GuideUiHost {
     private static final DashPattern DEBUG_NODE_OUTLINE = new DashPattern(1f, 4, 3, 0xFFFFFFFF, 500);
     private static final DashPattern DEBUG_CONTENT_OUTLINE = new DashPattern(0.5f, 2, 1, 0x7FFFFFFF, 500);
     private static final ColorValue DEBUG_HOVER_OUTLINE_COLOR = new ConstantColor(0x7FFFFF00);
@@ -52,6 +52,15 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
         // Add and re-position scrollbar
         addRenderableWidget(scrollbar);
         updateDocumentLayout();
+    }
+
+    @Override
+    protected float calculateEffectiveScale() {
+        if (Minecraft.getInstance().getWindow().getGuiScale() == 1) {
+            return 2f;
+        } else {
+            return 1f;
+        }
     }
 
     protected void updateDocumentLayout() {
@@ -109,7 +118,7 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
         scrollbar.setScrollAmount(scrollY);
     }
 
-    protected final void renderDocument(GuiGraphics guiGraphics) {
+    protected final void renderDocument(RenderContext context) {
 
         // Set scissor rectangle to rect that we show the document in
         var documentRect = getDocumentRect();
@@ -121,13 +130,12 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
 
         // Move rendering to anchor @ 0,0 in the document rect
         var documentViewport = getDocumentViewport();
-        var poseStack = guiGraphics.pose();
+        var poseStack = context.poseStack();
+
+        // guiGraphics.enableScissor(documentRect.x(), documentRect.y(), documentRect.right(), documentRect.bottom());
+        context.pushScissor(documentRect);
         poseStack.pushPose();
         poseStack.translate(documentRect.x() - documentViewport.x(), documentRect.y() - documentViewport.y(), 0);
-
-        var context = new SimpleRenderContext(documentViewport, guiGraphics);
-
-        guiGraphics.enableScissor(documentRect.x(), documentRect.y(), documentRect.right(), documentRect.bottom());
 
         // Render all text content in one large batch to improve performance
         var buffers = context.beginBatch();
@@ -136,7 +144,7 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
 
         document.render(context);
 
-        guiGraphics.disableScissor();
+        context.popScissor();
 
         if (GuideMEClient.instance().isShowDebugGuiOverlays()) {
             renderHoverOutline(document, context);
@@ -146,7 +154,7 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
 
     }
 
-    private static void renderHoverOutline(LytDocument document, SimpleRenderContext context) {
+    private static void renderHoverOutline(LytDocument document, RenderContext context) {
         var hoveredElement = document.getHoveredElement();
         if (hoveredElement != null) {
             // Fill a rectangle highlighting margins
@@ -198,8 +206,8 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
     }
 
     @Override
-    public void mouseMoved(double mouseX, double mouseY) {
-        super.mouseMoved(mouseX, mouseY);
+    public void scaledMouseMoved(double mouseX, double mouseY) {
+        super.scaledMouseMoved(mouseX, mouseY);
 
         if (mouseCaptureTarget != null) {
             var docPointUnclamped = getDocumentPointUnclamped(mouseX, mouseY);
@@ -215,8 +223,8 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (super.mouseClicked(mouseX, mouseY, button)) {
+    public boolean scaledMouseClicked(double mouseX, double mouseY, int button) {
+        if (super.scaledMouseClicked(mouseX, mouseY, button)) {
             return true;
         }
 
@@ -239,8 +247,8 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (super.mouseReleased(mouseX, mouseY, button)) {
+    public boolean scaledMouseReleased(double mouseX, double mouseY, int button) {
+        if (super.scaledMouseReleased(mouseX, mouseY, button)) {
             return true;
         }
 
@@ -322,13 +330,14 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
         var document = getDocument();
         if (document != null) {
             var mouseHandler = minecraft.mouseHandler;
-            var scale = (double) minecraft.getWindow().getGuiScaledWidth()
-                    / (double) minecraft.getWindow().getScreenWidth();
-            var x = mouseHandler.xpos() * scale;
-            var y = mouseHandler.ypos() * scale;
+            // We use screen here so it accounts for our gui-scale independent scaling screen.
+            var xScale = (double) minecraft.screen.width / (double) minecraft.getWindow().getScreenWidth();
+            var yScale = (double) minecraft.screen.height / (double) minecraft.getWindow().getScreenHeight();
+            var x = mouseHandler.xpos() * xScale;
+            var y = mouseHandler.ypos() * yScale;
 
             // If there's a widget under the cursor, ignore document hit-testing
-            if (getChildAt(x, y).isPresent()) {
+            if (getScaledChildAt(x, y).isPresent()) {
                 document.setHoveredElement(null);
                 return;
             }
@@ -378,49 +387,56 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
-        if (!super.mouseScrolled(mouseX, mouseY, deltaX, deltaY)) {
+    public boolean scaledMouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
+        if (!super.scaledMouseScrolled(mouseX, mouseY, deltaX, deltaY)) {
             return scrollbar.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
         }
         return true;
     }
 
-    protected final void renderDocumentTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected final void renderDocumentTooltip(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
+            float partialTick) {
         var document = getDocument();
-        // Render tooltip
-        if (document != null && document.getHoveredElement() != null) {
-            renderTooltip(guiGraphics, mouseX, mouseY);
+        if (document == null) {
+            return;
         }
-    }
 
-    private void renderTooltip(GuiGraphics guiGraphics, int x, int y) {
-        var docPos = getDocumentPoint(x, y);
+        var hoveredElement = getDocument().getHoveredElement();
+        if (hoveredElement == null) {
+            return;
+        }
+
+        var docPos = getDocumentPoint(mouseX, mouseY);
         if (docPos == null) {
             return;
         }
-        var hoveredElement = getDocument().getHoveredElement();
-        if (hoveredElement != null) {
-            dispatchInteraction(
-                    hoveredElement,
-                    el -> el.getTooltip(docPos.x(), docPos.y()))
-                    .ifPresent(tooltip -> renderTooltip(guiGraphics, tooltip, x, y));
+
+        var tooltip = dispatchInteraction(
+                hoveredElement,
+                el -> el.getTooltip(docPos.x(), docPos.y()))
+                .orElse(null);
+        if (tooltip != null) {
+            renderTooltip(guiGraphics, context, tooltip, mouseX, mouseY);
         }
     }
 
-    private void renderTooltip(GuiGraphics guiGraphics, GuideTooltip tooltip, int mouseX, int mouseY) {
-        var minecraft = Minecraft.getInstance();
-        var clientLines = tooltip.getLines();
+    private void renderTooltip(GuiGraphics guiGraphics, RenderContext context, GuideTooltip tooltip, int mouseX,
+            int mouseY) {
+        var blocks = tooltip.geLayoutContent();
 
-        if (clientLines.isEmpty()) {
+        if (blocks.isEmpty()) {
             return;
         }
 
         int frameWidth = 0;
-        int frameHeight = clientLines.size() == 1 ? -2 : 0;
+        int frameHeight = blocks.size() == 1 ? -2 : 0;
 
-        for (var clientTooltipComponent : clientLines) {
-            frameWidth = Math.max(frameWidth, clientTooltipComponent.getWidth(minecraft.font));
-            frameHeight += clientTooltipComponent.getHeight();
+        var viewport = context.viewport();
+        var layoutContext = new LayoutContext(new MinecraftFontMetrics());
+        for (var block : blocks) {
+            var bounds = block.layout(layoutContext, 0, 0, viewport.width() / 2);
+            frameWidth = Math.max(frameWidth, bounds.width());
+            frameHeight += bounds.height();
         }
 
         if (!tooltip.getIcon().isEmpty()) {
@@ -430,12 +446,12 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
 
         int x = mouseX + 12;
         int y = mouseY - 12;
-        if (x + frameWidth > this.width) {
+        if (x + frameWidth > viewport.width()) {
             x -= 28 + frameWidth;
         }
 
-        if (y + frameHeight + 6 > this.height) {
-            y = this.height - frameHeight - 6;
+        if (y + frameHeight + 6 > viewport.height()) {
+            y = viewport.height() - frameHeight - 6;
         }
 
         int zOffset = 400;
@@ -446,23 +462,26 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
             x += 18;
         }
 
+        var currentY = y;
+        for (int i = 0; i < blocks.size(); i++) {
+            var block = blocks.get(i);
+            block.setLayoutPos(new Vector2i(x, currentY));
+            currentY += block.getBounds().height() + (i == 0 ? 2 : 0);
+        }
+
         var poseStack = guiGraphics.pose();
         var bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
         poseStack.pushPose();
         poseStack.translate(0.0, 0.0, zOffset);
-        int currentY = y;
 
         // Batch-render tooltip text first
-        for (int i = 0; i < clientLines.size(); ++i) {
-            var line = clientLines.get(i);
-            line.renderText(minecraft.font, x, currentY, poseStack.last().pose(), bufferSource);
-            currentY += line.getHeight() + (i == 0 ? 2 : 0);
+        for (var block : blocks) {
+            block.renderBatch(context, guiGraphics.bufferSource());
         }
 
         bufferSource.endBatch();
 
         // Then render tooltip decorations, items, etc.
-        currentY = y;
         if (!tooltip.getIcon().isEmpty()) {
             poseStack.pushPose();
             poseStack.translate(0, 0, zOffset);
@@ -470,10 +489,8 @@ public abstract class DocumentScreen extends Screen implements GuideUiHost {
             poseStack.popPose();
         }
 
-        for (int i = 0; i < clientLines.size(); ++i) {
-            var line = clientLines.get(i);
-            line.renderImage(minecraft.font, x, currentY, guiGraphics);
-            currentY += line.getHeight() + (i == 0 ? 2 : 0);
+        for (var block : blocks) {
+            block.render(context);
         }
         poseStack.popPose();
     }

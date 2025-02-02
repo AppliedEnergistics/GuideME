@@ -21,4 +21,9 @@ public class LineTextRun extends LineElement {
 
         context.renderTextInBatch(text, style, (float) bounds.x(), (float) bounds.y(), buffers);
     }
+
+    @Override
+    public String toString() {
+        return "TextRun[" + text + "]";
+    }
 }

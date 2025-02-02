@@ -22,7 +22,7 @@ import guideme.internal.GuidebookText;
 import guideme.internal.search.GuideSearch;
 import guideme.internal.util.Blitter;
 import guideme.internal.util.NavigationUtil;
-import guideme.render.SimpleRenderContext;
+import guideme.render.RenderContext;
 import guideme.scene.LytItemImage;
 import guideme.style.BorderStyle;
 import guideme.ui.GuideUiHost;
@@ -192,10 +192,10 @@ public class GuideSearchScreen extends DocumentScreen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
+            float partialTick) {
         renderSkyStoneBackground(guiGraphics);
 
-        var context = new SimpleRenderContext(new LytRect(0, 0, width, height), guiGraphics);
         Blitter.texture(GuideME.makeId("textures/guide/buttons.png"), 64, 64)
                 .src(GuideIconButton.Role.SEARCH.iconSrcX, GuideIconButton.Role.SEARCH.iconSrcY, 16, 16)
                 .dest(DOCUMENT_RECT_MARGIN, 2, 16, 16)
@@ -216,7 +216,7 @@ public class GuideSearchScreen extends DocumentScreen {
                     DefaultStyles.BODY_TEXT.mergeWith(DefaultStyles.BASE_STYLE),
                     documentRect);
         } else {
-            renderDocument(guiGraphics);
+            renderDocument(context);
         }
 
         var poseStack = guiGraphics.pose();
@@ -225,11 +225,11 @@ public class GuideSearchScreen extends DocumentScreen {
 
         renderTitle(documentRect, context);
 
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        super.scaledRender(guiGraphics, context, mouseX, mouseY, partialTick);
 
         poseStack.popPose();
 
-        renderDocumentTooltip(guiGraphics, mouseX, mouseY, partialTick);
+        renderDocumentTooltip(guiGraphics, context, mouseX, mouseY, partialTick);
     }
 
     @Override
@@ -246,7 +246,7 @@ public class GuideSearchScreen extends DocumentScreen {
         // Stub this out otherwise vanilla renders a background on top of our content
     }
 
-    private void renderTitle(LytRect documentRect, SimpleRenderContext context) {
+    private void renderTitle(LytRect documentRect, RenderContext context) {
         var buffers = context.beginBatch();
         context.endBatch(buffers);
         context.fillRect(

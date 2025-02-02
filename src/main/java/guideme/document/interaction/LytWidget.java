@@ -47,10 +47,12 @@ public class LytWidget extends LytBlock implements InteractiveElement {
             return; // Can't render if we can't translate
         }
 
-        var mouseX = (minecraft.mouseHandler.xpos() * minecraft.getWindow().getGuiScaledWidth()
-                / minecraft.getWindow().getScreenWidth());
-        var mouseY = (minecraft.mouseHandler.ypos() * minecraft.getWindow().getGuiScaledHeight()
-                / minecraft.getWindow().getScreenHeight());
+        var mouseHandler = minecraft.mouseHandler;
+        // We use screen here so it accounts for our gui-scale independent scaling screen.
+        var xScale = (double) minecraft.screen.width / (double) minecraft.getWindow().getScreenWidth();
+        var yScale = (double) minecraft.screen.height / (double) minecraft.getWindow().getScreenHeight();
+        var mouseX = mouseHandler.xpos() * xScale;
+        var mouseY = mouseHandler.ypos() * yScale;
 
         var mouseDocPos = uiHost.getDocumentPoint(mouseX, mouseY);
 

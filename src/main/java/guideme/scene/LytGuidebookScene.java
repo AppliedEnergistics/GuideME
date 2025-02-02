@@ -297,10 +297,10 @@ public class LytGuidebookScene extends LytBox {
             // transform our document viewport into physical screen coordinates
             var viewport = bounds.transform(context.poseStack().last().pose());
             RenderSystem.viewport(
-                    (int) (viewport.x() * window.getGuiScale()),
-                    (int) (window.getHeight() - viewport.bottom() * window.getGuiScale()),
-                    (int) (viewport.width() * window.getGuiScale()),
-                    (int) (viewport.height() * window.getGuiScale()));
+                    viewport.x(),
+                    window.getHeight() - viewport.bottom(),
+                    viewport.width(),
+                    viewport.height());
 
             var renderer = GuidebookLevelRenderer.getInstance();
 
