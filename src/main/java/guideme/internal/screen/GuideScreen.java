@@ -376,16 +376,8 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     private void updateTitleLayout() {
         var context = new LayoutContext(new MinecraftFontMetrics());
         // Compute the fake layout to find out how high it would be
-        int availableWidth = width;
-
-        // Remove the document viewport margin
-        availableWidth -= 2 * DOCUMENT_RECT_MARGIN;
-
         // Account for the navigation buttons on the right
-        availableWidth -= GuideIconButton.WIDTH * 2 + 5;
-
-        // Remove 2 * 5 as margin
-        availableWidth -= 10;
+        var availableWidth = toolbar.getLeft() - DOCUMENT_RECT_MARGIN - 5;
 
         if (availableWidth < 0) {
             availableWidth = 0;

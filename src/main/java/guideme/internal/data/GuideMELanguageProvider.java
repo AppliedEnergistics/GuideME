@@ -26,10 +26,12 @@ public final class GuideMELanguageProvider extends LanguageProvider {
     private void addConfigTranslations() {
         var translations = Map.of(
                 "title", "GuideME Configuration",
+                "gui", "User Interface",
                 "debug", "Debug",
                 "debug.tooltip", "Advanced Debugging Settings for Guide development",
-                "showDebugGuiOverlays", "Debug GUI Overlays",
-                "showDebugGuiOverlays.tooltip", "Show debugging overlays in GUI on mouse-over.");
+                "adaptiveScaling", "Adaptive UI Scaling",
+                "showDebugGuiOverlays", "Debug GUI Overlays"
+        );
         for (var entry : translations.entrySet()) {
             add("guideme.configuration." + entry.getKey(), entry.getValue());
         }

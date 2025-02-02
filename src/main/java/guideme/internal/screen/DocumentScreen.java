@@ -1,5 +1,6 @@
 package guideme.internal.screen;
 
+import com.mojang.blaze3d.platform.Window;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.document.DefaultStyles;
@@ -19,15 +20,20 @@ import guideme.layout.MinecraftFontMetrics;
 import guideme.render.RenderContext;
 import guideme.ui.GuideUiHost;
 import guideme.ui.UiPoint;
-import java.util.Optional;
-import java.util.function.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
+import java.util.function.Function;
 
 public abstract class DocumentScreen extends IndepentScaleScreen implements GuideUiHost {
+    private static final Logger LOG = LoggerFactory.getLogger(DocumentScreen.class);
+
     private static final DashPattern DEBUG_NODE_OUTLINE = new DashPattern(1f, 4, 3, 0xFFFFFFFF, 500);
     private static final DashPattern DEBUG_CONTENT_OUTLINE = new DashPattern(0.5f, 2, 1, 0x7FFFFFFF, 500);
     private static final ColorValue DEBUG_HOVER_OUTLINE_COLOR = new ConstantColor(0x7FFFFF00);
@@ -55,16 +61,33 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
 
     @Override
     protected float calculateEffectiveScale() {
+        if (!GuideMEClient.instance().isAdaptiveScalingEnabled()) {
+            return 1f;
+        }
+
         // The unifont is already scaled down by half at gui scale 1
         // and at scale 3 it is scaled to 150%, both look bad
         // For GUI scales 1 and 3 scale up the entire screen by 1
-        if (Minecraft.getInstance().getWindow().getGuiScale() == 1) {
-            return 2f;
-        } else if (Minecraft.getInstance().getWindow().getGuiScale() == 3) {
-            return 4 / 3f;
-        } else {
-            return 1f;
+        var window = Minecraft.getInstance().getWindow();
+        var currentScale = window.getGuiScale();
+        var effectiveScale = currentScale;
+        if (currentScale == 1) {
+            effectiveScale = 2;
+        } else if (currentScale == 3) {
+            effectiveScale = 4;
         }
+
+        // Validate that when we scale up, we still are above the base width/height
+        var virtualWidth = window.getWidth() / effectiveScale;
+        var virtualHeight = window.getHeight() / effectiveScale;
+        if (virtualWidth < Window.BASE_WIDTH || virtualHeight < Window.BASE_HEIGHT) {
+            var reducedEffectiveScale = Math.max(2, currentScale - 1);
+            LOG.debug("Not enough screen space ({}x{}) to increase GUI scale from {} to {}. Decreasing to {} instead.",
+                    virtualWidth, virtualHeight, currentScale, effectiveScale, reducedEffectiveScale);
+            effectiveScale = reducedEffectiveScale;
+        }
+
+        return (float) (effectiveScale / currentScale);
     }
 
     protected void updateDocumentLayout() {
@@ -303,7 +326,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     }
 
     private static <T> Optional<T> dispatchInteraction(LytDocument.HitTestResult receiver,
-            Function<InteractiveElement, Optional<T>> invoker) {
+                                                       Function<InteractiveElement, Optional<T>> invoker) {
         // Iterate through content ancestors
         for (var el = receiver.content(); el != null; el = el.getFlowParent()) {
             if (el instanceof InteractiveElement interactiveEl) {
