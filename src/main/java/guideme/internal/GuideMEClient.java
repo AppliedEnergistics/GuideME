@@ -14,6 +14,7 @@ import guideme.internal.screen.GlobalInMemoryHistory;
 import guideme.internal.screen.GuideNavigation;
 import guideme.internal.search.GuideSearch;
 import guideme.render.GuiAssets;
+import java.util.Objects;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -42,8 +43,6 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 @Mod(value = GuideME.MOD_ID, dist = Dist.CLIENT)
 public class GuideMEClient {
@@ -179,7 +178,8 @@ public class GuideMEClient {
 
             builder.push("gui");
             adaptiveScaling = builder
-                    .comment("Adapt GUI scaling for the Guide screen to fix Minecraft font issues at GUI scale 1 and 3.")
+                    .comment(
+                            "Adapt GUI scaling for the Guide screen to fix Minecraft font issues at GUI scale 1 and 3.")
                     .define("adaptiveScaling", true);
             builder.pop();
 

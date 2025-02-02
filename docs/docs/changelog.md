@@ -7,6 +7,7 @@
 - Add configuration screen
 - Make scaling of Guide UI independent of UI scale for scales 1 and 3, where the uniform Minecraft font
   has severe rendering issues. This behavior can be disabled in the config screen (Adaptive Scaling).
+- Added support for blast furnace recipes
 
 ## 2.5.1
 

@@ -13,8 +13,8 @@ import guideme.compiler.tags.ItemLinkCompiler;
 import guideme.compiler.tags.RecipeCompiler;
 import guideme.compiler.tags.RecipeTypeMappingSupplier;
 import guideme.compiler.tags.SubPagesCompiler;
+import guideme.document.block.recipes.LytCookingRecipe;
 import guideme.document.block.recipes.LytCraftingRecipe;
-import guideme.document.block.recipes.LytSmeltingRecipe;
 import guideme.document.block.recipes.LytSmithingRecipe;
 import guideme.extensions.Extension;
 import guideme.extensions.ExtensionCollection;
@@ -95,7 +95,8 @@ public final class DefaultExtensions {
         return List.of(
                 mappings -> {
                     mappings.add(RecipeType.CRAFTING, LytCraftingRecipe::new);
-                    mappings.add(RecipeType.SMELTING, LytSmeltingRecipe::new);
+                    mappings.add(RecipeType.BLASTING, LytCookingRecipe::createBlasting);
+                    mappings.add(RecipeType.SMELTING, LytCookingRecipe::createSmelting);
                     mappings.add(RecipeType.SMITHING, LytSmithingRecipe::new);
                 });
     }

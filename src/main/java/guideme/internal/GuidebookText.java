@@ -18,7 +18,11 @@ public enum GuidebookText implements LocalizationEnum {
     ContentFrom("Content from"),
     ItemNoGuideId("No guide id set"),
     ItemInvalidGuideId("Invalid guide id set: %s"),
-    CommandOnlyWorksInSinglePlayer("This command only works in single-player.");
+    CommandOnlyWorksInSinglePlayer("This command only works in single-player."),
+    Smelting("Smelting"),
+    Blasting("Blasting"),
+    ShapelessCrafting("Crafting (Shapeless)"),
+    Crafting("Crafting");
 
     private final String englishText;
 

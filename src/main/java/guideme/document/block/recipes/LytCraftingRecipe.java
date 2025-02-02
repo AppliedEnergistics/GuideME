@@ -4,6 +4,7 @@ import guideme.document.DefaultStyles;
 import guideme.document.LytRect;
 import guideme.document.block.LytSlot;
 import guideme.document.block.LytSlotGrid;
+import guideme.internal.GuidebookText;
 import guideme.internal.util.Platform;
 import guideme.layout.LayoutContext;
 import guideme.render.GuiAssets;
@@ -79,8 +80,9 @@ public class LytCraftingRecipe extends LytRecipeBox {
                 bounds.y() + 4,
                 8,
                 8);
+        var title = (recipe instanceof ShapelessRecipe) ? GuidebookText.ShapelessCrafting : GuidebookText.Crafting;
         context.renderText(
-                (recipe instanceof ShapelessRecipe) ? "Crafting (Shapeless)" : "Crafting",
+                title.text().getString(),
                 DefaultStyles.CRAFTING_RECIPE_TYPE.mergeWith(DefaultStyles.BASE_STYLE),
                 bounds.x() + paddingLeft + 10,
                 bounds.y() + 4);

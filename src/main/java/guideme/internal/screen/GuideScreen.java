@@ -73,10 +73,11 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
         this.pageTitle = new LytParagraph();
         this.pageTitle.setStyle(DefaultStyles.HEADING1);
-        loadPageAndScrollTo(anchor);
 
         toolbar = new NavigationToolbar(guide);
         toolbar.setCloseCallback(this::onClose);
+
+        loadPageAndScrollTo(anchor);
     }
 
     /**
@@ -99,12 +100,12 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     protected void init() {
         super.init();
 
-        updateDocumentLayout();
-
         GuideNavBar navbar = new GuideNavBar(this);
         addRenderableWidget(navbar);
 
         toolbar.addToScreen(this::addRenderableWidget, 2, width - DOCUMENT_RECT_MARGIN);
+
+        updateDocumentLayout();
     }
 
     @Override

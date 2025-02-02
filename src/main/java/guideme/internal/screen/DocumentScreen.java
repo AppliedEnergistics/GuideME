@@ -20,6 +20,8 @@ import guideme.layout.MinecraftFontMetrics;
 import guideme.render.RenderContext;
 import guideme.ui.GuideUiHost;
 import guideme.ui.UiPoint;
+import java.util.Optional;
+import java.util.function.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
@@ -27,9 +29,6 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Optional;
-import java.util.function.Function;
 
 public abstract class DocumentScreen extends IndepentScaleScreen implements GuideUiHost {
     private static final Logger LOG = LoggerFactory.getLogger(DocumentScreen.class);
@@ -326,7 +325,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     }
 
     private static <T> Optional<T> dispatchInteraction(LytDocument.HitTestResult receiver,
-                                                       Function<InteractiveElement, Optional<T>> invoker) {
+            Function<InteractiveElement, Optional<T>> invoker) {
         // Iterate through content ancestors
         for (var el = receiver.content(); el != null; el = el.getFlowParent()) {
             if (el instanceof InteractiveElement interactiveEl) {
