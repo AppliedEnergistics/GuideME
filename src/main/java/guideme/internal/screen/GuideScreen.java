@@ -1,6 +1,5 @@
 package guideme.internal.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import guideme.Guide;
 import guideme.GuidePage;
 import guideme.PageAnchor;
@@ -19,7 +18,6 @@ import guideme.document.flow.LytFlowAnchor;
 import guideme.document.flow.LytFlowContent;
 import guideme.document.flow.LytFlowSpan;
 import guideme.internal.GuideME;
-import guideme.internal.GuideMEClient;
 import guideme.internal.GuidebookText;
 import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
@@ -281,7 +279,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         context.fillRect(separatorRect, SymbolicColor.HEADER1_SEPARATOR);
     }
 
-     @Override
+    @Override
     public void navigateTo(ResourceLocation pageId) {
         navigateTo(PageAnchor.page(pageId));
     }

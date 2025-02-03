@@ -1,11 +1,9 @@
 package guideme.internal.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import guideme.Guide;
 import guideme.Guides;
 import guideme.PageAnchor;
 import guideme.PageCollection;
-import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.color.SymbolicColor;
 import guideme.compiler.ParsedGuidePage;

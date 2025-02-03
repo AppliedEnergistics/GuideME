@@ -1,7 +1,6 @@
 package guideme.internal.screen;
 
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.RenderSystem;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.document.DefaultStyles;
@@ -27,7 +26,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
