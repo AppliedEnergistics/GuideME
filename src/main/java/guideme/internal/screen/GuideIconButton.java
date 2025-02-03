@@ -44,6 +44,8 @@ public class GuideIconButton extends Button {
 
     public void setRole(Role role) {
         this.role = role;
+        setMessage(role.actionText);
+        setTooltip(Tooltip.create(getMessage()));
     }
 
     @Override
@@ -74,7 +76,9 @@ public class GuideIconButton extends Button {
         SHOW_ANNOTATIONS(GuidebookText.ShowAnnotations.text(), 16, 16),
         ZOOM_OUT(GuidebookText.ZoomOut.text(), 32, 16),
         ZOOM_IN(GuidebookText.ZoomIn.text(), 48, 16),
-        RESET_VIEW(GuidebookText.ResetView.text(), 0, 32);
+        RESET_VIEW(GuidebookText.ResetView.text(), 0, 32),
+        OPEN_FULL_WIDTH_VIEW(GuidebookText.FullWidthView.text(), 16, 32),
+        CLOSE_FULL_WIDTH_VIEW(GuidebookText.CloseFullWidthView.text(), 32, 32);
 
         final Component actionText;
 

@@ -19,6 +19,7 @@ import guideme.document.flow.LytFlowAnchor;
 import guideme.document.flow.LytFlowContent;
 import guideme.document.flow.LytFlowSpan;
 import guideme.internal.GuideME;
+import guideme.internal.GuideMEClient;
 import guideme.internal.GuidebookText;
 import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
@@ -71,11 +72,10 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
     private LytRect screenRect = LytRect.empty();
 
-    private boolean fullScreen = false;
-    private GuideNavBar navbar;
+    private final GuideNavBar navbar;
 
     private GuideScreen(Guide guide, PageAnchor anchor) {
-        super(Component.literal("AE2 Guidebook"));
+        super(Component.literal("GuideME Guidebook"));
         this.guide = guide;
 
         this.pageTitle = new LytParagraph();
@@ -109,7 +109,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     protected void init() {
         super.init();
 
-        if (fullScreen) {
+        if (isFullWidthLayout()) {
             screenRect = new LytRect(0, 0, width, height);
         } else {
             var screenWidth = Math.min(400, width);
@@ -132,7 +132,8 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
             navbar.setX(0);
         }
 
-        toolbar.addToScreen(this::addRenderableWidget, 2, screenRect.right() - getMarginRight());
+        int toolbarMarginRight = isFullWidthLayout() ? getMarginRight() : 0;
+        toolbar.addToScreen(this::addRenderableWidget, 2, screenRect.right() - toolbarMarginRight);
 
         updateDocumentLayout();
     }
@@ -282,12 +283,16 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         var buffers = context.beginBatch();
         pageTitle.renderBatch(context, buffers);
         context.endBatch(buffers);
-        context.fillRect(
+        var separatorRect = new LytRect(
                 documentRect.x(),
                 documentRect.y() - 1,
                 documentRect.width(),
-                1,
-                SymbolicColor.HEADER1_SEPARATOR);
+                1);
+        if (!isFullWidthLayout()) {
+            separatorRect = separatorRect.withWidth(screenRect.width());
+        }
+
+        context.fillRect(separatorRect, SymbolicColor.HEADER1_SEPARATOR);
     }
 
     private void renderSkyStoneBackground(GuiGraphics guiGraphics) {
@@ -394,10 +399,10 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
     @Override
     protected void updateDocumentLayout() {
-        super.updateDocumentLayout();
-
         // Update layout of page title, since it's used for the document rectangle
         updateTitleLayout();
+
+        super.updateDocumentLayout();
     }
 
     @Override
@@ -453,11 +458,11 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     }
 
     private int getMarginRight() {
-        return fullScreen ? FULL_SCREEN_MARGIN : CENTERED_HORIZONTAL_MARGIN;
+        return isFullWidthLayout() ? FULL_SCREEN_MARGIN : 8;
     }
 
     private int getMarginLeft() {
-        return fullScreen ? FULL_SCREEN_MARGIN : CENTERED_HORIZONTAL_MARGIN;
+        return isFullWidthLayout() ? FULL_SCREEN_MARGIN : 0;
     }
 
     private int getMarginTop() {
@@ -467,5 +472,9 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
     private int getMarginBottom() {
         return hasFooter() ? FULL_SCREEN_MARGIN : 0;
+    }
+
+    protected boolean isFullWidthLayout() {
+        return GuideMEClient.instance().isFullWidthLayout();
     }
 }

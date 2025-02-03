@@ -15,6 +15,7 @@ import guideme.internal.screen.GuideNavigation;
 import guideme.internal.search.GuideSearch;
 import guideme.render.GuiAssets;
 import java.util.Objects;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -138,6 +139,22 @@ public class GuideMEClient {
         return clientConfig.adaptiveScaling.getAsBoolean();
     }
 
+    public boolean isFullWidthLayout() {
+        return clientConfig.fullWidthLayout.getAsBoolean();
+    }
+
+    public void setFullWidthLayout(boolean fullWidth) {
+        if (fullWidth != isFullWidthLayout()) {
+            clientConfig.fullWidthLayout.set(fullWidth);
+            var minecraft = Minecraft.getInstance();
+            var screen = minecraft.screen;
+            if (screen != null) {
+                var window = minecraft.getWindow();
+                screen.resize(minecraft, window.getGuiScaledWidth(), window.getGuiScaledHeight());
+            }
+        }
+    }
+
     public static boolean openGuideAtPreviousPage(Guide guide, ResourceLocation initialPage) {
         try {
             var history = GlobalInMemoryHistory.get(guide);
@@ -172,6 +189,7 @@ public class GuideMEClient {
         final ModConfigSpec spec;
         final ModConfigSpec.BooleanValue adaptiveScaling;
         final ModConfigSpec.BooleanValue showDebugGuiOverlays;
+        final ModConfigSpec.BooleanValue fullWidthLayout;
 
         public ClientConfig() {
             var builder = new ModConfigSpec.Builder();
@@ -181,6 +199,10 @@ public class GuideMEClient {
                     .comment(
                             "Adapt GUI scaling for the Guide screen to fix Minecraft font issues at GUI scale 1 and 3.")
                     .define("adaptiveScaling", true);
+            fullWidthLayout = builder
+                    .comment(
+                            "Use the full width of the screen for the guide when it is opened.")
+                    .define("fullWidthLayout", true);
             builder.pop();
 
             builder.push("debug");

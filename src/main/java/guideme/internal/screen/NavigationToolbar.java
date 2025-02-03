@@ -2,6 +2,7 @@ package guideme.internal.screen;
 
 import guideme.Guide;
 import guideme.PageAnchor;
+import guideme.internal.GuideMEClient;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -21,12 +22,19 @@ public class NavigationToolbar {
     private Button forwardButton;
 
     private int left;
+    private GuideIconButton toggleFullWidthButton;
 
     public NavigationToolbar(@Nullable Guide guide) {
         this.guide = guide;
     }
 
     public void update() {
+        if (GuideMEClient.instance().isFullWidthLayout()) {
+            toggleFullWidthButton.setRole(GuideIconButton.Role.CLOSE_FULL_WIDTH_VIEW);
+        } else {
+            toggleFullWidthButton.setRole(GuideIconButton.Role.OPEN_FULL_WIDTH_VIEW);
+        }
+
         if (guide != null) {
             var history = GlobalInMemoryHistory.get(guide);
             backButton.active = history.peekBack().isPresent();
@@ -44,6 +52,14 @@ public class NavigationToolbar {
             addWidget.accept(closeButton);
             rightEdge = closeButton.getX() - GAP;
         }
+
+        toggleFullWidthButton = new GuideIconButton(
+                rightEdge - GuideIconButton.WIDTH,
+                topEdge,
+                GuideIconButton.Role.OPEN_FULL_WIDTH_VIEW,
+                this::toggleFullWidth);
+        addWidget.accept(toggleFullWidthButton);
+        rightEdge = toggleFullWidthButton.getX() - GAP;
 
         if (guide != null) {
             forwardButton = new GuideIconButton(
@@ -76,6 +92,10 @@ public class NavigationToolbar {
 
         left = rightEdge;
         update();
+    }
+
+    private void toggleFullWidth() {
+        GuideMEClient.instance().setFullWidthLayout(!GuideMEClient.instance().isFullWidthLayout());
     }
 
     private void startSearch() {

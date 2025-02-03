@@ -30,6 +30,7 @@ public final class GuideMELanguageProvider extends LanguageProvider {
                 "debug", "Debug",
                 "debug.tooltip", "Advanced Debugging Settings for Guide development",
                 "adaptiveScaling", "Adaptive UI Scaling",
+                "fullWidthLayout", "Full Width Layout",
                 "showDebugGuiOverlays", "Debug GUI Overlays");
         for (var entry : translations.entrySet()) {
             add("guideme.configuration." + entry.getKey(), entry.getValue());
