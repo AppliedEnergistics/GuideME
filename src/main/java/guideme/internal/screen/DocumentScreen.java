@@ -1,6 +1,7 @@
 package guideme.internal.screen;
 
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.RenderSystem;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.document.DefaultStyles;
@@ -26,6 +27,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,12 +39,17 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     private static final DashPattern DEBUG_CONTENT_OUTLINE = new DashPattern(0.5f, 2, 1, 0x7FFFFFFF, 500);
     private static final ColorValue DEBUG_HOVER_OUTLINE_COLOR = new ConstantColor(0x7FFFFF00);
 
+    // 20 virtual px margin around the document
+    private static final int FULL_SCREEN_MARGIN = 20;
+
     @Nullable
     private InteractiveElement mouseCaptureTarget;
 
     private LytDocument lastDocument;
 
     private final GuideScrollbar scrollbar;
+
+    protected LytRect screenRect = LytRect.empty();
 
     public DocumentScreen(Component title) {
         super(title);
@@ -53,9 +60,21 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     protected void init() {
         super.init();
 
+        if (isFullWidthLayout()) {
+            screenRect = new LytRect(0, 0, width, height);
+        } else {
+            var screenWidth = Math.min(getMaxColumnWidth(), width);
+            var left = (width - screenWidth) / 2;
+            screenRect = new LytRect(left, 0, screenWidth, height);
+        }
+
         // Add and re-position scrollbar
         addRenderableWidget(scrollbar);
         updateDocumentLayout();
+    }
+
+    private int getMaxColumnWidth() {
+        return 400;
     }
 
     @Override
@@ -109,7 +128,13 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     protected abstract LytDocument getDocument();
 
     @Override
-    public abstract LytRect getDocumentRect();
+    public LytRect getDocumentRect() {
+        return new LytRect(
+                screenRect.x() + getMarginLeft(),
+                getMarginTop(),
+                screenRect.width() - getMarginLeft() - getMarginRight(),
+                screenRect.height() - getMarginBottom() - getMarginTop());
+    }
 
     @Override
     public final LytRect getDocumentViewport() {
@@ -549,5 +574,29 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     public void onClose() {
         super.onClose();
         releaseMouseCapture();
+    }
+
+    protected int getMarginRight() {
+        return isFullWidthLayout() ? FULL_SCREEN_MARGIN : 8;
+    }
+
+    protected int getMarginLeft() {
+        return isFullWidthLayout() ? FULL_SCREEN_MARGIN : 0;
+    }
+
+    protected int getMarginTop() {
+        return 20;
+    }
+
+    protected int getMarginBottom() {
+        return hasFooter() ? FULL_SCREEN_MARGIN : 0;
+    }
+
+    protected boolean isFullWidthLayout() {
+        return GuideMEClient.instance().isFullWidthLayout();
+    }
+
+    protected boolean hasFooter() {
+        return false;
     }
 }

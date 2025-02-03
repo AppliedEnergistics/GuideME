@@ -45,11 +45,6 @@ import org.slf4j.LoggerFactory;
 public class GuideScreen extends DocumentScreen implements GuideUiHost {
     private static final Logger LOG = LoggerFactory.getLogger(GuideScreen.class);
 
-    // 20 virtual px margin around the document
-    private static final int FULL_SCREEN_MARGIN = 20;
-
-    private static final int CENTERED_HORIZONTAL_MARGIN = 10;
-
     private static final ResourceLocation BACKGROUND_TEXTURE = GuideME.makeId("textures/guide/background.png");
 
     private final Guide guide;
@@ -69,8 +64,6 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
      */
     @Nullable
     private String pendingScrollToAnchor;
-
-    private LytRect screenRect = LytRect.empty();
 
     private final GuideNavBar navbar;
 
@@ -109,14 +102,6 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     protected void init() {
         super.init();
 
-        if (isFullWidthLayout()) {
-            screenRect = new LytRect(0, 0, width, height);
-        } else {
-            var screenWidth = Math.min(400, width);
-            var left = (width - screenWidth) / 2;
-            screenRect = new LytRect(left, 0, screenWidth, height);
-        }
-
         updateDocumentLayout();
 
         navbar.setY(screenRect.y());
@@ -135,7 +120,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         int toolbarMarginRight = isFullWidthLayout() ? getMarginRight() : 0;
         toolbar.addToScreen(this::addRenderableWidget, 2, screenRect.right() - toolbarMarginRight);
 
-        updateDocumentLayout();
+        updateTitleLayout();
     }
 
     @Override
@@ -191,7 +176,8 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     public void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
         renderBlurredBackground(partialTick);
-        renderSkyStoneBackground(guiGraphics);
+
+        context.fillTexturedRect(screenRect, BACKGROUND_TEXTURE, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
 
         var documentRect = getDocumentRect();
         context.fillRect(documentRect, new ConstantColor(0x80333333));
@@ -235,7 +221,8 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         }
     }
 
-    private boolean hasFooter() {
+    @Override
+    protected boolean hasFooter() {
         return getExternalSourceName() != null;
     }
 
@@ -291,19 +278,10 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         if (!isFullWidthLayout()) {
             separatorRect = separatorRect.withWidth(screenRect.width());
         }
-
         context.fillRect(separatorRect, SymbolicColor.HEADER1_SEPARATOR);
     }
 
-    private void renderSkyStoneBackground(GuiGraphics guiGraphics) {
-        RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(0.25F, 0.25F, 0.25F, 0.9F);
-        guiGraphics.blit(BACKGROUND_TEXTURE, screenRect.x(), screenRect.y(), 0, 0.0F, 0.0F, screenRect.width(),
-                screenRect.height(), 32, 32);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-    }
-
-    @Override
+     @Override
     public void navigateTo(ResourceLocation pageId) {
         navigateTo(PageAnchor.page(pageId));
     }
@@ -389,15 +367,6 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     }
 
     @Override
-    public LytRect getDocumentRect() {
-        return new LytRect(
-                screenRect.x() + getMarginLeft(),
-                getMarginTop(),
-                screenRect.width() - getMarginLeft() - getMarginRight(),
-                screenRect.height() - getMarginBottom() - getMarginTop());
-    }
-
-    @Override
     protected void updateDocumentLayout() {
         // Update layout of page title, since it's used for the document rectangle
         updateTitleLayout();
@@ -457,24 +426,9 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         super.onClose();
     }
 
-    private int getMarginRight() {
-        return isFullWidthLayout() ? FULL_SCREEN_MARGIN : 8;
-    }
-
-    private int getMarginLeft() {
-        return isFullWidthLayout() ? FULL_SCREEN_MARGIN : 0;
-    }
-
-    private int getMarginTop() {
+    @Override
+    protected int getMarginTop() {
         // The page title may need more space than the default margin provides
         return Math.max(20, 5 + pageTitle.getBounds().height());
-    }
-
-    private int getMarginBottom() {
-        return hasFooter() ? FULL_SCREEN_MARGIN : 0;
-    }
-
-    protected boolean isFullWidthLayout() {
-        return GuideMEClient.instance().isFullWidthLayout();
     }
 }

@@ -5,6 +5,7 @@ import guideme.Guide;
 import guideme.Guides;
 import guideme.PageAnchor;
 import guideme.PageCollection;
+import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.color.SymbolicColor;
 import guideme.compiler.ParsedGuidePage;
@@ -45,7 +46,6 @@ public class GuideSearchScreen extends DocumentScreen {
     public static final ResourceLocation PAGE_ID = GuideME.makeId("search");
 
     // 20 virtual px margin around the document
-    public static final int DOCUMENT_RECT_MARGIN = 20;
     private static final ResourceLocation BACKGROUND_TEXTURE = GuideME.makeId("textures/guide/background.png");
 
     private final EditBox searchField;
@@ -72,10 +72,10 @@ public class GuideSearchScreen extends DocumentScreen {
 
         searchField = new EditBox(
                 Minecraft.getInstance().font,
-                DOCUMENT_RECT_MARGIN + 16,
+                getMarginLeft() + 16,
                 6,
                 0,
-                DOCUMENT_RECT_MARGIN,
+                getMarginTop(),
                 GuidebookText.Search.text());
         searchField.setBordered(false);
         searchField.setHint(
@@ -114,9 +114,11 @@ public class GuideSearchScreen extends DocumentScreen {
 
         addRenderableWidget(searchField);
 
-        toolbar.addToScreen(this::addRenderableWidget, 2, width - DOCUMENT_RECT_MARGIN);
+        int toolbarMarginRight = isFullWidthLayout() ? getMarginRight() : 0;
+        toolbar.addToScreen(this::addRenderableWidget, 2, screenRect.right() - toolbarMarginRight);
 
-        searchField.setWidth(toolbar.getLeft() - DOCUMENT_RECT_MARGIN - 16);
+        searchField.setX(screenRect.x() + getMarginLeft() + 16);
+        searchField.setWidth(toolbar.getLeft() - searchField.getX());
         searchField.setCursorPosition(searchField.getCursorPosition());
     }
 
@@ -194,11 +196,13 @@ public class GuideSearchScreen extends DocumentScreen {
     @Override
     protected void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
-        renderSkyStoneBackground(guiGraphics);
+        renderBlurredBackground(partialTick);
+
+        context.fillTexturedRect(screenRect, BACKGROUND_TEXTURE, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
 
         Blitter.texture(GuideME.makeId("textures/guide/buttons.png"), 64, 64)
                 .src(GuideIconButton.Role.SEARCH.iconSrcX, GuideIconButton.Role.SEARCH.iconSrcY, 16, 16)
-                .dest(DOCUMENT_RECT_MARGIN, 2, 16, 16)
+                .dest(screenRect.x() + getMarginLeft(), 2, 16, 16)
                 .colorArgb(context.resolveColor(SymbolicColor.ICON_BUTTON_NORMAL))
                 .blit(guiGraphics);
 
@@ -233,34 +237,20 @@ public class GuideSearchScreen extends DocumentScreen {
     }
 
     @Override
-    public LytRect getDocumentRect() {
-        return new LytRect(
-                DOCUMENT_RECT_MARGIN,
-                DOCUMENT_RECT_MARGIN,
-                width - 2 * DOCUMENT_RECT_MARGIN,
-                height - 2 * DOCUMENT_RECT_MARGIN);
-    }
-
-    @Override
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         // Stub this out otherwise vanilla renders a background on top of our content
     }
 
     private void renderTitle(LytRect documentRect, RenderContext context) {
-        var buffers = context.beginBatch();
-        context.endBatch(buffers);
-        context.fillRect(
+        var separatorRect = new LytRect(
                 documentRect.x(),
                 documentRect.y() - 1,
                 documentRect.width(),
-                1,
-                SymbolicColor.HEADER1_SEPARATOR);
-    }
-
-    private void renderSkyStoneBackground(GuiGraphics guiGraphics) {
-        RenderSystem.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
-        guiGraphics.blit(BACKGROUND_TEXTURE, 0, 0, 0, 0.0F, 0.0F, this.width, this.height, 32, 32);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                1);
+        if (!isFullWidthLayout()) {
+            separatorRect = separatorRect.withWidth(screenRect.width());
+        }
+        context.fillRect(separatorRect, SymbolicColor.HEADER1_SEPARATOR);
     }
 
     private PageAnchor makeSearchAnchor() {
