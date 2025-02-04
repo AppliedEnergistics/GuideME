@@ -117,6 +117,8 @@ public class GuideNavBar extends AbstractWidget {
 
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        updateLayout();
+
         widthTransition.update();
 
         var renderContext = new SimpleRenderContext(graphics);
@@ -192,7 +194,7 @@ public class GuideNavBar extends AbstractWidget {
             var p3 = new Vec2(width - WIDTH_CLOSED + 4, height / 2f + 5);
 
             renderContext.fillTriangle(p1, p2, p3, SymbolicColor.NAVBAR_EXPAND_ARROW);
-        } else {
+        } else if (!isPinned()) {
             renderContext.fillGradientVertical(getX(), getY(), width, height, SymbolicColor.NAVBAR_BG_TOP,
                     SymbolicColor.NAVBAR_BG_BOTTOM);
         }

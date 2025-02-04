@@ -146,6 +146,7 @@ public class GuideMEClient {
     public void setFullWidthLayout(boolean fullWidth) {
         if (fullWidth != isFullWidthLayout()) {
             clientConfig.fullWidthLayout.set(fullWidth);
+            clientConfig.spec.save();
             var minecraft = Minecraft.getInstance();
             var screen = minecraft.screen;
             if (screen != null) {

@@ -17,10 +17,10 @@ import guideme.document.block.LytParagraph;
 import guideme.document.flow.LytFlowAnchor;
 import guideme.document.flow.LytFlowContent;
 import guideme.document.flow.LytFlowSpan;
-import guideme.internal.GuideME;
 import guideme.internal.GuidebookText;
 import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
+import guideme.render.GuiAssets;
 import guideme.render.GuidePageTexture;
 import guideme.render.RenderContext;
 import guideme.style.TextAlignment;
@@ -42,8 +42,6 @@ import org.slf4j.LoggerFactory;
 
 public class GuideScreen extends DocumentScreen implements GuideUiHost {
     private static final Logger LOG = LoggerFactory.getLogger(GuideScreen.class);
-
-    private static final ResourceLocation BACKGROUND_TEXTURE = GuideME.makeId("textures/guide/background.png");
 
     private final Guide guide;
 
@@ -100,20 +98,20 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     protected void init() {
         super.init();
 
-        updateDocumentLayout();
-
-        navbar.setY(screenRect.y());
-        navbar.setHeight(screenRect.height());
+        // If there is enough space, always expand the navbar
+        navbar.setPinned(!isFullWidthLayout() && screenRect.width() >= getMaxColumnWidth());
+        navbar.setX(screenRect.x());
+        if (navbar.isPinned()) {
+            // Move the navbar to below the title
+            navbar.setY(screenRect.y() + getMarginTop());
+            navbar.setHeight(screenRect.height() - getMarginTop());
+        } else {
+            navbar.setY(screenRect.y());
+            navbar.setHeight(screenRect.height());
+        }
         addRenderableWidget(navbar);
 
-        // If there is enough space, always expand the navbar
-        if (screenRect.x() >= GuideNavBar.WIDTH_OPEN) {
-            navbar.setPinned(true);
-            navbar.setX(screenRect.x() - navbar.getWidth());
-        } else {
-            navbar.setPinned(false);
-            navbar.setX(0);
-        }
+        updateDocumentLayout();
 
         int toolbarMarginRight = isFullWidthLayout() ? getMarginRight() : 0;
         toolbar.addToScreen(this::addRenderableWidget, 2, screenRect.right() - toolbarMarginRight);
@@ -175,10 +173,10 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
             float partialTick) {
         renderBlurredBackground(partialTick);
 
-        context.fillTexturedRect(screenRect, BACKGROUND_TEXTURE, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
+        context.fillIcon(screenRect, GuiAssets.GUIDE_BACKGROUND, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
 
         var documentRect = getDocumentRect();
-        context.fillRect(documentRect, new ConstantColor(0x80333333));
+        context.fillRect(documentRect, new ConstantColor(0x40333333));
 
         renderDocument(context);
 
@@ -269,9 +267,9 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         pageTitle.renderBatch(context, buffers);
         context.endBatch(buffers);
         var separatorRect = new LytRect(
-                documentRect.x(),
+                screenRect.x(),
                 documentRect.y() - 1,
-                documentRect.width(),
+                screenRect.width(),
                 1);
         if (!isFullWidthLayout()) {
             separatorRect = separatorRect.withWidth(screenRect.width());
@@ -378,10 +376,12 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     }
 
     private void updateTitleLayout() {
+        var left = screenRect.x() + getMarginLeft();
+
         var context = new LayoutContext(new MinecraftFontMetrics());
         // Compute the fake layout to find out how high it would be
         // Account for the navigation buttons on the right
-        var availableWidth = toolbar.getLeft() - screenRect.x() - 5;
+        var availableWidth = toolbar.getLeft() - left - 5;
 
         if (availableWidth < 0) {
             availableWidth = 0;
@@ -395,7 +395,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
         int titleY = (documentRect.y() - height) / 2;
 
-        pageTitle.layout(context, documentRect.x() + 5, titleY, availableWidth);
+        pageTitle.layout(context, left + 5, titleY, availableWidth);
     }
 
     public void scrollToAnchor(@Nullable String anchor) {
@@ -425,8 +425,33 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     }
 
     @Override
+    public LytRect getDocumentRect() {
+        var documentRect = super.getDocumentRect();
+        if (!isFullWidthLayout() && navbar.isPinned()) {
+            return documentRect
+                    .withWidth(documentRect.width() - GuideNavBar.WIDTH_OPEN)
+                    .move(GuideNavBar.WIDTH_OPEN, 0);
+
+        }
+        return documentRect;
+    }
+
+    @Override
     protected int getMarginTop() {
         // The page title may need more space than the default margin provides
         return Math.max(20, 5 + pageTitle.getBounds().height());
+    }
+
+    @Override
+    protected boolean isFullWidthLayout() {
+        if (width <= getMaxColumnWidth()) {
+            return true;
+        }
+        return super.isFullWidthLayout();
+    }
+
+    @Override
+    protected int getMaxColumnWidth() {
+        return super.getMaxColumnWidth() + GuideNavBar.WIDTH_OPEN;
     }
 }

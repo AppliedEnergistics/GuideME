@@ -24,6 +24,7 @@ public final class GuiAssets {
     public static final ResourceLocation GUI_SPRITE_ATLAS = ResourceLocation
             .withDefaultNamespace("textures/atlas/gui.png");
 
+    public static final GuiSprite GUIDE_BACKGROUND = sprite("background");
     public static final GuiSprite WINDOW_SPRITE = sprite("window");
     public static final GuiSprite INNER_BORDER_SPRITE = sprite("window_inner");
     public static final GuiSprite SLOT_BACKGROUND = sprite("slot");

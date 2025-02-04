@@ -71,7 +71,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         updateDocumentLayout();
     }
 
-    private int getMaxColumnWidth() {
+    protected int getMaxColumnWidth() {
         return 400;
     }
 
@@ -129,7 +129,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     public LytRect getDocumentRect() {
         return new LytRect(
                 screenRect.x() + getMarginLeft(),
-                getMarginTop(),
+                screenRect.y() + getMarginTop(),
                 screenRect.width() - getMarginLeft() - getMarginRight(),
                 screenRect.height() - getMarginBottom() - getMarginTop());
     }

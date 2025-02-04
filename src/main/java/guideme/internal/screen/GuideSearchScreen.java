@@ -21,6 +21,7 @@ import guideme.internal.GuidebookText;
 import guideme.internal.search.GuideSearch;
 import guideme.internal.util.Blitter;
 import guideme.internal.util.NavigationUtil;
+import guideme.render.GuiAssets;
 import guideme.render.RenderContext;
 import guideme.scene.LytItemImage;
 import guideme.style.BorderStyle;
@@ -42,9 +43,6 @@ public class GuideSearchScreen extends DocumentScreen {
      * This ID refers to this screen as a built-in page.
      */
     public static final ResourceLocation PAGE_ID = GuideME.makeId("search");
-
-    // 20 virtual px margin around the document
-    private static final ResourceLocation BACKGROUND_TEXTURE = GuideME.makeId("textures/guide/background.png");
 
     private final EditBox searchField;
 
@@ -196,7 +194,7 @@ public class GuideSearchScreen extends DocumentScreen {
             float partialTick) {
         renderBlurredBackground(partialTick);
 
-        context.fillTexturedRect(screenRect, BACKGROUND_TEXTURE, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
+        context.fillIcon(screenRect, GuiAssets.GUIDE_BACKGROUND, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
 
         Blitter.texture(GuideME.makeId("textures/guide/buttons.png"), 64, 64)
                 .src(GuideIconButton.Role.SEARCH.iconSrcX, GuideIconButton.Role.SEARCH.iconSrcY, 16, 16)
