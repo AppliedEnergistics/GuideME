@@ -29,7 +29,7 @@ import org.lwjgl.glfw.GLFW;
 
 public class GuideNavBar extends AbstractWidget {
     public static final int WIDTH_OPEN = 150;
-    private static final int WIDTH_CLOSED = 15;
+    public static final int WIDTH_CLOSED = 15;
     private static final int CHILD_ROW_INDENT = 10;
     private static final int PARENT_ROW_INDENT = 7;
     private static boolean neverInteracted = true;

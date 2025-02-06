@@ -3,6 +3,9 @@ package guideme.internal.screen;
 import guideme.Guide;
 import guideme.PageAnchor;
 import guideme.internal.GuideMEClient;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -18,17 +21,53 @@ public class NavigationToolbar {
     @Nullable
     private Runnable closeCallback;
 
-    private Button backButton;
-    private Button forwardButton;
+    private final GuideIconButton backButton;
+    private final GuideIconButton forwardButton;
+    private final GuideIconButton toggleFullWidthButton;
+    private final GuideIconButton closeButton;
+    private final GuideIconButton searchButton;
 
-    private int left;
-    private GuideIconButton toggleFullWidthButton;
+    private final List<GuideIconButton> buttons = new ArrayList<>();
 
     public NavigationToolbar(@Nullable Guide guide) {
         this.guide = guide;
+
+        searchButton = new GuideIconButton(
+                0,
+                0,
+                GuideIconButton.Role.SEARCH,
+                this::startSearch);
+        backButton = new GuideIconButton(
+                0,
+                0,
+                GuideIconButton.Role.BACK,
+                () -> GuideNavigation.navigateBack(guide));
+        forwardButton = new GuideIconButton(
+                0,
+                0,
+                GuideIconButton.Role.FORWARD,
+                () -> GuideNavigation.navigateForward(guide));
+        toggleFullWidthButton = new GuideIconButton(
+                0,
+                0,
+                GuideIconButton.Role.OPEN_FULL_WIDTH_VIEW,
+                this::toggleFullWidth);
+        closeButton = new GuideIconButton(
+                0,
+                0,
+                GuideIconButton.Role.CLOSE,
+                () -> {
+                    if (closeCallback != null) {
+                        closeCallback.run();
+                    }
+                });
+
+        update();
     }
 
     public void update() {
+        updateLayout();
+
         if (GuideMEClient.instance().isFullWidthLayout()) {
             toggleFullWidthButton.setRole(GuideIconButton.Role.CLOSE_FULL_WIDTH_VIEW);
         } else {
@@ -42,56 +81,40 @@ public class NavigationToolbar {
         }
     }
 
-    public void addToScreen(Consumer<AbstractWidget> addWidget, int topEdge, int rightEdge) {
-        if (closeCallback != null) {
-            var closeButton = new GuideIconButton(
-                    rightEdge - GuideIconButton.WIDTH,
-                    topEdge,
-                    GuideIconButton.Role.CLOSE,
-                    closeCallback);
-            addWidget.accept(closeButton);
-            rightEdge = closeButton.getX() - GAP;
-        }
-
-        toggleFullWidthButton = new GuideIconButton(
-                rightEdge - GuideIconButton.WIDTH,
-                topEdge,
-                GuideIconButton.Role.OPEN_FULL_WIDTH_VIEW,
-                this::toggleFullWidth);
+    public void addToScreen(Consumer<AbstractWidget> addWidget) {
+        addWidget.accept(closeButton);
         addWidget.accept(toggleFullWidthButton);
-        rightEdge = toggleFullWidthButton.getX() - GAP;
+        if (guide != null) {
+            addWidget.accept(forwardButton);
+            addWidget.accept(backButton);
+        }
+        if (isCanSearch()) {
+            addWidget.accept(searchButton);
+        }
+    }
+
+    private void updateLayout() {
+        buttons.clear();
+
+        var canSearch = isCanSearch();
+        if (canSearch) {
+            buttons.add(searchButton);
+        }
 
         if (guide != null) {
-            forwardButton = new GuideIconButton(
-                    rightEdge - GuideIconButton.WIDTH,
-                    topEdge,
-                    GuideIconButton.Role.FORWARD,
-                    () -> GuideNavigation.navigateForward(guide));
-            addWidget.accept(forwardButton);
-            rightEdge = forwardButton.getX() - GAP;
-
-            backButton = new GuideIconButton(
-                    rightEdge - GuideIconButton.WIDTH,
-                    topEdge,
-                    GuideIconButton.Role.BACK,
-                    () -> GuideNavigation.navigateBack(guide));
-            addWidget.accept(backButton);
-            rightEdge = backButton.getX() - GAP;
+            buttons.add(backButton);
+            buttons.add(forwardButton);
         }
 
-        var canSearch = !(Minecraft.getInstance().screen instanceof GuideSearchScreen);
-        if (canSearch) {
-            var searchButton = new GuideIconButton(
-                    rightEdge - GuideIconButton.WIDTH,
-                    topEdge,
-                    GuideIconButton.Role.SEARCH,
-                    this::startSearch);
-            addWidget.accept(searchButton);
-            rightEdge = searchButton.getX() - GAP;
-        }
+        buttons.add(toggleFullWidthButton);
 
-        left = rightEdge;
-        update();
+        if (closeCallback != null) {
+            buttons.add(closeButton);
+        }
+    }
+
+    private static boolean isCanSearch() {
+        return !(Minecraft.getInstance().screen instanceof GuideSearchScreen);
     }
 
     private void toggleFullWidth() {
@@ -102,11 +125,28 @@ public class NavigationToolbar {
         GuideNavigation.navigateTo(guide, PageAnchor.page(GuideSearchScreen.PAGE_ID));
     }
 
-    public int getLeft() {
-        return left;
-    }
-
     public void setCloseCallback(@Nullable Runnable closeCallback) {
         this.closeCallback = closeCallback;
+        update();
+    }
+
+    public int getWidth() {
+        int width = 0;
+        for (var button : buttons) {
+            width += button.getWidth() + GAP;
+        }
+        return width;
+    }
+
+    public int getHeight() {
+        return 16;
+    }
+
+    public void move(int x, int y) {
+        for (var button : buttons) {
+            button.setX(x);
+            button.setY(y);
+            x += button.getWidth() + GAP;
+        }
     }
 }

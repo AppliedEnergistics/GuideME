@@ -110,11 +110,11 @@ public class GuideSearchScreen extends DocumentScreen {
 
         addRenderableWidget(searchField);
 
-        int toolbarMarginRight = isFullWidthLayout() ? getMarginRight() : 0;
-        toolbar.addToScreen(this::addRenderableWidget, 2, screenRect.right() - toolbarMarginRight);
+        int toolbarMarginRight = getMarginRight();
+        toolbar.addToScreen(this::addRenderableWidget);
 
         searchField.setX(screenRect.x() + getMarginLeft() + 16);
-        searchField.setWidth(toolbar.getLeft() - searchField.getX());
+        searchField.setWidth(screenRect.width() - getMarginLeft() - getMarginRight() - toolbar.getWidth());
         searchField.setCursorPosition(searchField.getCursorPosition());
     }
 
@@ -243,9 +243,7 @@ public class GuideSearchScreen extends DocumentScreen {
                 documentRect.y() - 1,
                 documentRect.width(),
                 1);
-        if (!isFullWidthLayout()) {
             separatorRect = separatorRect.withWidth(screenRect.width());
-        }
         context.fillRect(separatorRect, SymbolicColor.HEADER1_SEPARATOR);
     }
 
