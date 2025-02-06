@@ -61,8 +61,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     protected void init() {
         super.init();
 
-        if (GuideMEClient.instance().isFullWidthLayout()
-                || width - getMarginLeft() - getMarginRight() < getMaxWidth()) {
+        if (GuideMEClient.instance().isFullWidthLayout() || width < getMaxWidth()) {
             screenRect = new LytRect(0, 0, width, height);
         } else {
             var maxWidth = getMaxWidth();
@@ -598,36 +597,8 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         releaseMouseCapture();
     }
 
-    protected int getMarginRight() {
-        return 0;
-    }
-
-    protected int getMarginLeft() {
-        return 0;
-    }
-
-    protected int getMarginTop() {
-        return 20;
-    }
-
     protected int getMarginBottom() {
         return hasFooter() ? FULL_SCREEN_MARGIN : 0;
-    }
-
-    protected int getDocumentMarginLeft() {
-        return 0;
-    }
-
-    protected int getDocumentMarginTop() {
-        return 0;
-    }
-
-    protected int getDocumentMarginRight() {
-        return 0;
-    }
-
-    protected int getDocumentMarginBottom() {
-        return 0;
     }
 
     protected boolean hasFooter() {

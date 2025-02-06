@@ -113,14 +113,6 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         // If there is enough space, always expand the navbar
         navbar.setPinned(hasSpaceForSidebar());
         navbar.setX(screenRect.x());
-        if (navbar.isPinned()) {
-            // Move the navbar to below the title
-            navbar.setY(screenRect.y() + getMarginTop());
-            navbar.setHeight(screenRect.height() - getMarginTop());
-        } else {
-            navbar.setY(screenRect.y());
-            navbar.setHeight(screenRect.height());
-        }
 
         var left = screenRect.x();
         if (!navbar.isPinned() && left < GuideNavBar.WIDTH_CLOSED) {
@@ -130,7 +122,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         var availableWidth = screenRect.right() - left - toolbar.getWidth() - 5;
         updateTitleLayout(left, availableWidth);
 
-        var marginTop = pageTitle.getBounds().bottom() + 2;
+        var marginTop = pageTitle.getBounds().bottom() + 4;
 
         var toolbarTop = (marginTop - toolbar.getHeight()) / 2;
         toolbar.move(screenRect.right() - toolbar.getWidth(), toolbarTop);
@@ -142,8 +134,17 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         setDocumentRect(new LytRect(
                 left,
                 screenRect.y() + marginTop,
-                screenRect.right() - left - getMarginRight(),
+                screenRect.right() - left,
                 screenRect.height() - getMarginBottom() - marginTop));
+
+        if (navbar.isPinned()) {
+            // Move the navbar to below the title
+            navbar.setY(getDocumentRect().y());
+            navbar.setHeight(getDocumentRect().height());
+        } else {
+            navbar.setY(screenRect.y());
+            navbar.setHeight(screenRect.height());
+        }
 
         updateDocumentLayout();
     }
@@ -404,8 +405,9 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
             availableWidth = 0;
         }
 
+        var minTitleHeight = 20;
         pageTitle.layout(context, 0, 0, availableWidth);
-        var titleY = Math.max(4, getMarginTop() - pageTitle.getBounds().height()) / 2;
+        var titleY = Math.max(4, minTitleHeight - pageTitle.getBounds().height()) / 2;
 
         pageTitle.layout(context, left + 5, titleY, availableWidth);
     }
@@ -444,29 +446,5 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
     private boolean hasSpaceForSidebar() {
         return width >= super.getMaxWidth();
-    }
-
-    @Override
-    protected int getDocumentMarginLeft() {
-        if (hasSpaceForSidebar()) {
-            return super.getDocumentMarginLeft() + GuideNavBar.WIDTH_OPEN;
-        }
-        return super.getDocumentMarginLeft();
-    }
-
-    @Override
-    protected int getDocumentMarginTop() {
-        // The page title may need more space than the default margin provides
-        return Math.max(20, 5 + pageTitle.getBounds().height());
-    }
-
-    @Override
-    protected int getDocumentMarginRight() {
-        return super.getDocumentMarginRight();
-    }
-
-    @Override
-    protected int getDocumentMarginBottom() {
-        return super.getDocumentMarginBottom();
     }
 }

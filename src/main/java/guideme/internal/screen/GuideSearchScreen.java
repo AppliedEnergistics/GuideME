@@ -44,6 +44,8 @@ public class GuideSearchScreen extends DocumentScreen {
      */
     public static final ResourceLocation PAGE_ID = GuideME.makeId("search");
 
+    private static final int MIN_TITLE_HEIGHT = 16;
+
     private final EditBox searchField;
 
     private final Guide guide;
@@ -68,10 +70,10 @@ public class GuideSearchScreen extends DocumentScreen {
 
         searchField = new EditBox(
                 Minecraft.getInstance().font,
-                getMarginLeft() + 16,
+                16,
                 6,
                 0,
-                getMarginTop(),
+                14,
                 GuidebookText.Search.text());
         searchField.setBordered(false);
         searchField.setHint(
@@ -111,9 +113,10 @@ public class GuideSearchScreen extends DocumentScreen {
         addRenderableWidget(searchField);
 
         toolbar.addToScreen(this::addRenderableWidget);
+        toolbar.update();
 
-        searchField.setX(screenRect.x() + getMarginLeft() + 16);
-        searchField.setWidth(screenRect.width() - getMarginLeft() - getMarginRight() - toolbar.getWidth());
+        searchField.setX(screenRect.x() + 16);
+        searchField.setWidth(screenRect.right() - searchField.getX() - toolbar.getWidth());
         searchField.setCursorPosition(searchField.getCursorPosition());
 
         if (screenRect.isEmpty()) {
@@ -122,14 +125,15 @@ public class GuideSearchScreen extends DocumentScreen {
 
         var left = screenRect.x();
 
-        var toolbarTop = (getMarginTop() - toolbar.getHeight()) / 2;
+        int documentTop = searchField.getY() + searchField.getHeight();
+        var toolbarTop = (documentTop - toolbar.getHeight()) / 2;
         toolbar.move(screenRect.right() - toolbar.getWidth(), toolbarTop);
 
         setDocumentRect(new LytRect(
                 left,
-                screenRect.y() + getMarginTop(),
-                screenRect.right() - left - getMarginRight(),
-                screenRect.height() - getMarginBottom() - getMarginTop()));
+                documentTop,
+                screenRect.right() - left,
+                screenRect.height() - getMarginBottom()));
 
         updateDocumentLayout();
     }
@@ -214,7 +218,7 @@ public class GuideSearchScreen extends DocumentScreen {
 
         Blitter.texture(GuideME.makeId("textures/guide/buttons.png"), 64, 64)
                 .src(GuideIconButton.Role.SEARCH.iconSrcX, GuideIconButton.Role.SEARCH.iconSrcY, 16, 16)
-                .dest(screenRect.x() + getMarginLeft(), 2, 16, 16)
+                .dest(screenRect.x(), 2, 16, 16)
                 .colorArgb(context.resolveColor(SymbolicColor.ICON_BUTTON_NORMAL))
                 .blit(guiGraphics);
 
