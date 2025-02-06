@@ -3,13 +3,10 @@ package guideme.internal.screen;
 import guideme.Guide;
 import guideme.PageAnchor;
 import guideme.internal.GuideMEClient;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Button;
 import org.jetbrains.annotations.Nullable;
 
 public class NavigationToolbar {
@@ -20,6 +17,8 @@ public class NavigationToolbar {
 
     @Nullable
     private Runnable closeCallback;
+
+    private boolean canSearch;
 
     private final GuideIconButton backButton;
     private final GuideIconButton forwardButton;
@@ -88,7 +87,7 @@ public class NavigationToolbar {
             addWidget.accept(forwardButton);
             addWidget.accept(backButton);
         }
-        if (isCanSearch()) {
+        if (canSearch) {
             addWidget.accept(searchButton);
         }
     }
@@ -96,7 +95,6 @@ public class NavigationToolbar {
     private void updateLayout() {
         buttons.clear();
 
-        var canSearch = isCanSearch();
         if (canSearch) {
             buttons.add(searchButton);
         }
@@ -113,10 +111,6 @@ public class NavigationToolbar {
         }
     }
 
-    private static boolean isCanSearch() {
-        return !(Minecraft.getInstance().screen instanceof GuideSearchScreen);
-    }
-
     private void toggleFullWidth() {
         GuideMEClient.instance().setFullWidthLayout(!GuideMEClient.instance().isFullWidthLayout());
     }
@@ -127,6 +121,15 @@ public class NavigationToolbar {
 
     public void setCloseCallback(@Nullable Runnable closeCallback) {
         this.closeCallback = closeCallback;
+        update();
+    }
+
+    public boolean isCanSearch() {
+        return canSearch;
+    }
+
+    public void setCanSearch(boolean canSearch) {
+        this.canSearch = canSearch;
         update();
     }
 
@@ -149,4 +152,5 @@ public class NavigationToolbar {
             x += button.getWidth() + GAP;
         }
     }
+
 }

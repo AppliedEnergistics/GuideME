@@ -110,12 +110,28 @@ public class GuideSearchScreen extends DocumentScreen {
 
         addRenderableWidget(searchField);
 
-        int toolbarMarginRight = getMarginRight();
         toolbar.addToScreen(this::addRenderableWidget);
 
         searchField.setX(screenRect.x() + getMarginLeft() + 16);
         searchField.setWidth(screenRect.width() - getMarginLeft() - getMarginRight() - toolbar.getWidth());
         searchField.setCursorPosition(searchField.getCursorPosition());
+
+        if (screenRect.isEmpty()) {
+            return; // On first call there's no point to layout
+        }
+
+        var left = screenRect.x();
+
+        var toolbarTop = (getMarginTop() - toolbar.getHeight()) / 2;
+        toolbar.move(screenRect.right() - toolbar.getWidth(), toolbarTop);
+
+        setDocumentRect(new LytRect(
+                left,
+                screenRect.y() + getMarginTop(),
+                screenRect.right() - left - getMarginRight(),
+                screenRect.height() - getMarginBottom() - getMarginTop()));
+
+        updateDocumentLayout();
     }
 
     private void search(String query) {
@@ -243,7 +259,7 @@ public class GuideSearchScreen extends DocumentScreen {
                 documentRect.y() - 1,
                 documentRect.width(),
                 1);
-            separatorRect = separatorRect.withWidth(screenRect.width());
+        separatorRect = separatorRect.withWidth(screenRect.width());
         context.fillRect(separatorRect, SymbolicColor.HEADER1_SEPARATOR);
     }
 

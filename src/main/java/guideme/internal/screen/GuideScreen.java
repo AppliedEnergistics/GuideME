@@ -27,6 +27,7 @@ import guideme.style.TextAlignment;
 import guideme.style.TextStyle;
 import guideme.ui.GuideUiHost;
 import guideme.ui.UiPoint;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -38,8 +39,6 @@ import net.neoforged.neoforgespi.language.IModInfo;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class GuideScreen extends DocumentScreen implements GuideUiHost {
     private static final Logger LOG = LoggerFactory.getLogger(GuideScreen.class);
@@ -73,6 +72,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
         toolbar = new NavigationToolbar(guide);
         toolbar.setCloseCallback(this::onClose);
+        toolbar.setCanSearch(true);
 
         navbar = new GuideNavBar(this);
 
@@ -143,8 +143,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
                 left,
                 screenRect.y() + marginTop,
                 screenRect.right() - left - getMarginRight(),
-                screenRect.height() - getMarginBottom() - marginTop
-        ));
+                screenRect.height() - getMarginBottom() - marginTop));
 
         updateDocumentLayout();
     }
@@ -200,7 +199,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
     @Override
     public void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
-                             float partialTick) {
+            float partialTick) {
         renderBlurredBackground(partialTick);
 
         context.fillIcon(screenRect, GuiAssets.GUIDE_BACKGROUND, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
