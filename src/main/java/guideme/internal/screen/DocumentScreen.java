@@ -37,12 +37,20 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     private static final DashPattern DEBUG_CONTENT_OUTLINE = new DashPattern(0.5f, 2, 1, 0x7FFFFFFF, 500);
     private static final ColorValue DEBUG_HOVER_OUTLINE_COLOR = new ConstantColor(0x7FFFFF00);
 
+    // 20 virtual px margin around the document
+    private static final int FULL_SCREEN_MARGIN = 20;
+
     @Nullable
     private InteractiveElement mouseCaptureTarget;
 
     private LytDocument lastDocument;
+    private boolean documentLayoutInvalid = true;
 
     private final GuideScrollbar scrollbar;
+
+    protected LytRect screenRect = LytRect.empty();
+
+    private LytRect documentRect = LytRect.empty();
 
     public DocumentScreen(Component title) {
         super(title);
@@ -53,9 +61,21 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     protected void init() {
         super.init();
 
-        // Add and re-position scrollbar
+        if (GuideMEClient.instance().isFullWidthLayout() || width < getMaxWidth()) {
+            screenRect = new LytRect(0, 0, width, height);
+        } else {
+            var maxWidth = getMaxWidth();
+            var screenWidth = Math.min(maxWidth, width);
+            var left = (width - screenWidth) / 2;
+            screenRect = new LytRect(left, 0, screenWidth, height);
+        }
+
         addRenderableWidget(scrollbar);
         updateDocumentLayout();
+    }
+
+    protected int getMaxWidth() {
+        return 420 + 150;
     }
 
     @Override
@@ -89,7 +109,12 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         return (float) (effectiveScale / currentScale);
     }
 
-    protected void updateDocumentLayout() {
+    protected final void ensureDocumentLayout() {
+        if (!documentLayoutInvalid) {
+            return;
+        }
+
+        documentLayoutInvalid = false;
 
         var docViewport = getDocumentViewport();
         var context = new LayoutContext(new MinecraftFontMetrics());
@@ -100,16 +125,24 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
             document.updateLayout(context, docViewport.width());
             scrollbar.setContentHeight(document.getContentHeight());
         }
+    }
 
-        var docRect = getDocumentRect();
-        scrollbar.move(docRect.right(), docRect.y(), docRect.height());
+    protected final void updateDocumentLayout() {
+        documentLayoutInvalid = true;
     }
 
     @Nullable
     protected abstract LytDocument getDocument();
 
     @Override
-    public abstract LytRect getDocumentRect();
+    public LytRect getDocumentRect() {
+        return documentRect;
+    }
+
+    public void setDocumentRect(LytRect documentRect) {
+        this.documentRect = documentRect.withWidth(documentRect.width() - scrollbar.getWidth());
+        scrollbar.move(this.documentRect.right(), this.documentRect.y(), this.documentRect.height());
+    }
 
     @Override
     public final LytRect getDocumentViewport() {
@@ -122,11 +155,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         super.tick();
 
         // Tick all controls on the page
-        var document = getDocument();
-        if (lastDocument != document) {
-            releaseMouseCapture();
-            lastDocument = document;
-        }
+        var document = getDocumentWithLayout();
         if (document != null) {
             tickNode(document);
         }
@@ -149,7 +178,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         // Set scissor rectangle to rect that we show the document in
         var documentRect = getDocumentRect();
 
-        var document = getDocument();
+        var document = getDocumentWithLayout();
         if (document == null) {
             return;
         }
@@ -313,7 +342,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     }
 
     private <T> Optional<T> dispatchInteraction(int x, int y, Function<InteractiveElement, Optional<T>> invoker) {
-        var document = getDocument();
+        var document = getDocumentWithLayout();
         if (document != null) {
             var underCursor = document.pick(x, y);
             if (underCursor != null) {
@@ -322,6 +351,19 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         }
 
         return Optional.empty();
+    }
+
+    private LytDocument getDocumentWithLayout() {
+        var document = getDocument();
+        if (lastDocument != document) {
+            releaseMouseCapture();
+            updateDocumentLayout();
+            lastDocument = document;
+        }
+        if (document != null) {
+            ensureDocumentLayout();
+        }
+        return document;
     }
 
     private static <T> Optional<T> dispatchInteraction(LytDocument.HitTestResult receiver,
@@ -353,7 +395,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     public void afterMouseMove() {
         super.afterMouseMove();
 
-        var document = getDocument();
+        var document = getDocumentWithLayout();
         if (document != null) {
             var mouseHandler = minecraft.mouseHandler;
             // We use screen here so it accounts for our gui-scale independent scaling screen.
@@ -421,7 +463,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     }
 
     protected final void renderDocumentTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        var document = getDocument();
+        var document = getDocumentWithLayout();
         // Render tooltip
         if (document != null && document.getHoveredElement() != null) {
             renderTooltip(guiGraphics, mouseX, mouseY);
@@ -433,7 +475,11 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         if (docPos == null) {
             return;
         }
-        var hoveredElement = getDocument().getHoveredElement();
+        var document = getDocumentWithLayout();
+        if (document == null) {
+            return;
+        }
+        var hoveredElement = document.getHoveredElement();
         if (hoveredElement != null) {
             dispatchInteraction(
                     hoveredElement,
@@ -549,5 +595,13 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     public void onClose() {
         super.onClose();
         releaseMouseCapture();
+    }
+
+    protected int getMarginBottom() {
+        return hasFooter() ? FULL_SCREEN_MARGIN : 0;
+    }
+
+    protected boolean hasFooter() {
+        return false;
     }
 }

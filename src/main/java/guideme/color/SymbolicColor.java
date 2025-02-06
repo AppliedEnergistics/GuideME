@@ -28,7 +28,10 @@ public enum SymbolicColor implements ColorValue {
 
     IN_WORLD_BLOCK_HIGHLIGHT(Colors.argb(0xcc, 0x99, 0x99, 0x99), Colors.argb(0xcc, 0x99, 0x99, 0x99)),
 
-    SCENE_BACKGROUND(Colors.argb(20, 0, 0, 0), Colors.argb(20, 0, 0, 0));
+    SCENE_BACKGROUND(Colors.argb(20, 0, 0, 0), Colors.argb(20, 0, 0, 0)),
+
+    GUIDE_SCREEN_BACKGROUND(Colors.argb(229, 63, 63, 63), Colors.argb(229, 63, 63, 63)),
+    ;
 
     final int lightMode;
     final int darkMode;

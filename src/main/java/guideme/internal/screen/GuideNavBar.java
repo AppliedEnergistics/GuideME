@@ -1,6 +1,5 @@
 package guideme.internal.screen;
 
-import guideme.color.ColorValue;
 import guideme.color.SymbolicColor;
 import guideme.document.LytPoint;
 import guideme.document.LytRect;
@@ -29,8 +28,8 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 public class GuideNavBar extends AbstractWidget {
-    private static final int WIDTH_CLOSED = 15;
-    private static final int WIDTH_OPEN = 150;
+    public static final int WIDTH_OPEN = 150;
+    public static final int WIDTH_CLOSED = 15;
     private static final int CHILD_ROW_INDENT = 10;
     private static final int PARENT_ROW_INDENT = 7;
     private static boolean neverInteracted = true;
@@ -51,6 +50,7 @@ public class GuideNavBar extends AbstractWidget {
     private int scrollOffset;
 
     private State state = State.CLOSED;
+    private boolean pinned;
 
     public GuideNavBar(GuideScreen screen) {
         super(0, 0, WIDTH_CLOSED, screen.height, Component.literal("Navigation Tree"));
@@ -117,6 +117,8 @@ public class GuideNavBar extends AbstractWidget {
 
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        updateLayout();
+
         widthTransition.update();
 
         var renderContext = new SimpleRenderContext(graphics);
@@ -155,7 +157,7 @@ public class GuideNavBar extends AbstractWidget {
                 }
             }
             case OPEN -> {
-                if (!containsMouse) {
+                if (!containsMouse && !pinned) {
                     state = State.CLOSING;
                     widthTransition.set(WIDTH_CLOSED);
                 }
@@ -179,6 +181,10 @@ public class GuideNavBar extends AbstractWidget {
             recreateRows();
         }
 
+        if (this.rows.isEmpty()) {
+            return; // do not render the navbar if there are no nodes.
+        }
+
         if (state == State.CLOSED) {
             renderContext.fillGradientHorizontal(getX(), getY(), width, height, SymbolicColor.NAVBAR_BG_TOP,
                     SymbolicColor.NAVBAR_BG_BOTTOM);
@@ -188,13 +194,13 @@ public class GuideNavBar extends AbstractWidget {
             var p3 = new Vec2(width - WIDTH_CLOSED + 4, height / 2f + 5);
 
             renderContext.fillTriangle(p1, p2, p3, SymbolicColor.NAVBAR_EXPAND_ARROW);
-        } else {
+        } else if (!isPinned()) {
             renderContext.fillGradientVertical(getX(), getY(), width, height, SymbolicColor.NAVBAR_BG_TOP,
                     SymbolicColor.NAVBAR_BG_BOTTOM);
         }
 
         if (state != State.CLOSED) {
-            graphics.enableScissor(getX(), getY(), width, height);
+            graphics.enableScissor(getX(), getY(), getX() + width, getY() + height);
 
             var pose = graphics.pose();
             pose.pushPose();
@@ -361,6 +367,19 @@ public class GuideNavBar extends AbstractWidget {
         return null; // Outside the viewport
     }
 
+    public void setPinned(boolean pinned) {
+        this.pinned = pinned;
+        if (pinned) {
+            this.state = State.OPEN;
+            this.setWidth(WIDTH_OPEN);
+            this.widthTransition.set(WIDTH_OPEN);
+        }
+    }
+
+    public boolean isPinned() {
+        return pinned;
+    }
+
     private class Row {
         private final NavigationNode node;
         private final LytParagraph paragraph = new LytParagraph();
@@ -377,7 +396,7 @@ public class GuideNavBar extends AbstractWidget {
 
             span = new LytFlowSpan();
             span.appendText(node.title());
-            span.modifyHoverStyle(style -> style.color((ColorValue) SymbolicColor.LINK));
+            span.modifyHoverStyle(style -> style.color(SymbolicColor.LINK));
             this.paragraph.setPaddingLeft(5);
             this.paragraph.append(span);
         }

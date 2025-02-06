@@ -71,6 +71,10 @@ public interface RenderContext {
         fillIcon(bounds.x(), bounds.y(), bounds.width(), bounds.height(), guiSprite);
     }
 
+    default void fillIcon(LytRect bounds, GuiSprite guiSprite, ColorValue color) {
+        fillIcon(bounds.x(), bounds.y(), bounds.width(), bounds.height(), guiSprite, color);
+    }
+
     default void fillIcon(int x, int y, int width, int height, GuiSprite guiSprite) {
         fillIcon(x, y, width, height, guiSprite, ConstantColor.WHITE);
     }

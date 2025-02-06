@@ -22,7 +22,9 @@ public enum GuidebookText implements LocalizationEnum {
     Smelting("Smelting"),
     Blasting("Blasting"),
     ShapelessCrafting("Crafting (Shapeless)"),
-    Crafting("Crafting");
+    Crafting("Crafting"),
+    FullWidthView("Full Width View"),
+    CloseFullWidthView("Close Full Width View");
 
     private final String englishText;
 

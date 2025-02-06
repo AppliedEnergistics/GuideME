@@ -1,6 +1,5 @@
 package guideme.internal.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import guideme.Guide;
 import guideme.Guides;
 import guideme.PageAnchor;
@@ -22,6 +21,7 @@ import guideme.internal.GuidebookText;
 import guideme.internal.search.GuideSearch;
 import guideme.internal.util.Blitter;
 import guideme.internal.util.NavigationUtil;
+import guideme.render.GuiAssets;
 import guideme.render.RenderContext;
 import guideme.scene.LytItemImage;
 import guideme.style.BorderStyle;
@@ -44,9 +44,7 @@ public class GuideSearchScreen extends DocumentScreen {
      */
     public static final ResourceLocation PAGE_ID = GuideME.makeId("search");
 
-    // 20 virtual px margin around the document
-    public static final int DOCUMENT_RECT_MARGIN = 20;
-    private static final ResourceLocation BACKGROUND_TEXTURE = GuideME.makeId("textures/guide/background.png");
+    private static final int MIN_TITLE_HEIGHT = 16;
 
     private final EditBox searchField;
 
@@ -72,10 +70,10 @@ public class GuideSearchScreen extends DocumentScreen {
 
         searchField = new EditBox(
                 Minecraft.getInstance().font,
-                DOCUMENT_RECT_MARGIN + 16,
+                16,
                 6,
                 0,
-                DOCUMENT_RECT_MARGIN,
+                14,
                 GuidebookText.Search.text());
         searchField.setBordered(false);
         searchField.setHint(
@@ -114,10 +112,30 @@ public class GuideSearchScreen extends DocumentScreen {
 
         addRenderableWidget(searchField);
 
-        toolbar.addToScreen(this::addRenderableWidget, 2, width - DOCUMENT_RECT_MARGIN);
+        toolbar.addToScreen(this::addRenderableWidget);
+        toolbar.update();
 
-        searchField.setWidth(toolbar.getLeft() - DOCUMENT_RECT_MARGIN - 16);
+        searchField.setX(screenRect.x() + 16);
+        searchField.setWidth(screenRect.right() - searchField.getX() - toolbar.getWidth());
         searchField.setCursorPosition(searchField.getCursorPosition());
+
+        if (screenRect.isEmpty()) {
+            return; // On first call there's no point to layout
+        }
+
+        var left = screenRect.x();
+
+        int documentTop = searchField.getY() + searchField.getHeight();
+        var toolbarTop = (documentTop - toolbar.getHeight()) / 2;
+        toolbar.move(screenRect.right() - toolbar.getWidth(), toolbarTop);
+
+        setDocumentRect(new LytRect(
+                left,
+                documentTop,
+                screenRect.right() - left,
+                screenRect.height() - getMarginBottom()));
+
+        updateDocumentLayout();
     }
 
     private void search(String query) {
@@ -194,11 +212,13 @@ public class GuideSearchScreen extends DocumentScreen {
     @Override
     protected void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
-        renderSkyStoneBackground(guiGraphics);
+        renderBlurredBackground(partialTick);
+
+        context.fillIcon(screenRect, GuiAssets.GUIDE_BACKGROUND, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
 
         Blitter.texture(GuideME.makeId("textures/guide/buttons.png"), 64, 64)
                 .src(GuideIconButton.Role.SEARCH.iconSrcX, GuideIconButton.Role.SEARCH.iconSrcY, 16, 16)
-                .dest(DOCUMENT_RECT_MARGIN, 2, 16, 16)
+                .dest(screenRect.x(), 2, 16, 16)
                 .colorArgb(context.resolveColor(SymbolicColor.ICON_BUTTON_NORMAL))
                 .blit(guiGraphics);
 
@@ -233,34 +253,18 @@ public class GuideSearchScreen extends DocumentScreen {
     }
 
     @Override
-    public LytRect getDocumentRect() {
-        return new LytRect(
-                DOCUMENT_RECT_MARGIN,
-                DOCUMENT_RECT_MARGIN,
-                width - 2 * DOCUMENT_RECT_MARGIN,
-                height - 2 * DOCUMENT_RECT_MARGIN);
-    }
-
-    @Override
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         // Stub this out otherwise vanilla renders a background on top of our content
     }
 
     private void renderTitle(LytRect documentRect, RenderContext context) {
-        var buffers = context.beginBatch();
-        context.endBatch(buffers);
-        context.fillRect(
+        var separatorRect = new LytRect(
                 documentRect.x(),
                 documentRect.y() - 1,
                 documentRect.width(),
-                1,
-                SymbolicColor.HEADER1_SEPARATOR);
-    }
-
-    private void renderSkyStoneBackground(GuiGraphics guiGraphics) {
-        RenderSystem.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
-        guiGraphics.blit(BACKGROUND_TEXTURE, 0, 0, 0, 0.0F, 0.0F, this.width, this.height, 32, 32);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                1);
+        separatorRect = separatorRect.withWidth(screenRect.width());
+        context.fillRect(separatorRect, SymbolicColor.HEADER1_SEPARATOR);
     }
 
     private PageAnchor makeSearchAnchor() {

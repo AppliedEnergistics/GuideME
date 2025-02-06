@@ -20,7 +20,7 @@ public class GuideScrollbar extends AbstractWidget {
     private Double thumbHeldAt;
 
     public GuideScrollbar() {
-        super(0, 0, 0, 0, Component.empty());
+        super(0, 0, WIDTH, 0, Component.empty());
     }
 
     @Override
@@ -144,7 +144,6 @@ public class GuideScrollbar extends AbstractWidget {
     public void move(int x, int y, int height) {
         setX(x);
         setY(y);
-        this.width = WIDTH;
         this.height = height;
     }
 

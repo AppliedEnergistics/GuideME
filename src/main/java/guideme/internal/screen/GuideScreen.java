@@ -1,6 +1,5 @@
 package guideme.internal.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import guideme.Guide;
 import guideme.GuidePage;
 import guideme.PageAnchor;
@@ -18,10 +17,10 @@ import guideme.document.block.LytParagraph;
 import guideme.document.flow.LytFlowAnchor;
 import guideme.document.flow.LytFlowContent;
 import guideme.document.flow.LytFlowSpan;
-import guideme.internal.GuideME;
 import guideme.internal.GuidebookText;
 import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
+import guideme.render.GuiAssets;
 import guideme.render.GuidePageTexture;
 import guideme.render.RenderContext;
 import guideme.style.TextAlignment;
@@ -44,11 +43,6 @@ import org.slf4j.LoggerFactory;
 public class GuideScreen extends DocumentScreen implements GuideUiHost {
     private static final Logger LOG = LoggerFactory.getLogger(GuideScreen.class);
 
-    // 20 virtual px margin around the document
-    public static final int DOCUMENT_RECT_MARGIN = 20;
-
-    private static final ResourceLocation BACKGROUND_TEXTURE = GuideME.makeId("textures/guide/background.png");
-
     private final Guide guide;
 
     private GuidePage currentPage;
@@ -67,8 +61,10 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     @Nullable
     private String pendingScrollToAnchor;
 
+    private final GuideNavBar navbar;
+
     private GuideScreen(Guide guide, PageAnchor anchor) {
-        super(Component.literal("AE2 Guidebook"));
+        super(Component.literal("GuideME Guidebook"));
         this.guide = guide;
 
         this.pageTitle = new LytParagraph();
@@ -76,6 +72,9 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
         toolbar = new NavigationToolbar(guide);
         toolbar.setCloseCallback(this::onClose);
+        toolbar.setCanSearch(true);
+
+        navbar = new GuideNavBar(this);
 
         loadPageAndScrollTo(anchor);
     }
@@ -100,10 +99,52 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     protected void init() {
         super.init();
 
-        GuideNavBar navbar = new GuideNavBar(this);
         addRenderableWidget(navbar);
+        toolbar.addToScreen(this::addRenderableWidget);
 
-        toolbar.addToScreen(this::addRenderableWidget, 2, width - DOCUMENT_RECT_MARGIN);
+        updateScreenLayout();
+    }
+
+    private void updateScreenLayout() {
+        if (screenRect.isEmpty()) {
+            return; // On first call there's no point to layout
+        }
+
+        // If there is enough space, always expand the navbar
+        navbar.setPinned(hasSpaceForSidebar());
+        navbar.setX(screenRect.x());
+
+        var left = screenRect.x();
+        if (!navbar.isPinned() && left < GuideNavBar.WIDTH_CLOSED) {
+            left = GuideNavBar.WIDTH_CLOSED;
+        }
+
+        var availableWidth = screenRect.right() - left - toolbar.getWidth() - 5;
+        updateTitleLayout(left, availableWidth);
+
+        var marginTop = pageTitle.getBounds().bottom() + 4;
+
+        var toolbarTop = (marginTop - toolbar.getHeight()) / 2;
+        toolbar.move(screenRect.right() - toolbar.getWidth(), toolbarTop);
+
+        if (navbar.isPinned()) {
+            left = screenRect.x() + navbar.getWidth();
+        }
+
+        setDocumentRect(new LytRect(
+                left,
+                screenRect.y() + marginTop,
+                screenRect.right() - left,
+                screenRect.height() - getMarginBottom() - marginTop));
+
+        if (navbar.isPinned()) {
+            // Move the navbar to below the title
+            navbar.setY(getDocumentRect().y());
+            navbar.setHeight(getDocumentRect().height());
+        } else {
+            navbar.setY(screenRect.y());
+            navbar.setHeight(screenRect.height());
+        }
 
         updateDocumentLayout();
     }
@@ -160,10 +201,12 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     @Override
     public void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
-        renderSkyStoneBackground(guiGraphics);
+        renderBlurredBackground(partialTick);
+
+        context.fillIcon(screenRect, GuiAssets.GUIDE_BACKGROUND, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
 
         var documentRect = getDocumentRect();
-        context.fillRect(documentRect, new ConstantColor(0x80333333));
+        context.fillRect(documentRect, new ConstantColor(0x40333333));
 
         renderDocument(context);
 
@@ -173,7 +216,9 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
         renderTitle(documentRect, context);
 
-        renderExternalPageSource(documentRect, context);
+        if (hasFooter()) {
+            renderFooter(documentRect, context);
+        }
 
         super.scaledRender(guiGraphics, context, mouseX, mouseY, partialTick);
 
@@ -182,7 +227,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         renderDocumentTooltip(guiGraphics, mouseX, mouseY, partialTick);
     }
 
-    private void renderExternalPageSource(LytRect documentRect, RenderContext context) {
+    private void renderFooter(LytRect documentRect, RenderContext context) {
         // Render the source of the content
         var externalSource = getExternalSourceName();
         if (externalSource != null) {
@@ -200,6 +245,11 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
             paragraph.renderBatch(context, buffers);
             context.endBatch(buffers);
         }
+    }
+
+    @Override
+    protected boolean hasFooter() {
+        return getExternalSourceName() != null;
     }
 
     /**
@@ -246,18 +296,13 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         var buffers = context.beginBatch();
         pageTitle.renderBatch(context, buffers);
         context.endBatch(buffers);
-        context.fillRect(
-                documentRect.x(),
+        var separatorRect = new LytRect(
+                screenRect.x(),
                 documentRect.y() - 1,
-                documentRect.width(),
-                1,
-                SymbolicColor.HEADER1_SEPARATOR);
-    }
-
-    private void renderSkyStoneBackground(GuiGraphics guiGraphics) {
-        RenderSystem.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
-        guiGraphics.blit(BACKGROUND_TEXTURE, 0, 0, 0, 0.0F, 0.0F, this.width, this.height, 32, 32);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                screenRect.width(),
+                1);
+        separatorRect = separatorRect.withWidth(screenRect.width());
+        context.fillRect(separatorRect, SymbolicColor.HEADER1_SEPARATOR);
     }
 
     @Override
@@ -301,6 +346,8 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         for (var flowContent : extractPageTitle(currentPage)) {
             pageTitle.append(flowContent);
         }
+
+        updateScreenLayout();
     }
 
     private Iterable<LytFlowContent> extractPageTitle(GuidePage page) {
@@ -346,53 +393,23 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     }
 
     @Override
-    public LytRect getDocumentRect() {
-        var margin = DOCUMENT_RECT_MARGIN;
-
-        // The page title may need more space than the default margin provides
-        var marginTop = Math.max(
-                margin,
-                5 + pageTitle.getBounds().height());
-
-        return new LytRect(
-                margin,
-                marginTop,
-                width - 2 * margin,
-                height - margin - marginTop);
-    }
-
-    @Override
-    protected void updateDocumentLayout() {
-        super.updateDocumentLayout();
-
-        // Update layout of page title, since it's used for the document rectangle
-        updateTitleLayout();
-    }
-
-    @Override
     protected LytDocument getDocument() {
         return currentPage.document();
     }
 
-    private void updateTitleLayout() {
+    private void updateTitleLayout(int left, int availableWidth) {
         var context = new LayoutContext(new MinecraftFontMetrics());
         // Compute the fake layout to find out how high it would be
         // Account for the navigation buttons on the right
-        var availableWidth = toolbar.getLeft() - DOCUMENT_RECT_MARGIN - 5;
-
         if (availableWidth < 0) {
             availableWidth = 0;
         }
 
+        var minTitleHeight = 20;
         pageTitle.layout(context, 0, 0, availableWidth);
-        var height = pageTitle.getBounds().height();
+        var titleY = Math.max(4, minTitleHeight - pageTitle.getBounds().height()) / 2;
 
-        // Now compute the real layout
-        var documentRect = getDocumentRect();
-
-        int titleY = (documentRect.y() - height) / 2;
-
-        pageTitle.layout(context, documentRect.x() + 5, titleY, availableWidth);
+        pageTitle.layout(context, left + 5, titleY, availableWidth);
     }
 
     public void scrollToAnchor(@Nullable String anchor) {
@@ -419,5 +436,15 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
             return;
         }
         super.onClose();
+    }
+
+    @Override
+    public LytRect getDocumentRect() {
+        var documentRect = super.getDocumentRect();
+        return documentRect;
+    }
+
+    private boolean hasSpaceForSidebar() {
+        return width >= super.getMaxWidth();
     }
 }
