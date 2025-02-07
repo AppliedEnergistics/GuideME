@@ -5,6 +5,7 @@
 
 - Change the default layout of guides to be a centered column, and add a toolbar button to toggle between 
   full-width and centered-column layout.
+  <p><video controls><source src={require('./center-column-layout.mp4').default}/></video></p>
 - Fix navigating between guide pages not appending to navigation history
 - Add configuration screen
 - Make scaling of Guide UI independent of UI scale for scales 1 and 3, where the uniform Minecraft font
