@@ -1,7 +1,7 @@
 package guideme.internal.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -11,7 +11,6 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import org.joml.Vector3f;
 
 public class GuideScrollbar extends AbstractWidget {
     private static final int WIDTH = 8;
@@ -47,24 +46,19 @@ public class GuideScrollbar extends AbstractWidget {
         int right = left + 8;
         int top = getY() + getThumbTop();
         int bottom = top + thumbHeight;
-
-        var pose = guiGraphics.pose().last().pose();
-        var min = new Vector3f();
-        pose.transformPosition(left, top, 0, min);
-        var max = new Vector3f();
-        pose.transformPosition(right, bottom, 0, max);
-
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        var builder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        builder.addVertex(min.x, max.y, 0.0f).setColor(128, 128, 128, 255);
-        builder.addVertex(max.x, max.y, 0.0f).setColor(128, 128, 128, 255);
-        builder.addVertex(max.x, min.y, 0.0f).setColor(128, 128, 128, 255);
-        builder.addVertex(min.x, min.y, 0.0f).setColor(128, 128, 128, 255);
-        builder.addVertex(min.x, max.y - 1, 0.0f).setColor(192, 192, 192, 255);
-        builder.addVertex(max.x - 1, max.y - 1, 0.0f).setColor(192, 192, 192, 255);
-        builder.addVertex(max.x - 1, min.y, 0.0f).setColor(192, 192, 192, 255);
-        builder.addVertex(min.x, min.y, 0.0f).setColor(192, 192, 192, 255);
-        BufferUploader.drawWithShader(builder.buildOrThrow());
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder bufferBuilder = tesselator.getBuilder();
+        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        bufferBuilder.vertex(left, bottom, 0.0).color(128, 128, 128, 255).endVertex();
+        bufferBuilder.vertex(right, bottom, 0.0).color(128, 128, 128, 255).endVertex();
+        bufferBuilder.vertex(right, top, 0.0).color(128, 128, 128, 255).endVertex();
+        bufferBuilder.vertex(left, top, 0.0).color(128, 128, 128, 255).endVertex();
+        bufferBuilder.vertex(left, bottom - 1, 0.0).color(192, 192, 192, 255).endVertex();
+        bufferBuilder.vertex(right - 1, bottom - 1, 0.0).color(192, 192, 192, 255).endVertex();
+        bufferBuilder.vertex(right - 1, top, 0.0).color(192, 192, 192, 255).endVertex();
+        bufferBuilder.vertex(left, top, 0.0).color(192, 192, 192, 255).endVertex();
+        tesselator.end();
     }
 
     /**
@@ -132,9 +126,9 @@ public class GuideScrollbar extends AbstractWidget {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         if (this.visible) {
-            this.setScrollAmount((int) (this.scrollAmount - deltaY * 10));
+            this.setScrollAmount((int) (this.scrollAmount - delta * 10));
             return true;
         } else {
             return false;

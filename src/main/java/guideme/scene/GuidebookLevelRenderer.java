@@ -23,8 +23,8 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.FluidState;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.client.model.data.ModelData;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -84,9 +84,9 @@ public class GuidebookLevelRenderer {
         RenderSystem.setShaderFogShape(FogShape.SPHERE);
 
         var modelViewStack = RenderSystem.getModelViewStack();
-        modelViewStack.pushMatrix();
-        modelViewStack.identity();
-        modelViewStack.mul(viewMatrix);
+        modelViewStack.pushPose();
+        modelViewStack.setIdentity();
+        modelViewStack.mulPoseMatrix(viewMatrix);
         RenderSystem.applyModelViewMatrix();
         RenderSystem.backupProjectionMatrix();
         RenderSystem.setProjectionMatrix(projectionMatrix, VertexSorting.ORTHOGRAPHIC_Z);
@@ -103,7 +103,7 @@ public class GuidebookLevelRenderer {
 
         InWorldAnnotationRenderer.render(buffers, annotations, lightDarkMode);
 
-        modelViewStack.popMatrix();
+        modelViewStack.popPose();
         RenderSystem.applyModelViewMatrix();
         RenderSystem.restoreProjectionMatrix();
 

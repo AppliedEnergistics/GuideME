@@ -1,6 +1,6 @@
 package guideme.scene.export;
 
-import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import java.nio.ByteBuffer;
@@ -12,7 +12,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 import org.joml.Vector4i;
 
@@ -21,9 +20,9 @@ import org.joml.Vector4i;
  *
  * @param indexBuffer Can be null if sequential indices are to be used.
  */
-record Mesh(MeshData.DrawState drawState,
+record Mesh(BufferBuilder.DrawState drawState,
         ByteBuffer vertexBuffer,
-        @Nullable ByteBuffer indexBuffer,
+        ByteBuffer indexBuffer,
         RenderType renderType) {
 
     /**
@@ -52,12 +51,12 @@ record Mesh(MeshData.DrawState drawState,
         var offset = 0;
         VertexFormatElement uvElement = null;
         for (var element : renderType.format().getElements()) {
-            if (element.usage() == VertexFormatElement.Usage.UV && element.index() == 0
-                    && element.count() == 2) {
+            if (element.getUsage() == VertexFormatElement.Usage.UV && element.getIndex() == 0
+                    && element.getCount() == 2) {
                 uvElement = element;
                 break;
             }
-            offset += element.byteSize();
+            offset += element.getByteSize();
         }
 
         if (uvElement == null) {
@@ -66,7 +65,7 @@ record Mesh(MeshData.DrawState drawState,
 
         var uvSupplier = getUvSupplier(offset, uvElement);
         // TODO: Should cache this...
-        var spriteFinder = new SpriteFinder(textureAtlas.getTextures(), textureAtlas);
+        var spriteFinder = new SpriteFinder(textureAtlas.texturesByName, textureAtlas);
 
         return streamQuadMidpoints(uvSupplier)
                 .map(uvPos -> spriteFinder.find(uvPos.x, uvPos.y))
@@ -78,7 +77,7 @@ record Mesh(MeshData.DrawState drawState,
     }
 
     private Stream<Vector4i> streamIndices() {
-        if (indexBuffer == null) {
+        if (drawState.sequentialIndex()) {
             var quadCount = drawState.vertexCount() / 4;
             return IntStream.range(0, quadCount)
                     .mapToObj(quadIdx -> new Vector4i(quadIdx * 4, quadIdx * 4 + 1, quadIdx * 4 + 2, quadIdx * 4 + 3));
@@ -123,8 +122,8 @@ record Mesh(MeshData.DrawState drawState,
         var stride = drawState.format().getVertexSize();
         var dataStart = index * stride + offset;
         return new Vector2f(
-                readFloat(uvElement.type(), dataStart),
-                readFloat(uvElement.type(), dataStart + uvElement.type().size()));
+                readFloat(uvElement.getType(), dataStart),
+                readFloat(uvElement.getType(), dataStart + uvElement.getType().getSize()));
     }
 
     private float readFloat(VertexFormatElement.Type type, int offset) {

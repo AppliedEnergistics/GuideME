@@ -62,7 +62,7 @@ public class GuideNavBar extends AbstractWidget {
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY, int button) {
+    public void onClick(double mouseX, double mouseY) {
         if (state != State.OPENING && state != State.OPEN) {
             return;
         }
@@ -96,12 +96,12 @@ public class GuideNavBar extends AbstractWidget {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         if (state != State.OPENING && state != State.OPEN) {
             return false;
         }
 
-        setScrollOffset((int) Math.round(scrollOffset - deltaY * 20));
+        setScrollOffset((int) Math.round(scrollOffset - delta * 20));
         return true;
     }
 
@@ -109,7 +109,7 @@ public class GuideNavBar extends AbstractWidget {
         var maxScrollOffset = 0;
         var visibleRows = rows.stream().filter(Row::isVisible).toList();
         if (!visibleRows.isEmpty()) {
-            var contentHeight = visibleRows.getLast().bottom - visibleRows.getFirst().top;
+            var contentHeight = visibleRows.get(visibleRows.size() - 1).bottom - visibleRows.get(0).top;
             maxScrollOffset = Math.max(0, contentHeight - height);
         }
         scrollOffset = Mth.clamp(offset, 0, maxScrollOffset);

@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -154,7 +154,7 @@ public final class MutableGuide implements Guide {
         }
 
         // Transform id such that the path is prefixed with "ae2assets", the source folder for the guidebook assets
-        id = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), folder + "/" + id.getPath());
+        id = new ResourceLocation(id.getNamespace(), folder + "/" + id.getPath());
 
         var resource = Minecraft.getInstance().getResourceManager().getResource(id).orElse(null);
         if (resource == null) {
@@ -219,7 +219,10 @@ public final class MutableGuide implements Guide {
 
         watcher = new GuideSourceWatcher(developmentSourceNamespace, developmentSourceFolder);
 
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre evt) -> {
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent evt) -> {
+            if (evt.phase != TickEvent.Phase.START) {
+                return;
+            }
             var changes = watcher.takeChanges();
             if (!changes.isEmpty()) {
                 applyChanges(changes);

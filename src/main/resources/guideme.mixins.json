@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8.3",
+  "package": "guideme.mixins",
+  "refmap": "guideme.mixins.refmap.json",
+  "compatibilityLevel": "JAVA_11",
+  "mixins": [],
+  "client": [
+    "AtlasMixin"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

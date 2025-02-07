@@ -14,17 +14,19 @@ import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
-import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
+import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
+import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import org.jetbrains.annotations.Nullable;
 
 public class GuideItemDispatchUnbakedModel implements IUnbakedGeometry<GuideItemDispatchUnbakedModel> {
+
     @Override
     public BakedModel bake(IGeometryBakingContext geometryBakingContext,
             ModelBaker modelBaker,
             Function<Material, TextureAtlasSprite> sprites,
             ModelState modelState,
-            ItemOverrides itemOverrides) {
+            ItemOverrides itemOverrides,
+            ResourceLocation modelLocation) {
         var baseModel = modelBaker.bake(GuideItem.BASE_MODEL_ID, modelState, sprites);
 
         class Loader extends CacheLoader<ResourceLocation, BakedModel> {
@@ -32,7 +34,7 @@ public class GuideItemDispatchUnbakedModel implements IUnbakedGeometry<GuideItem
             public BakedModel load(ResourceLocation modelId) {
                 var model = modelBaker.getModel(modelId);
                 model.resolveParents(modelBaker::getModel);
-                return model.bake(modelBaker, sprites, modelState);
+                return model.bake(modelBaker, sprites, modelState, modelLocation);
             }
         }
 

@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.Util;
-import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Timer;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,11 +26,9 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.profiling.InactiveProfiler;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.TickRateManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -48,7 +46,6 @@ import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.level.entity.TransientEntitySectionManager;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
@@ -74,9 +71,8 @@ public class GuidebookLevel extends Level {
     private final LongSet litSections = new LongOpenHashSet();
     private final DataLayer defaultDataLayer;
 
-    private final TickRateManager tickRateManager = new TickRateManager();
     private final ClientLevel.ClientLevelData clientLevelData;
-    private final DeltaTracker.Timer tracker = new DeltaTracker.Timer(20.0F, 0L, def -> def);
+    private final Timer tracker = new Timer(20.0F, 0L);
     private float partialTick;
 
     public GuidebookLevel() {
@@ -89,7 +85,7 @@ public class GuidebookLevel extends Level {
 
     private GuidebookLevel(ClientLevel.ClientLevelData levelData, RegistryAccess registryAccess) {
         super(
-                levelData,
+                createLevelData(),
                 LEVEL_ID,
                 registryAccess,
                 registryAccess.registryOrThrow(Registries.DIMENSION_TYPE)
@@ -186,12 +182,12 @@ public class GuidebookLevel extends Level {
     }
 
     public void onRenderFrame() {
-        var ticksElapsed = tracker.advanceTime(Util.getMillis(), true);
+        var ticksElapsed = tracker.advanceTime(Util.getMillis());
         if (ticksElapsed > 0) {
             clientLevelData.setGameTime(clientLevelData.getGameTime() + ticksElapsed);
         }
 
-        partialTick = tracker.getGameTimeDeltaPartialTick(false);
+        partialTick = tracker.partialTick;
     }
 
     public boolean hasFilledBlocks() {
@@ -230,11 +226,6 @@ public class GuidebookLevel extends Level {
     }
 
     @Override
-    public TickRateManager tickRateManager() {
-        return tickRateManager;
-    }
-
-    @Override
     public void sendBlockUpdated(BlockPos pos, BlockState oldState, BlockState newState, int flags) {
     }
 
@@ -255,17 +246,17 @@ public class GuidebookLevel extends Level {
 
     @Nullable
     @Override
-    public MapItemSavedData getMapData(MapId mapId) {
+    public MapItemSavedData getMapData(String mapName) {
         return null;
     }
 
     @Override
-    public void setMapData(MapId mapId, MapItemSavedData data) {
+    public void setMapData(String mapId, MapItemSavedData data) {
     }
 
     @Override
-    public MapId getFreeMapId() {
-        return new MapId(1);
+    public int getFreeMapId() {
+        return 0;
     }
 
     @Override
@@ -302,7 +293,7 @@ public class GuidebookLevel extends Level {
     }
 
     @Override
-    public void gameEvent(Holder<GameEvent> gameEvent, Vec3 vec3, GameEvent.Context context) {
+    public void gameEvent(GameEvent gameEvent, Vec3 vec3, GameEvent.Context context) {
     }
 
     @Override
@@ -332,31 +323,6 @@ public class GuidebookLevel extends Level {
     @Override
     public RegistryAccess registryAccess() {
         return registryAccess;
-    }
-
-    @Override
-    public PotionBrewing potionBrewing() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setDayTimeFraction(float v) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public float getDayTimeFraction() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public float getDayTimePerTick() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setDayTimePerTick(float v) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

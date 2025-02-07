@@ -5,8 +5,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 
 /**
  * Configuration settings for the automatically generated guide item.
@@ -18,9 +18,9 @@ public record GuideItemSettings(Optional<Component> displayName,
 
     public static Codec<GuideItemSettings> CODEC = RecordCodecBuilder.create(
             builder -> builder.group(
-                    ComponentSerialization.CODEC.optionalFieldOf("display_name")
+                    ExtraCodecs.COMPONENT.optionalFieldOf("display_name")
                             .forGetter(GuideItemSettings::displayName),
-                    ComponentSerialization.CODEC.listOf().optionalFieldOf("tooltip_lines", List.of())
+                    ExtraCodecs.COMPONENT.listOf().optionalFieldOf("tooltip_lines", List.of())
                             .forGetter(GuideItemSettings::tooltipLines),
                     ResourceLocation.CODEC.optionalFieldOf("model").forGetter(GuideItemSettings::itemModel))
                     .apply(builder, GuideItemSettings::new));

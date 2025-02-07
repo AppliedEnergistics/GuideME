@@ -4,11 +4,8 @@ package guideme.internal.util;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.level.material.Fluid;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 public class Platform {
 
@@ -30,11 +27,6 @@ public class Platform {
         }
 
         return fallbackClientRecipeManager;
-    }
-
-    public static Component getFluidDisplayName(Fluid fluid) {
-        var fluidStack = new FluidStack(fluid, 1);
-        return fluidStack.getHoverName();
     }
 
     /**

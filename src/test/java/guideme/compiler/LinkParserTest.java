@@ -44,10 +44,10 @@ class LinkParserTest {
     @BeforeEach
     void setUp() {
         var pageCollection = mock(PageCollection.class, withSettings().strictness(Strictness.LENIENT));
-        when(pageCollection.pageExists(ResourceLocation.parse("ns:other/page.md"))).thenReturn(true);
-        when(pageCollection.pageExists(ResourceLocation.parse("ns2:abc/def.md"))).thenReturn(true);
+        when(pageCollection.pageExists(new ResourceLocation("ns:other/page.md"))).thenReturn(true);
+        when(pageCollection.pageExists(new ResourceLocation("ns2:abc/def.md"))).thenReturn(true);
         compiler = new PageCompiler(pageCollection, ExtensionCollection.empty(), "pack",
-                ResourceLocation.parse("ns:subfolder/page.md"), "");
+                new ResourceLocation("ns:subfolder/page.md"), "");
     }
 
     @Test
@@ -55,7 +55,7 @@ class LinkParserTest {
         LinkParser.parseLink(compiler, "../other/page.md", visitor);
         assertThat(external).containsExactly();
         assertThat(errors).containsExactly();
-        assertThat(anchors).containsExactly(PageAnchor.page(ResourceLocation.parse("ns:other/page.md")));
+        assertThat(anchors).containsExactly(PageAnchor.page(new ResourceLocation("ns:other/page.md")));
     }
 
     @Test
@@ -63,7 +63,7 @@ class LinkParserTest {
         LinkParser.parseLink(compiler, "../other/page.md#fragment", visitor);
         assertThat(external).containsExactly();
         assertThat(errors).containsExactly();
-        assertThat(anchors).containsExactly(new PageAnchor(ResourceLocation.parse("ns:other/page.md"), "fragment"));
+        assertThat(anchors).containsExactly(new PageAnchor(new ResourceLocation("ns:other/page.md"), "fragment"));
     }
 
     @Test
@@ -71,7 +71,7 @@ class LinkParserTest {
         LinkParser.parseLink(compiler, "/other/page.md", visitor);
         assertThat(external).containsExactly();
         assertThat(errors).containsExactly();
-        assertThat(anchors).containsExactly(PageAnchor.page(ResourceLocation.parse("ns:other/page.md")));
+        assertThat(anchors).containsExactly(PageAnchor.page(new ResourceLocation("ns:other/page.md")));
     }
 
     @Test
@@ -79,7 +79,7 @@ class LinkParserTest {
         LinkParser.parseLink(compiler, "/other/page.md#fragment", visitor);
         assertThat(external).containsExactly();
         assertThat(errors).containsExactly();
-        assertThat(anchors).containsExactly(new PageAnchor(ResourceLocation.parse("ns:other/page.md"), "fragment"));
+        assertThat(anchors).containsExactly(new PageAnchor(new ResourceLocation("ns:other/page.md"), "fragment"));
     }
 
     @Test
@@ -87,7 +87,7 @@ class LinkParserTest {
         LinkParser.parseLink(compiler, "ns2:abc/def.md", visitor);
         assertThat(external).containsExactly();
         assertThat(errors).containsExactly();
-        assertThat(anchors).containsExactly(PageAnchor.page(ResourceLocation.parse("ns2:abc/def.md")));
+        assertThat(anchors).containsExactly(PageAnchor.page(new ResourceLocation("ns2:abc/def.md")));
     }
 
     @Test
@@ -95,6 +95,6 @@ class LinkParserTest {
         LinkParser.parseLink(compiler, "ns2:abc/def.md#fragment", visitor);
         assertThat(external).containsExactly();
         assertThat(errors).containsExactly();
-        assertThat(anchors).containsExactly(new PageAnchor(ResourceLocation.parse("ns2:abc/def.md"), "fragment"));
+        assertThat(anchors).containsExactly(new PageAnchor(new ResourceLocation("ns2:abc/def.md"), "fragment"));
     }
 }

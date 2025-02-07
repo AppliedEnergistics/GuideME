@@ -33,9 +33,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModList;
-import net.neoforged.neoforgespi.language.IModInfo;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.forgespi.language.IModInfo;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,8 +201,6 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     @Override
     public void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
-        renderBlurredBackground(partialTick);
-
         context.fillIcon(screenRect, GuiAssets.GUIDE_BACKGROUND, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
 
         var documentRect = getDocumentRect();
@@ -288,7 +286,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     }
 
     @Override
-    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void renderBackground(GuiGraphics guiGraphics) {
         // Stub this out otherwise vanilla renders a background on top of our content
     }
 

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -17,7 +18,6 @@ import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL12;
@@ -145,7 +145,7 @@ public class OffScreenRenderer implements AutoCloseable {
         RenderSystem.setProjectionMatrix(matrix4f, VertexSorting.ORTHOGRAPHIC_Z);
 
         var poseStack = RenderSystem.getModelViewStack();
-        poseStack.identity();
+        poseStack.setIdentity();
         poseStack.translate(0.0f, 0.0f, -11000.0f);
         RenderSystem.applyModelViewMatrix();
         Lighting.setupFor3DItems();
@@ -164,46 +164,46 @@ public class OffScreenRenderer implements AutoCloseable {
                 VertexSorting.ORTHOGRAPHIC_Z);
 
         var poseStack = RenderSystem.getModelViewStack();
-        poseStack.identity();
+        poseStack.setIdentity();
         poseStack.translate(0.0F, 0.0F, -2000.0F);
 
         FogRenderer.setupNoFog();
 
         poseStack.scale(1, -1, -1);
-        poseStack.rotate(new Quaternionf().rotationY(Mth.DEG_TO_RAD * -180));
+        poseStack.mulPose(new Quaternionf().rotationY(Mth.DEG_TO_RAD * -180));
 
         Quaternionf flip = new Quaternionf().rotationZ(Mth.DEG_TO_RAD * 180);
         flip.mul(new Quaternionf().rotationX(Mth.DEG_TO_RAD * angle));
 
-        poseStack.translate(0, (renderHeight / -300f), 0);
+        poseStack.translate(0, (renderHeight / -300d), 0);
         poseStack.scale(renderScale * 0.004f, renderScale * 0.004f, 1f);
 
         Quaternionf rotate = new Quaternionf().rotationY(Mth.DEG_TO_RAD * rotation);
-        poseStack.rotate(flip);
-        poseStack.rotate(rotate);
+        poseStack.mulPose(flip);
+        poseStack.mulPose(rotate);
 
         RenderSystem.applyModelViewMatrix();
-        Lighting.setupLevel();
+        Lighting.setupLevel(poseStack.last().pose());
     }
 
     public void setupPerspectiveRendering(float zoom, float fov, Vector3f eyePos, Vector3f lookAt) {
         float aspectRatio = (float) width / height;
 
-        Matrix4fStack projMat = new Matrix4fStack();
+        PoseStack projMat = new PoseStack();
         if (zoom != 1.0F) {
             projMat.scale(zoom, zoom, 1.0F);
         }
 
-        projMat.mul(new Matrix4f().perspective(fov, aspectRatio, 0.05F, 16));
-        RenderSystem.setProjectionMatrix(projMat, VertexSorting.DISTANCE_TO_ORIGIN);
+        projMat.mulPoseMatrix(new Matrix4f().perspective(fov, aspectRatio, 0.05F, 16));
+        RenderSystem.setProjectionMatrix(projMat.last().pose(), VertexSorting.DISTANCE_TO_ORIGIN);
 
         var poseStack = RenderSystem.getModelViewStack();
-        poseStack.identity();
+        poseStack.setIdentity();
         var vm = createViewMatrix(eyePos, lookAt);
-        poseStack.mul(vm);
+        poseStack.mulPoseMatrix(vm);
 
         RenderSystem.applyModelViewMatrix();
-        Lighting.setupLevel();
+        Lighting.setupLevel(poseStack.last().pose());
     }
 
     /**

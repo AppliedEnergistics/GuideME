@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.fml.ModList;
+import net.minecraftforge.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -250,6 +250,6 @@ class GuideSourceWatcher implements AutoCloseable {
         if (!ResourceLocation.isValidPath(relativePathStr)) {
             return null;
         }
-        return ResourceLocation.fromNamespaceAndPath(namespace, relativePathStr);
+        return new ResourceLocation(namespace, relativePathStr);
     }
 }

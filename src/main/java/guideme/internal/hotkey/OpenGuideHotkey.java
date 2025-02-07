@@ -22,10 +22,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.settings.KeyConflictContext;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.client.settings.KeyConflictContext;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 
 /**
  * Adds a "Hold X to show guide" tooltip
@@ -54,9 +54,13 @@ public final class OpenGuideHotkey {
     }
 
     public static void init() {
-        NeoForge.EVENT_BUS.addListener(
+        MinecraftForge.EVENT_BUS.addListener(
                 (ItemTooltipEvent evt) -> handleTooltip(evt.getItemStack(), evt.getFlags(), evt.getToolTip()));
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post evt) -> newTick = true);
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent evt) -> {
+            if (evt.phase == TickEvent.Phase.END) {
+                newTick = true;
+            }
+        });
     }
 
     private static void handleTooltip(ItemStack itemStack, TooltipFlag tooltipFlag, List<Component> lines) {
@@ -77,8 +81,8 @@ public final class OpenGuideHotkey {
             return;
         }
 
-        var guide = guidebookPages.getFirst().guide();
-        var pageAnchor = guidebookPages.getFirst().page();
+        var guide = guidebookPages.get(0).guide();
+        var pageAnchor = guidebookPages.get(0).page();
 
         // Don't do anything if we're already on the target page
         Minecraft minecraft = Minecraft.getInstance();
@@ -91,9 +95,9 @@ public final class OpenGuideHotkey {
         // Compute the progress value between [0,1]
         float progress = ticksKeyHeld;
         if (holding) {
-            progress += minecraft.getTimer().getRealtimeDeltaTicks();
+            progress += minecraft.getDeltaFrameTime();
         } else {
-            progress -= minecraft.getTimer().getRealtimeDeltaTicks();
+            progress -= minecraft.getDeltaFrameTime();
         }
         progress /= (float) TICKS_TO_OPEN;
         var component = makeProgressBar(Mth.clamp(progress, 0, 1));
@@ -159,7 +163,7 @@ public final class OpenGuideHotkey {
         if (holding) {
             if (ticksKeyHeld < TICKS_TO_OPEN && ++ticksKeyHeld == TICKS_TO_OPEN) {
                 if (!guidebookPages.isEmpty()) {
-                    var foundPage = guidebookPages.getFirst();
+                    var foundPage = guidebookPages.get(0);
                     var guide = foundPage.guide();
 
                     if (Minecraft.getInstance().screen instanceof GuideUiHost uiHost && uiHost.getGuide() == guide) {

@@ -212,8 +212,6 @@ public class GuideSearchScreen extends DocumentScreen {
     @Override
     protected void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
-        renderBlurredBackground(partialTick);
-
         context.fillIcon(screenRect, GuiAssets.GUIDE_BACKGROUND, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
 
         Blitter.texture(GuideME.makeId("textures/guide/buttons.png"), 64, 64)
@@ -253,7 +251,7 @@ public class GuideSearchScreen extends DocumentScreen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void renderBackground(GuiGraphics graphics) {
         // Stub this out otherwise vanilla renders a background on top of our content
     }
 

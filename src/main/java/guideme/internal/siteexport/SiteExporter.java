@@ -49,16 +49,15 @@ import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.fluids.FluidStack;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.ApiStatus;
@@ -85,7 +84,7 @@ public class SiteExporter implements ResourceExporter {
 
     private ParsedGuidePage currentPage;
 
-    private final Set<RecipeHolder<?>> recipes = new HashSet<>();
+    private final Set<Recipe<?>> recipes = new HashSet<>();
 
     private final Set<Item> items = new HashSet<>();
 
@@ -102,7 +101,10 @@ public class SiteExporter implements ResourceExporter {
      */
     public void exportOnNextTickAndExit() {
         var exportDone = new MutableBoolean();
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post evt) -> {
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent evt) -> {
+            if (evt.phase != TickEvent.Phase.END) {
+                return;
+            }
             if (client.getOverlay() instanceof LoadingOverlay) {
                 return; // Do nothing while it's loading
             }
@@ -143,7 +145,7 @@ public class SiteExporter implements ResourceExporter {
     public void referenceItem(ItemStack stack) {
         if (!stack.isEmpty()) {
             items.add(stack.getItem());
-            if (!stack.getComponentsPatch().isEmpty()) {
+            if (stack.hasTag()) {
                 LOG.error("Couldn't handle stack with NBT tag: {}", stack);
             }
         }
@@ -161,12 +163,12 @@ public class SiteExporter implements ResourceExporter {
     }
 
     @Override
-    public void referenceRecipe(RecipeHolder<?> holder) {
+    public void referenceRecipe(Recipe<?> holder) {
         if (!recipes.add(holder)) {
             return; // Already added
         }
 
-        var recipe = holder.value();
+        var recipe = holder;
 
         var registryAccess = Platform.getClientRegistryAccess();
         var resultItem = recipe.getResultItem(registryAccess);
@@ -201,8 +203,8 @@ public class SiteExporter implements ResourceExporter {
 
     private void dumpRecipes(SiteExportWriter writer) {
         for (var holder : recipes) {
-            var id = holder.id();
-            var recipe = holder.value();
+            var id = holder.getId();
+            var recipe = holder;
 
             if (recipe instanceof CraftingRecipe craftingRecipe) {
                 if (craftingRecipe.isSpecial()) {
@@ -222,7 +224,7 @@ public class SiteExporter implements ResourceExporter {
                 if (recipeFields != null) {
                     writer.addRecipe(id, recipe, recipeFields);
                 } else {
-                    LOG.warn("Unable to handle recipe {} of type {}", holder.id(), recipe.getType());
+                    LOG.warn("Unable to handle recipe {} of type {}", holder.getId(), recipe.getType());
                 }
             }
         }
@@ -283,7 +285,7 @@ public class SiteExporter implements ResourceExporter {
         if (idx != -1) {
             path = path.substring(0, idx);
         }
-        return ResourceLocation.fromNamespaceAndPath(currentPage.getId().getNamespace(), path + "_" + suffix);
+        return new ResourceLocation(currentPage.getId().getNamespace(), path + "_" + suffix);
     }
 
     @Override
@@ -528,7 +530,7 @@ public class SiteExporter implements ResourceExporter {
 
         ResourceLocation id = textureId;
         if (!id.getPath().endsWith(".png")) {
-            id = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + ".png");
+            id = new ResourceLocation(id.getNamespace(), id.getPath() + ".png");
         }
 
         var outputPath = getPathForWriting(id);

@@ -4,7 +4,7 @@ import guideme.internal.GuideME;
 import guideme.internal.GuidebookText;
 import java.util.Map;
 import net.minecraft.data.PackOutput;
-import net.neoforged.neoforge.common.data.LanguageProvider;
+import net.minecraftforge.common.data.LanguageProvider;
 
 public final class GuideMELanguageProvider extends LanguageProvider {
     public GuideMELanguageProvider(PackOutput gen) {

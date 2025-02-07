@@ -2,7 +2,7 @@ package guideme.internal.item;
 
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.resources.model.BakedModel;
-import net.neoforged.neoforge.client.model.BakedModelWrapper;
+import net.minecraftforge.client.model.BakedModelWrapper;
 
 public class GuideItemDispatchModel extends BakedModelWrapper<BakedModel> {
     private final ItemOverrides itemOverrides;

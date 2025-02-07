@@ -7,7 +7,6 @@ import guideme.internal.util.Platform;
 import guideme.layout.LayoutContext;
 import guideme.render.GuiAssets;
 import guideme.render.RenderContext;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.block.Blocks;
 
@@ -20,9 +19,9 @@ public class LytSmeltingRecipe extends LytRecipeBox {
 
     private final LytSlot resultSlot;
 
-    public LytSmeltingRecipe(RecipeHolder<SmeltingRecipe> holder) {
+    public LytSmeltingRecipe(SmeltingRecipe holder) {
         super(holder);
-        this.recipe = holder.value();
+        this.recipe = holder;
         setPadding(5);
         paddingTop = 15;
 

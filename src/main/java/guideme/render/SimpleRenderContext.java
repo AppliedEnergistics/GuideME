@@ -1,7 +1,6 @@
 package guideme.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -58,14 +57,16 @@ public final class SimpleRenderContext implements RenderContext {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        var builder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        var tesselator = Tesselator.getInstance();
+        var builder = tesselator.getBuilder();
+        builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         var matrix = poseStack().last().pose();
         final int z = 0;
-        builder.addVertex(matrix, rect.right(), rect.y(), z).setColor(resolveColor(topRight));
-        builder.addVertex(matrix, rect.x(), rect.y(), z).setColor(resolveColor(topLeft));
-        builder.addVertex(matrix, rect.x(), rect.bottom(), z).setColor(resolveColor(bottomLeft));
-        builder.addVertex(matrix, rect.right(), rect.bottom(), z).setColor(resolveColor(bottomRight));
-        BufferUploader.drawWithShader(builder.buildOrThrow());
+        builder.vertex(matrix, rect.right(), rect.y(), z).color(resolveColor(topRight)).endVertex();
+        builder.vertex(matrix, rect.x(), rect.y(), z).color(resolveColor(topLeft)).endVertex();
+        builder.vertex(matrix, rect.x(), rect.bottom(), z).color(resolveColor(bottomLeft)).endVertex();
+        builder.vertex(matrix, rect.right(), rect.bottom(), z).color(resolveColor(bottomRight)).endVertex();
+        tesselator.end();
         RenderSystem.disableBlend();
     }
 
@@ -76,14 +77,16 @@ public final class SimpleRenderContext implements RenderContext {
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.setShaderTexture(0, texture.getId());
-        var builder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        var tesselator = Tesselator.getInstance();
+        var builder = tesselator.getBuilder();
+        builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         var matrix = poseStack().last().pose();
         final int z = 0;
-        builder.addVertex(matrix, rect.right(), rect.y(), z).setUv(u1, v0).setColor(resolveColor(topRight));
-        builder.addVertex(matrix, rect.x(), rect.y(), z).setUv(u0, v0).setColor(resolveColor(topLeft));
-        builder.addVertex(matrix, rect.x(), rect.bottom(), z).setUv(u0, v1).setColor(resolveColor(bottomLeft));
-        builder.addVertex(matrix, rect.right(), rect.bottom(), z).setUv(u1, v1).setColor(resolveColor(bottomRight));
-        BufferUploader.drawWithShader(builder.buildOrThrow());
+        builder.vertex(matrix, rect.right(), rect.y(), z).uv(u1, v0).color(resolveColor(topRight)).endVertex();
+        builder.vertex(matrix, rect.x(), rect.y(), z).uv(u0, v0).color(resolveColor(topLeft)).endVertex();
+        builder.vertex(matrix, rect.x(), rect.bottom(), z).uv(u0, v1).color(resolveColor(bottomLeft)).endVertex();
+        builder.vertex(matrix, rect.right(), rect.bottom(), z).uv(u1, v1).color(resolveColor(bottomRight)).endVertex();
+        tesselator.end();
         RenderSystem.disableBlend();
     }
 
@@ -94,13 +97,15 @@ public final class SimpleRenderContext implements RenderContext {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        var builder = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        var tesselator = Tesselator.getInstance();
+        var builder = tesselator.getBuilder();
+        builder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         var matrix = poseStack().last().pose();
         final int z = 0;
-        builder.addVertex(matrix, p1.x, p1.y, z).setColor(resolvedColor);
-        builder.addVertex(matrix, p2.x, p2.y, z).setColor(resolvedColor);
-        builder.addVertex(matrix, p3.x, p3.y, z).setColor(resolvedColor);
-        BufferUploader.drawWithShader(builder.buildOrThrow());
+        builder.vertex(matrix, p1.x, p1.y, z).color(resolvedColor).endVertex();
+        builder.vertex(matrix, p2.x, p2.y, z).color(resolvedColor).endVertex();
+        builder.vertex(matrix, p3.x, p3.y, z).color(resolvedColor).endVertex();
+        tesselator.end();
         RenderSystem.disableBlend();
     }
 
@@ -131,13 +136,13 @@ public final class SimpleRenderContext implements RenderContext {
         if (viewportStack.size() <= 1) {
             throw new IllegalStateException("There is no active scissor rectangle.");
         }
-        viewportStack.removeLast();
+        viewportStack.remove(viewportStack.size() - 1);
         RenderContext.super.popScissor();
     }
 
     @Override
     public LytRect viewport() {
-        var viewport = viewportStack.getLast();
+        var viewport = viewportStack.get(viewportStack.size() - 1);
         var pose = new Matrix4f(guiGraphics().pose().last().pose());
         pose.invert();
         var vp = viewport.transform(pose);

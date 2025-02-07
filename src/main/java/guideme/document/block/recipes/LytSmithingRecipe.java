@@ -12,7 +12,6 @@ import guideme.siteexport.ExportableResourceProvider;
 import java.util.List;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.item.crafting.SmithingTrimRecipe;
@@ -29,14 +28,14 @@ public class LytSmithingRecipe extends LytRecipeBox implements ExportableResourc
 
     private final LytSlot resultSlot;
 
-    public LytSmithingRecipe(RecipeHolder<SmithingRecipe> holder) {
-        super(holder);
-        this.recipe = holder.value();
+    public LytSmithingRecipe(SmithingRecipe recipe) {
+        super(recipe);
+        this.recipe = recipe;
         setPadding(5);
         paddingTop = 15;
 
-        append(inputGrid = LytSlotGrid.row(getIngredients(recipe), true));
-        append(resultSlot = new LytSlot(recipe.getResultItem(Platform.getClientRegistryAccess())));
+        append(inputGrid = LytSlotGrid.row(getIngredients(this.recipe), true));
+        append(resultSlot = new LytSlot(this.recipe.getResultItem(Platform.getClientRegistryAccess())));
     }
 
     private static List<Ingredient> getIngredients(SmithingRecipe recipe) {

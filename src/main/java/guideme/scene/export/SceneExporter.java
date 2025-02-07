@@ -2,7 +2,7 @@ package guideme.scene.export;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import com.mojang.blaze3d.vertex.VertexSorting;
@@ -84,15 +84,15 @@ public class SceneExporter {
 
         // To avoid baking in the projection and camera, we need to reset these here
         var modelViewStack = RenderSystem.getModelViewStack();
-        modelViewStack.pushMatrix();
-        modelViewStack.identity();
+        modelViewStack.pushPose();
+        modelViewStack.setIdentity();
         RenderSystem.applyModelViewMatrix();
         RenderSystem.backupProjectionMatrix();
         RenderSystem.setProjectionMatrix(new Matrix4f(), VertexSorting.ORTHOGRAPHIC_Z);
 
         GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource);
 
-        modelViewStack.popMatrix();
+        modelViewStack.popPose();
         RenderSystem.applyModelViewMatrix();
         RenderSystem.restoreProjectionMatrix();
 
@@ -243,22 +243,22 @@ public class SceneExporter {
         for (int i = elements.size() - 1; i >= 0; i--) {
             var offset = 0;
             for (int j = 0; j < i; j++) {
-                offset += elements.get(j).byteSize();
+                offset += elements.get(j).getByteSize();
             }
 
             var element = elements.get(i);
             if (isRelevant(element)) {
-                var normalized = element.usage() == VertexFormatElement.Usage.NORMAL
-                        || element.usage() == VertexFormatElement.Usage.COLOR;
+                var normalized = element.getUsage() == VertexFormatElement.Usage.NORMAL
+                        || element.getUsage() == VertexFormatElement.Usage.COLOR;
 
                 ExpVertexFormatElement.createExpVertexFormatElement(
                         builder,
-                        element.index(),
-                        mapType(element.type()),
-                        mapUsage(element.usage()),
-                        element.count(),
+                        element.getIndex(),
+                        mapType(element.getType()),
+                        mapUsage(element.getUsage()),
+                        element.getCount(),
                         offset,
-                        element.byteSize(),
+                        element.getByteSize(),
                         normalized);
             }
         }
@@ -273,7 +273,8 @@ public class SceneExporter {
     }
 
     private static boolean isRelevant(VertexFormatElement element) {
-        return element.usage() != VertexFormatElement.Usage.GENERIC;
+        return element.getUsage() != VertexFormatElement.Usage.PADDING
+                && element.getUsage() != VertexFormatElement.Usage.GENERIC;
     }
 
     private Map<RenderType, Integer> writeMaterials(List<Mesh> meshes, FlatBufferBuilder builder) {
@@ -378,7 +379,7 @@ public class SceneExporter {
             case NORMAL -> ExpVertexElementUsage.NORMAL;
             case COLOR -> ExpVertexElementUsage.COLOR;
             case UV -> ExpVertexElementUsage.UV;
-            case GENERIC -> throw new IllegalStateException("Should have been skipped");
+            case PADDING, GENERIC -> throw new IllegalStateException("Should have been skipped");
         };
     }
 
@@ -432,7 +433,7 @@ public class SceneExporter {
             int indexCount) {
     }
 
-    private IndexBufferAttributes createIndexBuffer(MeshData.DrawState drawState, ByteBuffer idxBuffer) {
+    private IndexBufferAttributes createIndexBuffer(BufferBuilder.DrawState drawState, ByteBuffer idxBuffer) {
         // Handle index buffer
         ByteBuffer effectiveIndices;
         var indexType = drawState.indexType();
@@ -440,7 +441,7 @@ public class SceneExporter {
         var mode = drawState.mode();
 
         // Auto-generated indices
-        if (idxBuffer == null) {
+        if (drawState.sequentialIndex()) {
             var generated = generateSequentialIndices(
                     mode,
                     drawState.vertexCount(),

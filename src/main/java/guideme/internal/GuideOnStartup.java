@@ -21,12 +21,10 @@ import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.level.validation.DirectoryValidator;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.ScreenEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.resource.ResourcePackLoader;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -48,7 +46,7 @@ public final class GuideOnStartup {
 
         if (!guidesToValidate.isEmpty() || showOnStartup != null) {
             var guideOpenedOnce = new MutableBoolean(false);
-            NeoForge.EVENT_BUS.addListener((ScreenEvent.Opening e) -> {
+            MinecraftForge.EVENT_BUS.addListener((ScreenEvent.Opening e) -> {
                 if (e.getNewScreen() instanceof TitleScreen && !guideOpenedOnce.booleanValue()) {
                     guideOpenedOnce.setTrue();
                     GuideOnStartup.runDatapackReload();
@@ -94,7 +92,7 @@ public final class GuideOnStartup {
         }
 
         var parts = showOnStartup.split("!", 2);
-        var guideId = ResourceLocation.parse(parts[0]);
+        var guideId = new ResourceLocation(parts[0]);
         PageAnchor page = null;
         if (parts.length > 1) {
             page = PageAnchor.parse(parts[1]);
@@ -108,7 +106,7 @@ public final class GuideOnStartup {
         if (validateGuideIds != null) {
             var guideIds = validateGuideIds.split(",");
             for (String guideId : guideIds) {
-                guidesToValidate.add(ResourceLocation.parse(guideId));
+                guidesToValidate.add(new ResourceLocation(guideId));
             }
         }
         return guidesToValidate;
@@ -148,10 +146,9 @@ public final class GuideOnStartup {
         try {
             var layeredAccess = RegistryLayer.createRegistryAccess();
 
-            PackRepository packRepository = new PackRepository(
-                    new ServerPacksSource(new DirectoryValidator(path -> false)));
-            // This fires AddPackFindersEvent but it's probably ok.
-            ResourcePackLoader.populatePackRepository(packRepository, PackType.SERVER_DATA, true);
+            PackRepository packRepository = new PackRepository(new ServerPacksSource());
+            net.minecraftforge.resource.ResourcePackLoader.loadResourcePacks(packRepository,
+                    net.minecraftforge.server.ServerLifecycleHooks::buildPackFinder);
             packRepository.reload();
             packRepository.setSelected(packRepository.getAvailableIds());
 
@@ -166,7 +163,7 @@ public final class GuideOnStartup {
 
             var stuff = ReloadableServerResources.loadResources(
                     resourceManager,
-                    layeredAccess,
+                    layeredAccess.getAccessForLoading(RegistryLayer.RELOADABLE),
                     FeatureFlagSet.of(),
                     Commands.CommandSelection.ALL,
                     0,
@@ -179,7 +176,7 @@ public final class GuideOnStartup {
                             throw e;
                         }
                     }).get();
-            stuff.updateRegistryTags();
+            stuff.updateRegistryTags(layeredAccess.compositeAccess());
             Platform.fallbackClientRecipeManager = stuff.getRecipeManager();
             Platform.fallbackClientRegistryAccess = layeredAccess.compositeAccess();
         } catch (Exception e) {

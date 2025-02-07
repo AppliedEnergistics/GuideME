@@ -12,7 +12,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.BlastingRecipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.block.Blocks;
 
@@ -29,15 +28,15 @@ public class LytCookingRecipe extends LytRecipeBox {
 
     public LytCookingRecipe(ItemStack icon,
             Component title,
-            RecipeHolder<? extends AbstractCookingRecipe> holder) {
+            AbstractCookingRecipe holder) {
         super(holder);
         this.icon = icon;
         this.title = title;
-        this.recipe = holder.value();
+        this.recipe = holder;
         setPadding(5);
         paddingTop = 15;
 
-        append(inputSlot = new LytSlot(recipe.getIngredients().getFirst()));
+        append(inputSlot = new LytSlot(recipe.getIngredients().get(0)));
         append(resultSlot = new LytSlot(recipe.getResultItem(Platform.getClientRegistryAccess())));
     }
 
@@ -80,14 +79,14 @@ public class LytCookingRecipe extends LytRecipeBox {
         super.render(context);
     }
 
-    public static LytCookingRecipe createSmelting(RecipeHolder<SmeltingRecipe> recipe) {
+    public static LytCookingRecipe createSmelting(SmeltingRecipe recipe) {
         return new LytCookingRecipe(
                 Blocks.FURNACE.asItem().getDefaultInstance(),
                 GuidebookText.Smelting.text(),
                 recipe);
     }
 
-    public static LytCookingRecipe createBlasting(RecipeHolder<BlastingRecipe> recipe) {
+    public static LytCookingRecipe createBlasting(BlastingRecipe recipe) {
         return new LytCookingRecipe(
                 Blocks.BLAST_FURNACE.asItem().getDefaultInstance(),
                 GuidebookText.Blasting.text(),

@@ -1,26 +1,15 @@
-import org.gradle.api.initialization.resolve.RepositoriesMode
-import org.gradle.api.initialization.resolve.RulesMode
 
 pluginManagement {
     plugins {
         id 'com.gradleup.shadow' version '8.3.5'
         // https://projects.neoforged.net/neoforged/ModDevGradle
-        id 'net.neoforged.moddev' version '2.0.74'
+        id 'net.neoforged.moddev.legacyforge' version '2.0.74'
         id 'net.neoforged.moddev.repositories' version '2.0.74'
     }
 }
 
 plugins {
-    id 'net.neoforged.moddev.repositories'
     id 'org.gradle.toolchains.foojay-resolver-convention' version '0.9.0'
-}
-
-dependencyResolutionManagement {
-    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
-    rulesMode = RulesMode.FAIL_ON_PROJECT_RULES
-    repositories {
-        mavenCentral()
-    }
 }
 
 rootProject.name = 'guideme'

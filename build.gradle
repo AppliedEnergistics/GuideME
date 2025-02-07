@@ -5,7 +5,7 @@ buildscript {
 }
 
 plugins {
-    id 'net.neoforged.moddev'
+    id 'net.neoforged.moddev.legacyforge'
     id 'maven-publish'
     id 'com.gradleup.shadow'
     id 'signing'
@@ -46,7 +46,13 @@ configurations {
     testRuntimeClasspath.extendsFrom localImplementation
 }
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
+    compileOnly "org.jetbrains:annotations:24.1.0"
+
     // To be copied into the jar file
     shaded project(path: ':markdown', configuration: "archives")
     shaded "io.methvin:directory-watcher:${directory_watcher_version}"
@@ -87,9 +93,11 @@ dependencies {
     testImplementation("org.junit.platform:junit-platform-launcher")
     testImplementation("org.assertj:assertj-core")
     testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
-    testImplementation("net.neoforged:testframework:${neoforge_version}")
 
     testmodRuntimeOnly sourceSets.main.output
+
+    // Annotation Processors
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
 ///////////////////
@@ -124,10 +132,10 @@ test {
     systemProperty 'guideme.testmod.guide.sources', testModGuidePath
 }
 
-neoForge {
+legacyForge {
     enable {
-        version = project.neoforge_version
-        enabledSourceSets = [sourceSets.main, sourceSets.testmod]
+        forgeVersion = project.forge_version
+        enabledSourceSets = [sourceSets.main, sourceSets.testmod, sourceSets.test]
     }
 
     mods {
@@ -181,16 +189,11 @@ neoForge {
             ]
         }
     }
-
-    unitTest {
-        enable()
-        testedMod = mods.guidemetest
-    }
 }
 
 final generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
     group = 'build'
-    from('src/main/neoforge.mods.toml') {
+    from('src/main/mods.toml') {
         rename '(.*)', 'META-INF/$1'
     }
     into 'build/generated/modMetadata'
@@ -198,7 +201,7 @@ final generateModMetadata = tasks.register('generateModMetadata', ProcessResourc
     // Exposed project properties
     Map<String, String> projectProperties = [
             'version',
-            'neoforge_version_range',
+            'forge_version_range',
             'minecraft_version_range'
     ].collectEntries { [it, project[it]] }
 
@@ -207,14 +210,11 @@ final generateModMetadata = tasks.register('generateModMetadata', ProcessResourc
     expand projectProperties
 }
 sourceSets.main.resources.srcDir generateModMetadata
-neoForge.ideSyncTask generateModMetadata
+legacyForge.ideSyncTask generateModMetadata
 
 jar {
     finalizedBy shadowJar
     archiveClassifier = "plain"
-    manifest {
-        attributes.put("Implementation-Version", project.version)
-    }
 }
 
 shadowJar {
@@ -234,6 +234,12 @@ shadowJar {
 
     configurations = [project.configurations.shaded]
     archiveClassifier = ''
+
+    manifest {
+        attributes([
+            "MixinConfigs" : "guideme.mixins.json"
+        ])
+    }
 }
 
 File proguardFile = file("build/libs/${jar.archiveBaseName.get()}-proguard-${version}.jar")
@@ -260,6 +266,14 @@ final proguardJar = tasks.register('proguardJar', proguard.gradle.ProGuardTask) 
     configuration proguardConfig
 }
 assemble.dependsOn proguardJar
+
+///////////
+// Mixins
+mixin {
+    var refmap = add sourceSets.main, "guideme.mixins.refmap.json"
+    shadowJar.from refmap
+    config "guideme.mixins.json"
+}
 
 def publicApiIncludePatterns = {
     exclude "**/*Internal.*"

@@ -30,7 +30,6 @@ import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
@@ -287,7 +286,7 @@ public final class StructureCommands {
             compound = NbtUtils.snbtToStructure(textInFile);
         } else {
             try (var is = new BufferedInputStream(new FileInputStream(structurePath))) {
-                compound = NbtIo.readCompressed(is, NbtAccounter.unlimitedHeap());
+                compound = NbtIo.readCompressed(is);
             }
         }
         var structure = manager.readStructure(compound);
@@ -373,7 +372,7 @@ public final class StructureCommands {
                                     NbtUtils.structureToSnbt(compound),
                                     StandardCharsets.UTF_8);
                         } else {
-                            NbtIo.writeCompressed(compound, Paths.get(selectedPath));
+                            NbtIo.writeCompressed(compound, new File(selectedPath));
                         }
 
                         player.sendSystemMessage(Component.literal("Saved structure"));

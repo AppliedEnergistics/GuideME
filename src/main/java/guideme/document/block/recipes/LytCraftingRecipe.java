@@ -10,7 +10,6 @@ import guideme.layout.LayoutContext;
 import guideme.render.GuiAssets;
 import guideme.render.RenderContext;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.block.Blocks;
@@ -22,9 +21,9 @@ public class LytCraftingRecipe extends LytRecipeBox {
 
     private final LytSlot resultSlot;
 
-    public LytCraftingRecipe(RecipeHolder<CraftingRecipe> holder) {
+    public LytCraftingRecipe(CraftingRecipe holder) {
         super(holder);
-        this.recipe = holder.value();
+        this.recipe = holder;
         setPadding(5);
         paddingTop = 15;
 

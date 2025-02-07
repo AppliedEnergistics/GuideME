@@ -1,6 +1,6 @@
 package guideme.compiler;
 
-import java.util.Map;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,5 +12,5 @@ public record FrontmatterNavigation(
         @Nullable ResourceLocation parent,
         int position,
         @Nullable ResourceLocation iconItemId,
-        @Nullable Map<?, ?> iconComponents) {
+        @Nullable CompoundTag iconNbt) {
 }

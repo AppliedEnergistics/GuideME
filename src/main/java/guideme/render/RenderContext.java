@@ -1,6 +1,7 @@
 package guideme.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.color.LightDarkMode;
@@ -23,7 +24,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec2;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -167,9 +168,9 @@ public interface RenderContext {
     }
 
     default void renderText(String text, ResolvedTextStyle style, float x, float y) {
-        var bufferSource = beginBatch();
+        var bufferSource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
         renderTextInBatch(text, style, x, y, bufferSource);
-        endBatch(bufferSource);
+        bufferSource.endBatch();
     }
 
     default void renderTextInBatch(String text, ResolvedTextStyle style, float x, float y, MultiBufferSource buffers) {
@@ -220,7 +221,7 @@ public interface RenderContext {
     }
 
     default MultiBufferSource.BufferSource beginBatch() {
-        return Minecraft.getInstance().renderBuffers().bufferSource();
+        return MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
     }
 
     default void endBatch(MultiBufferSource.BufferSource batch) {

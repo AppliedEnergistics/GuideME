@@ -16,36 +16,28 @@ import guideme.internal.search.GuideSearch;
 import guideme.render.GuiAssets;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
-import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.registries.RegisterEvent;
+import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterClientCommandsEvent;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.data.event.GatherDataEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Mod(value = GuideME.MOD_ID, dist = Dist.CLIENT)
 public class GuideMEClient {
     private static final Logger LOG = LoggerFactory.getLogger(GuideMEClient.class);
 
@@ -56,49 +48,49 @@ public class GuideMEClient {
 
     private final GuideSearch search = new GuideSearch();
 
-    public GuideMEClient(ModContainer modContainer, IEventBus modBus) {
+    public GuideMEClient(ModLoadingContext context, IEventBus modBus) {
         INSTANCE = this;
         GuideME.PROXY = new GuideMEClientProxy();
 
-        modContainer.registerConfig(ModConfig.Type.CLIENT, clientConfig.spec, "guideme.toml");
+        context.registerConfig(ModConfig.Type.CLIENT, clientConfig.spec, "guideme.toml");
 
-        modBus.addListener(RegisterEvent.class, e -> {
+        modBus.addListener((RegisterEvent e) -> {
             if (e.getRegistryKey() == Registries.SOUND_EVENT) {
-                Registry.register(BuiltInRegistries.SOUND_EVENT, GUIDE_CLICK_ID, GUIDE_CLICK_EVENT);
+                e.register(Registries.SOUND_EVENT, GUIDE_CLICK_ID, () -> GUIDE_CLICK_EVENT);
             }
         });
         modBus.addListener(this::gatherData);
         modBus.addListener(this::registerHotkeys);
 
-        NeoForge.EVENT_BUS.addListener(this::registerClientCommands);
-        NeoForge.EVENT_BUS.addListener(this::registerCommands);
+        MinecraftForge.EVENT_BUS.addListener(this::registerClientCommands);
+        MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
         modBus.addListener(this::resetSprites);
 
         OpenGuideHotkey.init();
 
         modBus.addListener((ModelEvent.RegisterAdditional e) -> {
-            e.register(new ModelResourceLocation(GuideItem.BASE_MODEL_ID, ModelResourceLocation.STANDALONE_VARIANT));
+            e.register(GuideItem.BASE_MODEL_ID);
         });
         modBus.addListener((ModelEvent.RegisterGeometryLoaders e) -> e.register(
-                GuideItemDispatchModelLoader.ID, new GuideItemDispatchModelLoader()));
+                GuideItemDispatchModelLoader.ID.getPath(), new GuideItemDispatchModelLoader()));
 
         modBus.addListener((RegisterClientReloadListenersEvent evt) -> {
             evt.registerReloadListener(new GuideReloadListener());
         });
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre evt) -> {
-            search.processWork();
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent evt) -> {
+            if (evt.phase == TickEvent.Phase.START) {
+                search.processWork();
+            }
         });
 
         GuideOnStartup.init(modBus);
-
-        modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
     }
 
     public static LightDarkMode currentLightDarkMode() {
         return LightDarkMode.LIGHT_MODE;
     }
 
-    private void resetSprites(TextureAtlasStitchedEvent event) {
+    private void resetSprites(TextureStitchEvent event) {
         if (event.getAtlas().location().equals(GuiAssets.GUI_SPRITE_ATLAS)) {
             GuiAssets.resetSprites();
         }
@@ -132,15 +124,15 @@ public class GuideMEClient {
     }
 
     public boolean isShowDebugGuiOverlays() {
-        return clientConfig.showDebugGuiOverlays.getAsBoolean();
+        return clientConfig.showDebugGuiOverlays.get();
     }
 
     public boolean isAdaptiveScalingEnabled() {
-        return clientConfig.adaptiveScaling.getAsBoolean();
+        return clientConfig.adaptiveScaling.get();
     }
 
     public boolean isFullWidthLayout() {
-        return clientConfig.fullWidthLayout.getAsBoolean();
+        return clientConfig.fullWidthLayout.get();
     }
 
     public void setFullWidthLayout(boolean fullWidth) {
@@ -187,13 +179,13 @@ public class GuideMEClient {
     }
 
     private static class ClientConfig {
-        final ModConfigSpec spec;
-        final ModConfigSpec.BooleanValue adaptiveScaling;
-        final ModConfigSpec.BooleanValue showDebugGuiOverlays;
-        final ModConfigSpec.BooleanValue fullWidthLayout;
+        final ForgeConfigSpec spec;
+        final ForgeConfigSpec.BooleanValue adaptiveScaling;
+        final ForgeConfigSpec.BooleanValue showDebugGuiOverlays;
+        final ForgeConfigSpec.BooleanValue fullWidthLayout;
 
         public ClientConfig() {
-            var builder = new ModConfigSpec.Builder();
+            var builder = new ForgeConfigSpec.Builder();
 
             builder.push("gui");
             adaptiveScaling = builder

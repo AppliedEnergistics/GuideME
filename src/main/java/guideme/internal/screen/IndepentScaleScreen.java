@@ -105,12 +105,12 @@ public abstract class IndepentScaleScreen extends Screen {
     }
 
     @Override
-    public final boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        return scaledMouseScrolled(toVirtual(mouseX), toVirtual(mouseY), scrollX, scrollY);
+    public final boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        return scaledMouseScrolled(toVirtual(mouseX), toVirtual(mouseY), delta);
     }
 
-    protected boolean scaledMouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    protected boolean scaledMouseScrolled(double mouseX, double mouseY, double delta) {
+        return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     public final void mouseMoved(double mouseX, double mouseY) {

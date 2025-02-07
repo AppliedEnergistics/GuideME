@@ -13,7 +13,6 @@ import net.minecraft.ResourceLocationException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.ResourceLocation;
@@ -61,8 +60,7 @@ public class ImportStructureElementCompiler implements SceneElementTagCompiler {
                 compoundTag = NbtUtils.snbtToStructure(
                         new String(structureNbtData, StandardCharsets.UTF_8));
             } else {
-                compoundTag = NbtIo.readCompressed(new ByteArrayInputStream(structureNbtData),
-                        NbtAccounter.unlimitedHeap());
+                compoundTag = NbtIo.readCompressed(new ByteArrayInputStream(structureNbtData));
             }
         } catch (Exception e) {
             errorSink.appendError(compiler, "Couldn't read structure: " + e.getMessage(), el);
