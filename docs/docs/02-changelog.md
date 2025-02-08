@@ -21,7 +21,7 @@ import Video from '@site/src/components/Video';
 
 ## 2.5.0
 
-- Added an extension point for mods to add support for [custom recipe types](./integration/recipe-types.md) to all guides
+- Added an extension point for mods to add support for [custom recipe types](20-integration/recipe-types.md) to all guides
 - Fixed an issue with navigating to the search screen
 
 ## 2.4.0
@@ -79,7 +79,7 @@ import Video from '@site/src/components/Video';
   - `GuidesCommon.openGuide(Player player, ResourceLocation guideId)` to open the last opened (or start-page if none) page of a guide for the given player.
   - `GuidesCommon.openGuide(Player player, ResourceLocation guideId, PageAnchor anchor)` to open a specific page of a guide for the given player.
 - Moves the existing client-only command to `/guidemec`
-- Adds a new server-side `/guideme` [command](./commands.md) that allows opening guides for target entities similar to `/tellraw`.
+- Adds a new server-side `/guideme` [command](./40-commands) that allows opening guides for target entities similar to `/tellraw`.
   This can be used to open guides using command blocks and other mechanisms.
   <Video src="command-block-guide.mp4" />
   Example: `/guideme open @s testmod:guide` to open the start page

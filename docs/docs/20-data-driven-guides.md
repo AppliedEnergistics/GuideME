@@ -49,4 +49,4 @@ the name will just be "Guide". If you don't set a model, it will use the default
 
 ## Writing Pages
 
-See [authoring pages](authoring/index.md).
+See [authoring pages](30-authoring/index.md).
