@@ -1,11 +1,13 @@
 
+import Video from '@site/src/components/Video';
+
 # Changelog
 
 ## 2.6.0
 
 - Change the default layout of guides to be a centered column, and add a toolbar button to toggle between 
   full-width and centered-column layout.
-  <p><video controls><source src={require('./center-column-layout.mp4').default}/></video></p>
+  <Video src="center-column-layout.mp4" />
 - Fix navigating between guide pages not appending to navigation history
 - Add configuration screen
 - Make scaling of Guide UI independent of UI scale for scales 1 and 3, where the uniform Minecraft font
@@ -47,7 +49,7 @@
 ## 2.2.0
 
 - Added full-text search based on Apache Lucene, which is enabled for all guides:
-  <p><video controls><source src={require('./guide-search.mp4').default}/></video></p>
+  <Video src="guide-search.mp4" />
 - Added `alignItems="start|center|end"` to the `Row` and `Column` tags to align content along the layout axis
 - Added `fullWidth={true}` to the `Row` and `Column` axis to stretch them to the full width
 - This enables `<Column alignItems="center" fullWidth={true}>...</Column>` to center content like images horizontally
@@ -79,7 +81,7 @@
 - Moves the existing client-only command to `/guidemec`
 - Adds a new server-side `/guideme` [command](./commands.md) that allows opening guides for target entities similar to `/tellraw`.
   This can be used to open guides using command blocks and other mechanisms.
-  <p><video controls><source src={require('./command-block-guide.mp4').default}/></video></p>
+  <Video src="command-block-guide.mp4" />
   Example: `/guideme open @s testmod:guide` to open the start page
   or `/guideme open @s testmod:guide page.md#anchor` to open a specific page at an anchor.
 - Fix mod version being shown as 0.0.0

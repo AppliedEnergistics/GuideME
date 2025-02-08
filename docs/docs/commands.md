@@ -1,3 +1,6 @@
+
+import Video from '@site/src/components/Video';
+
 # Commands
 
 ## Open Guides
@@ -14,9 +17,7 @@ It requires operator permissions since it can open guides for other players.
 
 This can be used to open guides using command blocks:
 
-<video controls>
-  <source src={require('./command-block-guide.mp4').default}/>
-</video>
+<Video src="command-block-guide.mp4" />
 
 ## Open Guides (client only)
 
@@ -27,3 +28,11 @@ This command on your own client only and opens any guide for yourself.
 `/guidemec open <guide-id> <page-id>`
 
 `/guidemec open <guide-id> <page-id>#<anchor>`
+
+## Create Guide Items
+
+The following commands will create a generic guide item that opens the given guide when used.
+
+`/guideme give <entity-target> <guide-id>`
+
+For example `/guideme give @s ae2:guide`

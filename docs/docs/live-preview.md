@@ -1,12 +1,13 @@
+
+import Video from '@site/src/components/Video';
+
 # Live Preview
 
 GuideME supports a live-preview mode where a local directory is designated as the source folder for guidebook pages.
 In this mode, any change to files in this directory is immediately reflected in-game, without having to copy
 resources.
 
-<video controls>
-  <source src={require('./live-preview.mp4').default}/>
-</video>
+<Video src="live-preview.mp4" />
 
 This mode can be enabled by passing system properties (`-D<prop>=<value>` if you're using a launcher).
 
