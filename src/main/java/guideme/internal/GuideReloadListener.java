@@ -25,7 +25,7 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
     private static final Gson GSON = new Gson();
 
     @Override
-    protected Result prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
+    public Result prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
         profiler.startTick();
         var pages = new IdentityHashMap<ResourceLocation, Map<ResourceLocation, ParsedGuidePage>>();
 
@@ -47,7 +47,7 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
     }
 
     @Override
-    protected void apply(Result result, ResourceManager resourceManager, ProfilerFiller profiler) {
+    public void apply(Result result, ResourceManager resourceManager, ProfilerFiller profiler) {
         profiler.startTick();
 
         LOG.info("Data driven guides: {}", result.dataDrivenGuides.keySet());
