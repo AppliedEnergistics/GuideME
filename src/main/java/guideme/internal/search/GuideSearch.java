@@ -15,7 +15,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.resources.ResourceLocation;
@@ -31,8 +30,6 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
-import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -57,16 +54,6 @@ import org.slf4j.LoggerFactory;
  */
 public class GuideSearch implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(GuideSearch.class);
-
-    private static final String FIELD_GUIDE_ID = "guide_id";
-    private static final String FIELD_PAGE_ID = "page_id";
-
-    private static final String FIELD_TEXT = "page_content";
-    private static final String FIELD_TITLE = "page_title";
-
-    // Fields for analyzed text
-    private static final String FIELD_TITLE_EN = "page_title_en";
-    private static final String FIELD_TEXT_EN = "page_content_en";
 
     /**
      * Maximum time spent indexing per tick.
@@ -99,7 +86,7 @@ public class GuideSearch implements AutoCloseable {
 
     public void index(Guide guide) {
         try {
-            indexWriter.deleteDocuments(new PhraseQuery(FIELD_GUIDE_ID, guide.getId().toString()));
+            indexWriter.deleteDocuments(new PhraseQuery(IndexSchema.FIELD_GUIDE_ID, guide.getId().toString()));
         } catch (IOException e) {
             LOG.error("Failed to delete all documents before re-indexing.", e);
         }
@@ -182,18 +169,11 @@ public class GuideSearch implements AutoCloseable {
 
         var indexSearcher = new IndexSearcher(indexReader);
 
-        var parser = new StandardQueryParser(analyzer);
-        parser.setMultiFields(new String[] {
-                FIELD_TITLE_EN,
-                FIELD_TEXT_EN
-        });
-        parser.setFieldsBoost(Map.of(FIELD_TITLE_EN, 1.2f));
-
         Query query;
         try {
-            query = parser.parse(queryText, null);
-        } catch (QueryNodeException e) {
-            LOG.debug("Failed to parse Lucene query: '{}'", queryText, e);
+            query = GuideQueryParser.parse(queryText);
+        } catch (Exception e) {
+            LOG.debug("Failed to parse search query: '{}'", queryText, e);
             return List.of();
         }
 
@@ -201,8 +181,8 @@ public class GuideSearch implements AutoCloseable {
         if (onlyFromGuide != null) {
             query = new BooleanQuery.Builder()
                     .add(query, BooleanClause.Occur.MUST)
-                    .add(new TermQuery(new Term(FIELD_GUIDE_ID, onlyFromGuide.getId().toString())),
-                            BooleanClause.Occur.MUST)
+                    .add(new TermQuery(new Term(IndexSchema.FIELD_GUIDE_ID, onlyFromGuide.getId().toString())),
+                            BooleanClause.Occur.FILTER)
                     .build();
         }
 
@@ -224,8 +204,8 @@ public class GuideSearch implements AutoCloseable {
 
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                 var document = storedFields.document(scoreDoc.doc);
-                var guideId = ResourceLocation.parse(document.get(FIELD_GUIDE_ID));
-                var pageId = ResourceLocation.parse(document.get(FIELD_PAGE_ID));
+                var guideId = ResourceLocation.parse(document.get(IndexSchema.FIELD_GUIDE_ID));
+                var pageId = ResourceLocation.parse(document.get(IndexSchema.FIELD_PAGE_ID));
 
                 var guide = Guides.getById(guideId);
                 if (guide == null) {
@@ -241,14 +221,15 @@ public class GuideSearch implements AutoCloseable {
 
                 String bestFragment = "";
                 try {
-                    bestFragment = highlighter.getBestFragment(analyzer, FIELD_TEXT_EN, document.get(FIELD_TEXT));
+                    bestFragment = highlighter.getBestFragment(analyzer, IndexSchema.FIELD_TEXT_EN,
+                            document.get(IndexSchema.FIELD_TEXT));
                 } catch (InvalidTokenOffsetsException e) {
                     LOG.error("Cannot determine text to highlight for result", e);
                 }
 
                 // This is kinda shit, but the Lucene highlighter isn't exactly flexible with its return type
                 // it only supports strings.
-                var pageTitle = document.get(FIELD_TITLE);
+                var pageTitle = document.get(IndexSchema.FIELD_TITLE);
 
                 var startOfSegment = 0;
                 LytFlowSpan currentSpan = new LytFlowSpan();
@@ -294,15 +275,15 @@ public class GuideSearch implements AutoCloseable {
         var pageTitle = getPageTitle(guide, page);
 
         var doc = new Document();
-        doc.add(new StringField(FIELD_GUIDE_ID, guide.getId().toString(), Field.Store.YES));
-        doc.add(new StoredField(FIELD_PAGE_ID, page.getId().toString()));
+        doc.add(new StringField(IndexSchema.FIELD_GUIDE_ID, guide.getId().toString(), Field.Store.YES));
+        doc.add(new StoredField(IndexSchema.FIELD_PAGE_ID, page.getId().toString()));
 
         // Store original text for highlighting and display purposes
-        doc.add(new StoredField(FIELD_TITLE, pageTitle));
-        doc.add(new StoredField(FIELD_TEXT, pageText));
+        doc.add(new StoredField(IndexSchema.FIELD_TITLE, pageTitle));
+        doc.add(new StoredField(IndexSchema.FIELD_TEXT, pageText));
 
-        doc.add(new TextField(FIELD_TITLE_EN, pageTitle, Field.Store.NO));
-        doc.add(new TextField(FIELD_TEXT_EN, pageText, Field.Store.NO));
+        doc.add(new TextField(IndexSchema.FIELD_TITLE_EN, pageTitle, Field.Store.NO));
+        doc.add(new TextField(IndexSchema.FIELD_TEXT_EN, pageText, Field.Store.NO));
         return doc;
     }
 
