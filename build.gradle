@@ -230,8 +230,17 @@ shadowJar {
     relocate "org.tartarus.snowball", "guideme.internal.shaded.snowball"
 
     configurations = [project.configurations.shaded]
-    archiveClassifier = ''
+    archiveClassifier = 'dev'
 }
+
+obfuscation {
+    reobfuscate(tasks.named("shadowJar"), sourceSets.main) {
+        archiveClassifier = ""
+    }
+}
+reobfJar.enabled = false
+
+tasks.assemble.dependsOn reobfShadowJar
 
 File proguardFile = file("build/libs/${jar.archiveBaseName.get()}-proguard-${version}.jar")
 
@@ -252,7 +261,7 @@ final proguardJar = tasks.register('proguardJar', proguard.gradle.ProGuardTask) 
     }
     libraryjars(configurations.compileClasspath)
 
-    injars(shadowJar.archiveFile)
+    injars(reobfShadowJar.archiveFile)
     outjars proguardFile
     configuration proguardConfig
 }
