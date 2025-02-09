@@ -85,7 +85,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     # Only push the snapshot for the main branch of our repo (i.e. not for forks)
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'AppliedEnergistics/GuideME'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/1.20.1' && github.repository == 'AppliedEnergistics/GuideME'
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
