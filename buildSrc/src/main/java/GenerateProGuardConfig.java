@@ -43,6 +43,7 @@ public abstract class GenerateProGuardConfig extends DefaultTask {
         for (String packageName : packageNames) {
             templateContent.append("-keep public class ").append(packageName).append(".* {\n");
             templateContent.append("  public <methods>;\n");
+            templateContent.append("  protected <methods>;\n");
             templateContent.append("  public <fields>;\n");
             templateContent.append("}\n");
         }
