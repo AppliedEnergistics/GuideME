@@ -1,6 +1,7 @@
 package guideme.render;
 
 import guideme.color.LightDarkMode;
+import guideme.internal.GuideMEClient;
 import java.io.IOException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
@@ -44,7 +45,7 @@ public final class GuiSprite {
         }
 
         synchronized (this) {
-            var guiSprites = Minecraft.getInstance().getModelManager().getAtlas(GuiAssets.GUI_SPRITE_ATLAS);
+            var guiSprites = GuideMEClient.instance().getGuiSpriteAtlas();
 
             var sprite = guiSprites.getSprite(id);
             var spriteScaling = getSpriteScaling(id);

@@ -95,9 +95,6 @@ dependencies {
     testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
 
     testmodRuntimeOnly sourceSets.main.output
-
-    // Annotation Processors
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
 ///////////////////
@@ -234,12 +231,6 @@ shadowJar {
 
     configurations = [project.configurations.shaded]
     archiveClassifier = ''
-
-    manifest {
-        attributes([
-            "MixinConfigs" : "guideme.mixins.json"
-        ])
-    }
 }
 
 File proguardFile = file("build/libs/${jar.archiveBaseName.get()}-proguard-${version}.jar")
@@ -266,14 +257,6 @@ final proguardJar = tasks.register('proguardJar', proguard.gradle.ProGuardTask) 
     configuration proguardConfig
 }
 assemble.dependsOn proguardJar
-
-///////////
-// Mixins
-mixin {
-    var refmap = add sourceSets.main, "guideme.mixins.refmap.json"
-    shadowJar.from refmap
-    config "guideme.mixins.json"
-}
 
 def publicApiIncludePatterns = {
     exclude "**/*Internal.*"
