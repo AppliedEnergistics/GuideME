@@ -46,6 +46,7 @@ class LinkParserTest {
         var pageCollection = mock(PageCollection.class, withSettings().strictness(Strictness.LENIENT));
         when(pageCollection.pageExists(ResourceLocation.parse("ns:other/page.md"))).thenReturn(true);
         when(pageCollection.pageExists(ResourceLocation.parse("ns2:abc/def.md"))).thenReturn(true);
+        when(pageCollection.pageExists(ResourceLocation.parse("ns_2:abc/def.md"))).thenReturn(true);
         compiler = new PageCompiler(pageCollection, ExtensionCollection.empty(), "pack",
                 ResourceLocation.parse("ns:subfolder/page.md"), "");
     }

@@ -130,6 +130,8 @@ neoForge {
         enabledSourceSets = [sourceSets.main, sourceSets.testmod]
     }
 
+    validateAccessTransformers = true
+
     mods {
         guideme {
             sourceSet sourceSets.main
