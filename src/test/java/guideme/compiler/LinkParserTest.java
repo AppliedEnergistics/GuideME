@@ -90,6 +90,15 @@ class LinkParserTest {
         assertThat(anchors).containsExactly(PageAnchor.page(ResourceLocation.parse("ns2:abc/def.md")));
     }
 
+    // This failed previously due to URI rules not allowing a scheme with _
+    @Test
+    void testLinkToOtherNamespaceWithUnderscore() {
+        LinkParser.parseLink(compiler, "ns_2:abc/def.md", visitor);
+        assertThat(external).containsExactly();
+        assertThat(errors).containsExactly();
+        assertThat(anchors).containsExactly(PageAnchor.page(ResourceLocation.parse("ns_2:abc/def.md")));
+    }
+
     @Test
     void testLinkToOtherNamespaceWithFragment() {
         LinkParser.parseLink(compiler, "ns2:abc/def.md#fragment", visitor);

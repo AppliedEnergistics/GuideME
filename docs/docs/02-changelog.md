@@ -9,6 +9,7 @@ import Video from '@site/src/components/Video';
 - Improved query parsing for full-text search. Search will now always apply "incremental" search for the last entered word,
   assuming the user might not have entered it fully yet. This means searching for "io po" will search for both "io po"
   and "io po*", although it will score an exact hit for "po" higher than a hit for "port" (for example).
+- Fix parsing of links to pages where the mod-id contained underscores (i.e. `modern_industrialization:some_page.md`).
 
 ## 2.6.0 (Minecraft 1.21.1)
 
