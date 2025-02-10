@@ -1,0 +1,8 @@
+
+.dragInactive {
+    border: 2px solid transparent;
+}
+
+.dragActive {
+    border: 2px dashed var(--ifm-color-primary);
+}
