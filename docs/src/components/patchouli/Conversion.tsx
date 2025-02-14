@@ -41,6 +41,25 @@ export interface ConversionProps {
     reset: () => void;
 }
 
+// See https://vazkiimods.github.io/Patchouli/docs/patchouli-basics/text-formatting/
+const defaultMacros: Record<string, string> = {
+    "$(obf)": "$(k)",
+    "$(bold)": "$(l)",
+    "$(strike)": "$(m)",
+    "$(italic)": "$(o)",
+    "$(italics)": "$(o)",
+    "$(list": "$(li",
+    "$(reset)": "$()",
+    "$(clear)": "$()",
+    "$(2br)": "$(br2)",
+    "$(p)": "$(br2)",
+    "/$": "$()",
+    "<br>": "$(br)",
+    "$(nocolor)": "$(0)",
+    "$(item)": "$(#b0b)",
+    "$(thing)": "$(#490)",
+};
+
 async function readFile(file: File): Promise<Uint8Array> {
     return new Promise((resolve, reject) => {
         try {
@@ -205,7 +224,33 @@ function relativePageLink(pageId: string, targetPageId: string): string {
     return targetPageId + ".md";
 }
 
+async function findRecipeResultItem(zipContent: ZipContent,
+                                    recipeId: string,
+                                    writeLogLine: (line: string) => void): Promise<string | undefined> {
+
+    let [namespace, path] = recipeId.split(":", 2);
+    if (!path) {
+        path = namespace;
+        namespace = 'minecraft';
+    }
+
+    const {result} = await extractJsonFile(zipContent, `data/${namespace}/recipe/${path}.json`);
+
+    if (typeof result === "object" && result !== null) {
+        const {id} = result;
+        if (typeof id === "string") {
+            writeLogLine(`Detected result item for recipe ${recipeId} -> ${id}`);
+            return id;
+        }
+    }
+
+    writeLogLine(`Could not detect result item for recipe ${recipeId}`);
+    return undefined;
+
+}
+
 async function convertPage(zipContent: ZipContent,
+                           macros: Record<string, string>,
                            pages: Record<string, PatchouliEntry>,
                            bookNamespace: string,
                            bookId: string,
@@ -236,6 +281,16 @@ async function convertPage(zipContent: ZipContent,
     lines.push(`# ${page.name}`)
     lines.push("");
 
+    async function writeRecipe(recipeId: string) {
+        lines.push(`<Recipe id="${recipeId}" />`);
+        lines.push("");
+        const resultItem = await findRecipeResultItem(zipContent, recipeId, writeLogLine);
+        if (resultItem) {
+            pageItemIds.push(resultItem);
+            writeLogLine(` Setting page ${pageId} as target for item ${resultItem}`);
+        }
+    }
+
     for (let patchouliPage of page.pages) {
         // Handle implicit text pages
         if (typeof patchouliPage === "string") {
@@ -243,6 +298,10 @@ async function convertPage(zipContent: ZipContent,
                 type: "text",
                 text: patchouliPage
             };
+        }
+
+        if (patchouliPage.anchor) {
+            lines.push(`<a href="${patchouliPage.anchor}"></a>`);
         }
 
         let type = patchouliPage.type;
@@ -310,18 +369,17 @@ async function convertPage(zipContent: ZipContent,
                 lines.push(patchouliPage.text);
                 lines.push("");
                 if (patchouliPage.recipe) {
-                    lines.push(`<Recipe id="${patchouliPage.recipe}" />`);
-                    lines.push("");
+                    await writeRecipe(patchouliPage.recipe);
                 }
                 if (patchouliPage.recipe2) {
-                    lines.push(`<Recipe id="${patchouliPage.recipe2}" />`);
-                    lines.push("");
+                    await writeRecipe(patchouliPage.recipe2);
                 }
                 break;
             case "patchouli:spotlight":
                 if (patchouliPage.link_recipe) {
                     // TODO Json object support
                     pageItemIds.push(patchouliPage.item);
+                    writeLogLine(` Setting page ${pageId} as target for item ${patchouliPage.item}`);
                 }
                 if (patchouliPage.title) {
                     lines.push("## " + patchouliPage.title);
@@ -333,10 +391,10 @@ async function convertPage(zipContent: ZipContent,
                 lines.push(patchouliPage.text);
                 lines.push("");
                 if (patchouliPage.recipe) {
-                    lines.push(`<Recipe id="${patchouliPage.recipe}" />`);
+                    await writeRecipe(patchouliPage.recipe);
                 }
                 if (patchouliPage.recipe2) {
-                    lines.push(`<Recipe id="${patchouliPage.recipe2}" />`);
+                    await writeRecipe(patchouliPage.recipe2);
                 }
                 break;
             case "patchouli:relations":
@@ -368,11 +426,12 @@ async function convertPage(zipContent: ZipContent,
         }
     }
 
-    const body = expandFormatting(lines.join("\n") + "\n", writeLogLine);
+    const body = expandFormatting(lines.join("\n") + "\n", macros, writeLogLine);
 
     if (pageItemIds.length) {
         frontmatter.push("item_ids:");
-        for (const id of pageItemIds) {
+        const uniqueItemIds = new Set<string>(pageItemIds);
+        for (const id of uniqueItemIds) {
             frontmatter.push("  - " + id);
         }
     }
@@ -459,9 +518,12 @@ async function convertBook(zipContent: ZipContent,
             outputFiles
         );
 
+        const macros = {...defaultMacros, ...bookJson.macros};
+
         for (const [pageId, page] of Object.entries(pages)) {
             await convertPage(
                 zipContent,
+                macros,
                 pages,
                 bookNamespace,
                 bookId,
