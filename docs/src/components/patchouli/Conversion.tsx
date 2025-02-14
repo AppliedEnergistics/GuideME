@@ -234,13 +234,31 @@ async function findRecipeResultItem(zipContent: ZipContent,
         namespace = 'minecraft';
     }
 
-    const {result} = await extractJsonFile(zipContent, `data/${namespace}/recipe/${path}.json`);
+    let recipeJson: any;
+
+    try {
+        recipeJson = await extractJsonFile(zipContent, `data/${namespace}/recipe/${path}.json`);
+    } catch (e) {
+        // Try the pre-1.20.1 fallback
+        try {
+            recipeJson = await extractJsonFile(zipContent, `data/${namespace}/recipes/${path}.json`);
+        } catch (e) {
+            writeLogLine(`Could not find recipe ${recipeId} in mod jar. Cannot determine result item.`);
+            return undefined;
+        }
+    }
+
+    const {result} = recipeJson;
 
     if (typeof result === "object" && result !== null) {
-        const {id} = result;
+        const {id, item} = result;
         if (typeof id === "string") {
             writeLogLine(`Detected result item for recipe ${recipeId} -> ${id}`);
             return id;
+        } else if (typeof item === "string") {
+            // item is the 1.20.1 style
+            writeLogLine(`Detected result item for recipe ${recipeId} -> ${item}`);
+            return item;
         }
     }
 
