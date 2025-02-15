@@ -85,17 +85,23 @@ public abstract class LytBox extends LytBlock implements LytBlockContainer {
 
     @Override
     public void renderBatch(RenderContext context, MultiBufferSource buffers) {
+        context.poseStack().pushPose();
+        context.poseStack().translate(0, 0, 0.1);
         for (var child : children) {
             child.renderBatch(context, buffers);
         }
+        context.poseStack().popPose();
     }
 
     @Override
     public void render(RenderContext context) {
+        context.poseStack().pushPose();
+        context.poseStack().translate(0, 0, 0.1);
         for (var child : children) {
             child.render(context);
         }
 
+        context.poseStack().translate(0, 0, 0.1);
         // Render border on top of children
         borderRenderer.render(
                 context,
@@ -104,5 +110,7 @@ public abstract class LytBox extends LytBlock implements LytBlockContainer {
                 getBorderLeft(),
                 getBorderRight(),
                 getBorderBottom());
+
+        context.poseStack().popPose();
     }
 }
