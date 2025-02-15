@@ -3,6 +3,11 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.1.1 (Minecraft 1.21.1)
+
+- Improved visibility of the debug overlay text and outlines.
+- Fix background panels in guide being drawn without depth test enabled, sometimes hiding other elements.
+
 ## 21.1.0 (Minecraft 1.21.1)
 
 - Switching to the NeoForge versioning scheme, this version is equivalent to version 2.6.0, except for the following changes.

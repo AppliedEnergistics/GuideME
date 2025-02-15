@@ -18,6 +18,8 @@ import guideme.internal.util.DashedRectangle;
 import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
 import guideme.render.RenderContext;
+import guideme.style.ResolvedTextStyle;
+import guideme.style.TextStyle;
 import guideme.ui.GuideUiHost;
 import guideme.ui.UiPoint;
 import java.util.Optional;
@@ -27,6 +29,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.opengl.GL20;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -211,53 +214,76 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
 
     private static void renderHoverOutline(LytDocument document, RenderContext context) {
         var hoveredElement = document.getHoveredElement();
-        if (hoveredElement != null) {
-            // Fill a rectangle highlighting margins
-            if (hoveredElement.node() instanceof LytBlock block) {
-                var bounds = block.getBounds();
-                if (block.getMarginTop() > 0) {
-                    context.fillRect(
-                            bounds.withHeight(block.getMarginTop()).move(0, -block.getMarginTop()),
-                            DEBUG_HOVER_OUTLINE_COLOR);
-                }
-                if (block.getMarginBottom() > 0) {
-                    context.fillRect(
-                            bounds.withHeight(block.getMarginBottom()).move(0, bounds.height()),
-                            DEBUG_HOVER_OUTLINE_COLOR);
-                }
-                if (block.getMarginLeft() > 0) {
-                    context.fillRect(
-                            bounds.withWidth(block.getMarginLeft()).move(-block.getMarginLeft(), 0),
-                            DEBUG_HOVER_OUTLINE_COLOR);
-                }
-                if (block.getMarginRight() > 0) {
-                    context.fillRect(
-                            bounds.withWidth(block.getMarginRight()).move(bounds.width(), 0),
-                            DEBUG_HOVER_OUTLINE_COLOR);
-                }
-            }
 
-            // Fill the content rectangle
-            DashedRectangle.render(context.poseStack(), hoveredElement.node().getBounds(), DEBUG_NODE_OUTLINE, 0);
-
-            // Also outline any inline-elements in the block
-            if (hoveredElement.content() != null) {
-                if (hoveredElement.node() instanceof LytFlowContainer flowContainer) {
-                    flowContainer.enumerateContentBounds(hoveredElement.content())
-                            .forEach(bound -> {
-                                DashedRectangle.render(context.poseStack(), bound, DEBUG_CONTENT_OUTLINE, 0);
-                            });
-                }
-            }
-
-            // Render the class-name of the hovered node to make it easier to identify
-            var bounds = hoveredElement.node().getBounds();
-            context.renderText(
-                    hoveredElement.node().getClass().getName(),
-                    DefaultStyles.BASE_STYLE,
-                    bounds.x(),
-                    bounds.bottom());
+        if (hoveredElement == null) {
+            return;
         }
+
+        context.poseStack().pushPose();
+        context.poseStack().translate(0, 0, 1000);
+
+        GL20.glLogicOp(GL20.GL_XOR);
+        GL20.glEnable(GL20.GL_COLOR_LOGIC_OP);
+
+        // Fill a rectangle highlighting margins
+        if (hoveredElement.node() instanceof LytBlock block) {
+            var bounds = block.getBounds();
+            if (block.getMarginTop() > 0) {
+                context.fillRect(
+                        bounds.withHeight(block.getMarginTop()).move(0, -block.getMarginTop()),
+                        DEBUG_HOVER_OUTLINE_COLOR);
+            }
+            if (block.getMarginBottom() > 0) {
+                context.fillRect(
+                        bounds.withHeight(block.getMarginBottom()).move(0, bounds.height()),
+                        DEBUG_HOVER_OUTLINE_COLOR);
+            }
+            if (block.getMarginLeft() > 0) {
+                context.fillRect(
+                        bounds.withWidth(block.getMarginLeft()).move(-block.getMarginLeft(), 0),
+                        DEBUG_HOVER_OUTLINE_COLOR);
+            }
+            if (block.getMarginRight() > 0) {
+                context.fillRect(
+                        bounds.withWidth(block.getMarginRight()).move(bounds.width(), 0),
+                        DEBUG_HOVER_OUTLINE_COLOR);
+            }
+        }
+
+        // Fill the content rectangle
+        DashedRectangle.render(context.poseStack(), hoveredElement.node().getBounds(), DEBUG_NODE_OUTLINE, 0);
+
+        // Also outline any inline-elements in the block
+        if (hoveredElement.content() != null) {
+            if (hoveredElement.node() instanceof LytFlowContainer flowContainer) {
+                flowContainer.enumerateContentBounds(hoveredElement.content())
+                        .forEach(bound -> {
+                            DashedRectangle.render(context.poseStack(), bound, DEBUG_CONTENT_OUTLINE, 0);
+                        });
+            }
+        }
+
+        GL20.glLogicOp(GL20.GL_COPY);
+        GL20.glDisable(GL20.GL_COLOR_LOGIC_OP);
+
+        // Render the class-name of the hovered node to make it easier to identify
+        var bounds = hoveredElement.node().getBounds();
+        ResolvedTextStyle debugFontStyle = TextStyle.builder()
+                .color(ConstantColor.WHITE)
+                .build().mergeWith(DefaultStyles.BASE_STYLE);
+        context.fillRect(
+                bounds.x(),
+                bounds.bottom(),
+                (int) context.getWidth(hoveredElement.node().getClass().getName(), debugFontStyle),
+                10,
+                ConstantColor.BLACK);
+        context.renderText(
+                hoveredElement.node().getClass().getName(),
+                debugFontStyle,
+                bounds.x(),
+                bounds.bottom());
+
+        context.poseStack().popPose();
     }
 
     @Override
