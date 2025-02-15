@@ -130,6 +130,10 @@ public class LytParagraph extends LytBlock implements LytFlowContainer {
         return content.getContent();
     }
 
+    public boolean isEmpty() {
+        return content.isEmpty();
+    }
+
     public void clearContent() {
         content.clear();
     }

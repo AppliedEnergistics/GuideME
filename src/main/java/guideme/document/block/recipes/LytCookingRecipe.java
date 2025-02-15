@@ -16,6 +16,7 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.block.Blocks;
 
+@Deprecated(forRemoval = true)
 public class LytCookingRecipe extends LytRecipeBox {
     private final ItemStack icon;
 

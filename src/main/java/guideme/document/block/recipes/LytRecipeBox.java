@@ -5,6 +5,7 @@ import guideme.siteexport.ExportableResourceProvider;
 import guideme.siteexport.ResourceExporter;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
+@Deprecated(forRemoval = true)
 public abstract class LytRecipeBox extends LytBox implements ExportableResourceProvider {
     private final RecipeHolder<?> recipe;
 
