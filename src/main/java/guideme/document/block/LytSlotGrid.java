@@ -20,6 +20,14 @@ public class LytSlotGrid extends LytBox {
         this.slots = new LytSlot[width * height];
     }
 
+    public static LytSlotGrid columnFromStack(List<ItemStack> items, boolean skipEmpty) {
+        return column(items.stream().map(Ingredient::of).toList(), skipEmpty);
+    }
+
+    public static LytSlotGrid rowFromStacks(List<ItemStack> items, boolean skipEmpty) {
+        return row(items.stream().map(Ingredient::of).toList(), skipEmpty);
+    }
+
     public static LytSlotGrid column(List<Ingredient> ingredients, boolean skipEmpty) {
         if (!skipEmpty) {
             var grid = new LytSlotGrid(1, ingredients.size());

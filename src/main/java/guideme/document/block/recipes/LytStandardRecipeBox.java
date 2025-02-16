@@ -124,11 +124,16 @@ public class LytStandardRecipeBox<T extends Recipe<?>> extends LytVBox implement
             return this;
         }
 
+        public Builder output(ItemStack resultItem) {
+            this.output = new LytSlotGrid(1, 1);
+            this.output.setItem(0, 0, resultItem);
+            return this;
+        }
+
         public Builder outputFromResultOf(RecipeHolder<?> recipe) {
             var resultItem = recipe.value().getResultItem(Platform.getClientRegistryAccess());
             if (!resultItem.isEmpty()) {
-                output = new LytSlotGrid(1, 1);
-                output.setItem(0, 0, resultItem);
+                output(resultItem);
             }
             return this;
         }
