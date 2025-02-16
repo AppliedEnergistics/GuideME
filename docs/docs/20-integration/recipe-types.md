@@ -22,9 +22,16 @@ package appeng.client.guidebook;
 public class RecipeTypeContributions implements RecipeTypeMappingSupplier {
     @Override
     public void collect(RecipeTypeMappings mappings) {
-        mappings.add(AERecipeTypes.INSCRIBER, LytInscriberRecipe::new);
         mappings.add(AERecipeTypes.CHARGER, LytChargerRecipe::new);
-        mappings.add(AERecipeTypes.TRANSFORM, LytTransformRecipe::new);
+    }
+
+    private static LytStandardRecipeBox<ChargerRecipe> charging(RecipeHolder<ChargerRecipe> holder) {
+        return LytStandardRecipeBox.builder()
+                .icon(AEBlocks.CHARGER)
+                .title(AEBlocks.CHARGER.asItem().getDescription().getString())
+                .input(holder.value().getIngredient())
+                .outputFromResultOf(holder)
+                .build(holder);
     }
 }
 ```
@@ -35,6 +42,5 @@ project:
 
 ## Custom Layout Blocks
 
-If your recipe requires a custom layout block, you can use the
-existing [recipe layouts in GuideME](https://github.com/AppliedEnergistics/GuideME/tree/main/src/main/java/guideme/document/block/recipes)
-as a starting point.
+While your recipe can be any custom layout block, GuideME offers a [builder](https://guideme.appliedenergistics.org/javadoc/guideme/document/block/recipes/LytStandardRecipeBox.html) to quickly build recipe blocks
+that adhere to the standard input, arrow, output pattern.
