@@ -61,14 +61,14 @@ class GuideSourceWatcher implements AutoCloseable {
         this.sourcePackId = ModList.get().isLoaded(namespace) ? "mod:" + namespace : namespace;
         this.sourceFolder = sourceFolder;
         if (!Files.isDirectory(sourceFolder)) {
-            throw new RuntimeException("Cannot find the specified folder for the AE2 guidebook sources: "
+            throw new RuntimeException("Cannot find the specified folder with guidebook sources: "
                     + sourceFolder);
         }
         LOG.info("Watching guidebook sources in {}", sourceFolder);
 
         watchExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
                 .setDaemon(true)
-                .setNameFormat("AE2GuidebookWatcher%d")
+                .setNameFormat("GuideMELiveReloadWatcher%d")
                 .build());
 
         // Watch the folder recursively in a separate thread, queue up any changes and apply them

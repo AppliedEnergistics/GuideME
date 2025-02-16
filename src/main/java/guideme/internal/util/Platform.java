@@ -7,7 +7,6 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 public class Platform {
@@ -35,12 +34,5 @@ public class Platform {
     public static Component getFluidDisplayName(Fluid fluid) {
         var fluidStack = new FluidStack(fluid, 1);
         return fluidStack.getHoverName();
-    }
-
-    /**
-     * @return True if AE2 is being run within a dev environment.
-     */
-    public static boolean isDevelopmentEnvironment() {
-        return !FMLEnvironment.production;
     }
 }
