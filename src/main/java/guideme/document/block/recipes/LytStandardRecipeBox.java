@@ -87,6 +87,11 @@ public class LytStandardRecipeBox<T extends Recipe<?>> extends LytVBox implement
             return box;
         }
 
+        public Builder icon(LytBlock block) {
+            this.icon = block;
+            return this;
+        }
+
         public Builder icon(ItemLike workbench) {
             return icon(workbench.asItem().getDefaultInstance());
         }
