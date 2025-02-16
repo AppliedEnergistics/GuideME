@@ -3,6 +3,7 @@ package guideme.internal.extensions;
 import guideme.document.block.LytSlotGrid;
 import guideme.document.block.recipes.LytStandardRecipeBox;
 import guideme.internal.GuidebookText;
+import java.util.List;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.BlastingRecipe;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -16,8 +17,6 @@ import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.level.block.Blocks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 final class VanillaRecipes {
     private static final Logger LOG = LoggerFactory.getLogger(VanillaRecipes.class);
