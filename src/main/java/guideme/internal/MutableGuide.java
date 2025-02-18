@@ -9,20 +9,21 @@ import guideme.compiler.ParsedGuidePage;
 import guideme.extensions.ExtensionCollection;
 import guideme.indices.PageIndex;
 import guideme.internal.screen.GuideScreen;
+import guideme.internal.util.LangUtil;
 import guideme.navigation.NavigationTree;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -38,10 +39,14 @@ public final class MutableGuide implements Guide {
     private final ResourceLocation id;
     private final String defaultNamespace;
     private final String folder;
+    private final String defaultLanguage;
     private final ResourceLocation startPage;
     private final Map<ResourceLocation, ParsedGuidePage> developmentPages = new HashMap<>();
     private final Map<Class<?>, PageIndex> indices;
     private NavigationTree navigationTree = new NavigationTree();
+    /**
+     * These are only loaded for the current language and backfilled by default language pages.
+     */
     private Map<ResourceLocation, ParsedGuidePage> pages;
     private final ExtensionCollection extensions;
     private final boolean availableToOpenHotkey;
@@ -58,6 +63,7 @@ public final class MutableGuide implements Guide {
     public MutableGuide(ResourceLocation id,
             String defaultNamespace,
             String folder,
+            String defaultLanguage,
             ResourceLocation startPage,
             @Nullable Path developmentSourceFolder,
             @Nullable String developmentSourceNamespace,
@@ -68,6 +74,7 @@ public final class MutableGuide implements Guide {
         this.id = id;
         this.defaultNamespace = defaultNamespace;
         this.folder = folder;
+        this.defaultLanguage = defaultLanguage;
         this.startPage = startPage;
         this.developmentSourceFolder = developmentSourceFolder;
         this.developmentSourceNamespace = developmentSourceNamespace;
@@ -134,19 +141,35 @@ public final class MutableGuide implements Guide {
             throw new IllegalStateException("Pages are not loaded yet.");
         }
 
-        var pages = new HashMap<>(this.pages);
+        if (developmentPages.isEmpty()) {
+            return this.pages.values();
+        }
+
+        var pages = new LinkedHashMap<>(this.pages);
         pages.putAll(developmentPages);
         return pages.values();
     }
 
     @Override
     public byte[] loadAsset(ResourceLocation id) {
+        // Try loading the language specific version first
+        var language = LangUtil.getCurrentLanguage();
+        if (!GuideMEClient.instance().isIgnoreTranslatedGuides() && !Objects.equals(language, defaultLanguage)) {
+            var result = loadAssetInternal(id.withPrefix("_" + language + "/"));
+            if (result != null) {
+                return result;
+            }
+        }
+        return loadAssetInternal(id);
+    }
+
+    private byte @Nullable [] loadAssetInternal(ResourceLocation id) {
         // Also load images from the development sources folder, if it exists and contains the asset namespace
         if (developmentSourceFolder != null && id.getNamespace().equals(developmentSourceNamespace)) {
             var path = developmentSourceFolder.resolve(id.getPath());
             try (var in = Files.newInputStream(path)) {
                 return in.readAllBytes();
-            } catch (FileNotFoundException ignored) {
+            } catch (NoSuchFileException ignored) {
             } catch (IOException e) {
                 LOG.error("Failed to open guidebook asset {}", path);
                 return null;
@@ -217,17 +240,18 @@ public final class MutableGuide implements Guide {
             return;
         }
 
-        watcher = new GuideSourceWatcher(developmentSourceNamespace, developmentSourceFolder);
-
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre evt) -> {
-            var changes = watcher.takeChanges();
-            if (!changes.isEmpty()) {
-                applyChanges(changes);
-            }
-        });
+        watcher = new GuideSourceWatcher(developmentSourceNamespace, defaultLanguage, developmentSourceFolder);
         Runtime.getRuntime().addShutdownHook(new Thread(watcher::close));
-        for (var page : watcher.loadAll()) {
-            developmentPages.put(page.getId(), page);
+    }
+
+    public void tick() {
+        if (pages == null || watcher == null) {
+            return; // Do nothing while pages haven't been loaded yet
+        }
+
+        var changes = watcher.takeChanges(LangUtil.getCurrentLanguage());
+        if (!changes.isEmpty()) {
+            applyChanges(changes);
         }
     }
 
@@ -240,10 +264,6 @@ public final class MutableGuide implements Guide {
             var oldPage = change.newPage() != null ? developmentPages.put(pageId, change.newPage())
                     : developmentPages.remove(pageId);
             changes.set(i, new GuidePageChange(pageId, oldPage, change.newPage()));
-        }
-
-        if (pages == null) {
-            return; // We have received FS changes before pages have fully loaded
         }
 
         // Allow indices to rebuild
@@ -290,9 +310,7 @@ public final class MutableGuide implements Guide {
 
     @ApiStatus.Internal
     public void rebuildIndices() {
-        var allPages = new ArrayList<ParsedGuidePage>();
-        allPages.addAll(pages.values());
-        allPages.addAll(developmentPages.values());
+        var allPages = new ArrayList<>(getPages());
         for (var index : indices.values()) {
             index.rebuild(allPages);
         }
@@ -300,11 +318,24 @@ public final class MutableGuide implements Guide {
 
     public void setPages(Map<ResourceLocation, ParsedGuidePage> pages) {
         this.pages = Map.copyOf(pages);
+
+        if (watcher != null) {
+            watcher.clearChanges(); // Since we'll load them all now, ignore all changes up to now
+
+            for (var page : watcher.loadAll(defaultLanguage)) {
+                developmentPages.put(page.getId(), page);
+            }
+        }
+
         rebuildIndices();
         navigationTree = buildNavigation();
     }
 
     public GuideItemSettings getItemSettings() {
         return itemSettings;
+    }
+
+    public String getDefaultLanguage() {
+        return defaultLanguage;
     }
 }

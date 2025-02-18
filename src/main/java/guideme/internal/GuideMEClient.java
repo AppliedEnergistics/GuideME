@@ -87,11 +87,18 @@ public class GuideMEClient {
         });
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre evt) -> {
             search.processWork();
+            processDevWatchers();
         });
 
         GuideOnStartup.init(modBus);
 
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+    }
+
+    private void processDevWatchers() {
+        for (var guide : GuideRegistry.getAll()) {
+            guide.tick();
+        }
     }
 
     public static LightDarkMode currentLightDarkMode() {
@@ -137,6 +144,10 @@ public class GuideMEClient {
 
     public boolean isAdaptiveScalingEnabled() {
         return clientConfig.adaptiveScaling.getAsBoolean();
+    }
+
+    public boolean isIgnoreTranslatedGuides() {
+        return clientConfig.ignoreTranslatedGuides.getAsBoolean();
     }
 
     public boolean isFullWidthLayout() {
@@ -191,9 +202,16 @@ public class GuideMEClient {
         final ModConfigSpec.BooleanValue adaptiveScaling;
         final ModConfigSpec.BooleanValue showDebugGuiOverlays;
         final ModConfigSpec.BooleanValue fullWidthLayout;
+        final ModConfigSpec.BooleanValue ignoreTranslatedGuides;
 
         public ClientConfig() {
             var builder = new ModConfigSpec.Builder();
+
+            builder.push("guides");
+            ignoreTranslatedGuides = builder
+                    .comment("Never load translated guide pages for your current language.")
+                    .define("ignoreTranslatedGuides", false);
+            builder.pop();
 
             builder.push("gui");
             adaptiveScaling = builder

@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import guideme.GuidePageChange;
 import guideme.compiler.PageCompiler;
 import guideme.compiler.ParsedGuidePage;
+import guideme.internal.util.LangUtil;
 import io.methvin.watcher.DirectoryChangeEvent;
 import io.methvin.watcher.DirectoryChangeListener;
 import io.methvin.watcher.DirectoryWatcher;
@@ -32,6 +33,8 @@ import org.slf4j.LoggerFactory;
 class GuideSourceWatcher implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(GuideSourceWatcher.class);
 
+    private final String defaultLanguage;
+
     /**
      * The {@link ResourceLocation} namespace to use for files in the watched folder.
      */
@@ -53,12 +56,13 @@ class GuideSourceWatcher implements AutoCloseable {
 
     private final ExecutorService watchExecutor;
 
-    public GuideSourceWatcher(String namespace, Path sourceFolder) {
+    public GuideSourceWatcher(String namespace, String defaultLanguage, Path sourceFolder) {
         this.namespace = namespace;
         // The namespace does not necessarily *need* to be a mod id, but if it is, the source pack needs to
         // follow the specific mod-id format. Otherwise we assume it's a resource pack where namespace == pack id,
         // which is also not 100% correct.
         this.sourcePackId = ModList.get().isLoaded(namespace) ? "mod:" + namespace : namespace;
+        this.defaultLanguage = defaultLanguage;
         this.sourceFolder = sourceFolder;
         if (!Files.isDirectory(sourceFolder)) {
             throw new RuntimeException("Cannot find the specified folder with guidebook sources: "
@@ -92,8 +96,11 @@ class GuideSourceWatcher implements AutoCloseable {
         }
     }
 
-    public List<ParsedGuidePage> loadAll() {
+    public List<ParsedGuidePage> loadAll(String defaultLanguage) {
         var stopwatch = Stopwatch.createStarted();
+
+        var currentLanguage = LangUtil.getCurrentLanguage();
+        var validLanguages = LangUtil.getValidLanguages();
 
         // Find all potential pages
         var pagesToLoad = new HashMap<ResourceLocation, Path>();
@@ -135,9 +142,23 @@ class GuideSourceWatcher implements AutoCloseable {
         var loadedPages = pagesToLoad.entrySet()
                 .stream()
                 .map(entry -> {
+                    var pageId = entry.getKey();
                     var path = entry.getValue();
+
+                    if (LangUtil.getLangFromPageId(pageId, validLanguages) != null) {
+                        return null; // Skip translated pages
+                    }
+                    var translatedPage = pagesToLoad.get(LangUtil.getTranslatedAsset(pageId, currentLanguage));
+                    String language;
+                    if (translatedPage != null) {
+                        language = currentLanguage;
+                        path = translatedPage;
+                    } else {
+                        language = defaultLanguage;
+                    }
+
                     try (var in = Files.newInputStream(path)) {
-                        return PageCompiler.parse(sourcePackId, entry.getKey(), in);
+                        return PageCompiler.parse(sourcePackId, language, pageId, in);
 
                     } catch (Exception e) {
                         LOG.error("Failed to reload guidebook page {}", path, e);
@@ -152,7 +173,12 @@ class GuideSourceWatcher implements AutoCloseable {
         return loadedPages;
     }
 
-    public synchronized List<GuidePageChange> takeChanges() {
+    public synchronized void clearChanges() {
+        changedPages.clear();
+        deletedPages.clear();
+    }
+
+    public synchronized List<GuidePageChange> takeChanges(String currentLanguage) {
 
         if (deletedPages.isEmpty() && changedPages.isEmpty()) {
             return List.of();
@@ -217,11 +243,14 @@ class GuideSourceWatcher implements AutoCloseable {
             return; // Probably not a page
         }
 
+        var validLanguages = LangUtil.getValidLanguages();
+        var language = Objects.requireNonNullElse(LangUtil.getLangFromPageId(pageId, validLanguages), defaultLanguage);
+
         // If it was previously deleted in the same change-set, undelete it
         deletedPages.remove(pageId);
 
         try (var in = Files.newInputStream(path)) {
-            var page = PageCompiler.parse(sourcePackId, pageId, in);
+            var page = PageCompiler.parse(sourcePackId, language, pageId, in);
             changedPages.put(pageId, page);
         } catch (Exception e) {
             LOG.error("Failed to reload guidebook page {}", path, e);

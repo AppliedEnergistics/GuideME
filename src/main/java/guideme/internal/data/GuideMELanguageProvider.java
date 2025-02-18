@@ -25,6 +25,10 @@ public final class GuideMELanguageProvider extends LanguageProvider {
 
     private void addConfigTranslations() {
         var translations = Map.of(
+                "guide", "Guides",
+                "ignoreTranslatedGuides", "Ignore Guide Translations",
+                "ignoreTranslatedGuides.tooltip",
+                "Always load the original version of GuideME guides, regardless of the currently selected UI language",
                 "title", "GuideME Configuration",
                 "gui", "User Interface",
                 "debug", "Debug",
