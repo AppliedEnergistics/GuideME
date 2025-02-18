@@ -114,12 +114,23 @@ public final class PageCompiler {
         }
     }
 
+    @Deprecated(forRemoval = true)
     public static ParsedGuidePage parse(String sourcePack, ResourceLocation id, InputStream in) throws IOException {
-        String pageContent = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        return parse(sourcePack, id, pageContent);
+        return parse(sourcePack, "en_us", id, in);
     }
 
+    public static ParsedGuidePage parse(String sourcePack, String language, ResourceLocation id, InputStream in)
+            throws IOException {
+        String pageContent = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        return parse(sourcePack, language, id, pageContent);
+    }
+
+    @Deprecated(forRemoval = true)
     public static ParsedGuidePage parse(String sourcePack, ResourceLocation id, String pageContent) {
+        return parse(sourcePack, "en_us", id, pageContent);
+    }
+
+    public static ParsedGuidePage parse(String sourcePack, String language, ResourceLocation id, String pageContent) {
         // Normalize line ending
         pageContent = pageContent.replaceAll("\\r\\n?", "\n");
 
@@ -136,7 +147,7 @@ public final class PageCompiler {
         // Find front-matter
         var frontmatter = parseFrontmatter(id, astRoot);
 
-        return new ParsedGuidePage(sourcePack, id, pageContent, astRoot, frontmatter);
+        return new ParsedGuidePage(sourcePack, id, pageContent, astRoot, frontmatter, language);
     }
 
     public static GuidePage compile(PageCollection pages, ExtensionCollection extensions, ParsedGuidePage parsedPage) {

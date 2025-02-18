@@ -1,14 +1,16 @@
 package guideme.internal.search;
 
+import java.util.Collection;
 import java.util.List;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BoostQuery;
-import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.QueryBuilder;
 
 public class GuideQueryParser {
     private GuideQueryParser() {
@@ -21,31 +23,46 @@ public class GuideQueryParser {
      * <li>OR A query that matches every document where a field contains any of the terms, but boosted to 0.1.</li>
      * </ul>
      */
-    public static Query parse(String queryString) {
+    public static Query parse(String queryString, Analyzer analyzer, Collection<String> searchLanguages) {
         var tokens = QueryStringSplitter.split(queryString);
-
-        var textField = IndexSchema.getTextField("en");
-        var titleField = IndexSchema.getTitleField("en");
 
         var builder = new BooleanQuery.Builder();
 
-        // Exact occurrences in the title are scored with 20% boost
-        builder.add(new BoostQuery(buildFieldQuery(titleField, tokens, false, BooleanClause.Occur.SHOULD), 1.2f),
-                BooleanClause.Occur.SHOULD);
-        // Exact occurrences in the body are scored normally
-        builder.add(buildFieldQuery(textField, tokens, false, BooleanClause.Occur.SHOULD), BooleanClause.Occur.SHOULD);
-        // Occurrences in the title, where the last token is expanded to a wildcard are scored at 40%
-        builder.add(new BoostQuery(buildFieldQuery(titleField, tokens, true, BooleanClause.Occur.SHOULD), 0.4f),
-                BooleanClause.Occur.SHOULD);
-        // Occurrences in the body, where the last token is expanded to a wildcard are scored at 20%
-        builder.add(new BoostQuery(buildFieldQuery(textField, tokens, true, BooleanClause.Occur.SHOULD), 0.2f),
-                BooleanClause.Occur.SHOULD);
+        var queryBuilder = new QueryBuilder(analyzer);
+
+        for (String searchLanguage : searchLanguages) {
+            var textField = IndexSchema.getTextField(searchLanguage);
+            var titleField = IndexSchema.getTitleField(searchLanguage);
+
+            // Exact occurrences in the title are scored with 20% boost
+            builder.add(
+                    new BoostQuery(buildFieldQuery(queryBuilder, titleField, tokens, false, BooleanClause.Occur.SHOULD),
+                            1.2f),
+                    BooleanClause.Occur.SHOULD);
+            // Exact occurrences in the body are scored normally
+            builder.add(buildFieldQuery(queryBuilder, textField, tokens, false, BooleanClause.Occur.SHOULD),
+                    BooleanClause.Occur.SHOULD);
+            // Occurrences in the title, where the last token is expanded to a wildcard are scored at 40%
+            builder.add(
+                    new BoostQuery(buildFieldQuery(queryBuilder, titleField, tokens, true, BooleanClause.Occur.SHOULD),
+                            0.4f),
+                    BooleanClause.Occur.SHOULD);
+            // Occurrences in the body, where the last token is expanded to a wildcard are scored at 20%
+            builder.add(
+                    new BoostQuery(buildFieldQuery(queryBuilder, textField, tokens, true, BooleanClause.Occur.SHOULD),
+                            0.2f),
+                    BooleanClause.Occur.SHOULD);
+        }
 
         return builder.build();
     }
 
-    private static BooleanQuery buildFieldQuery(String fieldName, List<String> tokens, boolean makeLastTokenWildcard,
+    private static BooleanQuery buildFieldQuery(QueryBuilder queryBuilder,
+            String fieldName,
+            List<String> tokens,
+            boolean makeLastTokenWildcard,
             BooleanClause.Occur clause) {
+
         // Prepare a BooleanQuery to combine terms with OR
         var booleanQueryBuilder = new BooleanQuery.Builder();
 
@@ -54,8 +71,7 @@ public class GuideQueryParser {
 
             if (token.contains(" ")) {
                 // Phrase query
-                var splitToken = QueryStringSplitter.split(token);
-                booleanQueryBuilder.add(new PhraseQuery(fieldName, splitToken.toArray(String[]::new)), clause);
+                booleanQueryBuilder.add(queryBuilder.createPhraseQuery(fieldName, token), clause);
                 continue;
             }
 
@@ -64,13 +80,12 @@ public class GuideQueryParser {
                 token += "*";
             }
 
-            Term term = new Term(fieldName, token);
-
             Query q;
             if (token.contains("*")) {
-                q = new WildcardQuery(term);
+                BytesRef normalizedTerm = queryBuilder.getAnalyzer().normalize(fieldName, token);
+                q = new WildcardQuery(new Term(fieldName, normalizedTerm));
             } else {
-                q = new TermQuery(term);
+                q = queryBuilder.createBooleanQuery(fieldName, token);
             }
 
             booleanQueryBuilder.add(q, clause);

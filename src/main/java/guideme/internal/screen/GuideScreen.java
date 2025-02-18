@@ -371,6 +371,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
         return PageCompiler.parse(
                 pageId.getNamespace(),
+                "en_us",
                 pageId,
                 pageSource);
     }

@@ -1,12 +1,12 @@
 package guideme.internal.search;
 
+import java.util.Objects;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.DelegatingAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 public class LanguageSpecificAnalyzerWrapper extends DelegatingAnalyzerWrapper {
     private final Analyzer defaultAnalyzer = new StandardAnalyzer();
-    private final Analyzer englishAnalyzer = new EnglishAnalyzer();
 
     public LanguageSpecificAnalyzerWrapper() {
         super(PER_FIELD_REUSE_STRATEGY);
@@ -17,8 +17,10 @@ public class LanguageSpecificAnalyzerWrapper extends DelegatingAnalyzerWrapper {
         if (fieldName == null) {
             return defaultAnalyzer;
         }
-        if (fieldName.endsWith("_en")) {
-            return englishAnalyzer;
+        for (String language : Analyzers.LANGUAGES) {
+            if (fieldName.endsWith("_" + language)) {
+                return Objects.requireNonNull(Analyzers.ANALYZERS.get(language), "analyzer for " + language).get();
+            }
         }
         return defaultAnalyzer;
     }

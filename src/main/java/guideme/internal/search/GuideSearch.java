@@ -7,6 +7,7 @@ import guideme.compiler.ParsedGuidePage;
 import guideme.document.DefaultStyles;
 import guideme.document.flow.LytFlowContent;
 import guideme.document.flow.LytFlowSpan;
+import guideme.internal.util.LangUtil;
 import guideme.libs.mdast.model.MdAstHeading;
 import guideme.libs.unist.UnistNode;
 import java.io.IOException;
@@ -14,9 +15,13 @@ import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import javax.naming.directory.SearchResult;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -68,6 +73,8 @@ public class GuideSearch implements AutoCloseable {
     private final List<GuideIndexingTask> pendingTasks = new ArrayList<>();
     private Instant indexingStarted;
     private int pagesIndexed;
+    private final Set<String> warnedAboutLanguage = Collections.synchronizedSet(new HashSet<>());
+    private final Set<String> indexedLanguages = Collections.synchronizedSet(new HashSet<>());
 
     public GuideSearch() {
         analyzer = new LanguageSpecificAnalyzerWrapper();
@@ -136,6 +143,11 @@ public class GuideSearch implements AutoCloseable {
                     } catch (IOException e) {
                         LOG.error("Failed to index document {}{}", guide, page, e);
                     }
+
+                    var searchLang = pageDoc.get(IndexSchema.FIELD_SEARCH_LANG);
+                    if (searchLang != null) {
+                        indexedLanguages.add(searchLang);
+                    }
                 }
                 pagesIndexed++;
                 pageIt.remove();
@@ -167,11 +179,13 @@ public class GuideSearch implements AutoCloseable {
             return List.of();
         }
 
+        var searchLanguage = getLuceneLanguageFromMinecraft(LangUtil.getCurrentLanguage());
+
         var indexSearcher = new IndexSearcher(indexReader);
 
         Query query;
         try {
-            query = GuideQueryParser.parse(queryText);
+            query = GuideQueryParser.parse(queryText, analyzer, indexedLanguages);
         } catch (Exception e) {
             LOG.debug("Failed to parse search query: '{}'", queryText, e);
             return List.of();
@@ -190,7 +204,7 @@ public class GuideSearch implements AutoCloseable {
 
         TopDocs topDocs;
         try {
-            topDocs = indexSearcher.search(query, 10);
+            topDocs = indexSearcher.search(query, 25);
         } catch (IOException e) {
             LOG.error("Failed to search for '{}'", queryText, e);
             return List.of();
@@ -221,8 +235,11 @@ public class GuideSearch implements AutoCloseable {
 
                 String bestFragment = "";
                 try {
-                    bestFragment = highlighter.getBestFragment(analyzer, IndexSchema.FIELD_TEXT_EN,
+                    bestFragment = highlighter.getBestFragment(analyzer, IndexSchema.getTextField(searchLanguage),
                             document.get(IndexSchema.FIELD_TEXT));
+                    if (bestFragment == null) {
+                        bestFragment = "";
+                    }
                 } catch (InvalidTokenOffsetsException e) {
                     LOG.error("Cannot determine text to highlight for result", e);
                 }
@@ -274,17 +291,34 @@ public class GuideSearch implements AutoCloseable {
         var pageText = getSearchableText(guide, page);
         var pageTitle = getPageTitle(guide, page);
 
+        var searchLang = getLuceneLanguageFromMinecraft(page.getLanguage());
+
         var doc = new Document();
         doc.add(new StringField(IndexSchema.FIELD_GUIDE_ID, guide.getId().toString(), Field.Store.YES));
         doc.add(new StoredField(IndexSchema.FIELD_PAGE_ID, page.getId().toString()));
+        doc.add(new StoredField(IndexSchema.FIELD_LANG, page.getLanguage()));
+        doc.add(new StoredField(IndexSchema.FIELD_SEARCH_LANG, searchLang));
 
         // Store original text for highlighting and display purposes
         doc.add(new StoredField(IndexSchema.FIELD_TITLE, pageTitle));
         doc.add(new StoredField(IndexSchema.FIELD_TEXT, pageText));
 
-        doc.add(new TextField(IndexSchema.FIELD_TITLE_EN, pageTitle, Field.Store.NO));
-        doc.add(new TextField(IndexSchema.FIELD_TEXT_EN, pageText, Field.Store.NO));
+        doc.add(new TextField(IndexSchema.getTitleField(searchLang), pageTitle, Field.Store.NO));
+        doc.add(new TextField(IndexSchema.getTextField(searchLang), pageText, Field.Store.NO));
         return doc;
+    }
+
+    private String getLuceneLanguageFromMinecraft(String language) {
+        var luceneLang = Analyzers.MINECRAFT_TO_LUCENE_LANG.get(language);
+        if (luceneLang == null) {
+            if (warnedAboutLanguage.add(language)) {
+                LOG.warn(
+                        "Minecraft language '{}' has unknown and will be treated as english for the purposes of search.",
+                        language);
+            }
+            return Analyzers.LANG_ENGLISH;
+        }
+        return luceneLang;
     }
 
     private static String getPageTitle(Guide guide, ParsedGuidePage page) {

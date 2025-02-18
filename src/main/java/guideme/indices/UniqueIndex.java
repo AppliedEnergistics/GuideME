@@ -96,7 +96,7 @@ public class UniqueIndex<K, V> implements PageIndex {
             var previousPage = index.put(key, new Record<>(page.getId(), value));
             if (previousPage != null) {
                 LOG.warn("Key conflict in index {}: {} is used by pages {} and {}",
-                        name, key, page, previousPage);
+                        name, key, page, previousPage.pageId);
                 hadDuplicates = true;
             }
         }
