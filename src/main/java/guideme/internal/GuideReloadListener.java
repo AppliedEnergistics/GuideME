@@ -124,6 +124,7 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
             var guide = (MutableGuide) Guide.builder(guideId)
                     .register(false)
                     .itemSettings(guideSpec.itemSettings())
+                    .defaultLanguage(guideSpec.defaultLanguage())
                     .build();
             dataDrivenGuides.put(guideId, guide);
         }
