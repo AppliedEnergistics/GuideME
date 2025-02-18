@@ -8,6 +8,7 @@ import Video from '@site/src/components/Video';
 - Added support for [translating guides](./60-translation.md).
 - Added an option for Players to disable loading of guide translations.
 - Fix several search issues relating to not analyzing queries properly, which reduced the number of relevant results.
+- Fix returning to the original screen when the guide is closed.
 
 ## 21.1.1 (Minecraft 1.21.1)
 
