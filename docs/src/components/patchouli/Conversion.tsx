@@ -183,10 +183,14 @@ async function convertCategory(zipContent: ZipContent,
                                bookId: string,
                                pageId: string,
                                category: PatchouliCategory,
+                               language: string | undefined,
                                writeLogLine: (line: string) => void,
                                outputFiles: Record<string, Uint8Array | string>) {
 
     const pagePath = `assets/${bookNamespace}/guides/${bookNamespace}/${bookId}/${pageId}.md`;
+    const translatedPagePath = language ?
+        `assets/${bookNamespace}/guides/${bookNamespace}/${bookId}/_${language}/${pageId}.md`
+        : pagePath;
     const lines: string[] = [];
 
     // Frontmatter
@@ -209,7 +213,7 @@ async function convertCategory(zipContent: ZipContent,
     lines.push("");
     lines.push("<SubPages />")
 
-    outputFiles[pagePath] = lines.join("\n");
+    outputFiles[translatedPagePath] = lines.join("\n");
 }
 
 function relativePageLink(pageId: string, targetPageId: string): string {
@@ -274,10 +278,12 @@ async function convertPage(zipContent: ZipContent,
                            bookId: string,
                            pageId: string,
                            page: PatchouliEntry,
+                           language: string | undefined,
                            writeLogLine: (line: string) => void,
                            outputFiles: Record<string, Uint8Array | string>) {
 
     const pagePath = `assets/${bookNamespace}/guides/${bookNamespace}/${bookId}/${pageId}.md`;
+    const translatedPagePath = language ? `assets/${bookNamespace}/guides/${bookNamespace}/${bookId}/_${language}/${pageId}.md` : pagePath;
     const pageDir = pagePath.substring(0, pagePath.lastIndexOf("/"));
     let lines: string[] = [];
 
@@ -454,7 +460,8 @@ async function convertPage(zipContent: ZipContent,
         }
     }
 
-    outputFiles[pagePath] = "---\n" + frontmatter.join("\n") + "\n---\n\n" + body;
+    const pageContent = "---\n" + frontmatter.join("\n") + "\n---\n\n" + body;
+    outputFiles[translatedPagePath] = pageContent;
 }
 
 async function convertBook(zipContent: ZipContent,
@@ -505,26 +512,28 @@ async function convertBook(zipContent: ZipContent,
         // Enrich with other languages
         const translations: Record<string, any> = {};
         for (let unsortedCategory of unsortedCategories) {
-            const lang = unsortedCategory[1];
-            if (unsortedCategory[0] === categoryId && lang !== "en_us") {
-                translations[lang] = unsortedCategory[2];
+            const lang = unsortedCategory.language;
+            if (unsortedCategory.categoryId === categoryId && lang !== "en_us") {
+                translations[lang] = unsortedCategory.categoryData;
             }
         }
+        console.log(translations);
 
         // Find pages
         const pages = Object.fromEntries(unsortedPages
             .filter(p => p.categoryId === `${bookNamespace}:${categoryId}` && p.language === "en_us")
             .map(p => [p.pageId, {
-                ...p.pageData,
+                ...p.pageData as PatchouliEntry,
                 translations: Object.fromEntries(
                     unsortedPages
                         .filter(tp => tp.categoryId === `${bookNamespace}:${categoryId}` && tp.pageId === p.pageId && tp.language !== p.language)
-                        .map(tp => [tp.language, tp.pageData])
+                        .map(tp => [tp.language, tp.pageData as PatchouliEntry])
                 )
             }]));
 
         writeLogLine(`Category ${categoryId}`);
         writeLogLine(`  pages: ${Object.keys(pages).length}`);
+        writeLogLine(`  translations: ${Object.keys(translations)}`);
 
         await convertCategory(
             zipContent,
@@ -532,9 +541,22 @@ async function convertBook(zipContent: ZipContent,
             bookId,
             categoryId,
             category,
+            undefined,
             writeLogLine,
             outputFiles
         );
+        for (const [language, translatedCategory] of Object.entries(translations)) {
+            await convertCategory(
+                zipContent,
+                bookNamespace,
+                bookId,
+                categoryId,
+                translatedCategory,
+                language,
+                writeLogLine,
+                outputFiles
+            );
+        }
 
         const macros = {...defaultMacros, ...bookJson.macros};
 
@@ -547,9 +569,25 @@ async function convertBook(zipContent: ZipContent,
                 bookId,
                 pageId,
                 page,
+                undefined,
                 writeLogLine,
                 outputFiles
             )
+
+            for (let [language, translatedPage] of Object.entries(page.translations)) {
+                await convertPage(
+                    zipContent,
+                    macros,
+                    pages,
+                    bookNamespace,
+                    bookId,
+                    pageId,
+                    translatedPage,
+                    language,
+                    writeLogLine,
+                    outputFiles
+                )
+            }
         }
     }
 }

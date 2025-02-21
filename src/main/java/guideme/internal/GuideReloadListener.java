@@ -153,7 +153,9 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
             // Check for translated versions of this page
             String language = defaultLanguage;
             if (currentLanguage != null) {
-                var translatedPage = resources.get(LangUtil.getTranslatedAsset(pageId, currentLanguage));
+                var translatedResourceId = LangUtil.getTranslatedAsset(pageId, currentLanguage)
+                        .withPrefix(contentRoot + "/");
+                var translatedPage = resources.get(translatedResourceId);
                 if (translatedPage != null) {
                     language = currentLanguage;
                     resource = translatedPage;
