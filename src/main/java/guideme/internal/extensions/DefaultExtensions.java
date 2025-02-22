@@ -6,6 +6,7 @@ import guideme.compiler.tags.BoxFlowDirection;
 import guideme.compiler.tags.BoxTagCompiler;
 import guideme.compiler.tags.BreakCompiler;
 import guideme.compiler.tags.CategoryIndexCompiler;
+import guideme.compiler.tags.CommandLinkCompiler;
 import guideme.compiler.tags.DivTagCompiler;
 import guideme.compiler.tags.FloatingImageCompiler;
 import guideme.compiler.tags.ItemGridCompiler;
@@ -74,7 +75,8 @@ public final class DefaultExtensions {
                 new BoxTagCompiler(BoxFlowDirection.ROW),
                 new BoxTagCompiler(BoxFlowDirection.COLUMN),
                 new SceneTagCompiler(),
-                new SubPagesCompiler());
+                new SubPagesCompiler(),
+                new CommandLinkCompiler());
     }
 
     private static List<SceneElementTagCompiler> sceneElementTagCompilers() {

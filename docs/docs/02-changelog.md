@@ -15,6 +15,7 @@ import Video from '@site/src/components/Video';
 - Fix background panels in guide being drawn without depth test enabled, sometimes hiding other elements.
 - Fix "Crafting (shapeless)" sometimes overflowing the recipe box and design an easier to use API for
   integrating custom recipe types.
+- Add `<CommandLink command="/command" [title="tooltip"] [close={true}]>...</CommandLink>` that runs a command when clicked.
 
 ## 21.1.0 (Minecraft 1.21.1)
 

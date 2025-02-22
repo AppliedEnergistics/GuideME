@@ -12,7 +12,8 @@ Each file with the extension `.md` in this directory and any subdirectory is con
 
 :::note
 
-Like all files in Minecraft resource packs, page filenames must be [valid resource ids](https://minecraft.wiki/w/Resource_location).
+Like all files in Minecraft resource packs, page filenames must
+be [valid resource ids](https://minecraft.wiki/w/Resource_location).
 Your filenames must all be lowercase, for example.
 
 :::
@@ -122,9 +123,24 @@ Example for horizontally centering an image on the page:
 ### Item Links
 
 To automatically show the translated item name, including an appropriate tooltip, and have the item name link to the
-primary guidebook page for that item, use the  `<ItemLink id="item_id" />` tag. The id can omit the `ae2` namespace.
+primary guidebook page for that item, use the  `<ItemLink id="item_id" />` tag. The id can omit the guides default
+namespace.
 
 [Pages need to be set as the primary target for certain item ids manually](#declaring-pages-as-itemlink-targets).
+
+### Command Links
+
+You can make links that run a command when clicked using `<CommandLink command="/command">text text</CommandLink>`.
+
+The specified command is sent from the client normally and does not bypass permission checks. It has to start with a
+slash.
+
+There are optional attributes:
+
+| Attribute | Description                                                                                       |
+|-----------|---------------------------------------------------------------------------------------------------|
+| title     | An optional tooltip to show for the link. The command itself will always be shown in the tooltip. |
+| close     | If set to `{true}`, the current screen will be closed when the link is clicked.                   |
 
 ### Recipes
 

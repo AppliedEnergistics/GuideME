@@ -439,12 +439,6 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         super.onClose();
     }
 
-    @Override
-    public LytRect getDocumentRect() {
-        var documentRect = super.getDocumentRect();
-        return documentRect;
-    }
-
     private boolean hasSpaceForSidebar() {
         return width >= super.getMaxWidth();
     }
