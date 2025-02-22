@@ -9,14 +9,18 @@ import Video from '@site/src/components/Video';
 - Added an option for Players to disable loading of guide translations.
 - Added support for the strikethrough Markdown extension (`~~text~~` or `~text~`).
 - Added rendering for Markdown blockquotes.
+- Added support for entities in game scenes using `<Entity />`. See [game scenes](./30-authoring/game-scenes.md#entities) for details.
+  ![entity in game scene](./30-authoring/game-scene-entity.png)
+- Add `<CommandLink command="/command" [title="tooltip"] [close={true}]>...</CommandLink>` that runs a command when clicked.
 - Fix several search issues relating to not analyzing queries properly, which reduced the number of relevant results.
 - Fix returning to the original screen when the guide is closed.
 - Improved visibility of the debug overlay text and outlines.
 - Fix background panels in guide being drawn without depth test enabled, sometimes hiding other elements.
 - Fix "Crafting (shapeless)" sometimes overflowing the recipe box and design an easier to use API for
   integrating custom recipe types.
-- Add `<CommandLink command="/command" [title="tooltip"] [close={true}]>...</CommandLink>` that runs a command when clicked.
 - Fix a hidden navbar in guides without navigation still blocking interaction with elements below.
+- Floating point attributes to custom tags can now be specified using MDX expression syntax too (i.e.: `<GameScene zoom={2.5}>`). 
+  Please note that only bare floating point values are supported, no actual expressions.   
 
 ## 21.1.0 (Minecraft 1.21.1)
 

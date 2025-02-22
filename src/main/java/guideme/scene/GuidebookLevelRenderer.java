@@ -19,14 +19,15 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.FluidState;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class GuidebookLevelRenderer {
@@ -96,8 +97,7 @@ public class GuidebookLevelRenderer {
         lightTransform.invert();
         lightTransform.transform(lightDirection);
 
-        var transformedLightDirection = new Vector3f(lightDirection.x, lightDirection.y, lightDirection.z);
-        RenderSystem.setShaderLights(transformedLightDirection, transformedLightDirection);
+        Lighting.setupLevel();
 
         renderContent(level, buffers);
 
@@ -116,7 +116,8 @@ public class GuidebookLevelRenderer {
     public void renderContent(GuidebookLevel level, MultiBufferSource.BufferSource buffers) {
         RenderSystem.runAsFancy(() -> {
             renderBlocks(level, buffers, false);
-            renderBlockEntities(level, buffers);
+            renderBlockEntities(level, buffers, level.getPartialTick());
+            renderEntities(level, buffers, level.getPartialTick());
 
             // The order comes from LevelRenderer#renderLevel
             buffers.endBatch(RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS));
@@ -195,7 +196,7 @@ public class GuidebookLevelRenderer {
         });
     }
 
-    private void renderBlockEntities(GuidebookLevel level, MultiBufferSource buffers) {
+    private void renderBlockEntities(GuidebookLevel level, MultiBufferSource buffers, float partialTick) {
         var poseStack = new PoseStack();
 
         level.getFilledBlocks().forEach(pos -> {
@@ -203,7 +204,7 @@ public class GuidebookLevelRenderer {
             if (blockState.hasBlockEntity()) {
                 var blockEntity = level.getBlockEntity(pos);
                 if (blockEntity != null) {
-                    this.handleBlockEntity(poseStack, blockEntity, buffers);
+                    this.handleBlockEntity(poseStack, blockEntity, buffers, partialTick);
                 }
             }
         });
@@ -223,7 +224,8 @@ public class GuidebookLevelRenderer {
 
     private <E extends BlockEntity> void handleBlockEntity(PoseStack stack,
             E blockEntity,
-            MultiBufferSource buffers) {
+            MultiBufferSource buffers,
+            float partialTicks) {
         var dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
         var renderer = dispatcher.getRenderer(blockEntity);
         if (renderer != null && renderer.shouldRender(blockEntity, blockEntity.getBlockPos().getCenter())) {
@@ -232,9 +234,45 @@ public class GuidebookLevelRenderer {
             stack.translate(pos.getX(), pos.getY(), pos.getZ());
 
             int packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos());
-            renderer.render(blockEntity, 0, stack, buffers, packedLight, OverlayTexture.NO_OVERLAY);
+            renderer.render(blockEntity, partialTicks, stack, buffers, packedLight, OverlayTexture.NO_OVERLAY);
             stack.popPose();
         }
     }
 
+    private void renderEntities(GuidebookLevel level, MultiBufferSource.BufferSource buffers, float partialTick) {
+        var poseStack = new PoseStack();
+
+        for (var entity : level.getEntitiesForRendering()) {
+            handleEntity(level, poseStack, entity, buffers, partialTick);
+        }
+    }
+
+    private <E extends Entity> void handleEntity(GuidebookLevel level,
+            PoseStack poseStack,
+            E entity,
+            MultiBufferSource buffers,
+            float partialTicks) {
+        var dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
+        var renderer = dispatcher.getRenderer(entity);
+        if (renderer == null) {
+            return;
+        }
+
+        var probePos = BlockPos.containing(entity.getLightProbePosition(partialTicks));
+        int packedLight = LevelRenderer.getLightColor(level, probePos);
+        var yaw = entity.getYRot();
+
+        var pos = entity.position();
+        var offset = renderer.getRenderOffset(entity, partialTicks);
+        poseStack.pushPose();
+        poseStack.translate(pos.x + offset.x(), pos.y + offset.y(), pos.z + offset.z());
+        renderer.render(
+                entity,
+                yaw,
+                partialTicks,
+                poseStack,
+                buffers,
+                packedLight);
+        poseStack.popPose();
+    }
 }

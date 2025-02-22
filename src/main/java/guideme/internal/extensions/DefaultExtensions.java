@@ -24,6 +24,7 @@ import guideme.scene.annotation.BlockAnnotationElementCompiler;
 import guideme.scene.annotation.BoxAnnotationElementCompiler;
 import guideme.scene.annotation.DiamondAnnotationElementCompiler;
 import guideme.scene.annotation.LineAnnotationElementCompiler;
+import guideme.scene.element.EntityElementCompiler;
 import guideme.scene.element.ImportStructureElementCompiler;
 import guideme.scene.element.IsometricCameraElementCompiler;
 import guideme.scene.element.SceneBlockElementCompiler;
@@ -81,6 +82,7 @@ public final class DefaultExtensions {
 
     private static List<SceneElementTagCompiler> sceneElementTagCompilers() {
         return List.of(
+                new EntityElementCompiler(),
                 new SceneBlockElementCompiler(),
                 new ImportStructureElementCompiler(),
                 new IsometricCameraElementCompiler(),

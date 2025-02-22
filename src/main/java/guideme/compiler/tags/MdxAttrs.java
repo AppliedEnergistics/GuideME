@@ -1,5 +1,7 @@
 package guideme.compiler.tags;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.compiler.PageCompiler;
@@ -10,9 +12,12 @@ import java.util.regex.Pattern;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,10 +40,44 @@ public final class MdxAttrs {
     private MdxAttrs() {
     }
 
+    @Contract("_, _, _, _, !null -> !null")
+    public static String getString(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el,
+            String attribute, String defaultValue) {
+        var id = el.getAttribute(attribute);
+        if (id == null) {
+            return defaultValue;
+        }
+
+        if (id.hasStringValue()) {
+            return id.getStringValue();
+        } else if (id.hasExpressionValue()) {
+            errorSink.appendError(compiler, "Expected string for '" + attribute + "' but got an expression.", el);
+            return defaultValue;
+        } else {
+            return defaultValue;
+        }
+    }
+
+    @Contract("_, _, _, _, !null -> !null")
+    public static CompoundTag getCompoundTag(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el,
+            String attribute, CompoundTag defaultValue) {
+        var nbtString = getString(compiler, errorSink, el, attribute, null);
+        if (nbtString == null) {
+            return defaultValue;
+        }
+
+        try {
+            return new TagParser(new StringReader(nbtString)).readStruct();
+        } catch (CommandSyntaxException e) {
+            errorSink.appendError(compiler, e.getMessage(), el);
+            return defaultValue;
+        }
+    }
+
     @Nullable
     public static ResourceLocation getRequiredId(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el,
             String attribute) {
-        var id = el.getAttributeString(attribute, null);
+        var id = getString(compiler, errorSink, el, attribute, null);
         if (id == null) {
             errorSink.appendError(compiler, "Missing " + attribute + " attribute.", el);
             return null;
@@ -80,6 +119,21 @@ public final class MdxAttrs {
         return Pair.of(itemId, resultItem);
     }
 
+    @Nullable
+    public static Pair<ResourceLocation, EntityType<?>> getRequiredEntityTypeAndId(PageCompiler compiler,
+            LytErrorSink errorSink,
+            MdxJsxElementFields el,
+            String attribute) {
+        var entityTypeId = getRequiredId(compiler, errorSink, el, attribute);
+
+        var resultType = BuiltInRegistries.ENTITY_TYPE.getOptional(entityTypeId).orElse(null);
+        if (resultType == null) {
+            errorSink.appendError(compiler, "Missing entity type: " + entityTypeId, el);
+            return null;
+        }
+        return Pair.of(entityTypeId, resultType);
+    }
+
     public static Item getRequiredItem(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el,
             String attribute) {
         var result = getRequiredItemAndId(compiler, errorSink, el, attribute);
@@ -91,8 +145,18 @@ public final class MdxAttrs {
 
     public static float getFloat(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el, String name,
             float defaultValue) {
-        var attrValue = el.getAttributeString(name, null);
-        if (attrValue == null) {
+        // Float attributes support expression syntax of bare style numbers too
+        var attr = el.getAttribute(name);
+        if (attr == null) {
+            return defaultValue;
+        }
+
+        String attrValue;
+        if (attr.hasExpressionValue()) {
+            attrValue = attr.getExpressionValue();
+        } else if (attr.hasStringValue()) {
+            attrValue = attr.getStringValue();
+        } else {
             return defaultValue;
         }
 
@@ -110,7 +174,7 @@ public final class MdxAttrs {
             String name,
             @Nullable Vector3fc defaultValue) {
 
-        var attrValue = el.getAttributeString(name, null);
+        var attrValue = getString(compiler, errorSink, el, name, null);
         if (attrValue == null) {
             return defaultValue != null ? new Vector3f(defaultValue) : null;
         }
@@ -136,7 +200,7 @@ public final class MdxAttrs {
             String name,
             @Nullable Vector2fc defaultValue) {
 
-        var attrValue = el.getAttributeString(name, null);
+        var attrValue = getString(compiler, errorSink, el, name, null);
         if (attrValue == null) {
             return defaultValue != null ? new Vector2f(defaultValue) : null;
         }
@@ -158,7 +222,7 @@ public final class MdxAttrs {
 
     public static int getInt(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el, String name,
             int defaultValue) {
-        var attrValue = el.getAttributeString(name, null);
+        var attrValue = getString(compiler, errorSink, el, name, null);
         if (attrValue == null) {
             return defaultValue;
         }
@@ -176,7 +240,7 @@ public final class MdxAttrs {
     public static <T extends Enum<T> & StringRepresentable> T getEnum(PageCompiler compiler, LytErrorSink errorSink,
             MdxJsxElementFields el, String name, T defaultValue) {
 
-        var stringValue = el.getAttributeString(name, defaultValue.getSerializedName());
+        var stringValue = getString(compiler, errorSink, el, name, defaultValue.getSerializedName());
 
         var clazz = (Class<T>) defaultValue.getClass();
         for (var constant : clazz.getEnumConstants()) {
@@ -233,9 +297,16 @@ public final class MdxAttrs {
         return new BlockPos(x, y, z);
     }
 
+    public static void getFloatPos(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el,
+            Vector3f out) {
+        out.x = getFloat(compiler, errorSink, el, "x", out.x);
+        out.y = getFloat(compiler, errorSink, el, "y", out.y);
+        out.z = getFloat(compiler, errorSink, el, "z", out.z);
+    }
+
     public static ColorValue getColor(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el,
             String name, ColorValue defaultColor) {
-        var colorStr = el.getAttributeString(name, null);
+        var colorStr = getString(compiler, errorSink, el, name, null);
         if (colorStr != null) {
             if ("transparent".equals(colorStr)) {
                 return new ConstantColor(0);

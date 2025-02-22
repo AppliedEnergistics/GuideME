@@ -13,6 +13,10 @@ You may ~~need~~ a door!
 
 <CommandLink command="/tp @s 0 90 0" title="Tooltip" close={true}>Teleport!</CommandLink>
 
+<GameScene zoom={4} interactive={true}>
+    <Entity id="minecraft:sheep" data="{Color: 2}" />
+</GameScene>
+
 <RecipeFor id="minecraft:oak_door" />
 <Recipe id="minecraft:iron_nugget_from_blasting" />
 

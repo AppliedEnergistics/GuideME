@@ -30,6 +30,7 @@ import net.minecraft.world.TickRateManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
@@ -129,6 +130,18 @@ public class GuidebookLevel extends Level {
             max.setZ(Math.max(max.getZ(), cur.getZ() + 1));
         });
 
+        for (var entity : getEntitiesForRendering()) {
+            var bounds = entity.getBoundingBox();
+
+            min.setX(Math.min(min.getX(), (int) bounds.minX));
+            min.setY(Math.min(min.getY(), (int) bounds.minY));
+            min.setZ(Math.min(min.getZ(), (int) bounds.minZ));
+
+            max.setX(Math.max(max.getX(), (int) Math.ceil(bounds.maxX)));
+            max.setY(Math.max(max.getY(), (int) Math.ceil(bounds.maxY)));
+            max.setZ(Math.max(max.getZ(), (int) Math.ceil(bounds.maxZ)));
+        }
+
         return new Bounds(min, max);
     }
 
@@ -221,6 +234,25 @@ public class GuidebookLevel extends Level {
     @Override
     protected LevelEntityGetter<Entity> getEntities() {
         return entityStorage.getEntityGetter();
+    }
+
+    public Iterable<Entity> getEntitiesForRendering() {
+        return entityStorage.getEntityGetter().getAll();
+    }
+
+    public void addEntity(Entity entity) {
+        this.removeEntity(entity.getId(), Entity.RemovalReason.DISCARDED);
+        this.entityStorage.addEntity(entity);
+        entity.onAddedToLevel();
+        prepareLighting(entity.getOnPos());
+    }
+
+    public void removeEntity(int entityId, Entity.RemovalReason reason) {
+        Entity entity = getEntities().get(entityId);
+        if (entity != null) {
+            entity.setRemoved(reason);
+            entity.onClientRemoval();
+        }
     }
 
     @Nullable
@@ -361,7 +393,7 @@ public class GuidebookLevel extends Level {
 
     @Override
     public FeatureFlagSet enabledFeatures() {
-        return FeatureFlagSet.of();
+        return FeatureFlags.DEFAULT_FLAGS;
     }
 
     private static class EntityCallbacks implements LevelCallback<Entity> {

@@ -83,10 +83,6 @@ public class GuidebookScene {
     }
 
     private Bounds getBounds(Matrix4f viewMatrix) {
-        if (!level.hasFilledBlocks()) {
-            return new Bounds(new Vector3f(), new Vector3f());
-        }
-
         // This is doing more work than needed since touching blocks create unneeded corners
         var tmpPos = new Vector3f();
         var min = new Vector3f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
@@ -111,6 +107,29 @@ public class GuidebookScene {
                 }
             }
         });
+
+        for (var entity : level.getEntitiesForRendering()) {
+            var bounds = entity.getBoundingBox();
+
+            for (var xCorner = 0; xCorner <= 1; xCorner++) {
+                for (var yCorner = 0; yCorner <= 1; yCorner++) {
+                    for (var zCorner = 0; zCorner <= 1; zCorner++) {
+                        viewMatrix.transformPosition(
+                                (float) (xCorner == 0 ? bounds.minX : bounds.maxX),
+                                (float) (yCorner == 0 ? bounds.minY : bounds.maxY),
+                                (float) (zCorner == 0 ? bounds.minZ : bounds.maxZ),
+                                tmpPos);
+                        min.min(tmpPos);
+                        max.max(tmpPos);
+                    }
+                }
+            }
+        }
+
+        if (!min.isFinite() || !max.isFinite()) {
+            return new Bounds(new Vector3f(), new Vector3f());
+        }
+
         return new Bounds(min, max);
     }
 
@@ -275,7 +294,6 @@ public class GuidebookScene {
 
     public Vector3fc getWorldCenter() {
         // This is doing more work than needed since touching blocks create unneeded corners
-        var tmpPos = new Vector3f();
         var min = new Vector3f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
         var max = new Vector3f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
         level.getFilledBlocks().forEach(pos -> {
@@ -294,6 +312,14 @@ public class GuidebookScene {
                 }
             }
         });
+        var tmp = new Vector3f();
+        for (var entity : level.getEntitiesForRendering()) {
+            var bounds = entity.getBoundingBox();
+            tmp.set(bounds.minX, bounds.minY, bounds.minZ);
+            min.min(tmp);
+            tmp.set(bounds.maxX, bounds.maxY, bounds.maxZ);
+            max.max(tmp);
+        }
         var avg = new Vector3f(min);
         avg.add(max);
         avg.div(2);
