@@ -10,8 +10,10 @@ import guideme.extensions.ExtensionCollection;
 import guideme.extensions.ExtensionPoint;
 import guideme.libs.mdast.MdAstYamlFrontmatter;
 import guideme.libs.mdast.gfm.model.GfmTable;
+import guideme.libs.mdast.gfmstrikethrough.MdAstDelete;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstAnyContent;
+import guideme.libs.mdast.model.MdAstBlockquote;
 import guideme.libs.mdast.model.MdAstBreak;
 import guideme.libs.mdast.model.MdAstCode;
 import guideme.libs.mdast.model.MdAstEmphasis;
@@ -79,6 +81,8 @@ public final class PageIndexer implements IndexingContext {
             sink.appendText(astCode, astCode.value);
         } else if (content instanceof MdAstHeading astHeading) {
             indexContent(astHeading.children(), sink);
+        } else if (content instanceof MdAstBlockquote astBlockquote) {
+            indexContent(astBlockquote.children(), sink);
         } else if (content instanceof MdAstParagraph astParagraph) {
             indexContent(astParagraph.children(), sink);
         } else if (content instanceof MdAstYamlFrontmatter) {
@@ -93,6 +97,8 @@ public final class PageIndexer implements IndexingContext {
             indexContent(astStrong.children(), sink);
         } else if (content instanceof MdAstEmphasis astEmphasis) {
             indexContent(astEmphasis.children(), sink);
+        } else if (content instanceof MdAstDelete astDelete) {
+            indexContent(astDelete.children(), sink);
         } else if (content instanceof MdAstBreak) {
             sink.appendBreak();
         } else if (content instanceof MdAstLink astLink) {

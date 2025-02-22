@@ -154,6 +154,10 @@ public class Token {
         }
     }
 
+    public int size() {
+        return end.offset() - start.offset();
+    }
+
     @Override
     public String toString() {
         var builder = new StringBuilder();
