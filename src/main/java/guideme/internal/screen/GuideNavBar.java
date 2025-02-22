@@ -117,6 +117,20 @@ public class GuideNavBar extends AbstractWidget {
 
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+
+        // Check if we need to re-layout
+        var currentNavTree = screen.getGuide().getNavigationTree();
+        if (currentNavTree != this.navTree) {
+            recreateRows();
+        }
+
+        // stop reacting to mouse events
+        active = !this.rows.isEmpty();
+
+        if (this.rows.isEmpty()) {
+            return; // do not render the navbar if there are no nodes.
+        }
+
         updateLayout();
 
         widthTransition.update();
@@ -174,16 +188,6 @@ public class GuideNavBar extends AbstractWidget {
         }
 
         updateMousePos(mouseX, mouseY);
-
-        // Check if we need to re-layout
-        var currentNavTree = screen.getGuide().getNavigationTree();
-        if (currentNavTree != this.navTree) {
-            recreateRows();
-        }
-
-        if (this.rows.isEmpty()) {
-            return; // do not render the navbar if there are no nodes.
-        }
 
         if (state == State.CLOSED) {
             renderContext.fillGradientHorizontal(getX(), getY(), width, height, SymbolicColor.NAVBAR_BG_TOP,
