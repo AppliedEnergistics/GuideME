@@ -60,6 +60,7 @@ import guideme.libs.mdast.model.MdAstStrong;
 import guideme.libs.mdast.model.MdAstText;
 import guideme.libs.mdast.model.MdAstThematicBreak;
 import guideme.libs.mdx.MdxSyntax;
+import guideme.libs.micromark.ParseException;
 import guideme.libs.micromark.extensions.YamlFrontmatterSyntax;
 import guideme.libs.micromark.extensions.gfm.GfmTableSyntax;
 import guideme.libs.micromark.extensions.gfmstrikethrough.GfmStrikethroughSyntax;
@@ -149,12 +150,39 @@ public final class PageCompiler {
                 .withMdastExtension(GfmTableMdastExtension.INSTANCE)
                 .withMdastExtension(GfmStrikethroughMdastExtension.INSTANCE);
 
-        var astRoot = MdAst.fromMarkdown(pageContent, options);
+        MdAstRoot astRoot;
+        try {
+            astRoot = MdAst.fromMarkdown(pageContent, options);
+        } catch (ParseException e) {
+            LOG.error("Failed to parse GuideME page {} (lang: {}) from resource pack {}", id, language, sourcePack, e);
+            astRoot = buildErrorPage(e.toString());
+        }
 
         // Find front-matter
         var frontmatter = parseFrontmatter(id, astRoot);
 
         return new ParsedGuidePage(sourcePack, id, pageContent, astRoot, frontmatter, language);
+    }
+
+    private static MdAstRoot buildErrorPage(String errorText) {
+        var root = new MdAstRoot();
+
+        var heading = new MdAstHeading();
+        root.addChild(heading);
+
+        heading.depth = 1;
+        var headingText = new MdAstText();
+        headingText.setValue("PARSING ERROR");
+        heading.addChild(headingText);
+
+        var errorParagraph = new MdAstParagraph();
+        root.addChild(errorParagraph);
+
+        var errorTextNode = new MdAstText();
+        errorTextNode.setValue(errorText);
+        errorParagraph.addChild(errorTextNode);
+
+        return root;
     }
 
     public static GuidePage compile(PageCollection pages, ExtensionCollection extensions, ParsedGuidePage parsedPage) {

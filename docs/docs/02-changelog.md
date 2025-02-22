@@ -21,6 +21,8 @@ import Video from '@site/src/components/Video';
 - Fix a hidden navbar in guides without navigation still blocking interaction with elements below.
 - Floating point attributes to custom tags can now be specified using MDX expression syntax too (i.e.: `<GameScene zoom={2.5}>`). 
   Please note that only bare floating point values are supported, no actual expressions.   
+- Fatal Markdown parsing errors will now no longer crash the resource reload and instead replace the offending page with an error page.
+- Cycles in the navigation tree will now be reported and no longer cause a stack overflow during resource reload.
 
 ## 21.1.0 (Minecraft 1.21.1)
 

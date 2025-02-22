@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
@@ -81,7 +83,7 @@ public class NavigationTree {
         var rootNodes = new ArrayList<NavigationNode>();
 
         for (var entry : pagesWithChildren.entrySet()) {
-            createNode(nodeIndex, rootNodes, pagesWithChildren, entry.getKey(), entry.getValue());
+            createNode(nodeIndex, rootNodes, pagesWithChildren, entry.getKey(), entry.getValue(), new HashSet<>());
         }
 
         // Sort root nodes
@@ -90,11 +92,18 @@ public class NavigationTree {
         return new NavigationTree(Map.copyOf(nodeIndex), List.copyOf(rootNodes));
     }
 
-    private static NavigationNode createNode(HashMap<ResourceLocation, NavigationNode> nodeIndex,
-            ArrayList<NavigationNode> rootNodes,
+    @Nullable
+    private static NavigationNode createNode(Map<ResourceLocation, NavigationNode> nodeIndex,
+            List<NavigationNode> rootNodes,
             Map<ResourceLocation, Pair<ParsedGuidePage, List<ParsedGuidePage>>> pagesWithChildren,
             ResourceLocation pageId,
-            Pair<ParsedGuidePage, List<ParsedGuidePage>> entry) {
+            Pair<ParsedGuidePage, List<ParsedGuidePage>> entry,
+            Set<ResourceLocation> parents) {
+        if (!parents.add(pageId)) {
+            LOG.error("Detected a cycle in the navigation tree parent-child relationship for page {}", pageId);
+            return null;
+        }
+
         var page = entry.getKey();
         var children = entry.getRight();
 
@@ -113,7 +122,11 @@ public class NavigationTree {
         for (var childPage : children) {
             var childPageEntry = pagesWithChildren.get(childPage.getId());
 
-            childNodes.add(createNode(nodeIndex, rootNodes, pagesWithChildren, childPage.getId(), childPageEntry));
+            var childNode = createNode(nodeIndex, rootNodes, pagesWithChildren, childPage.getId(), childPageEntry,
+                    parents);
+            if (childNode != null) {
+                childNodes.add(childNode);
+            }
         }
         childNodes.sort(NODE_COMPARATOR);
 
