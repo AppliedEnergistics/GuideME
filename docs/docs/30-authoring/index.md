@@ -17,8 +17,7 @@ Your filenames must all be lowercase, for example.
 
 :::
 
-Pages are written in Markdown and follow the [Commonmark](https://commonmark.org/) specification.
-We also support [Github Tables](https://github.github.com/gfm/#tables-extension-).
+Pages are written in Markdown. See [supported Markdown](./markdown.md) for details.
 
 Every page should usually declare its title as a level 1 heading at the start (`# Page Title`).
 
