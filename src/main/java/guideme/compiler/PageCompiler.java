@@ -75,6 +75,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import net.minecraft.ResourceLocationException;
@@ -154,8 +155,11 @@ public final class PageCompiler {
         try {
             astRoot = MdAst.fromMarkdown(pageContent, options);
         } catch (ParseException e) {
-            LOG.error("Failed to parse GuideME page {} (lang: {}) from resource pack {}", id, language, sourcePack, e);
-            astRoot = buildErrorPage(e.toString());
+            var errorMessage = String.format(Locale.ROOT,
+                    "Failed to parse GuideME page %s (lang: %s) from resource pack %s",
+                    id, language, sourcePack);
+            LOG.error("{}", errorMessage, e);
+            astRoot = buildErrorPage(errorMessage + ": \n" + e);
         }
 
         // Find front-matter
