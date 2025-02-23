@@ -2,6 +2,7 @@ import Conversion from "@site/src/components/patchouli/Conversion";
 import {FileWithPath, useDropzone} from "react-dropzone";
 import {useCallback, useMemo, useState} from "react";
 import css from './PatchouliConverter.module.css';
+import Video from "@site/src/components/Video";
 
 const rootClasses = 'card ' + css.dragInactive;
 const rootClassesDragActive = 'card ' + css.dragActive;
@@ -35,6 +36,7 @@ function PatchouliConverter() {
                 </div>
             </div>
             <p/>
+            {!file && <p>You can see a demonstration of the conversion process in the following video: <Video src="patchouli-conversion.mp4" /></p>}
             {file && <Conversion file={file} reset={reset}/>}
         </>
     );
