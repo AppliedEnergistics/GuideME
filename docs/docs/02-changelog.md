@@ -24,6 +24,7 @@ import Video from '@site/src/components/Video';
   Please note that only bare floating point values are supported, no actual expressions.   
 - Fatal Markdown parsing errors will now no longer crash the resource reload and instead replace the offending page with an error page.
 - Cycles in the navigation tree will now be reported and no longer cause a stack overflow during resource reload.
+- Fix scaling in `<ItemImage />` also scaling normals, which made items with 3d models appear too dark.
 
 ## 21.1.0 (Minecraft 1.21.1)
 

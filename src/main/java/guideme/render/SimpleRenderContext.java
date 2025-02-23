@@ -111,7 +111,9 @@ public final class SimpleRenderContext implements RenderContext {
         var pose = poseStack();
         pose.pushPose();
         pose.translate(x, y, z + 1);
-        pose.scale(width / 16, height / 16, 1);
+        // Purposefully do NOT scale the normals!
+        // this happens on non-uniform scales when calling the normal scale method
+        pose.last().pose().scale(width / 16, height / 16, Math.max(width / 16, height / 16));
         guiGraphics().renderItem(stack, 0, 0);
         guiGraphics().renderItemDecorations(mc.font, stack, 0, 0);
         pose.popPose();
