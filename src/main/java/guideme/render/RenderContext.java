@@ -1,6 +1,7 @@
 package guideme.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.color.LightDarkMode;
@@ -167,9 +168,9 @@ public interface RenderContext {
     }
 
     default void renderText(String text, ResolvedTextStyle style, float x, float y) {
-        var bufferSource = beginBatch();
+        var bufferSource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
         renderTextInBatch(text, style, x, y, bufferSource);
-        endBatch(bufferSource);
+        bufferSource.endBatch();
     }
 
     default void renderTextInBatch(String text, ResolvedTextStyle style, float x, float y, MultiBufferSource buffers) {
@@ -220,7 +221,7 @@ public interface RenderContext {
     }
 
     default MultiBufferSource.BufferSource beginBatch() {
-        return Minecraft.getInstance().renderBuffers().bufferSource();
+        return MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
     }
 
     default void endBatch(MultiBufferSource.BufferSource batch) {

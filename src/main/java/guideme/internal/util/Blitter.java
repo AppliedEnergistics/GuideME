@@ -19,6 +19,7 @@
 package guideme.internal.util;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -34,15 +35,12 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 /**
  * Utility class for drawing rectangular textures in the UI.
  */
-@OnlyIn(Dist.CLIENT)
 public final class Blitter {
 
     // This assumption is obviously bogus, but currently all textures are this size,
@@ -286,20 +284,24 @@ public final class Blitter {
 
         Matrix4f matrix = guiGraphics.pose().last().pose();
 
-        var bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS,
-                DefaultVertexFormat.POSITION_TEX_COLOR);
-        bufferbuilder.addVertex(matrix, x1, y2, zOffset)
-                .setUv(minU, maxV)
-                .setColor(r, g, b, a);
-        bufferbuilder.addVertex(matrix, x2, y2, zOffset)
-                .setUv(maxU, maxV)
-                .setColor(r, g, b, a);
-        bufferbuilder.addVertex(matrix, x2, y1, zOffset)
-                .setUv(maxU, minV)
-                .setColor(r, g, b, a);
-        bufferbuilder.addVertex(matrix, x1, y1, zOffset)
-                .setUv(minU, minV)
-                .setColor(r, g, b, a);
+        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
+        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        bufferbuilder.vertex(matrix, x1, y2, 0)
+                .uv(minU, maxV)
+                .color(r, g, b, a)
+                .endVertex();
+        bufferbuilder.vertex(matrix, x2, y2, 0)
+                .uv(maxU, maxV)
+                .color(r, g, b, a)
+                .endVertex();
+        bufferbuilder.vertex(matrix, x2, y1, 0)
+                .uv(maxU, minV)
+                .color(r, g, b, a)
+                .endVertex();
+        bufferbuilder.vertex(matrix, x1, y1, 0)
+                .uv(minU, minV)
+                .color(r, g, b, a)
+                .endVertex();
 
         if (blending) {
             RenderSystem.enableBlend();
@@ -307,7 +309,7 @@ public final class Blitter {
         } else {
             RenderSystem.disableBlend();
         }
-        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
+        BufferUploader.drawWithShader(bufferbuilder.end());
     }
 
 }

@@ -47,7 +47,7 @@ public class GuideBuilder {
         this.id = Objects.requireNonNull(id, "id");
         this.defaultNamespace = id.getNamespace();
         this.folder = "guides/" + id.getNamespace() + "/" + id.getPath();
-        this.startPage = ResourceLocation.fromNamespaceAndPath(defaultNamespace, "index.md");
+        this.startPage = new ResourceLocation(defaultNamespace, "index.md");
 
         // Development sources folder
         var devSourcesFolderProperty = getSystemPropertyName(id, "sources");

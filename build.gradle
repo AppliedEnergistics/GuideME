@@ -127,10 +127,11 @@ test {
 neoForge {
     enable {
         version = project.neoforge_version
-        enabledSourceSets = [sourceSets.main, sourceSets.testmod]
+        enabledSourceSets = [sourceSets.main, sourceSets.testmod, sourceSets.test]
     }
 
-    validateAccessTransformers = true
+    // 1.20.4 ATs of the modding platform are borked
+    // validateAccessTransformers = false
 
     mods {
         guideme {
@@ -182,11 +183,6 @@ neoForge {
                     '--existing', file('src/main/resources').absolutePath
             ]
         }
-    }
-
-    unitTest {
-        enable()
-        testedMod = mods.guidemetest
     }
 }
 

@@ -4,8 +4,6 @@ import guideme.color.LightDarkMode;
 import guideme.internal.GuideME;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import net.minecraft.client.gui.GuiSpriteManager;
-import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +16,7 @@ public final class GuiAssets {
 
     private static final Map<ResourceLocation, GuiSprite> sprites = new ConcurrentHashMap<>();
 
-    /**
-     * @see GuiSpriteManager
-     */
-    public static final ResourceLocation GUI_SPRITE_ATLAS = ResourceLocation
-            .withDefaultNamespace("textures/atlas/gui.png");
+    public static final ResourceLocation GUI_SPRITE_ATLAS = GuideME.makeId("textures/atlas/gui.png");
 
     public static final GuiSprite GUIDE_BACKGROUND = sprite("background");
     public static final GuiSprite WINDOW_SPRITE = sprite("window");
@@ -69,13 +63,13 @@ public final class GuiAssets {
         var border = nineSlice.border();
         // Compute the delimiting U values *in the atlas* for the three slices.
         var u0 = sprite.getU0();
-        var u1 = sprite.getU(border.left() / (float) nineSlice.width());
-        var u2 = sprite.getU(1 - border.right() / (float) nineSlice.width());
+        var u1 = sprite.getU((border.left() / (float) nineSlice.width()) * 16);
+        var u2 = sprite.getU((1 - border.right() / (float) nineSlice.width()) * 16);
         var u3 = sprite.getU1();
         // Compute the delimiting V values *in the atlas* for the three slices.
         var v0 = sprite.getV0();
-        var v1 = sprite.getV(border.top() / (float) nineSlice.height());
-        var v2 = sprite.getV(1 - border.bottom() / (float) nineSlice.height());
+        var v1 = sprite.getV((border.top() / (float) nineSlice.height()) * 16);
+        var v2 = sprite.getV((1 - border.bottom() / (float) nineSlice.height()) * 16);
         var v3 = sprite.getV1();
 
         return new NineSliceSprite(

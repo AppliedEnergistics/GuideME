@@ -279,6 +279,6 @@ class GuideSourceWatcher implements AutoCloseable {
         if (!ResourceLocation.isValidPath(relativePathStr)) {
             return null;
         }
-        return ResourceLocation.fromNamespaceAndPath(namespace, relativePathStr);
+        return new ResourceLocation(namespace, relativePathStr);
     }
 }

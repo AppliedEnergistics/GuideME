@@ -2,6 +2,7 @@ package guideme;
 
 import guideme.internal.GuideME;
 import guideme.internal.GuideRegistry;
+import guideme.internal.item.GuideItem;
 import java.util.Collection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +29,7 @@ public final class Guides {
      */
     public static ItemStack createGuideItem(ResourceLocation guideId) {
         var stack = new ItemStack(GuideME.GUIDE_ITEM.get());
-        stack.set(GuideME.GUIDE_ID_COMPONENT, guideId);
+        stack.getOrCreateTag().putString(GuideItem.TAG_GUIDE_ID, guideId.toString());
         return stack;
     }
 }

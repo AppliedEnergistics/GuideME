@@ -4,6 +4,7 @@ import guideme.internal.GuideME;
 import guideme.internal.GuideMEProxy;
 import guideme.internal.GuidebookText;
 import java.util.List;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -20,6 +21,8 @@ public class GuideItem extends Item {
     public static final ResourceLocation BASE_MODEL_ID = ID.withPrefix("item/").withSuffix("_base");
 
     public static final Properties PROPERTIES = new Properties();
+
+    public static final String TAG_GUIDE_ID = "guideId";
 
     public GuideItem(Properties properties) {
         super(properties);
@@ -38,13 +41,11 @@ public class GuideItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines,
-            TooltipFlag tooltipFlag) {
+    public void appendHoverText(ItemStack stack, Level level, List<Component> lines, TooltipFlag tooltipFlag) {
         var guideId = getGuideId(stack);
         if (guideId != null) {
             GuideMEProxy.instance().addGuideTooltip(
                     guideId,
-                    context,
                     lines,
                     tooltipFlag);
         }
@@ -69,6 +70,10 @@ public class GuideItem extends Item {
 
     @Nullable
     public static ResourceLocation getGuideId(ItemStack stack) {
-        return stack.get(GuideME.GUIDE_ID_COMPONENT);
+        var tag = stack.getTag();
+        if (tag != null && tag.contains(TAG_GUIDE_ID, Tag.TAG_STRING)) {
+            return ResourceLocation.tryParse(tag.getString(TAG_GUIDE_ID));
+        }
+        return null;
     }
 }

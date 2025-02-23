@@ -1,11 +1,13 @@
 package guideme.scene.export;
 
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 
@@ -16,7 +18,7 @@ class MeshBuildingBufferSource extends MultiBufferSource.BufferSource {
     private final List<Mesh> meshes = new ArrayList<>();
 
     public MeshBuildingBufferSource() {
-        super(new ByteBufferBuilder(786432), Object2ObjectSortedMaps.emptyMap());
+        super(new BufferBuilder(256), Map.of());
     }
 
     public List<Mesh> getMeshes() {
@@ -25,36 +27,41 @@ class MeshBuildingBufferSource extends MultiBufferSource.BufferSource {
 
     @Override
     public void endBatch(RenderType renderType) {
-        var bufferBuilder = startedBuilders.remove(renderType);
-        if (bufferBuilder == null) {
+        var bufferBuilder = this.fixedBuffers.getOrDefault(renderType, this.builder);
+        boolean bl = Objects.equals(this.lastState, renderType.asOptional());
+        if (!bl && bufferBuilder == this.builder) {
             return;
         }
+        if (!this.startedBuffers.remove(bufferBuilder)) {
+            return;
+        }
+        var buffer = bufferBuilder.endOrDiscardIfEmpty();
+        if (buffer != null) {
 
-        try (var buffer = bufferBuilder.build()) {
-            if (buffer != null) {
-                var drawState = buffer.drawState();
+            var drawState = buffer.drawState();
 
-                var vbSource = buffer.vertexBuffer();
-                var vertexBuffer = ByteBuffer.allocate(vbSource.remaining())
-                        .order(ByteOrder.nativeOrder());
-                vertexBuffer.put(vbSource);
-                vertexBuffer.flip();
+            var vbSource = buffer.vertexBuffer();
+            var vertexBuffer = ByteBuffer.allocate(vbSource.remaining())
+                    .order(ByteOrder.nativeOrder());
+            vertexBuffer.put(vbSource);
+            vertexBuffer.flip();
 
-                // Copy the index buffer
-                ByteBuffer indexBuffer = null;
-                var ibSource = buffer.indexBuffer();
-                if (ibSource != null) {
-                    indexBuffer = ByteBuffer.allocate(ibSource.remaining());
-                    indexBuffer.put(ibSource);
-                    indexBuffer.flip();
-                }
+            var ibSource = buffer.indexBuffer();
+            var indexBuffer = ByteBuffer.allocate(ibSource.remaining());
+            indexBuffer.put(ibSource);
+            indexBuffer.flip();
 
-                this.meshes.add(new Mesh(
-                        drawState,
-                        vertexBuffer,
-                        indexBuffer,
-                        renderType));
-            }
+            this.meshes.add(new Mesh(
+                    drawState,
+                    vertexBuffer,
+                    indexBuffer,
+                    renderType));
+
+            buffer.release();
+        }
+
+        if (bl) {
+            this.lastState = Optional.empty();
         }
     }
 

@@ -2,7 +2,6 @@ package guideme.internal;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import guideme.Guide;
 import guideme.compiler.PageCompiler;
@@ -114,12 +113,13 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
             var guideId = entry.getKey();
 
             var result = DataDrivenGuide.CODEC.parse(JsonOps.INSTANCE, entry.getValue());
-            if (result instanceof DataResult.Error<?> error) {
+            var error = result.error().orElse(null);
+            if (error != null) {
                 LOG.error("Failed to load data driven guide {}: {}", guideId, error.message());
                 continue;
             }
 
-            var guideSpec = result.getOrThrow();
+            var guideSpec = result.get().orThrow();
 
             var guide = (MutableGuide) Guide.builder(guideId)
                     .register(false)
@@ -141,7 +141,7 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
         var resources = resourceManager.listResources(contentRoot, location -> location.getPath().endsWith(".md"));
 
         for (var entry : resources.entrySet()) {
-            var pageId = ResourceLocation.fromNamespaceAndPath(
+            var pageId = new ResourceLocation(
                     entry.getKey().getNamespace(),
                     entry.getKey().getPath().substring((contentRoot + "/").length()));
             var resource = entry.getValue();

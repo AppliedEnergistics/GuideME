@@ -1,5 +1,6 @@
 package guideme;
 
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,10 +20,10 @@ public record PageAnchor(ResourceLocation pageId, @Nullable String anchor) {
         ResourceLocation pageId = null;
         String fragment = null;
         if (sep != -1) {
-            pageId = ResourceLocation.parse(anchor.substring(0, sep));
+            pageId = new ResourceLocation(anchor.substring(0, sep));
             fragment = anchor.substring(sep + 1);
         } else {
-            pageId = ResourceLocation.parse(anchor);
+            pageId = new ResourceLocation(anchor);
         }
         return new PageAnchor(pageId, fragment);
     }
@@ -34,5 +35,16 @@ public record PageAnchor(ResourceLocation pageId, @Nullable String anchor) {
         } else {
             return pageId.toString();
         }
+    }
+
+    public static PageAnchor read(FriendlyByteBuf buffer) {
+        var pageId = buffer.readResourceLocation();
+        var anchor = buffer.readNullable(FriendlyByteBuf::readUtf);
+        return new PageAnchor(pageId, anchor);
+    }
+
+    public static void write(FriendlyByteBuf buffer, PageAnchor anchor) {
+        buffer.writeResourceLocation(anchor.pageId);
+        buffer.writeNullable(anchor.anchor, FriendlyByteBuf::writeUtf);
     }
 }

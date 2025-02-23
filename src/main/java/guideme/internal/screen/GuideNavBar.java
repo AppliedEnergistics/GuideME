@@ -62,7 +62,7 @@ public class GuideNavBar extends AbstractWidget {
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY, int button) {
+    public void onClick(double mouseX, double mouseY) {
         if (state != State.OPENING && state != State.OPEN) {
             return;
         }

@@ -15,7 +15,6 @@ import guideme.internal.siteexport.model.FluidInfoJson;
 import guideme.internal.siteexport.model.ItemInfoJson;
 import guideme.internal.siteexport.model.NavigationNodeJson;
 import guideme.internal.siteexport.model.SiteExportJson;
-import guideme.internal.util.Platform;
 import guideme.libs.mdast.MdAstVisitor;
 import guideme.libs.mdast.model.MdAstHeading;
 import guideme.libs.mdast.model.MdAstNode;
@@ -35,7 +34,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -151,7 +149,7 @@ public class SiteExportWriter {
         var fluidInfo = new FluidInfoJson();
         fluidInfo.id = id;
         fluidInfo.icon = iconPath;
-        fluidInfo.displayName = fluid.getHoverName().getString();
+        fluidInfo.displayName = fluid.getDisplayName().getString();
         siteExport.fluids.put(fluidInfo.id, fluidInfo);
     }
 
@@ -264,11 +262,9 @@ public class SiteExportWriter {
 
     public String addItem(ItemStack stack) {
         var itemId = stack.getItem().builtInRegistryHolder().key().location().toString().replace(':', '-');
-        if (stack.getComponentsPatch().isEmpty()) {
+        if (stack.getTag() == null) {
             return itemId;
         }
-
-        var serializedTag = (CompoundTag) stack.save(Platform.getClientRegistryAccess());
 
         MessageDigest digest;
         try {
@@ -277,7 +273,7 @@ public class SiteExportWriter {
             throw new RuntimeException(e);
         }
         try (var out = new DataOutputStream(new DigestOutputStream(OutputStream.nullOutputStream(), digest))) {
-            NbtIo.write(serializedTag, out);
+            NbtIo.write(stack.getTag(), out);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

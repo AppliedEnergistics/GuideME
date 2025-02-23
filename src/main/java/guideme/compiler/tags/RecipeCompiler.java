@@ -16,10 +16,10 @@ import java.util.Set;
 import java.util.function.Function;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import org.jetbrains.annotations.Nullable;
@@ -97,7 +97,7 @@ public class RecipeCompiler extends BlockTagCompiler {
     /**
      * Maps a recipe type to a factory that can create a layout block to display it.
      */
-    private record RecipeTypeMapping<T extends Recipe<C>, C extends RecipeInput>(
+    private record RecipeTypeMapping<T extends Recipe<C>, C extends Container>(
             RecipeType<T> recipeType,
             Function<RecipeHolder<T>, LytBlock> factory) {
         @Nullable
@@ -106,7 +106,7 @@ public class RecipeCompiler extends BlockTagCompiler {
 
             // We try to find non-special recipes first then fall back to special
             List<RecipeHolder<T>> fallbackCandidates = new ArrayList<>();
-            for (var recipe : recipeManager.byType(recipeType)) {
+            for (var recipe : recipeManager.byType(recipeType).values()) {
                 if (recipe.value().isSpecial()) {
                     fallbackCandidates.add(recipe);
                     continue;
@@ -141,7 +141,7 @@ public class RecipeCompiler extends BlockTagCompiler {
         List<RecipeTypeMapping<?, ?>> result = new ArrayList<>();
         var mappings = new RecipeTypeMappingSupplier.RecipeTypeMappings() {
             @Override
-            public <T extends Recipe<C>, C extends RecipeInput> void add(RecipeType<T> recipeType,
+            public <T extends Recipe<C>, C extends Container> void add(RecipeType<T> recipeType,
                     Function<RecipeHolder<T>, LytBlock> factory) {
                 result.add(new RecipeTypeMapping<>(recipeType, factory));
             }
@@ -164,7 +164,7 @@ public class RecipeCompiler extends BlockTagCompiler {
         List<RecipeTypeMapping<?, ?>> result = new ArrayList<>();
         var mappings = new RecipeTypeMappingSupplier.RecipeTypeMappings() {
             @Override
-            public <T extends Recipe<C>, C extends RecipeInput> void add(RecipeType<T> recipeType,
+            public <T extends Recipe<C>, C extends Container> void add(RecipeType<T> recipeType,
                     Function<RecipeHolder<T>, LytBlock> factory) {
                 Objects.requireNonNull(recipeType, "recipeType");
                 Objects.requireNonNull(factory, "factory");

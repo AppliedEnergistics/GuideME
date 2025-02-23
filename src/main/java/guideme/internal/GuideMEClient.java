@@ -16,36 +16,29 @@ import guideme.internal.search.GuideSearch;
 import guideme.render.GuiAssets;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.TickEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Mod(value = GuideME.MOD_ID, dist = Dist.CLIENT)
 public class GuideMEClient {
     private static final Logger LOG = LoggerFactory.getLogger(GuideMEClient.class);
 
@@ -56,15 +49,17 @@ public class GuideMEClient {
 
     private final GuideSearch search = new GuideSearch();
 
-    public GuideMEClient(ModContainer modContainer, IEventBus modBus) {
+    private GuiSpriteAtlas guiAtlas;
+
+    public GuideMEClient(ModLoadingContext context, IEventBus modBus) {
         INSTANCE = this;
         GuideME.PROXY = new GuideMEClientProxy();
 
-        modContainer.registerConfig(ModConfig.Type.CLIENT, clientConfig.spec, "guideme.toml");
+        context.registerConfig(ModConfig.Type.CLIENT, clientConfig.spec, "guideme.toml");
 
-        modBus.addListener(RegisterEvent.class, e -> {
+        modBus.addListener((RegisterEvent e) -> {
             if (e.getRegistryKey() == Registries.SOUND_EVENT) {
-                Registry.register(BuiltInRegistries.SOUND_EVENT, GUIDE_CLICK_ID, GUIDE_CLICK_EVENT);
+                e.register(Registries.SOUND_EVENT, GUIDE_CLICK_ID, () -> GUIDE_CLICK_EVENT);
             }
         });
         modBus.addListener(this::gatherData);
@@ -77,22 +72,35 @@ public class GuideMEClient {
         OpenGuideHotkey.init();
 
         modBus.addListener((ModelEvent.RegisterAdditional e) -> {
-            e.register(new ModelResourceLocation(GuideItem.BASE_MODEL_ID, ModelResourceLocation.STANDALONE_VARIANT));
+            e.register(GuideItem.BASE_MODEL_ID);
         });
         modBus.addListener((ModelEvent.RegisterGeometryLoaders e) -> e.register(
-                GuideItemDispatchModelLoader.ID, new GuideItemDispatchModelLoader()));
+                GuideItemDispatchModelLoader.ID.getPath(), new GuideItemDispatchModelLoader()));
 
         modBus.addListener((RegisterClientReloadListenersEvent evt) -> {
             evt.registerReloadListener(new GuideReloadListener());
         });
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre evt) -> {
-            search.processWork();
-            processDevWatchers();
+        NeoForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent evt) -> {
+            if (evt.phase == TickEvent.Phase.START) {
+                search.processWork();
+                processDevWatchers();
+            }
         });
 
-        GuideOnStartup.init(modBus);
+        modBus.addListener(this::registerReloadListener);
 
-        modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+        GuideOnStartup.init(modBus);
+    }
+
+    private void registerReloadListener(RegisterClientReloadListenersEvent ev) {
+        if (guiAtlas == null) {
+            guiAtlas = new GuiSpriteAtlas(
+                    Minecraft.getInstance().textureManager,
+                    GuiAssets.GUI_SPRITE_ATLAS,
+                    GuideME.makeId("gui"));
+        }
+
+        ev.registerReloadListener(guiAtlas);
     }
 
     private void processDevWatchers() {
@@ -139,19 +147,19 @@ public class GuideMEClient {
     }
 
     public boolean isShowDebugGuiOverlays() {
-        return clientConfig.showDebugGuiOverlays.getAsBoolean();
+        return clientConfig.showDebugGuiOverlays.get();
     }
 
     public boolean isAdaptiveScalingEnabled() {
-        return clientConfig.adaptiveScaling.getAsBoolean();
+        return clientConfig.adaptiveScaling.get();
     }
 
     public boolean isIgnoreTranslatedGuides() {
-        return clientConfig.ignoreTranslatedGuides.getAsBoolean();
+        return clientConfig.ignoreTranslatedGuides.get();
     }
 
     public boolean isFullWidthLayout() {
-        return clientConfig.fullWidthLayout.getAsBoolean();
+        return clientConfig.fullWidthLayout.get();
     }
 
     public void setFullWidthLayout(boolean fullWidth) {
@@ -232,5 +240,9 @@ public class GuideMEClient {
 
             spec = builder.build();
         }
+    }
+
+    public TextureAtlas getGuiSpriteAtlas() {
+        return Objects.requireNonNull(guiAtlas).getTextureAtlas();
     }
 }

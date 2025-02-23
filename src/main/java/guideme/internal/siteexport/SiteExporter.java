@@ -55,9 +55,9 @@ import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.TickEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -102,7 +102,10 @@ public class SiteExporter implements ResourceExporter {
      */
     public void exportOnNextTickAndExit() {
         var exportDone = new MutableBoolean();
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post evt) -> {
+        NeoForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent evt) -> {
+            if (evt.phase != TickEvent.Phase.END) {
+                return;
+            }
             if (client.getOverlay() instanceof LoadingOverlay) {
                 return; // Do nothing while it's loading
             }
@@ -143,7 +146,7 @@ public class SiteExporter implements ResourceExporter {
     public void referenceItem(ItemStack stack) {
         if (!stack.isEmpty()) {
             items.add(stack.getItem());
-            if (!stack.getComponentsPatch().isEmpty()) {
+            if (stack.hasTag()) {
                 LOG.error("Couldn't handle stack with NBT tag: {}", stack);
             }
         }
@@ -283,7 +286,7 @@ public class SiteExporter implements ResourceExporter {
         if (idx != -1) {
             path = path.substring(0, idx);
         }
-        return ResourceLocation.fromNamespaceAndPath(currentPage.getId().getNamespace(), path + "_" + suffix);
+        return new ResourceLocation(currentPage.getId().getNamespace(), path + "_" + suffix);
     }
 
     @Override
@@ -528,7 +531,7 @@ public class SiteExporter implements ResourceExporter {
 
         ResourceLocation id = textureId;
         if (!id.getPath().endsWith(".png")) {
-            id = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + ".png");
+            id = new ResourceLocation(id.getNamespace(), id.getPath() + ".png");
         }
 
         var outputPath = getPathForWriting(id);

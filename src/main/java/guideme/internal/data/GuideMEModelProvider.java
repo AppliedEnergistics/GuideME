@@ -29,7 +29,7 @@ public class GuideMEModelProvider extends ItemModelProvider {
     private CustomLoaderBuilder<ItemModelBuilder> createDispatchModel(ItemModelBuilder itemModelBuilder,
             ExistingFileHelper existingFileHelper) {
         return new CustomLoaderBuilder<>(
-                GuideItemDispatchModelLoader.ID, itemModelBuilder, existingFileHelper, false) {
+                GuideItemDispatchModelLoader.ID, itemModelBuilder, existingFileHelper) {
         };
     }
 }

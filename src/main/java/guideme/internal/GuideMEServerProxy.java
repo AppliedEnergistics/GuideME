@@ -14,7 +14,7 @@ class GuideMEServerProxy implements GuideMEProxy {
     @Override
     public boolean openGuide(Player player, ResourceLocation id) {
         if (player instanceof ServerPlayer serverPlayer) {
-            PacketDistributor.sendToPlayer(serverPlayer, new OpenGuideRequest(id));
+            PacketDistributor.PLAYER.with(serverPlayer).send(new OpenGuideRequest(id));
             return true;
         }
 
@@ -24,7 +24,8 @@ class GuideMEServerProxy implements GuideMEProxy {
     @Override
     public boolean openGuide(Player player, ResourceLocation guideId, @Nullable PageAnchor anchor) {
         if (player instanceof ServerPlayer serverPlayer) {
-            PacketDistributor.sendToPlayer(serverPlayer, new OpenGuideRequest(guideId, Optional.ofNullable(anchor)));
+            PacketDistributor.PLAYER.with(serverPlayer)
+                    .send(new OpenGuideRequest(guideId, Optional.ofNullable(anchor)));
             return true;
         }
 

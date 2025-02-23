@@ -52,7 +52,7 @@ public class ContentTooltip implements GuideTooltip {
 
                         var guiGraphics = new GuiGraphics(Minecraft.getInstance(), bufferSource);
                         var poseStack = guiGraphics.pose();
-                        poseStack.mulPose(matrix);
+                        poseStack.mulPoseMatrix(matrix);
                         poseStack.translate(x, y, 0);
 
                         var ctx = new SimpleRenderContext(layoutViewport, guiGraphics);

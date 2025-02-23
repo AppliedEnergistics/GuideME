@@ -217,8 +217,8 @@ public class GuideSearch implements AutoCloseable {
 
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                 var document = storedFields.document(scoreDoc.doc);
-                var guideId = ResourceLocation.parse(document.get(IndexSchema.FIELD_GUIDE_ID));
-                var pageId = ResourceLocation.parse(document.get(IndexSchema.FIELD_PAGE_ID));
+                var guideId = new ResourceLocation(document.get(IndexSchema.FIELD_GUIDE_ID));
+                var pageId = new ResourceLocation(document.get(IndexSchema.FIELD_PAGE_ID));
 
                 var guide = Guides.getById(guideId);
                 if (guide == null) {

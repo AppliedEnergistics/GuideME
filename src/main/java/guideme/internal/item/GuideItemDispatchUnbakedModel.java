@@ -19,12 +19,14 @@ import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
 import org.jetbrains.annotations.Nullable;
 
 public class GuideItemDispatchUnbakedModel implements IUnbakedGeometry<GuideItemDispatchUnbakedModel> {
+
     @Override
     public BakedModel bake(IGeometryBakingContext geometryBakingContext,
             ModelBaker modelBaker,
             Function<Material, TextureAtlasSprite> sprites,
             ModelState modelState,
-            ItemOverrides itemOverrides) {
+            ItemOverrides itemOverrides,
+            ResourceLocation modelLocation) {
         var baseModel = modelBaker.bake(GuideItem.BASE_MODEL_ID, modelState, sprites);
 
         class Loader extends CacheLoader<ResourceLocation, BakedModel> {
@@ -32,7 +34,7 @@ public class GuideItemDispatchUnbakedModel implements IUnbakedGeometry<GuideItem
             public BakedModel load(ResourceLocation modelId) {
                 var model = modelBaker.getModel(modelId);
                 model.resolveParents(modelBaker::getModel);
-                return model.bake(modelBaker, sprites, modelState);
+                return model.bake(modelBaker, sprites, modelState, modelLocation);
             }
         }
 

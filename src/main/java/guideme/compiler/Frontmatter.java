@@ -1,6 +1,9 @@
 package guideme.compiler;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Map;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -31,7 +34,7 @@ public record Frontmatter(
                 position = getInt(navigationMap, "position");
             }
             var iconIdStr = getString(navigationMap, "icon");
-            Map<?, ?> iconComponents = getCompound(navigationMap, "icon_components");
+            CompoundTag iconNbt = getCompound(navigationMap, "icon_nbt");
 
             ResourceLocation parentId = null;
             if (parentIdStr != null) {
@@ -43,7 +46,7 @@ public record Frontmatter(
                 iconId = IdUtils.resolveId(iconIdStr, pageId.getNamespace());
             }
 
-            navigation = new FrontmatterNavigation(title, parentId, position, iconId, iconComponents);
+            navigation = new FrontmatterNavigation(title, parentId, position, iconId, iconNbt);
         }
 
         return new Frontmatter(
@@ -72,14 +75,18 @@ public record Frontmatter(
     }
 
     @Nullable
-    private static Map<?, ?> getCompound(Map<?, ?> map, String key) {
+    private static CompoundTag getCompound(Map<?, ?> map, String key) {
         var value = map.get(key);
         if (value == null) {
             return null;
         }
-        if (!(value instanceof Map<?, ?> mapValue)) {
-            throw new IllegalArgumentException("Key " + key + " has to be a map!");
+        if (!(value instanceof String string)) {
+            throw new IllegalArgumentException("Key " + key + " has to be a string (SNBT format)!");
         }
-        return mapValue;
+        try {
+            return TagParser.parseTag(string);
+        } catch (CommandSyntaxException e) {
+            throw new IllegalArgumentException("Key " + key + " is not a valid SNBT string: " + string, e);
+        }
     }
 }

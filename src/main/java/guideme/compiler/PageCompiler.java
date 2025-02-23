@@ -267,10 +267,10 @@ public final class PageCompiler {
                 // Clear out top/bottom margins
                 var bqChildren = blockquote.getChildren();
                 if (!bqChildren.isEmpty()) {
-                    if (bqChildren.getFirst() instanceof LytParagraph firstParagraph) {
+                    if (bqChildren.get(0) instanceof LytParagraph firstParagraph) {
                         firstParagraph.setMarginTop(0);
                     }
-                    if (bqChildren.getLast() instanceof LytParagraph lastParagraph) {
+                    if (bqChildren.get(bqChildren.size() - 1) instanceof LytParagraph lastParagraph) {
                         lastParagraph.setMarginBottom(0);
                     }
                 }

@@ -94,7 +94,7 @@ public final class GuideOnStartup {
         }
 
         var parts = showOnStartup.split("!", 2);
-        var guideId = ResourceLocation.parse(parts[0]);
+        var guideId = new ResourceLocation(parts[0]);
         PageAnchor page = null;
         if (parts.length > 1) {
             page = PageAnchor.parse(parts[1]);
@@ -108,7 +108,7 @@ public final class GuideOnStartup {
         if (validateGuideIds != null) {
             var guideIds = validateGuideIds.split(",");
             for (String guideId : guideIds) {
-                guidesToValidate.add(ResourceLocation.parse(guideId));
+                guidesToValidate.add(new ResourceLocation(guideId));
             }
         }
         return guidesToValidate;
@@ -151,7 +151,7 @@ public final class GuideOnStartup {
             PackRepository packRepository = new PackRepository(
                     new ServerPacksSource(new DirectoryValidator(path -> false)));
             // This fires AddPackFindersEvent but it's probably ok.
-            ResourcePackLoader.populatePackRepository(packRepository, PackType.SERVER_DATA, true);
+            ResourcePackLoader.populatePackRepository(packRepository, PackType.SERVER_DATA);
             packRepository.reload();
             packRepository.setSelected(packRepository.getAvailableIds());
 
@@ -166,7 +166,7 @@ public final class GuideOnStartup {
 
             var stuff = ReloadableServerResources.loadResources(
                     resourceManager,
-                    layeredAccess,
+                    layeredAccess.getAccessForLoading(RegistryLayer.RELOADABLE),
                     FeatureFlagSet.of(),
                     Commands.CommandSelection.ALL,
                     0,
@@ -179,7 +179,7 @@ public final class GuideOnStartup {
                             throw e;
                         }
                     }).get();
-            stuff.updateRegistryTags();
+            stuff.updateRegistryTags(layeredAccess.compositeAccess());
             Platform.fallbackClientRecipeManager = stuff.getRecipeManager();
             Platform.fallbackClientRegistryAccess = layeredAccess.compositeAccess();
         } catch (Exception e) {

@@ -31,7 +31,7 @@ class LangUtilTest {
             "ns:_de_de, ", // filename only
     })
     void testGetLangFromPageId(String path, String expectedLang) {
-        assertEquals(expectedLang, LangUtil.getLangFromPageId(ResourceLocation.parse(path), supportedLanguages));
+        assertEquals(expectedLang, LangUtil.getLangFromPageId(new ResourceLocation(path), supportedLanguages));
     }
 
     @ParameterizedTest
@@ -52,7 +52,7 @@ class LangUtilTest {
             "ns:_de_de/e.md, ns:e.md" // language code is the first folder
     })
     void testStripLangFolderFromPath(String path, String expectedPath) {
-        assertEquals(ResourceLocation.parse(expectedPath),
-                LangUtil.stripLangFromPageId(ResourceLocation.parse(path), supportedLanguages));
+        assertEquals(new ResourceLocation(expectedPath),
+                LangUtil.stripLangFromPageId(new ResourceLocation(path), supportedLanguages));
     }
 }

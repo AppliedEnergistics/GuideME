@@ -1,6 +1,5 @@
 package guideme.internal.screen;
 
-import com.mojang.blaze3d.platform.Window;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.document.DefaultStyles;
@@ -102,7 +101,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         // Validate that when we scale up, we still are above the base width/height
         var virtualWidth = window.getWidth() / effectiveScale;
         var virtualHeight = window.getHeight() / effectiveScale;
-        if (virtualWidth < Window.BASE_WIDTH || virtualHeight < Window.BASE_HEIGHT) {
+        if (virtualWidth < 320 || virtualHeight < 240) {
             var reducedEffectiveScale = Math.max(2, currentScale - 1);
             LOG.debug("Not enough screen space ({}x{}) to increase GUI scale from {} to {}. Decreasing to {} instead.",
                     virtualWidth, virtualHeight, currentScale, effectiveScale, reducedEffectiveScale);

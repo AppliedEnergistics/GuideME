@@ -4,37 +4,31 @@ import guideme.PageAnchor;
 import guideme.internal.GuideME;
 import java.util.Optional;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
 public record OpenGuideRequest(ResourceLocation guideId,
         Optional<PageAnchor> pageAnchor) implements CustomPacketPayload {
 
+    public static final ResourceLocation ID = GuideME.makeId("open_guide");
+
     public OpenGuideRequest(ResourceLocation guideId) {
         this(guideId, Optional.empty());
     }
 
-    public static final Type<OpenGuideRequest> TYPE = new Type<>(GuideME.makeId("open_guide"));
+    public void write(FriendlyByteBuf buffer) {
+        buffer.writeResourceLocation(guideId);
+        buffer.writeOptional(pageAnchor, PageAnchor::write);
+    }
 
-    public static final StreamCodec<FriendlyByteBuf, PageAnchor> ANCHOR_STREAM_CODEC = StreamCodec
-            .of((buffer, value) -> {
-                buffer.writeResourceLocation(value.pageId());
-                buffer.writeNullable(value.anchor(), ByteBufCodecs.STRING_UTF8);
-            }, buffer -> {
-                var page = buffer.readResourceLocation();
-                var fragment = buffer.readNullable(ByteBufCodecs.STRING_UTF8);
-                return new PageAnchor(page, fragment);
-            });
-
-    public static final StreamCodec<FriendlyByteBuf, OpenGuideRequest> STREAM_CODEC = StreamCodec.composite(
-            ResourceLocation.STREAM_CODEC, OpenGuideRequest::guideId,
-            ByteBufCodecs.optional(ANCHOR_STREAM_CODEC), OpenGuideRequest::pageAnchor,
-            OpenGuideRequest::new);
+    public static OpenGuideRequest read(FriendlyByteBuf buffer) {
+        return new OpenGuideRequest(
+                buffer.readResourceLocation(),
+                buffer.readOptional(PageAnchor::read));
+    }
 
     @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    public ResourceLocation id() {
+        return ID;
     }
 }
