@@ -1,59 +1,7 @@
 import {expandFormatting} from "@site/src/components/patchouli/formatting";
 import {PatchouliEntry, ZipContent} from "@site/src/components/patchouli/types";
 import {extractFile, findRecipeResultItem, relativePageLink, splitIdAndData} from "@site/src/components/patchouli/util";
-
-function convertMultiblock(multiblock: any, writeLogLine: (line: string) => void): string[] {
-    const lines: string[] = [];
-    lines.push("<GameScene interactive={true} zoom={2}>");
-
-    const {mapping, pattern} = multiblock as {
-        mapping: Record<string, string>;
-        pattern: string[][];
-    };
-
-    for (let y = 0; y < pattern.length; y++) {
-        const row = pattern[y];
-        for (let z = 0; z < row.length; z++) {
-            const col = row[z];
-            for (let x = 0; x < col.length; x++) {
-                const patternCh = col[x];
-                if (patternCh === ' ') {
-                    continue;
-                }
-
-                let mapped = mapping[patternCh];
-                if (!mapped) {
-                    if (patternCh !== '0') {
-                        writeLogLine('Unknown mapping character in multiblock ' + patternCh);
-                    }
-                    continue;
-                }
-
-                // Conver the block property list to tag properties
-                let startOfProps = mapped.indexOf('[');
-                let propertiesAttr = '';
-                if (startOfProps !== -1 && mapped.endsWith("]")) {
-                    const properties = mapped.substring(startOfProps + 1, mapped.length - 1).split(",");
-                    mapped = mapped.substring(0, startOfProps);
-                    propertiesAttr = properties.map(p => {
-                        let [key, value] = p.split("=", 2);
-                        if (value.startsWith('"') && value.endsWith('"')
-                            || value.startsWith('\'') && value.endsWith('\'')) {
-                            value = value.substring(1, value.length - 1);
-                        }
-
-                        return `p:${key}="${value}"`;
-                    }).join(" ");
-                }
-
-                lines.push(`  <Block x="${x}" y="${y}" z="${z}" id="${mapped}"${propertiesAttr} />`);
-            }
-        }
-    }
-
-    lines.push("</GameScene>");
-    return lines;
-}
+import {convertMultiblock} from "@site/src/components/patchouli/convertMultiblock";
 
 export async function convertPage(zipContent: ZipContent,
                                   macros: Record<string, string>,
@@ -63,6 +11,7 @@ export async function convertPage(zipContent: ZipContent,
                                   pageId: string,
                                   page: PatchouliEntry,
                                   language: string | undefined,
+                                  translate: (text: string) => string,
                                   writeLogLine: (line: string) => void,
                                   outputFiles: Record<string, Uint8Array | string>) {
 
@@ -76,7 +25,7 @@ export async function convertPage(zipContent: ZipContent,
 
     // Frontmatter
     frontmatter.push("navigation:");
-    frontmatter.push("  title: " + JSON.stringify(page.name));
+    frontmatter.push("  title: " + JSON.stringify(translate(page.name)));
     frontmatter.push("  icon: " + JSON.stringify(page.icon));
     if (page.sortnum) {
         frontmatter.push("  position: " + page.sortnum);
@@ -86,7 +35,7 @@ export async function convertPage(zipContent: ZipContent,
     }
 
     // Body
-    lines.push(`# ${page.name}`)
+    lines.push(`# ${translate(page.name)}`)
     lines.push("");
 
     async function writeRecipe(recipeId: string) {
@@ -120,15 +69,15 @@ export async function convertPage(zipContent: ZipContent,
         switch (type) {
             case "patchouli:text":
                 if (patchouliPage.title) {
-                    lines.push("## " + patchouliPage.title);
+                    lines.push("## " + translate(patchouliPage.title));
                     lines.push("");
                 }
-                lines.push(patchouliPage.text);
+                lines.push(translate(patchouliPage.text));
                 lines.push("");
                 break;
             case "patchouli:multiblock":
                 if (patchouliPage.name) {
-                    lines.push("## " + patchouliPage.name);
+                    lines.push("## " + translate(patchouliPage.name));
                     lines.push("");
                 }
                 if (patchouliPage.multiblock_id) {
@@ -139,14 +88,23 @@ export async function convertPage(zipContent: ZipContent,
                     lines.push(...convertMultiblock(patchouliPage.multiblock, writeLogLine));
                     lines.push("");
                 }
-                lines.push(patchouliPage.text);
+                lines.push(translate(patchouliPage.text));
                 lines.push("");
                 break;
             case "patchouli:entity":
+                let entityId: string = patchouliPage.entity;
+
+                const startOfNbt = entityId.indexOf("{");
+                let dataAttr = '';
+                if (startOfNbt !== -1 && entityId.endsWith("}")) {
+                    dataAttr = `data="${entityId.substring(startOfNbt)}"`;
+                    entityId = entityId.substring(0, startOfNbt);
+                }
+                
                 if (patchouliPage.name) {
-                    lines.push("## " + patchouliPage.name);
+                    lines.push("## " + translate(patchouliPage.name));
                 } else {
-                    lines.push("## " + patchouliPage.entity + " (TODO)");
+                    lines.push("## " + entityId + " (TODO)");
                 }
 
                 lines.push("");
@@ -154,31 +112,31 @@ export async function convertPage(zipContent: ZipContent,
                 lines.push(`<GameScene zoom={${zoom}}>`);
                 const rotationAttr = patchouliPage.default_rotation ? ` rotationY={${patchouliPage.default_rotation}}` : '';
                 const offsetAttr = patchouliPage.offset ? ` y={${patchouliPage.offset}}` : '';
-                lines.push(`  <Entity id="${patchouliPage.entity}"${rotationAttr}${offsetAttr} />`);
+                lines.push(`  <Entity id="${entityId}"${rotationAttr}${offsetAttr}${dataAttr} />`);
                 lines.push("</GameScene>");
                 if (patchouliPage.text) {
                     lines.push("");
-                    lines.push(patchouliPage.text);
+                    lines.push(translate(patchouliPage.text));
                 }
                 lines.push("");
                 break;
             case "patchouli:link":
                 if (patchouliPage.title) {
-                    lines.push("## " + patchouliPage.title);
+                    lines.push("## " + translate(patchouliPage.title));
                     lines.push("");
                 }
                 if (patchouliPage.text) {
-                    lines.push(patchouliPage.text);
+                    lines.push(translate(patchouliPage.text));
                     lines.push("");
                 }
-                lines.push("[" + patchouliPage.link_text + "](" + patchouliPage.url + ")");
+                lines.push("[" +translate(patchouliPage.link_text) + "](" + patchouliPage.url + ")");
                 break;
             case "patchouli:image":
                 if (patchouliPage.title) {
-                    lines.push("## " + patchouliPage.title);
+                    lines.push("## " + translate(patchouliPage.title));
                     lines.push("");
                 }
-                lines.push(patchouliPage.text);
+                lines.push(translate(patchouliPage.text));
                 lines.push("");
                 if (patchouliPage.border) {
                     lines.push("TODO: Unsupported flag 'border'");
@@ -207,10 +165,10 @@ export async function convertPage(zipContent: ZipContent,
             case "patchouli:crafting":
             case "patchouli:smelting":
                 if (patchouliPage.title) {
-                    lines.push("## " + patchouliPage.title);
+                    lines.push("## " + translate(patchouliPage.title));
                     lines.push("");
                 }
-                lines.push(patchouliPage.text);
+                lines.push(translate(patchouliPage.text));
                 lines.push("");
                 if (patchouliPage.recipe) {
                     await writeRecipe(patchouliPage.recipe);
@@ -225,12 +183,14 @@ export async function convertPage(zipContent: ZipContent,
                     writeLogLine(` Setting page ${pageId} as target for item ${patchouliPage.item}`);
                 }
                 if (patchouliPage.title) {
-                    lines.push("## " + patchouliPage.title);
+                    lines.push("## " + translate(patchouliPage.title));
                     lines.push("");
                 }
-                lines.push(`<ItemImage id="${patchouliPage.item}" />`)
+                for (const item of patchouliPage.item.split(",")) {
+                    lines.push(`<ItemImage id="${item}" />`)
+                }
                 lines.push("");
-                lines.push(patchouliPage.text);
+                lines.push(translate(patchouliPage.text));
                 lines.push("");
                 if (patchouliPage.recipe) {
                     await writeRecipe(patchouliPage.recipe);
@@ -240,14 +200,18 @@ export async function convertPage(zipContent: ZipContent,
                 }
                 break;
             case "patchouli:relations":
-                lines.push("## " + (patchouliPage.title ?? "Related Chapters"));
+                if (patchouliPage.title) {
+                    lines.push("## " + translate(patchouliPage.title));
+                } else {
+                    lines.push("## Related Chapters");
+                }
                 lines.push("");
                 for (const entry of patchouliPage.entries) {
                     // TODO: Resolve the name of the target page in the right language
                     lines.push(`- [TODO](${relativePageLink(pageId, entry)})`);
                 }
                 lines.push("");
-                lines.push(patchouliPage.text);
+                lines.push(translate(patchouliPage.text));
                 lines.push("");
                 break;
             case "patchouli:empty":

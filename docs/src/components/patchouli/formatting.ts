@@ -98,7 +98,7 @@ export function expandFormatting(currentPageId: string, body: string, macros: Re
                 result += '\n' + '  '.repeat(level) + '- ';
             } else if (tag.match(/^#([0-9a-fA-F]{3,6})$/)) {
                 // Handling color codes, we add a placeholder for now
-                result += `<Color hex="${tag.slice(1)}">`;
+                result += `<Color hex="${tag}">`;
                 formatStack.push('</Color>');
             } else if (tag in simpleFormatTags) {
                 result += simpleFormatTags[tag][0];

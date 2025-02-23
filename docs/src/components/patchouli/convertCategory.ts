@@ -1,13 +1,14 @@
 import {PatchouliCategory, ZipContent} from "@site/src/components/patchouli/types";
 
 export async function convertCategory(zipContent: ZipContent,
-                               bookNamespace: string,
-                               bookId: string,
-                               pageId: string,
-                               category: PatchouliCategory,
-                               language: string | undefined,
-                               writeLogLine: (line: string) => void,
-                               outputFiles: Record<string, Uint8Array | string>) {
+                                      bookNamespace: string,
+                                      bookId: string,
+                                      pageId: string,
+                                      category: PatchouliCategory,
+                                      language: string | undefined,
+                                      translateText: (text: string) => string,
+                                      writeLogLine: (line: string) => void,
+                                      outputFiles: Record<string, Uint8Array | string>) {
 
     const pagePath = `assets/${bookNamespace}/guides/${bookNamespace}/${bookId}/${pageId}.md`;
     const translatedPagePath = language ?
@@ -18,7 +19,7 @@ export async function convertCategory(zipContent: ZipContent,
     // Frontmatter
     lines.push("---");
     lines.push("navigation:");
-    lines.push("  title: " + JSON.stringify(category.name));
+    lines.push("  title: " + JSON.stringify(translateText(category.name)));
     lines.push("  icon: " + JSON.stringify(category.icon));
     if (category.sortnum) {
         lines.push("  position: " + category.sortnum);
@@ -31,7 +32,7 @@ export async function convertCategory(zipContent: ZipContent,
     lines.push("");
 
     // Body
-    lines.push(`# ${category.name}`)
+    lines.push(`# ${translateText(category.name)}`)
     lines.push("");
     lines.push("<SubPages />")
 

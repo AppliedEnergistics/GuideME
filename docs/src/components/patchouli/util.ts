@@ -43,8 +43,22 @@ export function relativePageLink(pageId: string, targetPageId: string): string {
         [, targetPageId] = targetPageId.split(":", 2);
     }
 
-    // TODO: Resolve the relative link correctly
-    return targetPageId + ".md";
+    let pageIdParts = pageId.split("/");
+    let targetPageParts = targetPageId.split("/");
+    let commonPrefix = 0;
+    for (let i = 0; i < Math.min(pageIdParts.length, targetPageParts.length); i++) {
+        if (pageIdParts[i] === targetPageParts[i]) {
+            commonPrefix++;
+        } else {
+            break;
+        }
+    }
+
+    if (commonPrefix >= pageIdParts.length - 1) {
+        return "./" + targetPageParts.pop() + ".md";
+    }
+
+    return "../".repeat(pageIdParts.length - 1 - commonPrefix) + targetPageParts.pop() + ".md";
 }
 
 export async function findRecipeResultItem(zipContent: ZipContent,
