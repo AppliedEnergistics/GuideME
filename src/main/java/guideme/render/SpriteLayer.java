@@ -179,6 +179,7 @@ final class SpriteLayer {
             return;
         }
         RenderSystem.enableBlend();
+        RenderSystem.enableDepthTest();
         RenderSystem.setShaderTexture(0, atlasLocation);
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         var modelViewStack = RenderSystem.getModelViewStack();

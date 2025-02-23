@@ -24,7 +24,8 @@ public enum GuidebookText implements LocalizationEnum {
     ShapelessCrafting("Crafting (Shapeless)"),
     Crafting("Crafting"),
     FullWidthView("Full Width View"),
-    CloseFullWidthView("Close Full Width View");
+    CloseFullWidthView("Close Full Width View"),
+    RunsCommand("Runs Command:");
 
     private final String englishText;
 

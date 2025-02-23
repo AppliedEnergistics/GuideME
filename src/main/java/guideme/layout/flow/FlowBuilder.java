@@ -134,6 +134,10 @@ public class FlowBuilder {
         return rootContent;
     }
 
+    public boolean isEmpty() {
+        return rootContent.isEmpty();
+    }
+
     public void clear() {
         this.lines.clear();
         this.rootContent.clear();

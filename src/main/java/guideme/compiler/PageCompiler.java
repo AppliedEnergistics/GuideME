@@ -14,6 +14,7 @@ import guideme.document.block.LytList;
 import guideme.document.block.LytListItem;
 import guideme.document.block.LytParagraph;
 import guideme.document.block.LytThematicBreak;
+import guideme.document.block.LytVBox;
 import guideme.document.block.table.LytTable;
 import guideme.document.flow.LytFlowBreak;
 import guideme.document.flow.LytFlowContent;
@@ -33,10 +34,13 @@ import guideme.libs.mdast.MdastOptions;
 import guideme.libs.mdast.YamlFrontmatterExtension;
 import guideme.libs.mdast.gfm.GfmTableMdastExtension;
 import guideme.libs.mdast.gfm.model.GfmTable;
+import guideme.libs.mdast.gfmstrikethrough.GfmStrikethroughMdastExtension;
+import guideme.libs.mdast.gfmstrikethrough.MdAstDelete;
 import guideme.libs.mdast.mdx.MdxMdastExtension;
 import guideme.libs.mdast.mdx.model.MdxJsxFlowElement;
 import guideme.libs.mdast.mdx.model.MdxJsxTextElement;
 import guideme.libs.mdast.model.MdAstAnyContent;
+import guideme.libs.mdast.model.MdAstBlockquote;
 import guideme.libs.mdast.model.MdAstBreak;
 import guideme.libs.mdast.model.MdAstCode;
 import guideme.libs.mdast.model.MdAstEmphasis;
@@ -56,8 +60,10 @@ import guideme.libs.mdast.model.MdAstStrong;
 import guideme.libs.mdast.model.MdAstText;
 import guideme.libs.mdast.model.MdAstThematicBreak;
 import guideme.libs.mdx.MdxSyntax;
+import guideme.libs.micromark.ParseException;
 import guideme.libs.micromark.extensions.YamlFrontmatterSyntax;
 import guideme.libs.micromark.extensions.gfm.GfmTableSyntax;
+import guideme.libs.micromark.extensions.gfmstrikethrough.GfmStrikethroughSyntax;
 import guideme.libs.unist.UnistNode;
 import guideme.style.TextAlignment;
 import guideme.style.WhiteSpaceMode;
@@ -69,6 +75,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import net.minecraft.ResourceLocationException;
@@ -114,12 +121,23 @@ public final class PageCompiler {
         }
     }
 
+    @Deprecated(forRemoval = true)
     public static ParsedGuidePage parse(String sourcePack, ResourceLocation id, InputStream in) throws IOException {
-        String pageContent = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        return parse(sourcePack, id, pageContent);
+        return parse(sourcePack, "en_us", id, in);
     }
 
+    public static ParsedGuidePage parse(String sourcePack, String language, ResourceLocation id, InputStream in)
+            throws IOException {
+        String pageContent = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        return parse(sourcePack, language, id, pageContent);
+    }
+
+    @Deprecated(forRemoval = true)
     public static ParsedGuidePage parse(String sourcePack, ResourceLocation id, String pageContent) {
+        return parse(sourcePack, "en_us", id, pageContent);
+    }
+
+    public static ParsedGuidePage parse(String sourcePack, String language, ResourceLocation id, String pageContent) {
         // Normalize line ending
         pageContent = pageContent.replaceAll("\\r\\n?", "\n");
 
@@ -127,16 +145,48 @@ public final class PageCompiler {
                 .withSyntaxExtension(MdxSyntax.INSTANCE)
                 .withSyntaxExtension(YamlFrontmatterSyntax.INSTANCE)
                 .withSyntaxExtension(GfmTableSyntax.INSTANCE)
+                .withSyntaxExtension(GfmStrikethroughSyntax.INSTANCE)
                 .withMdastExtension(MdxMdastExtension.INSTANCE)
                 .withMdastExtension(YamlFrontmatterExtension.INSTANCE)
-                .withMdastExtension(GfmTableMdastExtension.INSTANCE);
+                .withMdastExtension(GfmTableMdastExtension.INSTANCE)
+                .withMdastExtension(GfmStrikethroughMdastExtension.INSTANCE);
 
-        var astRoot = MdAst.fromMarkdown(pageContent, options);
+        MdAstRoot astRoot;
+        try {
+            astRoot = MdAst.fromMarkdown(pageContent, options);
+        } catch (ParseException e) {
+            var errorMessage = String.format(Locale.ROOT,
+                    "Failed to parse GuideME page %s (lang: %s) from resource pack %s",
+                    id, language, sourcePack);
+            LOG.error("{}", errorMessage, e);
+            astRoot = buildErrorPage(errorMessage + ": \n" + e);
+        }
 
         // Find front-matter
         var frontmatter = parseFrontmatter(id, astRoot);
 
-        return new ParsedGuidePage(sourcePack, id, pageContent, astRoot, frontmatter);
+        return new ParsedGuidePage(sourcePack, id, pageContent, astRoot, frontmatter, language);
+    }
+
+    private static MdAstRoot buildErrorPage(String errorText) {
+        var root = new MdAstRoot();
+
+        var heading = new MdAstHeading();
+        root.addChild(heading);
+
+        heading.depth = 1;
+        var headingText = new MdAstText();
+        headingText.setValue("PARSING ERROR");
+        heading.addChild(headingText);
+
+        var errorParagraph = new MdAstParagraph();
+        root.addChild(errorParagraph);
+
+        var errorTextNode = new MdAstText();
+        errorTextNode.setValue(errorText);
+        errorParagraph.addChild(errorTextNode);
+
+        return root;
     }
 
     public static GuidePage compile(PageCollection pages, ExtensionCollection extensions, ParsedGuidePage parsedPage) {
@@ -206,6 +256,25 @@ public final class PageCompiler {
                 heading.setDepth(astHeading.depth);
                 compileFlowContext(astHeading, heading);
                 layoutChild = heading;
+            } else if (child instanceof MdAstBlockquote astBlockquote) {
+                var blockquote = new LytVBox();
+                blockquote.setBackgroundColor(SymbolicColor.BLOCKQUOTE_BACKGROUND);
+                blockquote.setPadding(5);
+                blockquote.setPaddingLeft(10);
+                blockquote.setMarginTop(DEFAULT_ELEMENT_SPACING);
+                blockquote.setMarginBottom(DEFAULT_ELEMENT_SPACING);
+                compileBlockContext(astBlockquote, blockquote);
+                // Clear out top/bottom margins
+                var bqChildren = blockquote.getChildren();
+                if (!bqChildren.isEmpty()) {
+                    if (bqChildren.get(0) instanceof LytParagraph firstParagraph) {
+                        firstParagraph.setMarginTop(0);
+                    }
+                    if (bqChildren.get(bqChildren.size() - 1) instanceof LytParagraph lastParagraph) {
+                        lastParagraph.setMarginBottom(0);
+                    }
+                }
+                layoutChild = blockquote;
             } else if (child instanceof MdAstParagraph astParagraph) {
                 var paragraph = new LytParagraph();
                 compileFlowContext(astParagraph, paragraph);
@@ -332,6 +401,11 @@ public final class PageCompiler {
         } else if (content instanceof MdAstEmphasis astEmphasis) {
             var span = new LytFlowSpan();
             span.modifyStyle(style -> style.italic(true));
+            compileFlowContext(astEmphasis, span);
+            layoutChild = span;
+        } else if (content instanceof MdAstDelete astEmphasis) {
+            var span = new LytFlowSpan();
+            span.modifyStyle(style -> style.strikethrough(true));
             compileFlowContext(astEmphasis, span);
             layoutChild = span;
         } else if (content instanceof MdAstBreak) {

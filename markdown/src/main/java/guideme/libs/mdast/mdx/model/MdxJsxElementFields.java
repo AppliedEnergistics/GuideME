@@ -21,7 +21,7 @@ public interface MdxJsxElementFields extends UnistNode {
                 if (name.equals(jsxAttribute.name)) {
                     return true;
                 }
-            } else if (attributeNode instanceof MdxJsxExpressionAttribute jsxExpressionAttribute) {
+            } else if (attributeNode instanceof MdxJsxExpressionAttribute) {
                 throw new IllegalStateException("Attribute spreads unsupported!");
             }
         }

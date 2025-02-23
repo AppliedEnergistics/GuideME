@@ -6,6 +6,8 @@ import guideme.compiler.tags.BoxFlowDirection;
 import guideme.compiler.tags.BoxTagCompiler;
 import guideme.compiler.tags.BreakCompiler;
 import guideme.compiler.tags.CategoryIndexCompiler;
+import guideme.compiler.tags.ColorTagCompiler;
+import guideme.compiler.tags.CommandLinkCompiler;
 import guideme.compiler.tags.DivTagCompiler;
 import guideme.compiler.tags.FloatingImageCompiler;
 import guideme.compiler.tags.ItemGridCompiler;
@@ -13,9 +15,6 @@ import guideme.compiler.tags.ItemLinkCompiler;
 import guideme.compiler.tags.RecipeCompiler;
 import guideme.compiler.tags.RecipeTypeMappingSupplier;
 import guideme.compiler.tags.SubPagesCompiler;
-import guideme.document.block.recipes.LytCookingRecipe;
-import guideme.document.block.recipes.LytCraftingRecipe;
-import guideme.document.block.recipes.LytSmithingRecipe;
 import guideme.extensions.Extension;
 import guideme.extensions.ExtensionCollection;
 import guideme.extensions.ExtensionPoint;
@@ -26,6 +25,7 @@ import guideme.scene.annotation.BlockAnnotationElementCompiler;
 import guideme.scene.annotation.BoxAnnotationElementCompiler;
 import guideme.scene.annotation.DiamondAnnotationElementCompiler;
 import guideme.scene.annotation.LineAnnotationElementCompiler;
+import guideme.scene.element.EntityElementCompiler;
 import guideme.scene.element.ImportStructureElementCompiler;
 import guideme.scene.element.IsometricCameraElementCompiler;
 import guideme.scene.element.SceneBlockElementCompiler;
@@ -66,6 +66,7 @@ public final class DefaultExtensions {
         return List.of(
                 new DivTagCompiler(),
                 new ATagCompiler(),
+                new ColorTagCompiler(),
                 new ItemLinkCompiler(),
                 new FloatingImageCompiler(),
                 new BreakCompiler(),
@@ -77,11 +78,13 @@ public final class DefaultExtensions {
                 new BoxTagCompiler(BoxFlowDirection.ROW),
                 new BoxTagCompiler(BoxFlowDirection.COLUMN),
                 new SceneTagCompiler(),
-                new SubPagesCompiler());
+                new SubPagesCompiler(),
+                new CommandLinkCompiler());
     }
 
     private static List<SceneElementTagCompiler> sceneElementTagCompilers() {
         return List.of(
+                new EntityElementCompiler(),
                 new SceneBlockElementCompiler(),
                 new ImportStructureElementCompiler(),
                 new IsometricCameraElementCompiler(),
@@ -94,10 +97,10 @@ public final class DefaultExtensions {
     private static List<RecipeTypeMappingSupplier> vanillaRecipeTypes() {
         return List.of(
                 mappings -> {
-                    mappings.add(RecipeType.CRAFTING, LytCraftingRecipe::new);
-                    mappings.add(RecipeType.BLASTING, LytCookingRecipe::createBlasting);
-                    mappings.add(RecipeType.SMELTING, LytCookingRecipe::createSmelting);
-                    mappings.add(RecipeType.SMITHING, LytSmithingRecipe::new);
+                    mappings.add(RecipeType.CRAFTING, VanillaRecipes::createCrafting);
+                    mappings.add(RecipeType.BLASTING, VanillaRecipes::createBlasting);
+                    mappings.add(RecipeType.SMELTING, VanillaRecipes::createSmelting);
+                    mappings.add(RecipeType.SMITHING, VanillaRecipes::createSmithing);
                 });
     }
 

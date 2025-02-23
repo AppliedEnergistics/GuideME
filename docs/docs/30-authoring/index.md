@@ -2,6 +2,8 @@
 description: How to create content for a GuideME guide.
 ---
 
+import ColorPreview from '@site/src/components/ColorPreview';
+
 # Authoring Pages
 
 Pages for a guidebook are read from *all resource packs* across *all namespace*.
@@ -12,13 +14,13 @@ Each file with the extension `.md` in this directory and any subdirectory is con
 
 :::note
 
-Like all files in Minecraft resource packs, page filenames must be [valid resource ids](https://minecraft.wiki/w/Resource_location).
+Like all files in Minecraft resource packs, page filenames must
+be [valid resource ids](https://minecraft.wiki/w/Resource_location).
 Your filenames must all be lowercase, for example.
 
 :::
 
-Pages are written in Markdown and follow the [Commonmark](https://commonmark.org/) specification.
-We also support [Github Tables](https://github.github.com/gfm/#tables-extension-).
+Pages are written in Markdown. See [supported Markdown](./markdown.md) for details.
 
 Every page should usually declare its title as a level 1 heading at the start (`# Page Title`).
 
@@ -123,9 +125,24 @@ Example for horizontally centering an image on the page:
 ### Item Links
 
 To automatically show the translated item name, including an appropriate tooltip, and have the item name link to the
-primary guidebook page for that item, use the  `<ItemLink id="item_id" />` tag. The id can omit the `ae2` namespace.
+primary guidebook page for that item, use the  `<ItemLink id="item_id" />` tag. The id can omit the guides default
+namespace.
 
 [Pages need to be set as the primary target for certain item ids manually](#declaring-pages-as-itemlink-targets).
+
+### Command Links
+
+You can make links that run a command when clicked using `<CommandLink command="/command">text text</CommandLink>`.
+
+The specified command is sent from the client normally and does not bypass permission checks. It has to start with a
+slash.
+
+There are optional attributes:
+
+| Attribute | Description                                                                                       |
+|-----------|---------------------------------------------------------------------------------------------------|
+| title     | An optional tooltip to show for the link. The command itself will always be shown in the tooltip. |
+| close     | If set to `{true}`, the current screen will be closed when the link is clicked.                   |
 
 ### Recipes
 
@@ -211,3 +228,32 @@ The tag also supports the following attributes:
 | float       | Allows the block image to be floated like `FloatingImage` to make it show to the left or right with a block of text. (Allows values: left, right)                                               |
 | perspective | Allows the orientation of the block to be changed. By default, the north-east corner of the block will be facing forward. Allowed values: isometric-north-east (default), isometric-north-west. |
 | `p:<name>`  | Allows setting arbitrary block state properties on the rendered block, where `<name>` is the name of a block state property.                                                                    |
+
+### Colored Text
+
+:::warning
+
+The following should be used sparingly since it may not provide great contrast when switching between light- and dark-mode.
+
+:::
+
+You can use the `<Color id="<id>">...</Color>` tag to color text using the following pre-defined symbolic colors:
+
+| ID             | Light-Mode                    | Dark-Mode                     |
+|----------------|-------------------------------|-------------------------------|
+| `black`        | <ColorPreview color="#000" /> | <ColorPreview color="#000" /> |
+| `dark_blue`    | <ColorPreview color="#00A" /> | <ColorPreview color="#00A" /> |
+| `dark_green`   | <ColorPreview color="#0A0" /> | <ColorPreview color="#0A0" /> |
+| `dark_aqua`    | <ColorPreview color="#0AA" /> | <ColorPreview color="#0AA" /> |
+| `dark_red`     | <ColorPreview color="#A00" /> | <ColorPreview color="#A00" /> |
+| `dark_purple`  | <ColorPreview color="#A0A" /> | <ColorPreview color="#A0A" /> |
+| `gold`         | <ColorPreview color="#AA0" /> | <ColorPreview color="#AA0" /> |
+| `gray`         | <ColorPreview color="#AAA" /> | <ColorPreview color="#AAA" /> |
+| `dark_gray`    | <ColorPreview color="#555" /> | <ColorPreview color="#555" /> |
+| `blue`         | <ColorPreview color="#55F" /> | <ColorPreview color="#55F" /> |
+| `green`        | <ColorPreview color="#5F5" /> | <ColorPreview color="#5F5" /> |
+| `aqua`         | <ColorPreview color="#5FF" /> | <ColorPreview color="#5FF" /> |
+| `red`          | <ColorPreview color="#F55" /> | <ColorPreview color="#F55" /> |
+| `light_purple` | <ColorPreview color="#F5F" /> | <ColorPreview color="#F5F" /> |
+| `yellow`       | <ColorPreview color="#FF5" /> | <ColorPreview color="#FF5" /> |
+| `white`        | <ColorPreview color="#FFF" /> | <ColorPreview color="#FFF" /> |

@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.Blocks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated(forRemoval = true)
 public class LytSmithingRecipe extends LytRecipeBox implements ExportableResourceProvider {
     private static final Logger LOG = LoggerFactory.getLogger(LytSmithingRecipe.class);
 

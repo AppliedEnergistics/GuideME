@@ -14,6 +14,7 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.block.Blocks;
 
+@Deprecated(forRemoval = true)
 public class LytCraftingRecipe extends LytRecipeBox {
     private final CraftingRecipe recipe;
 

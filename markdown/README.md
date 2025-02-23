@@ -1,4 +1,4 @@
-# AE2 Markdown Libraries
+# GuideME Markdown Libraries
 
 This is a Java Port of the following projects from the JavaScript ecosystem:
 

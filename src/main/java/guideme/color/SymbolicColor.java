@@ -31,6 +31,27 @@ public enum SymbolicColor implements ColorValue {
     SCENE_BACKGROUND(Colors.argb(20, 0, 0, 0), Colors.argb(20, 0, 0, 0)),
 
     GUIDE_SCREEN_BACKGROUND(Colors.argb(229, 63, 63, 63), Colors.argb(229, 63, 63, 63)),
+
+    BLOCKQUOTE_BACKGROUND(Colors.argb(64, 255, 255, 255), Colors.argb(64, 255, 255, 255)),
+
+    // these are the Minecraft colors
+    BLACK(Colors.hexToRgb("#000"), Colors.hexToRgb("#000")),
+    DARK_BLUE(Colors.hexToRgb("#00A"), Colors.hexToRgb("#00A")),
+    DARK_GREEN(Colors.hexToRgb("#0A0"), Colors.hexToRgb("#0A0")),
+    DARK_AQUA(Colors.hexToRgb("#0AA"), Colors.hexToRgb("#0AA")),
+    DARK_RED(Colors.hexToRgb("#A00"), Colors.hexToRgb("#A00")),
+    DARK_PURPLE(Colors.hexToRgb("#A0A"), Colors.hexToRgb("#A0A")),
+    GOLD(Colors.hexToRgb("#AA0"), Colors.hexToRgb("#AA0")),
+    GRAY(Colors.hexToRgb("#AAA"), Colors.hexToRgb("#AAA")),
+    DARK_GRAY(Colors.hexToRgb("#555"), Colors.hexToRgb("#555")),
+    BLUE(Colors.hexToRgb("#55F"), Colors.hexToRgb("#55F")),
+    GREEN(Colors.hexToRgb("#5F5"), Colors.hexToRgb("#5F5")),
+    AQUA(Colors.hexToRgb("#5FF"), Colors.hexToRgb("#5FF")),
+    RED(Colors.hexToRgb("#F55"), Colors.hexToRgb("#F55")),
+    LIGHT_PURPLE(Colors.hexToRgb("#F5F"), Colors.hexToRgb("#F5F")),
+    YELLOW(Colors.hexToRgb("#FF5"), Colors.hexToRgb("#FF5")),
+    WHITE(Colors.hexToRgb("#FFF"), Colors.hexToRgb("#FFF")),
+
     ;
 
     final int lightMode;

@@ -357,6 +357,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
         return PageCompiler.parse(
                 pageId.getNamespace(),
+                "en_us",
                 pageId,
                 pageSource);
     }
@@ -422,12 +423,6 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
             return;
         }
         super.onClose();
-    }
-
-    @Override
-    public LytRect getDocumentRect() {
-        var documentRect = super.getDocumentRect();
-        return documentRect;
     }
 
     private boolean hasSpaceForSidebar() {

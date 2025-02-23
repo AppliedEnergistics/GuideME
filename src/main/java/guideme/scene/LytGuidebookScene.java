@@ -294,6 +294,8 @@ public class LytGuidebookScene extends LytBox {
 
             var window = Minecraft.getInstance().getWindow();
 
+            context.pushScissor(bounds);
+
             // transform our document viewport into physical screen coordinates
             var viewport = bounds.transform(context.poseStack().last().pose());
             RenderSystem.viewport(
@@ -321,8 +323,6 @@ public class LytGuidebookScene extends LytBox {
             renderDebugCrosshairs();
 
             RenderSystem.viewport(0, 0, window.getWidth(), window.getHeight());
-
-            context.pushScissor(bounds);
 
             if (!hideAnnotations) {
                 renderOverlayAnnotations(scene, context);

@@ -30,6 +30,7 @@ public class GuideBuilder {
     private final Map<Class<?>, PageIndex> indices = new IdentityHashMap<>();
     private final ExtensionCollection.Builder extensionsBuilder = ExtensionCollection.builder();
     private String defaultNamespace;
+    private String defaultLanguage = "en_us";
     private String folder;
     private ResourceLocation startPage;
     private Path developmentSourceFolder;
@@ -105,6 +106,20 @@ public class GuideBuilder {
             throw new IllegalArgumentException("The folder for a guide needs to be a valid resource location");
         }
         this.folder = folder;
+        return this;
+    }
+
+    /**
+     * Changes the default language for the guide. This has no effect on what content is actually shown, but affects how
+     * the full-text search analyzes the text in your untranslated guide pages.
+     * <p/>
+     * The default is {@code en_us}, which is the default language code for Minecraft.
+     * <p/>
+     * Please note that language support in the full-text search is limited to the following languages, and languages
+     * not listed here will be indexed as English text.
+     */
+    public GuideBuilder defaultLanguage(String languageCode) {
+        this.defaultLanguage = languageCode;
         return this;
     }
 
@@ -224,6 +239,7 @@ public class GuideBuilder {
                 id,
                 defaultNamespace,
                 folder,
+                defaultLanguage,
                 startPage,
                 developmentSourceFolder,
                 developmentSourceNamespace,

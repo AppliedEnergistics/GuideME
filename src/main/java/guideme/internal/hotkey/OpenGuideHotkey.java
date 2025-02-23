@@ -150,6 +150,10 @@ public final class OpenGuideHotkey {
             }
 
             for (var guide : GuideRegistry.getAll()) {
+                if (!guide.isAvailableToOpenHotkey()) {
+                    continue;
+                }
+
                 var itemIndex = guide.getIndex(ItemIndex.class);
                 var page = itemIndex.get(itemId);
                 if (page != null) {

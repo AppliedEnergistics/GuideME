@@ -5,6 +5,7 @@ import guideme.layout.LayoutContext;
 import guideme.render.GuiAssets;
 import guideme.render.RenderContext;
 import java.util.List;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
 public class LytSlotGrid extends LytBox {
@@ -17,6 +18,14 @@ public class LytSlotGrid extends LytBox {
         this.width = width;
         this.height = height;
         this.slots = new LytSlot[width * height];
+    }
+
+    public static LytSlotGrid columnFromStack(List<ItemStack> items, boolean skipEmpty) {
+        return column(items.stream().map(Ingredient::of).toList(), skipEmpty);
+    }
+
+    public static LytSlotGrid rowFromStacks(List<ItemStack> items, boolean skipEmpty) {
+        return row(items.stream().map(Ingredient::of).toList(), skipEmpty);
     }
 
     public static LytSlotGrid column(List<Ingredient> ingredients, boolean skipEmpty) {
@@ -87,6 +96,10 @@ public class LytSlotGrid extends LytBox {
         }
 
         return new LytRect(x, y, LytSlot.OUTER_SIZE * width, LytSlot.OUTER_SIZE * height);
+    }
+
+    public void setItem(int x, int y, ItemStack item) {
+        setIngredient(x, y, Ingredient.of(item));
     }
 
     public void setIngredient(int x, int y, Ingredient ingredient) {

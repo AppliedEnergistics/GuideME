@@ -5,7 +5,6 @@ import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 
 public class Platform {
 
@@ -27,12 +26,5 @@ public class Platform {
         }
 
         return fallbackClientRecipeManager;
-    }
-
-    /**
-     * @return True if AE2 is being run within a dev environment.
-     */
-    public static boolean isDevelopmentEnvironment() {
-        return !FMLEnvironment.production;
     }
 }

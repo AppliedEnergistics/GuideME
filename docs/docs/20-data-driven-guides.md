@@ -47,6 +47,13 @@ the item and additional tooltip lines in the JSON text component format.
 All settings of the `item_settings` block are optional. If you do not set a `display_name`,
 the name will just be "Guide". If you don't set a model, it will use the default GuideME model.
 
+## Default Language
+
+You can set the language of your guides default pages to something other than english by setting the `default_language`
+key to the appropriate [Minecraft language code](https://minecraft.wiki/w/Language) for your language.
+
+This makes the [full-text search](./40-search.md) use language-specific text analysis logic for your default pages.
+
 ## Writing Pages
 
 See [authoring pages](30-authoring/index.md).

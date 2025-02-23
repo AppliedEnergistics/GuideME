@@ -83,6 +83,7 @@ public class GuideMEClient {
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent evt) -> {
             if (evt.phase == TickEvent.Phase.START) {
                 search.processWork();
+                processDevWatchers();
             }
         });
 
@@ -100,6 +101,12 @@ public class GuideMEClient {
         }
 
         ev.registerReloadListener(guiAtlas);
+    }
+
+    private void processDevWatchers() {
+        for (var guide : GuideRegistry.getAll()) {
+            guide.tick();
+        }
     }
 
     public static LightDarkMode currentLightDarkMode() {
@@ -145,6 +152,10 @@ public class GuideMEClient {
 
     public boolean isAdaptiveScalingEnabled() {
         return clientConfig.adaptiveScaling.get();
+    }
+
+    public boolean isIgnoreTranslatedGuides() {
+        return clientConfig.ignoreTranslatedGuides.get();
     }
 
     public boolean isFullWidthLayout() {
@@ -199,9 +210,16 @@ public class GuideMEClient {
         final ForgeConfigSpec.BooleanValue adaptiveScaling;
         final ForgeConfigSpec.BooleanValue showDebugGuiOverlays;
         final ForgeConfigSpec.BooleanValue fullWidthLayout;
+        final ForgeConfigSpec.BooleanValue ignoreTranslatedGuides;
 
         public ClientConfig() {
             var builder = new ForgeConfigSpec.Builder();
+
+            builder.push("guides");
+            ignoreTranslatedGuides = builder
+                    .comment("Never load translated guide pages for your current language.")
+                    .define("ignoreTranslatedGuides", false);
+            builder.pop();
 
             builder.push("gui");
             adaptiveScaling = builder

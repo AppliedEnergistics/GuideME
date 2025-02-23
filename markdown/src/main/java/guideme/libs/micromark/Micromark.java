@@ -7,7 +7,7 @@ import java.util.List;
 
 public final class Micromark {
 
-    public static final boolean ENABLE_TRACE = false;
+    public static final boolean ENABLE_TRACE = true;
 
     private Micromark() {
     }

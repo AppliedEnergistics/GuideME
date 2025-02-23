@@ -46,6 +46,7 @@ class LinkParserTest {
         var pageCollection = mock(PageCollection.class, withSettings().strictness(Strictness.LENIENT));
         when(pageCollection.pageExists(new ResourceLocation("ns:other/page.md"))).thenReturn(true);
         when(pageCollection.pageExists(new ResourceLocation("ns2:abc/def.md"))).thenReturn(true);
+        when(pageCollection.pageExists(new ResourceLocation("ns_2:abc/def.md"))).thenReturn(true);
         compiler = new PageCompiler(pageCollection, ExtensionCollection.empty(), "pack",
                 new ResourceLocation("ns:subfolder/page.md"), "");
     }
@@ -88,6 +89,15 @@ class LinkParserTest {
         assertThat(external).containsExactly();
         assertThat(errors).containsExactly();
         assertThat(anchors).containsExactly(PageAnchor.page(new ResourceLocation("ns2:abc/def.md")));
+    }
+
+    // This failed previously due to URI rules not allowing a scheme with _
+    @Test
+    void testLinkToOtherNamespaceWithUnderscore() {
+        LinkParser.parseLink(compiler, "ns_2:abc/def.md", visitor);
+        assertThat(external).containsExactly();
+        assertThat(errors).containsExactly();
+        assertThat(anchors).containsExactly(PageAnchor.page(new ResourceLocation("ns_2:abc/def.md")));
     }
 
     @Test

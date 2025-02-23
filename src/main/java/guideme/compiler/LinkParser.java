@@ -18,34 +18,30 @@ public final class LinkParser {
         try {
             uri = URI.create(href);
         } catch (Exception ignored) {
-            visitor.handleError("Invalid URL");
+            uri = null;
+        }
+
+        // External link
+        if (uri != null && uri.isAbsolute()
+                && (uri.getScheme().equals("http") || uri.getScheme().equalsIgnoreCase("https"))) {
+            visitor.handleExternal(uri);
             return;
         }
 
-        ResourceLocation pageId;
+        String fragment = null;
+        var fragmentSep = href.indexOf('#');
+        if (fragmentSep != -1) {
+            fragment = href.substring(fragmentSep + 1);
+            href = href.substring(0, fragmentSep);
+        }
 
-        // External link
-        if (uri.isAbsolute()) {
-            if (uri.getScheme().equals("http") || uri.getScheme().equalsIgnoreCase("https")) {
-                visitor.handleExternal(uri);
-                return;
-            } else {
-                // Fully namespaced, absolute page id
-                try {
-                    pageId = new ResourceLocation(uri.getScheme() + ":" + uri.getSchemeSpecificPart());
-                } catch (ResourceLocationException ignored) {
-                    visitor.handleError("Invalid resource location");
-                    return;
-                }
-            }
-        } else {
-            // Determine the page id, account for relative paths
-            try {
-                pageId = IdUtils.resolveLink(uri.getPath(), compiler.getPageId());
-            } catch (ResourceLocationException ignored) {
-                visitor.handleError("Invalid link");
-                return;
-            }
+        // Determine the page id, account for relative paths
+        ResourceLocation pageId;
+        try {
+            pageId = IdUtils.resolveLink(href, compiler.getPageId());
+        } catch (ResourceLocationException ignored) {
+            visitor.handleError("Invalid link");
+            return;
         }
 
         if (!compiler.getPageCollection().pageExists(pageId)) {
@@ -53,7 +49,7 @@ public final class LinkParser {
             return;
         }
 
-        visitor.handlePage(new PageAnchor(pageId, uri.getFragment()));
+        visitor.handlePage(new PageAnchor(pageId, fragment));
     }
 
     public interface Visitor {

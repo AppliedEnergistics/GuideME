@@ -7,15 +7,21 @@ import guideme.Guide;
 import guideme.compiler.PageCompiler;
 import guideme.compiler.ParsedGuidePage;
 import guideme.internal.datadriven.DataDrivenGuide;
+import guideme.internal.util.LangUtil;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.metadata.language.LanguageMetadataSection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,23 +33,52 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
     @Override
     protected Result prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
         profiler.startTick();
-        var pages = new IdentityHashMap<ResourceLocation, Map<ResourceLocation, ParsedGuidePage>>();
+        var guidePages = new IdentityHashMap<ResourceLocation, Map<ResourceLocation, ParsedGuidePage>>();
+
+        String language = Minecraft.getInstance().getLanguageManager().getSelected();
+        if (GuideMEClient.instance().isIgnoreTranslatedGuides()) {
+            language = null;
+        }
+
+        // Load available languages to know which can be ignored
+        var languages = getAllLanguages(resourceManager);
 
         // Discover data driven guides now
         var dataDrivenGuides = loadDataDrivenGuides(resourceManager);
 
         // Reload pages for data-driven guides first
         for (var guide : dataDrivenGuides.values()) {
-            pages.put(guide.getId(), loadPages(resourceManager, guide.getContentRootFolder()));
+            guidePages.put(guide.getId(), loadPages(resourceManager, guide.getContentRootFolder(),
+                    guide.getDefaultLanguage(), language, languages));
         }
         for (var guide : GuideRegistry.getStaticGuides()) {
-            if (!pages.containsKey(guide.getId())) {
-                pages.put(guide.getId(), loadPages(resourceManager, guide.getContentRootFolder()));
+            if (!guidePages.containsKey(guide.getId())) {
+                guidePages.put(guide.getId(), loadPages(resourceManager, guide.getContentRootFolder(),
+                        guide.getDefaultLanguage(), language, languages));
             }
         }
 
         profiler.endTick();
-        return new Result(dataDrivenGuides, pages);
+        return new Result(dataDrivenGuides, guidePages, languages);
+    }
+
+    /**
+     * This code is copied from the MC language manager to retrieve the list of all supported languages.
+     */
+    private static Set<String> getAllLanguages(ResourceManager resourceManager) {
+        var result = new HashSet<String>();
+        var it = resourceManager.listPacks().iterator();
+        while (it.hasNext()) {
+            try {
+                var section = it.next().getMetadataSection(LanguageMetadataSection.TYPE);
+                if (section != null) {
+                    result.addAll(section.languages().keySet());
+                }
+            } catch (Exception ignored) {
+                // Minecraft itself will already warn about this
+            }
+        }
+        return result;
     }
 
     @Override
@@ -55,7 +90,7 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
         GuideRegistry.setDataDriven(result.dataDrivenGuides);
 
         for (var guide : GuideRegistry.getAll()) {
-            var pagesForGuide = result.pages.getOrDefault(guide.getId(), Map.of());
+            var pagesForGuide = result.guidePages.getOrDefault(guide.getId(), Map.of());
             profiler.push(guide.getId().toString());
             guide.setPages(pagesForGuide);
             profiler.pop();
@@ -89,6 +124,7 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
             var guide = (MutableGuide) Guide.builder(guideId)
                     .register(false)
                     .itemSettings(guideSpec.itemSettings())
+                    .defaultLanguage(guideSpec.defaultLanguage())
                     .build();
             dataDrivenGuides.put(guideId, guide);
         }
@@ -96,20 +132,39 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
     }
 
     private static Map<ResourceLocation, ParsedGuidePage> loadPages(ResourceManager resourceManager,
-            String contentRoot) {
+            String contentRoot,
+            String defaultLanguage,
+            @Nullable String currentLanguage,
+            Set<String> languages) {
         var pagesForGuide = new HashMap<ResourceLocation, ParsedGuidePage>();
 
-        var resources = resourceManager.listResources(contentRoot,
-                location -> location.getPath().endsWith(".md"));
+        var resources = resourceManager.listResources(contentRoot, location -> location.getPath().endsWith(".md"));
 
         for (var entry : resources.entrySet()) {
             var pageId = new ResourceLocation(
                     entry.getKey().getNamespace(),
                     entry.getKey().getPath().substring((contentRoot + "/").length()));
+            var resource = entry.getValue();
 
-            String sourcePackId = entry.getValue().sourcePackId();
-            try (var in = entry.getValue().open()) {
-                pagesForGuide.put(pageId, PageCompiler.parse(sourcePackId, pageId, in));
+            if (LangUtil.getLangFromPageId(pageId, languages) != null) {
+                continue; // Skip translated pages
+            }
+
+            // Check for translated versions of this page
+            String language = defaultLanguage;
+            if (currentLanguage != null) {
+                var translatedResourceId = LangUtil.getTranslatedAsset(pageId, currentLanguage)
+                        .withPrefix(contentRoot + "/");
+                var translatedPage = resources.get(translatedResourceId);
+                if (translatedPage != null) {
+                    language = currentLanguage;
+                    resource = translatedPage;
+                }
+            }
+
+            String sourcePackId = resource.sourcePackId();
+            try (var in = resource.open()) {
+                pagesForGuide.put(pageId, PageCompiler.parse(sourcePackId, language, pageId, in));
             } catch (IOException e) {
                 LOG.error("Failed to load guidebook page {} from pack {}", pageId, sourcePackId, e);
             }
@@ -120,6 +175,6 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
 
     protected record Result(
             Map<ResourceLocation, MutableGuide> dataDrivenGuides,
-            Map<ResourceLocation, Map<ResourceLocation, ParsedGuidePage>> pages) {
+            Map<ResourceLocation, Map<ResourceLocation, ParsedGuidePage>> guidePages, Set<String> languages) {
     }
 }

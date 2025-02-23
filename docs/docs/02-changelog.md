@@ -3,12 +3,37 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.1.1 (Minecraft 1.21.1)
+
+- Added support for [translating guides](./60-translation.md).
+- Added an option for Players to disable loading of guide translations.
+- Added support for the strikethrough Markdown extension (`~~text~~` or `~text~`).
+- Added rendering for Markdown blockquotes.
+- Added support for entities in game scenes using `<Entity />`. See [game scenes](./30-authoring/game-scenes.md#entities) for details.
+  ![entity in game scene](./30-authoring/game-scene-entity.png)
+- Add `<CommandLink command="/command" [title="tooltip"] [close={true}]>...</CommandLink>` that runs a command when clicked.
+- Added a [tag for coloring text](./30-authoring/index.md#colored-text) using pre-defined colors, for use with the 16 default Minecraft colors.
+- Fix several search issues relating to not analyzing queries properly, which reduced the number of relevant results.
+- Fix returning to the original screen when the guide is closed.
+- Improved visibility of the debug overlay text and outlines.
+- Fix background panels in guide being drawn without depth test enabled, sometimes hiding other elements.
+- Fix "Crafting (shapeless)" sometimes overflowing the recipe box and design an easier to use API for
+  integrating custom recipe types.
+- Fix a hidden navbar in guides without navigation still blocking interaction with elements below.
+- Floating point attributes to custom tags can now be specified using MDX expression syntax too (i.e.: `<GameScene zoom={2.5}>`). 
+  Please note that only bare floating point values are supported, no actual expressions.   
+- Fatal Markdown parsing errors will now no longer crash the resource reload and instead replace the offending page with an error page.
+- Cycles in the navigation tree will now be reported and no longer cause a stack overflow during resource reload.
+- Fix scaling in `<ItemImage />` also scaling normals, which made items with 3d models appear too dark.
+
 ## 21.1.0 (Minecraft 1.21.1)
 
 - Switching to the NeoForge versioning scheme, this version is equivalent to version 2.6.0, except for the following changes.
 - Improved query parsing for full-text search. Search will now always apply "incremental" search for the last entered word,
   assuming the user might not have entered it fully yet. This means searching for "io po" will search for both "io po"
   and "io po*", although it will score an exact hit for "po" higher than a hit for "port" (for example).
+- Fix parsing of links to pages where the mod-id contained underscores (i.e. `modern_industrialization:some_page.md`).
+- Fix tooltip crash caused by wrong access transformer.
 
 ## 2.6.0 (Minecraft 1.21.1)
 

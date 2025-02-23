@@ -66,6 +66,34 @@ The tag also supports the following attributes:
 | z          | z coordinate of the block. Defaults to 0.                                                                           |
 | `p:<name>` | Allows setting arbitrary block state properties on the block, where `<name>` is the name of a block state property. |
 
+## Entity
+
+You can add entities to your scene as well, using the `Entity` tag.
+
+The attributes follow the format used by the `/summon` command:
+
+| Attribute | Description                                                                                                           |
+|-----------|-----------------------------------------------------------------------------------------------------------------------|
+| id        | Entity type id as used by `/summon`. For example `minecraft:sheep`.                                                   |
+| x         | x coordinate the entity is centered on. Defaults to 0.5.                                                              |
+| y         | y coordinate at the bottom of the entity. Defaults to 0.                                                              |
+| z         | z coordinate the entity is centered on. Defaults to 0.5.                                                              |
+| rotationY | Sets the rotation around the Y axis of the entity in degrees. Defaults to -45.                                        |
+| rotationX | Sets the rotation around the X axis of the entity in degrees. What effect this has depends on the entity.             |
+| data      | Allows setting the initial NBT data of the entity. Uses the same format as `/summon`. Example: `{Color:2}` for sheep. |
+
+Example:
+
+```
+<GameScene zoom={4} interactive={true}>
+    <Entity id="minecraft:sheep" data="{Color: 2}" />
+</GameScene>
+```
+
+Which shows as:
+
+![sheep example](./game-scene-entity.png)
+
 ## IsometricCamera
 
 This tag allows more fine-grained control over the isometric camera used to render the scene.

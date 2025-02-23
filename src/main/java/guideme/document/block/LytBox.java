@@ -1,11 +1,13 @@
 package guideme.document.block;
 
+import guideme.color.SymbolicColor;
 import guideme.document.LytRect;
 import guideme.layout.LayoutContext;
 import guideme.render.RenderContext;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.renderer.MultiBufferSource;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class LytBox extends LytBlock implements LytBlockContainer {
     protected final List<LytBlock> children = new ArrayList<>();
@@ -16,6 +18,9 @@ public abstract class LytBox extends LytBlock implements LytBlockContainer {
     protected int paddingBottom;
 
     private final BorderRenderer borderRenderer = new BorderRenderer();
+
+    @Nullable
+    private SymbolicColor backgroundColor;
 
     @Override
     public void removeChild(LytNode node) {
@@ -78,6 +83,30 @@ public abstract class LytBox extends LytBlock implements LytBlockContainer {
         paddingBottom = padding;
     }
 
+    public void setPaddingLeft(int paddingLeft) {
+        this.paddingLeft = paddingLeft;
+    }
+
+    public void setPaddingTop(int paddingTop) {
+        this.paddingTop = paddingTop;
+    }
+
+    public void setPaddingRight(int paddingRight) {
+        this.paddingRight = paddingRight;
+    }
+
+    public void setPaddingBottom(int paddingBottom) {
+        this.paddingBottom = paddingBottom;
+    }
+
+    public @Nullable SymbolicColor getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setBackgroundColor(@Nullable SymbolicColor backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
+
     @Override
     public List<? extends LytNode> getChildren() {
         return children;
@@ -85,17 +114,27 @@ public abstract class LytBox extends LytBlock implements LytBlockContainer {
 
     @Override
     public void renderBatch(RenderContext context, MultiBufferSource buffers) {
+        context.poseStack().pushPose();
+        context.poseStack().translate(0, 0, 0.1);
         for (var child : children) {
             child.renderBatch(context, buffers);
         }
+        context.poseStack().popPose();
     }
 
     @Override
     public void render(RenderContext context) {
+        if (backgroundColor != null) {
+            context.fillRect(bounds, backgroundColor);
+        }
+
+        context.poseStack().pushPose();
+        context.poseStack().translate(0, 0, 0.1);
         for (var child : children) {
             child.render(context);
         }
 
+        context.poseStack().translate(0, 0, 0.1);
         // Render border on top of children
         borderRenderer.render(
                 context,
@@ -104,5 +143,7 @@ public abstract class LytBox extends LytBlock implements LytBlockContainer {
                 getBorderLeft(),
                 getBorderRight(),
                 getBorderBottom());
+
+        context.poseStack().popPose();
     }
 }

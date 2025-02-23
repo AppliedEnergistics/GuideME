@@ -30,6 +30,8 @@ public final class GuideNavigation {
             screenToReturnTo = guideScreen.getReturnToOnClose();
         } else if (currentScreen instanceof GuideSearchScreen searchScreen) {
             screenToReturnTo = searchScreen.getReturnToOnClose();
+        } else {
+            screenToReturnTo = Minecraft.getInstance().screen;
         }
 
         // Handle built-in pages
