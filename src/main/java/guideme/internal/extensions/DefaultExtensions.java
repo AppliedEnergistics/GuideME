@@ -6,6 +6,7 @@ import guideme.compiler.tags.BoxFlowDirection;
 import guideme.compiler.tags.BoxTagCompiler;
 import guideme.compiler.tags.BreakCompiler;
 import guideme.compiler.tags.CategoryIndexCompiler;
+import guideme.compiler.tags.ColorTagCompiler;
 import guideme.compiler.tags.CommandLinkCompiler;
 import guideme.compiler.tags.DivTagCompiler;
 import guideme.compiler.tags.FloatingImageCompiler;
@@ -65,6 +66,7 @@ public final class DefaultExtensions {
         return List.of(
                 new DivTagCompiler(),
                 new ATagCompiler(),
+                new ColorTagCompiler(),
                 new ItemLinkCompiler(),
                 new FloatingImageCompiler(),
                 new BreakCompiler(),

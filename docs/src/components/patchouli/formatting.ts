@@ -1,11 +1,35 @@
+import {relativePageLink} from "@site/src/components/patchouli/util";
+
 const simpleFormatTags = {
     l: ['**', '**'],
     m: ['~~', '~~'],
     n: ['__', '__'],
     o: ['*', '*'],
-    k: ['<Obf>', '</Obf>']
+    k: ['<Obf>', '</Obf>'],
+    // These are actually macros for color in Patchouli, but we want to translate this to emphasis
+    // "$(thing)": "$(#490)",
+    thing: ['*', '*'],
+    // "$(item)": "$(#b0b)",
+    item: ['*', '*'],
+    '0': ['<Color id="black">', '</Color>'],
+    '1': ['<Color id="dark_blue">', '</Color>'],
+    '2': ['<Color id="dark_green">', '</Color>'],
+    '3': ['<Color id="dark_aqua">', '</Color>'],
+    '4': ['<Color id="dark_red">', '</Color>'],
+    '5': ['<Color id="dark_purple">', '</Color>'],
+    '6': ['<Color id="gold">', '</Color>'],
+    '7': ['<Color id="gray">', '</Color>'],
+    '8': ['<Color id="dark_gray">', '</Color>'],
+    '9': ['<Color id="blue">', '</Color>'],
+    'a': ['<Color id="green">', '</Color>'],
+    'b': ['<Color id="aqua">', '</Color>'],
+    'c': ['<Color id="red">', '</Color>'],
+    'd': ['<Color id="light_purple">', '</Color>'],
+    'e': ['<Color id="yellow">', '</Color>'],
+    'f': ['<Color id="white">', '</Color>'],
 }
 
+// See https://vazkiimods.github.io/Patchouli/docs/patchouli-basics/text-formatting/
 const defaultMacros = {
     '$(obf)': '$(k)',
     '$(bold)': '$(l)',
@@ -19,12 +43,10 @@ const defaultMacros = {
     '$(p)': '$(br2)',
     '/$': '$()',
     '<br>': '$(br)',
-    '$(nocolor)': '$(0)',
-    '$(item)': '$(#b0b)',
-    '$(thing)': '$(#490)',
+    '$(nocolor)': '$(0)'
 };
 
-export function expandFormatting(body: string, macros: Record<string, string>, writeLogLine: (line: string) => void): string {
+export function expandFormatting(currentPageId: string, body: string, macros: Record<string, string>, writeLogLine: (line: string) => void): string {
     let result = '';
     let formatStack: string[] = [];  // Stack to track current formatting state
 
@@ -32,7 +54,18 @@ export function expandFormatting(body: string, macros: Record<string, string>, w
         if (linkTarget.startsWith("http://") || linkTarget.startsWith("https://")) {
             result += "](" + linkTarget + ")";
         } else {
-            result += "](" + linkTarget + ".md)";
+            if (linkTarget.includes("#")) {
+                const [targetPage, fragment] = linkTarget.split('#', 2);
+                if (targetPage === currentPageId) {
+                    linkTarget = "#" + fragment;
+                } else {
+                    linkTarget = relativePageLink(currentPageId, targetPage) + "#" + fragment;
+                }
+            } else {
+                linkTarget = relativePageLink(currentPageId, linkTarget)
+            }
+
+            result += "](" + linkTarget + ")";
         }
     }
 
@@ -65,10 +98,8 @@ export function expandFormatting(body: string, macros: Record<string, string>, w
                 result += '\n' + '  '.repeat(level) + '- ';
             } else if (tag.match(/^#([0-9a-fA-F]{3,6})$/)) {
                 // Handling color codes, we add a placeholder for now
-                result += `//color#${tag.slice(1)}`;
-            } else if (tag === 'k') {
-                result += "$(k)";
-                formatStack.push(tag);
+                result += `<Color hex="${tag.slice(1)}">`;
+                formatStack.push('</Color>');
             } else if (tag in simpleFormatTags) {
                 result += simpleFormatTags[tag][0];
                 formatStack.push(tag);
@@ -84,18 +115,19 @@ export function expandFormatting(body: string, macros: Record<string, string>, w
                     } else if (tag in simpleFormatTags) {
                         result += simpleFormatTags[tag][1];
                     } else {
-                        result += "$(/" + tag + ")";
+                        result += tag;
                     }
                 }
             } else if (tag === "/l") {
                 // Close link
-                const lastEntry = formatStack[formatStack.length - 1];
+                const lastEntry = formatStack.pop();
                 if (lastEntry?.startsWith('l:')) {
                     endLink(lastEntry.slice(2));
                 }
             } else {
                 // Any unrecognized formatting tag, output as is
                 result += `$(${tag})`;
+                formatStack.push("$(/" + tag + ")");
                 writeLogLine(`Unrecognized formatting tag ${tag}`);
             }
 

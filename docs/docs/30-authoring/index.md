@@ -2,6 +2,8 @@
 description: How to create content for a GuideME guide.
 ---
 
+import ColorPreview from '@site/src/components/ColorPreview';
+
 # Authoring Pages
 
 Pages for a guidebook are read from *all resource packs* across *all namespace*.
@@ -226,3 +228,32 @@ The tag also supports the following attributes:
 | float       | Allows the block image to be floated like `FloatingImage` to make it show to the left or right with a block of text. (Allows values: left, right)                                               |
 | perspective | Allows the orientation of the block to be changed. By default, the north-east corner of the block will be facing forward. Allowed values: isometric-north-east (default), isometric-north-west. |
 | `p:<name>`  | Allows setting arbitrary block state properties on the rendered block, where `<name>` is the name of a block state property.                                                                    |
+
+### Colored Text
+
+:::warning
+
+The following should be used sparingly since it may not provide great contrast when switching between light- and dark-mode.
+
+:::
+
+You can use the `<Color id="<id>">...</Color>` tag to color text using the following pre-defined symbolic colors:
+
+| ID             | Light-Mode                    | Dark-Mode                     |
+|----------------|-------------------------------|-------------------------------|
+| `black`        | <ColorPreview color="#000" /> | <ColorPreview color="#000" /> |
+| `dark_blue`    | <ColorPreview color="#00A" /> | <ColorPreview color="#00A" /> |
+| `dark_green`   | <ColorPreview color="#0A0" /> | <ColorPreview color="#0A0" /> |
+| `dark_aqua`    | <ColorPreview color="#0AA" /> | <ColorPreview color="#0AA" /> |
+| `dark_red`     | <ColorPreview color="#A00" /> | <ColorPreview color="#A00" /> |
+| `dark_purple`  | <ColorPreview color="#A0A" /> | <ColorPreview color="#A0A" /> |
+| `gold`         | <ColorPreview color="#AA0" /> | <ColorPreview color="#AA0" /> |
+| `gray`         | <ColorPreview color="#AAA" /> | <ColorPreview color="#AAA" /> |
+| `dark_gray`    | <ColorPreview color="#555" /> | <ColorPreview color="#555" /> |
+| `blue`         | <ColorPreview color="#55F" /> | <ColorPreview color="#55F" /> |
+| `green`        | <ColorPreview color="#5F5" /> | <ColorPreview color="#5F5" /> |
+| `aqua`         | <ColorPreview color="#5FF" /> | <ColorPreview color="#5FF" /> |
+| `red`          | <ColorPreview color="#F55" /> | <ColorPreview color="#F55" /> |
+| `light_purple` | <ColorPreview color="#F5F" /> | <ColorPreview color="#F5F" /> |
+| `yellow`       | <ColorPreview color="#FF5" /> | <ColorPreview color="#FF5" /> |
+| `white`        | <ColorPreview color="#FFF" /> | <ColorPreview color="#FFF" /> |

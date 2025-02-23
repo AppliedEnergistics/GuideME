@@ -12,6 +12,7 @@ import Video from '@site/src/components/Video';
 - Added support for entities in game scenes using `<Entity />`. See [game scenes](./30-authoring/game-scenes.md#entities) for details.
   ![entity in game scene](./30-authoring/game-scene-entity.png)
 - Add `<CommandLink command="/command" [title="tooltip"] [close={true}]>...</CommandLink>` that runs a command when clicked.
+- Added a tag for coloring text using pre-defined colors, for use with the 16 default Minecraft colors.
 - Fix several search issues relating to not analyzing queries properly, which reduced the number of relevant results.
 - Fix returning to the original screen when the guide is closed.
 - Improved visibility of the debug overlay text and outlines.
