@@ -59,7 +59,12 @@ async function getAllPages(zipContent: ZipContent, writeLogLine: (line: string) 
     return result;
 }
 
-async function convert(file: FileWithPath, writeLogLine: (line: string) => void): Promise<Record<string, Uint8Array | string>> {
+type ConversionResult = {
+    namespaces: string[];
+    outputFiles: Record<string, Uint8Array | string>;
+}
+
+async function convert(file: FileWithPath, writeLogLine: (line: string) => void): Promise<ConversionResult> {
     writeLogLine(`Loading ${file.name}...`);
 
     const zipItems = unzip(await readFile(file));
@@ -92,6 +97,7 @@ async function convert(file: FileWithPath, writeLogLine: (line: string) => void)
     const unsortedPages = await getAllPages(zipContent, writeLogLine);
     writeLogLine(`  ${unsortedPages.length} pages found...`);
 
+    const namespaces: string[] = [];
     const outputFiles: Record<string, Uint8Array | string> = {};
     for (let [bookNamespace, bookId] of books) {
         writeLogLine(`Found book ${bookNamespace}:${bookId}`);
@@ -100,26 +106,33 @@ async function convert(file: FileWithPath, writeLogLine: (line: string) => void)
         const bookPages = unsortedPages.filter(p => p.bookNamespace === bookNamespace && p.bookId === bookId);
 
         await convertBook(zipContent, bookNamespace, bookId, bookCategories, bookPages, translations, writeLogLine, outputFiles);
+        if (!namespaces.includes(bookNamespace)) {
+            namespaces.push(bookNamespace);
+        }
     }
-    return outputFiles;
+
+    return {namespaces, outputFiles};
 }
 
 function Conversion({file, reset}: ConversionProps) {
     const [error, setError] = useState<any | null>(null);
     const [logLines, setLogLines] = useState<string[]>([]);
+    const [namespaces, setNamespaces] = useState<string[]>([]);
     const [outputFiles, setOutputFiles] = useState<Record<string, Uint8Array | string> | null>(null);
 
     useEffect(() => {
         // Begin by resetting
         setLogLines([]);
+        setNamespaces([]);
         setOutputFiles(null);
         setError(null);
         let canceled = false;
 
         convert(file, line => setLogLines(lines => lines.concat([line])))
-            .then(files => {
+            .then(({namespaces, outputFiles}) => {
                 if (!canceled) {
-                    setOutputFiles(files);
+                    setNamespaces(namespaces);
+                    setOutputFiles(outputFiles);
                 }
             })
             .catch(err => {
@@ -153,7 +166,7 @@ function Conversion({file, reset}: ConversionProps) {
     }
 
     return (<>
-            {outputFiles && <DownloadZipFile files={outputFiles}/>}
+            {outputFiles && <DownloadZipFile namespaces={namespaces} files={outputFiles}/>}
             {conversionLog}
             {outputFiles && <OutputFilesBrowser files={outputFiles}/>}
         </>

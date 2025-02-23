@@ -2,6 +2,7 @@ import {MouseEvent} from "react";
 import {downloadZip, InputWithSizeMeta} from "client-zip";
 
 export interface DownloadZipFileProps {
+    namespaces: string[];
     files: Record<string, Uint8Array | string>;
 }
 
@@ -21,7 +22,7 @@ async function buildZip(files: Record<string, Uint8Array | string>): Promise<Blo
     return downloadZip(zipInput).blob();
 }
 
-function DownloadZipFile({files}: DownloadZipFileProps) {
+function DownloadZipFile({namespaces, files}: DownloadZipFileProps) {
     const downloadFiles = (e: MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
 
@@ -30,7 +31,7 @@ function DownloadZipFile({files}: DownloadZipFileProps) {
                 // make and click a temporary link to download the Blob
                 const link = document.createElement("a")
                 link.href = URL.createObjectURL(zip);
-                link.download = "converted_patchouli_books.zip";
+                link.download = `converted_patchouli_books${namespaces.map(ns => '_' + ns).join('')}.zip`;
                 link.click();
                 link.remove();
                 URL.revokeObjectURL(link.href);
