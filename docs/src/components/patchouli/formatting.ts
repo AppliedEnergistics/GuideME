@@ -74,6 +74,20 @@ export function expandFormatting(currentPageId: string, body: string, macros: Re
         body = body.replaceAll(from, to);
     }
 
+    const closeAllFormatting = () => {
+        // Close all
+        while (formatStack.length > 0) {
+            const tag = formatStack.pop();
+            if (tag.startsWith("l:")) {
+                endLink(tag.slice(2));
+            } else if (tag in simpleFormatTags) {
+                result += simpleFormatTags[tag][1];
+            } else {
+                result += tag;
+            }
+        }
+    };
+
     let i = 0;
     while (i < body.length) {
         if (body[i] === '$' && body[i + 1] === '(') {
@@ -107,17 +121,7 @@ export function expandFormatting(currentPageId: string, body: string, macros: Re
                 result += "[";
                 formatStack.push(tag);
             } else if (tag === "") {
-                // Close all
-                while (formatStack.length > 0) {
-                    const tag = formatStack.pop();
-                    if (tag.startsWith("l:")) {
-                        endLink(tag.slice(2));
-                    } else if (tag in simpleFormatTags) {
-                        result += simpleFormatTags[tag][1];
-                    } else {
-                        result += tag;
-                    }
-                }
+                closeAllFormatting();
             } else if (tag === "/l") {
                 // Close link
                 const lastEntry = formatStack.pop();
@@ -138,6 +142,9 @@ export function expandFormatting(currentPageId: string, body: string, macros: Re
             i++;
         }
     }
+
+    // Close out the remaining formatting stack
+    closeAllFormatting();
 
     return result;
 }
