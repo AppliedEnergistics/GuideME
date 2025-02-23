@@ -64,7 +64,7 @@ public class GuideME {
     }
 
     private void registerNetworking(RegisterPayloadHandlerEvent event) {
-        var registrar = event.registrar("1.0");
+        var registrar = event.registrar(GuideME.MOD_ID).versioned("1.0");
         registrar.play(OpenGuideRequest.ID, OpenGuideRequest::read, (payload, context) -> {
             var player = context.player().orElse(null);
             if (player == null) {

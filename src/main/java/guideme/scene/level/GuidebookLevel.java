@@ -75,7 +75,7 @@ public class GuidebookLevel extends Level {
 
     private final TickRateManager tickRateManager = new TickRateManager();
     private final ClientLevel.ClientLevelData clientLevelData;
-    private final Timer tracker = new Timer(20.0F, 0L, x -> x);
+    private final Timer tracker = new Timer(20.0F, 0L, def -> def);
     private float partialTick;
 
     public GuidebookLevel() {
@@ -88,7 +88,7 @@ public class GuidebookLevel extends Level {
 
     private GuidebookLevel(ClientLevel.ClientLevelData levelData, RegistryAccess registryAccess) {
         super(
-                createLevelData(),
+                levelData,
                 LEVEL_ID,
                 registryAccess,
                 registryAccess.registryOrThrow(Registries.DIMENSION_TYPE)

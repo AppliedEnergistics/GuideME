@@ -16,7 +16,6 @@ import guideme.internal.search.GuideSearch;
 import guideme.render.GuiAssets;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
@@ -48,8 +47,6 @@ public class GuideMEClient {
     public static SoundEvent GUIDE_CLICK_EVENT = SoundEvent.createVariableRangeEvent(GUIDE_CLICK_ID);
 
     private final GuideSearch search = new GuideSearch();
-
-    private GuiSpriteAtlas guiAtlas;
 
     public GuideMEClient(ModLoadingContext context, IEventBus modBus) {
         INSTANCE = this;
@@ -87,20 +84,7 @@ public class GuideMEClient {
             }
         });
 
-        modBus.addListener(this::registerReloadListener);
-
         GuideOnStartup.init(modBus);
-    }
-
-    private void registerReloadListener(RegisterClientReloadListenersEvent ev) {
-        if (guiAtlas == null) {
-            guiAtlas = new GuiSpriteAtlas(
-                    Minecraft.getInstance().textureManager,
-                    GuiAssets.GUI_SPRITE_ATLAS,
-                    GuideME.makeId("gui"));
-        }
-
-        ev.registerReloadListener(guiAtlas);
     }
 
     private void processDevWatchers() {
@@ -240,9 +224,5 @@ public class GuideMEClient {
 
             spec = builder.build();
         }
-    }
-
-    public TextureAtlas getGuiSpriteAtlas() {
-        return Objects.requireNonNull(guiAtlas).getTextureAtlas();
     }
 }

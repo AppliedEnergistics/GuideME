@@ -188,7 +188,7 @@ neoForge {
 
 final generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
     group = 'build'
-    from('src/main/neoforge.mods.toml') {
+    from('src/main/mods.toml') {
         rename '(.*)', 'META-INF/$1'
     }
     into 'build/generated/modMetadata'

@@ -7,8 +7,9 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import guideme.color.LightDarkMode;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -24,6 +25,25 @@ final class SpriteLayer {
         builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
     }
 
+    public void drawSprite(ResourceLocation id, float x, float y, float z, int color) {
+        var guiSprites = Minecraft.getInstance().getGuiSprites();
+        var sprite = guiSprites.getSprite(id);
+        var scaling = guiSprites.getSpriteScaling(sprite);
+        switch (scaling) {
+            case GuiSpriteScaling.Tile tiled -> {
+                fillSprite(id, x, y, z, tiled.width(), tiled.height(), color);
+            }
+            case GuiSpriteScaling.Stretch stretch -> {
+                fillSprite(id, x, y, z, sprite.contents().width(), sprite.contents().height(), color);
+            }
+            case GuiSpriteScaling.NineSlice nineSlice -> {
+                fillSprite(id, x, y, z, nineSlice.width(), nineSlice.height(), color);
+            }
+            default -> {
+            }
+        }
+    }
+
     public void fillSprite(ResourceLocation id, float x, float y, float z, float width, float height, int color) {
         fillSprite(id, x, y, z, width, height, color, SpriteFillDirection.TOP_TO_BOTTOM);
     }
@@ -35,20 +55,26 @@ final class SpriteLayer {
         width = Math.min(65535, width);
         height = Math.min(65535, height);
 
-        var guiSprite = GuiAssets.sprite(id);
-        var scaling = guiSprite.spriteScaling();
-        var sprite = guiSprite.atlasSprite(LightDarkMode.current());
+        var guiSprites = Minecraft.getInstance().getGuiSprites();
+        var sprite = guiSprites.getSprite(id);
+        var scaling = guiSprites.getSpriteScaling(sprite);
         var u0 = sprite.getU0();
         var u1 = sprite.getU1();
         var v0 = sprite.getV0();
         var v1 = sprite.getV1();
-        if (scaling instanceof GuiSpriteScaling.Tile tiled) {
-            fillTiled(x, y, z, width, height, color, tiled.width(), tiled.height(), u0, u1, v0, v1, fillDirection);
-        } else if (scaling instanceof GuiSpriteScaling.Stretch stretch) {
-            addQuad(x, y, z, width, height, color, u0, u1, v0, v1);
-        } else if (scaling instanceof GuiSpriteScaling.NineSlice nineSlice) {
-            addTiledNineSlice(id, x, y, z, width, height, color, nineSlice.width(), nineSlice.height(),
-                    nineSlice.border(), u0, u1, v0, v1);
+        switch (scaling) {
+            case GuiSpriteScaling.Tile tiled -> {
+                fillTiled(x, y, z, width, height, color, tiled.width(), tiled.height(), u0, u1, v0, v1, fillDirection);
+            }
+            case GuiSpriteScaling.Stretch stretch -> {
+                addQuad(x, y, z, width, height, color, u0, u1, v0, v1);
+            }
+            case GuiSpriteScaling.NineSlice nineSlice -> {
+                addTiledNineSlice(id, x, y, z, width, height, color, nineSlice.width(), nineSlice.height(),
+                        nineSlice.border(), u0, u1, v0, v1);
+            }
+            default -> {
+            }
         }
     }
 
