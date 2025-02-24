@@ -5,6 +5,9 @@ import guideme.internal.command.GuideIdArgument;
 import guideme.internal.command.PageAnchorArgument;
 import guideme.internal.item.GuideItem;
 import guideme.internal.network.OpenGuideRequest;
+import guideme.internal.network.RecipeForReply;
+import guideme.internal.network.RecipeForRequest;
+import guideme.internal.network.RequestManager;
 import java.util.function.Supplier;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
@@ -12,6 +15,7 @@ import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
@@ -72,6 +76,14 @@ public class GuideME {
             } else {
                 GuideMEProxy.instance().openGuide(context.player(), payload.guideId());
             }
+        });
+        registrar.playToServer(RecipeForRequest.TYPE, RecipeForRequest.STREAM_CODEC, (payload, context) -> {
+            if (context.player() instanceof ServerPlayer serverPlayer) {
+                RequestManager.getInstance().handleRecipeForRequest(serverPlayer, payload);
+            }
+        });
+        registrar.playToClient(RecipeForReply.TYPE, RecipeForReply.STREAM_CODEC, (payload, context) -> {
+            RequestManager.getInstance().handleRecipeForReply(payload);
         });
     }
 

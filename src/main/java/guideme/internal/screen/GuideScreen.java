@@ -201,7 +201,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     @Override
     public void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
-        renderBlurredBackground(partialTick);
+        renderBlurredBackground();
 
         context.fillIcon(screenRect, GuiAssets.GUIDE_BACKGROUND, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
 

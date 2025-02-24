@@ -1,22 +1,24 @@
 package guideme.scene;
 
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import guideme.color.LightDarkMode;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
 import java.util.Collection;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.FogParameters;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
@@ -50,7 +52,7 @@ public class GuidebookLevelRenderer {
             LightDarkMode lightDarkMode) {
         lightmap.update(level);
 
-        RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+        RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT);
 
         level.onRenderFrame();
 
@@ -60,7 +62,7 @@ public class GuidebookLevelRenderer {
         render(level, cameraSettings, buffers, annotations, lightDarkMode);
         buffers.endBatch();
 
-        RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+        RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT);
     }
 
     public void render(GuidebookLevel level,
@@ -79,18 +81,14 @@ public class GuidebookLevelRenderer {
         var viewMatrix = cameraSettings.getViewMatrix();
 
         // Essentially disable level fog
-        RenderSystem.setShaderFogColor(1, 1, 1, 0);
-        RenderSystem.setShaderFogStart(0);
-        RenderSystem.setShaderFogEnd(1000);
-        RenderSystem.setShaderFogShape(FogShape.SPHERE);
+        RenderSystem.setShaderFog(FogParameters.NO_FOG);
 
         var modelViewStack = RenderSystem.getModelViewStack();
         modelViewStack.pushMatrix();
         modelViewStack.identity();
         modelViewStack.mul(viewMatrix);
-        RenderSystem.applyModelViewMatrix();
         RenderSystem.backupProjectionMatrix();
-        RenderSystem.setProjectionMatrix(projectionMatrix, VertexSorting.ORTHOGRAPHIC_Z);
+        RenderSystem.setProjectionMatrix(projectionMatrix, ProjectionType.ORTHOGRAPHIC);
 
         var lightDirection = new Vector4f(15 / 90f, .35f, 1, 0);
         var lightTransform = new Matrix4f(viewMatrix);
@@ -104,7 +102,6 @@ public class GuidebookLevelRenderer {
         InWorldAnnotationRenderer.render(buffers, annotations, lightDarkMode);
 
         modelViewStack.popMatrix();
-        RenderSystem.applyModelViewMatrix();
         RenderSystem.restoreProjectionMatrix();
 
         Lighting.setupFor3DItems(); // Reset to GUI lighting
@@ -114,39 +111,37 @@ public class GuidebookLevelRenderer {
      * Render without any setup.
      */
     public void renderContent(GuidebookLevel level, MultiBufferSource.BufferSource buffers) {
-        RenderSystem.runAsFancy(() -> {
-            renderBlocks(level, buffers, false);
-            renderBlockEntities(level, buffers, level.getPartialTick());
-            renderEntities(level, buffers, level.getPartialTick());
+        renderBlocks(level, buffers, false);
+        renderBlockEntities(level, buffers, level.getPartialTick());
+        renderEntities(level, buffers, level.getPartialTick());
 
-            // The order comes from LevelRenderer#renderLevel
-            buffers.endBatch(RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS));
-            buffers.endBatch(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
-            buffers.endBatch(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS));
-            buffers.endBatch(RenderType.entitySmoothCutout(TextureAtlas.LOCATION_BLOCKS));
+        // The order comes from LevelRenderer#renderLevel
+        buffers.endBatch(RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS));
+        buffers.endBatch(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
+        buffers.endBatch(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS));
+        buffers.endBatch(RenderType.entitySmoothCutout(TextureAtlas.LOCATION_BLOCKS));
 
-            // These would normally be pre-baked, but they are not for us
-            for (var layer : RenderType.chunkBufferLayers()) {
-                if (layer != RenderType.translucent()) {
-                    buffers.endBatch(layer);
-                }
+        // These would normally be pre-baked, but they are not for us
+        for (var layer : RenderType.chunkBufferLayers()) {
+            if (layer != RenderType.translucent()) {
+                buffers.endBatch(layer);
             }
+        }
 
-            buffers.endBatch(RenderType.solid());
-            buffers.endBatch(RenderType.endPortal());
-            buffers.endBatch(RenderType.endGateway());
-            buffers.endBatch(Sheets.solidBlockSheet());
-            buffers.endBatch(Sheets.cutoutBlockSheet());
-            buffers.endBatch(Sheets.bedSheet());
-            buffers.endBatch(Sheets.shulkerBoxSheet());
-            buffers.endBatch(Sheets.signSheet());
-            buffers.endBatch(Sheets.hangingSignSheet());
-            buffers.endBatch(Sheets.chestSheet());
-            buffers.endLastBatch();
+        buffers.endBatch(RenderType.solid());
+        buffers.endBatch(RenderType.endPortal());
+        buffers.endBatch(RenderType.endGateway());
+        buffers.endBatch(Sheets.solidBlockSheet());
+        buffers.endBatch(Sheets.cutoutBlockSheet());
+        buffers.endBatch(Sheets.bedSheet());
+        buffers.endBatch(Sheets.shulkerBoxSheet());
+        buffers.endBatch(Sheets.signSheet());
+        buffers.endBatch(Sheets.hangingSignSheet());
+        buffers.endBatch(Sheets.chestSheet());
+        buffers.endLastBatch();
 
-            renderBlocks(level, buffers, true);
-            buffers.endBatch(RenderType.translucent());
-        });
+        renderBlocks(level, buffers, true);
+        buffers.endBatch(RenderType.translucent());
     }
 
     private void renderBlocks(GuidebookLevel level, MultiBufferSource buffers, boolean translucent) {
@@ -258,21 +253,24 @@ public class GuidebookLevelRenderer {
             return;
         }
 
+        renderEntity(level, poseStack, entity, buffers, partialTicks, renderer);
+    }
+
+    private static <E extends Entity, S extends EntityRenderState> void renderEntity(GuidebookLevel level,
+            PoseStack poseStack,
+            E entity,
+            MultiBufferSource buffers,
+            float partialTicks,
+            EntityRenderer<? super E, S> renderer) {
         var probePos = BlockPos.containing(entity.getLightProbePosition(partialTicks));
         int packedLight = LevelRenderer.getLightColor(level, probePos);
-        var yaw = entity.getYRot();
 
         var pos = entity.position();
-        var offset = renderer.getRenderOffset(entity, partialTicks);
+        var state = renderer.createRenderState(entity, partialTicks);
+        var offset = renderer.getRenderOffset(state);
         poseStack.pushPose();
         poseStack.translate(pos.x + offset.x(), pos.y + offset.y(), pos.z + offset.z());
-        renderer.render(
-                entity,
-                yaw,
-                partialTicks,
-                poseStack,
-                buffers,
-                packedLight);
+        renderer.render(state, poseStack, buffers, packedLight);
         poseStack.popPose();
     }
 }

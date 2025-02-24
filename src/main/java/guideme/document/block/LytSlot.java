@@ -4,15 +4,17 @@ import guideme.document.LytRect;
 import guideme.document.interaction.GuideTooltip;
 import guideme.document.interaction.InteractiveElement;
 import guideme.document.interaction.ItemTooltip;
+import guideme.internal.util.Platform;
 import guideme.layout.LayoutContext;
 import guideme.render.GuiAssets;
 import guideme.render.GuiSprite;
 import guideme.render.RenderContext;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 /**
  * Renders a standard Minecraft GUI slot.
@@ -26,16 +28,20 @@ public class LytSlot extends LytBlock implements InteractiveElement {
     public static final int OUTER_SIZE_LARGE = ITEM_SIZE + 2 * LARGE_PADDING;
     private static final int CYCLE_TIME = 2000;
 
+    private final List<ItemStack> stacks;
+
     private boolean largeSlot;
 
-    private final ItemStack[] stacks;
+    private final SlotDisplay display;
 
-    public LytSlot(Ingredient ingredient) {
-        this.stacks = ingredient.getItems();
+    public LytSlot(SlotDisplay display) {
+        this.display = display;
+        this.stacks = display.resolveForStacks(Platform.getSlotDisplayContext());
     }
 
     public LytSlot(ItemStack stack) {
-        this.stacks = new ItemStack[] { stack };
+        this.display = new SlotDisplay.ItemStackSlotDisplay(stack);
+        this.stacks = List.of(stack);
     }
 
     public boolean isLargeSlot() {
@@ -95,11 +101,11 @@ public class LytSlot extends LytBlock implements InteractiveElement {
     }
 
     private ItemStack getDisplayedStack() {
-        if (stacks.length == 0) {
+        if (stacks.isEmpty()) {
             return ItemStack.EMPTY;
         }
 
         var cycle = System.nanoTime() / TimeUnit.MILLISECONDS.toNanos(CYCLE_TIME);
-        return stacks[(int) (cycle % stacks.length)];
+        return stacks.get((int) (cycle % stacks.size()));
     }
 }

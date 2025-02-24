@@ -1,6 +1,7 @@
 package guideme.scene.annotation;
 
-import com.mojang.blaze3d.platform.GlConst;
+import static com.mojang.blaze3d.platform.GlConst.GL_DEPTH_BUFFER_BIT;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -16,7 +17,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import org.joml.Vector3f;
 
 public final class InWorldAnnotationRenderer {
@@ -83,7 +84,7 @@ public final class InWorldAnnotationRenderer {
 
         for (var pass = 1; pass <= 2; pass++) {
             if (pass == 2) {
-                RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+                RenderSystem.clear(GL_DEPTH_BUFFER_BIT);
             }
 
             var consumer = buffers.getBuffer(RenderType.translucent());
@@ -253,15 +254,15 @@ public final class InWorldAnnotationRenderer {
     private static void quad(VertexConsumer consumer, Vector3f faceNormal, int color,
             Vector3f v1, Vector3f v2, Vector3f v3, Vector3f v4,
             TextureAtlasSprite sprite) {
-        var d = Direction.getNearest(faceNormal.x, faceNormal.y, faceNormal.z);
+        var d = Direction.getApproximateNearest(faceNormal.x, faceNormal.y, faceNormal.z);
         var shade = switch (d) {
             case DOWN -> 0.5F;
             case NORTH, SOUTH -> 0.8F;
             case WEST, EAST -> 0.6F;
             default -> 1.0F;
         };
-        color = FastColor.ARGB32.multiply(
-                FastColor.ARGB32.color(255, (int) (shade * 255), (int) (shade * 255), (int) (shade * 255)),
+        color = ARGB.multiply(
+                ARGB.color(255, (int) (shade * 255), (int) (shade * 255), (int) (shade * 255)),
                 color);
 
         vertex(consumer, faceNormal, color, v1, sprite.getU0(), sprite.getV1());

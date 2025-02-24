@@ -2,12 +2,11 @@ package guideme.internal.item;
 
 import guideme.internal.GuideME;
 import guideme.internal.GuideMEProxy;
-import guideme.internal.GuidebookText;
 import java.util.List;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -51,20 +50,18 @@ public class GuideItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
 
         var guideId = getGuideId(player.getItemInHand(hand));
 
         if (level.isClientSide) {
-            if (guideId == null) {
-                player.sendSystemMessage(GuidebookText.ItemNoGuideId.text());
-            } else if (GuideMEProxy.instance().openGuide(player, guideId)) {
-                return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+            if (GuideMEProxy.instance().openGuide(player, guideId)) {
+                return InteractionResult.CONSUME;
             }
         }
 
-        return InteractionResultHolder.success(stack);
+        return InteractionResult.SUCCESS;
     }
 
     @Nullable

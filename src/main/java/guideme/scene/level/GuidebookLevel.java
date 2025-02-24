@@ -5,6 +5,7 @@ import guideme.internal.util.Platform;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -14,32 +15,39 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.Util;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.profiling.InactiveProfiler;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.alchemy.PotionBrewing;
-import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeAccess;
+import net.minecraft.world.item.crafting.RecipePropertySet;
+import net.minecraft.world.item.crafting.SelectableRecipe;
+import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.DataLayer;
@@ -55,6 +63,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.LevelTickAccess;
+import net.neoforged.neoforge.entity.PartEntity;
 import org.jetbrains.annotations.Nullable;
 
 public class GuidebookLevel extends Level {
@@ -93,9 +102,8 @@ public class GuidebookLevel extends Level {
                 levelData,
                 LEVEL_ID,
                 registryAccess,
-                registryAccess.registryOrThrow(Registries.DIMENSION_TYPE)
-                        .getHolderOrThrow(BuiltinDimensionTypes.OVERWORLD),
-                () -> InactiveProfiler.INSTANCE,
+                registryAccess.lookupOrThrow(Registries.DIMENSION_TYPE)
+                        .getOrThrow(BuiltinDimensionTypes.OVERWORLD),
                 true /* client-side */,
                 false /* debug */,
                 0 /* seed */,
@@ -103,7 +111,7 @@ public class GuidebookLevel extends Level {
         );
         this.clientLevelData = levelData;
         this.registryAccess = registryAccess;
-        this.biome = registryAccess.registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.PLAINS);
+        this.biome = registryAccess.lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS);
 
         var nibbles = new byte[DataLayer.SIZE];
         Arrays.fill(nibbles, (byte) 0xFF);
@@ -310,8 +318,26 @@ public class GuidebookLevel extends Level {
     }
 
     @Override
-    public RecipeManager getRecipeManager() {
-        return Platform.getClientRecipeManager();
+    public RecipeAccess recipeAccess() {
+        if (Minecraft.getInstance().level != null) {
+            return Minecraft.getInstance().level.recipeAccess();
+        }
+        return new RecipeAccess() {
+            @Override
+            public RecipePropertySet propertySet(ResourceKey<RecipePropertySet> propertySet) {
+                return RecipePropertySet.EMPTY;
+            }
+
+            @Override
+            public SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes() {
+                return SelectableRecipe.SingleInputSet.empty();
+            }
+        };
+    }
+
+    @Override
+    public FuelValues fuelValues() {
+        return Platform.fuelValues();
     }
 
     @Override
@@ -394,6 +420,23 @@ public class GuidebookLevel extends Level {
     @Override
     public FeatureFlagSet enabledFeatures() {
         return FeatureFlags.DEFAULT_FLAGS;
+    }
+
+    @Override
+    public void explode(@Nullable Entity source, @Nullable DamageSource damageSource,
+            @Nullable ExplosionDamageCalculator damageCalculator, double x, double y, double z, float radius,
+            boolean fire, ExplosionInteraction explosionInteraction, ParticleOptions smallExplosionParticles,
+            ParticleOptions largeExplosionParticles, Holder<SoundEvent> explosionSound) {
+    }
+
+    @Override
+    public Collection<PartEntity<?>> dragonParts() {
+        return List.of();
+    }
+
+    @Override
+    public int getSeaLevel() {
+        return 0;
     }
 
     private static class EntityCallbacks implements LevelCallback<Entity> {

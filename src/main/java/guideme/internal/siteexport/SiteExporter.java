@@ -7,6 +7,7 @@ import guideme.Guide;
 import guideme.GuidePage;
 import guideme.compiler.PageCompiler;
 import guideme.compiler.ParsedGuidePage;
+import guideme.document.block.recipes.RecipeDisplayHolder;
 import guideme.indices.CategoryIndex;
 import guideme.indices.ItemIndex;
 import guideme.internal.GuideOnStartup;
@@ -27,41 +28,43 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DetectedVersion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.LoadingOverlay;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.AbstractCookingRecipe;
-import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.SmithingTransformRecipe;
-import net.minecraft.world.item.crafting.SmithingTrimRecipe;
-import net.minecraft.world.item.crafting.StonecutterRecipe;
+import net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.SmithingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.StonecutterRecipeDisplay;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.crafting.display.FluidStackContentsFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
@@ -85,7 +88,7 @@ public class SiteExporter implements ResourceExporter {
 
     private ParsedGuidePage currentPage;
 
-    private final Set<RecipeHolder<?>> recipes = new HashSet<>();
+    private final Set<RecipeDisplayHolder<?>> recipes = new HashSet<>();
 
     private final Set<Item> items = new HashSet<>();
 
@@ -154,49 +157,62 @@ public class SiteExporter implements ResourceExporter {
         fluids.add(fluid);
     }
 
-    private void referenceIngredient(Ingredient ingredient) {
-        for (var item : ingredient.getItems()) {
-            referenceItem(item);
+    public void referenceFluid(FluidStack fluid) {
+        fluids.add(fluid.getFluid());
+    }
+
+    private void referenceIngredient(SlotDisplay display) {
+        for (var stack : display.resolveForStacks(Platform.getSlotDisplayContext())) {
+            referenceItem(stack);
         }
     }
 
     @Override
-    public void referenceRecipe(RecipeHolder<?> holder) {
+    public void referenceRecipe(RecipeDisplayHolder<?> holder) {
         if (!recipes.add(holder)) {
             return; // Already added
         }
 
-        var recipe = holder.value();
-
-        var registryAccess = Platform.getClientRegistryAccess();
-        var resultItem = recipe.getResultItem(registryAccess);
-        if (!resultItem.isEmpty()) {
-            referenceItem(resultItem);
-        }
-        for (var ingredient : getIngredients(recipe)) {
-            referenceIngredient(ingredient);
-        }
+        visitDisplays(holder.value(), display -> {
+            display.resolve(Platform.getSlotDisplayContext(), SlotDisplay.ItemStackContentsFactory.INSTANCE)
+                    .forEach(this::referenceItem);
+            display.resolve(Platform.getSlotDisplayContext(), FluidStackContentsFactory.INSTANCE)
+                    .forEach(this::referenceFluid);
+        });
     }
 
-    private static NonNullList<Ingredient> getIngredients(Recipe<?> recipe) {
-        // Special handling for upgrade recipes since those do not override getIngredients
-        if (recipe instanceof SmithingTrimRecipe trimRecipe) {
-            var ingredients = NonNullList.withSize(3, Ingredient.EMPTY);
-            ingredients.set(0, trimRecipe.template);
-            ingredients.set(1, trimRecipe.base);
-            ingredients.set(2, trimRecipe.addition);
-            return ingredients;
-        }
+    @MustBeInvokedByOverriders
+    protected void visitDisplays(RecipeDisplay recipe, Consumer<SlotDisplay> visitor) {
+        visitor.accept(recipe.result());
+        visitor.accept(recipe.craftingStation());
 
-        if (recipe instanceof SmithingTransformRecipe transformRecipe) {
-            var ingredients = NonNullList.withSize(3, Ingredient.EMPTY);
-            ingredients.set(0, transformRecipe.template);
-            ingredients.set(1, transformRecipe.base);
-            ingredients.set(2, transformRecipe.addition);
-            return ingredients;
+        switch (recipe) {
+            case ShapedCraftingRecipeDisplay craftingRecipe -> {
+                for (var display : craftingRecipe.ingredients()) {
+                    visitor.accept(display);
+                }
+            }
+            case ShapelessCraftingRecipeDisplay craftingRecipe -> {
+                for (var display : craftingRecipe.ingredients()) {
+                    visitor.accept(display);
+                }
+            }
+            case SmithingRecipeDisplay smithingTransformRecipe -> {
+                visitor.accept(smithingTransformRecipe.base());
+                visitor.accept(smithingTransformRecipe.template());
+                visitor.accept(smithingTransformRecipe.addition());
+            }
+            case FurnaceRecipeDisplay furnaceRecipeDisplay -> {
+                visitor.accept(furnaceRecipeDisplay.ingredient());
+                visitor.accept(furnaceRecipeDisplay.result());
+            }
+            case StonecutterRecipeDisplay stonecutterRecipeDisplay -> {
+                visitor.accept(stonecutterRecipeDisplay.input());
+                visitor.accept(stonecutterRecipeDisplay.result());
+            }
+            default -> {
+            }
         }
-
-        return recipe.getIngredients();
     }
 
     private void dumpRecipes(SiteExportWriter writer) {
@@ -204,25 +220,22 @@ public class SiteExporter implements ResourceExporter {
             var id = holder.id();
             var recipe = holder.value();
 
-            if (recipe instanceof CraftingRecipe craftingRecipe) {
-                if (craftingRecipe.isSpecial()) {
-                    continue;
-                }
+            if (recipe instanceof ShapedCraftingRecipeDisplay craftingRecipe) {
                 writer.addRecipe(id, craftingRecipe);
-            } else if (recipe instanceof AbstractCookingRecipe cookingRecipe) {
+            } else if (recipe instanceof ShapelessCraftingRecipeDisplay cookingRecipe) {
                 writer.addRecipe(id, cookingRecipe);
-            } else if (recipe instanceof SmithingTransformRecipe smithingTransformRecipe) {
+            } else if (recipe instanceof SmithingRecipeDisplay smithingTransformRecipe) {
                 writer.addRecipe(id, smithingTransformRecipe);
-            } else if (recipe instanceof SmithingTrimRecipe smithingTrimRecipe) {
+            } else if (recipe instanceof FurnaceRecipeDisplay smithingTrimRecipe) {
                 writer.addRecipe(id, smithingTrimRecipe);
-            } else if (recipe instanceof StonecutterRecipe stonecutterRecipe) {
-                writer.addRecipe(id, stonecutterRecipe);
+            } else if (recipe instanceof StonecutterRecipeDisplay stonecutterRecipeDisplay) {
+                writer.addRecipe(id, stonecutterRecipeDisplay);
             } else {
                 var recipeFields = getCustomRecipeFields(id, recipe);
                 if (recipeFields != null) {
                     writer.addRecipe(id, recipe, recipeFields);
                 } else {
-                    LOG.warn("Unable to handle recipe {} of type {}", holder.id(), recipe.getType());
+                    LOG.warn("Unable to handle recipe {} of type {}", holder.id(), recipe.type());
                 }
             }
         }
@@ -234,7 +247,7 @@ public class SiteExporter implements ResourceExporter {
      */
     @Nullable
     @ApiStatus.OverrideOnly
-    protected Map<String, Object> getCustomRecipeFields(ResourceLocation id, Recipe<?> recipe) {
+    protected Map<String, Object> getCustomRecipeFields(ResourceLocation id, RecipeDisplay recipe) {
         return null;
     }
 
@@ -417,8 +430,18 @@ public class SiteExporter implements ResourceExporter {
                 var baseName = "!items/" + itemId.replace(':', '/');
 
                 // Guess used sprites from item model
-                var itemModel = client.getItemRenderer().getModel(stack, null, null, 0);
-                var sprites = guessSprites(Set.of(itemModel));
+                var renderState = new ItemStackRenderState();
+                client.getItemModelResolver().appendItemLayers(renderState, stack, ItemDisplayContext.GUI, null, null,
+                        0);
+
+                var models = new HashSet<BakedModel>();
+                for (var layer : renderState.layers) {
+                    if (layer.model != null) {
+                        models.add(layer.model);
+                    }
+                }
+
+                var sprites = guessSprites(models);
 
                 var iconPath = renderAndWrite(renderer, baseName, () -> {
                     guiGraphics.renderItem(stack, 0, 0);
@@ -465,7 +488,7 @@ public class SiteExporter implements ResourceExporter {
                 var props = IClientFluidTypeExtensions.of(fluidVariant.getFluid());
 
                 var sprite = Minecraft.getInstance()
-                        .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
+                        .getTextureAtlas(TextureAtlas.LOCATION_BLOCKS)
                         .apply(props.getStillTexture(fluidVariant));
                 var color = props.getTintColor(fluidVariant);
 
@@ -475,11 +498,7 @@ public class SiteExporter implements ResourceExporter {
                         baseName,
                         () -> {
                             if (sprite != null) {
-                                var r = FastColor.ARGB32.red(color) / 255.f;
-                                var g = FastColor.ARGB32.green(color) / 255.f;
-                                var b = FastColor.ARGB32.blue(color) / 255.f;
-                                var a = FastColor.ARGB32.alpha(color) / 255.f;
-                                guiGraphics.blit(0, 0, 0, 16, 16, sprite, r, g, b, a);
+                                guiGraphics.blitSprite(RenderType::guiTextured, sprite, 0, 0, 16, 16, color);
                             }
                         },
                         sprite != null ? Set.of(sprite) : Set.of(),
@@ -553,7 +572,7 @@ public class SiteExporter implements ResourceExporter {
         byte[] imageContent;
         try (var nativeImage = new NativeImage(w, h, false)) {
             nativeImage.downloadTexture(0, false);
-            imageContent = nativeImage.asByteArray();
+            imageContent = Platform.exportAsPng(nativeImage);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -575,5 +594,4 @@ public class SiteExporter implements ResourceExporter {
     private static ResourceLocation getFluidId(Fluid fluid) {
         return BuiltInRegistries.FLUID.getKey(fluid);
     }
-
 }

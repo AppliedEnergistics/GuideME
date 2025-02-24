@@ -5,6 +5,7 @@ import guideme.internal.GuideME;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.client.gui.GuiSpriteManager;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ public final class GuiAssets {
     public static final ResourceLocation GUI_SPRITE_ATLAS = ResourceLocation
             .withDefaultNamespace("textures/atlas/gui.png");
 
+    public static final GuiSprite MISSING_TEXTURE = sprite(MissingTextureAtlasSprite.getLocation());
     public static final GuiSprite GUIDE_BACKGROUND = sprite("background");
     public static final GuiSprite WINDOW_SPRITE = sprite("window");
     public static final GuiSprite INNER_BORDER_SPRITE = sprite("window_inner");

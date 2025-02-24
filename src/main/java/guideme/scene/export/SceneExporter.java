@@ -1,11 +1,11 @@
 package guideme.scene.export;
 
 import com.google.flatbuffers.FlatBufferBuilder;
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import guideme.flatbuffers.scene.ExpAnimatedTexturePart;
 import guideme.flatbuffers.scene.ExpAnimatedTexturePartFrame;
 import guideme.flatbuffers.scene.ExpCameraSettings;
@@ -22,6 +22,7 @@ import guideme.flatbuffers.scene.ExpVertexElementUsage;
 import guideme.flatbuffers.scene.ExpVertexFormat;
 import guideme.flatbuffers.scene.ExpVertexFormatElement;
 import guideme.internal.siteexport.CacheBusting;
+import guideme.internal.util.Platform;
 import guideme.scene.CameraSettings;
 import guideme.scene.GuidebookLevelRenderer;
 import guideme.scene.GuidebookScene;
@@ -86,14 +87,12 @@ public class SceneExporter {
         var modelViewStack = RenderSystem.getModelViewStack();
         modelViewStack.pushMatrix();
         modelViewStack.identity();
-        RenderSystem.applyModelViewMatrix();
         RenderSystem.backupProjectionMatrix();
-        RenderSystem.setProjectionMatrix(new Matrix4f(), VertexSorting.ORTHOGRAPHIC_Z);
+        RenderSystem.setProjectionMatrix(new Matrix4f(), ProjectionType.ORTHOGRAPHIC);
 
         GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource);
 
         modelViewStack.popMatrix();
-        RenderSystem.applyModelViewMatrix();
         RenderSystem.restoreProjectionMatrix();
 
         // Concat all vertex buffers
@@ -155,7 +154,7 @@ public class SceneExporter {
                     animatedTexture.frameRowSize,
                     animatedTexture.frames);
             try (var interpFrames = interpResult.frames()) {
-                image = interpFrames.asByteArray();
+                image = Platform.exportAsPng(interpFrames);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -174,7 +173,7 @@ public class SceneExporter {
             framesOffset = builder.endVector();
         } else {
             try {
-                image = contents.originalImage.asByteArray();
+                image = Platform.exportAsPng(contents.originalImage);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -186,8 +185,8 @@ public class SceneExporter {
             for (var frame : animatedTexture.frames) {
                 ExpAnimatedTexturePartFrame.createExpAnimatedTexturePartFrame(
                         builder,
-                        frame.index,
-                        frame.time);
+                        frame.index(),
+                        frame.time());
             }
             framesOffset = builder.endVector();
         }
@@ -292,7 +291,7 @@ public class SceneExporter {
 
         var shaderNameOffset = 0;
         if (state.shaderState.shader.isPresent()) {
-            shaderNameOffset = builder.createSharedString(state.shaderState.shader.get().get().getName());
+            shaderNameOffset = builder.createSharedString(state.shaderState.shader.get().configId().toString());
         }
 
         var nameOffset = builder.createSharedString(type.name);

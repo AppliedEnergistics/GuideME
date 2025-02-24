@@ -34,7 +34,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.SmithingRecipeDisplay;
 
 public final class DefaultExtensions {
     private static final List<Registration<?>> EXTENSIONS = List.of(
@@ -97,10 +100,10 @@ public final class DefaultExtensions {
     private static List<RecipeTypeMappingSupplier> vanillaRecipeTypes() {
         return List.of(
                 mappings -> {
-                    mappings.add(RecipeType.CRAFTING, VanillaRecipes::createCrafting);
-                    mappings.add(RecipeType.BLASTING, VanillaRecipes::createBlasting);
-                    mappings.add(RecipeType.SMELTING, VanillaRecipes::createSmelting);
-                    mappings.add(RecipeType.SMITHING, VanillaRecipes::createSmithing);
+                    mappings.add(ShapelessCraftingRecipeDisplay.class, VanillaRecipes::create);
+                    mappings.add(ShapedCraftingRecipeDisplay.class, VanillaRecipes::create);
+                    mappings.add(FurnaceRecipeDisplay.class, VanillaRecipes::create);
+                    mappings.add(SmithingRecipeDisplay.class, VanillaRecipes::create);
                 });
     }
 

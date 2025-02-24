@@ -156,7 +156,7 @@ public class WebPExporter implements AutoCloseable {
         check(avutil.av_frame_make_writable(frame));
 
         // This is slow. We could reach into NativeImage's native pointer
-        var pixels = nativeImage.getPixelsRGBA();
+        var pixels = nativeImage.getPixels();
         var data = rgbFrame.data(0);
         for (int i = 0; i < pixels.length; i++) {
             data.putInt(i * 4L, pixels[i]);

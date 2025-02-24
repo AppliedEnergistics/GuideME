@@ -2,34 +2,28 @@ package guideme.internal.data;
 
 import guideme.internal.GuideME;
 import guideme.internal.item.GuideItem;
-import guideme.internal.item.GuideItemDispatchModelLoader;
+import guideme.internal.item.GuideItemDispatchUnbaked;
+import net.minecraft.client.data.models.BlockModelGenerators;
+import net.minecraft.client.data.models.ItemModelGenerators;
+import net.minecraft.client.data.models.ModelProvider;
+import net.minecraft.client.data.models.model.ModelTemplates;
+import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.data.PackOutput;
-import net.neoforged.neoforge.client.model.generators.CustomLoaderBuilder;
-import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
-import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
-import net.neoforged.neoforge.client.model.generators.ModelFile;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
-public class GuideMEModelProvider extends ItemModelProvider {
-    public GuideMEModelProvider(PackOutput output, ExistingFileHelper existingFileHelper) {
-        super(output, GuideME.MOD_ID, existingFileHelper);
+public class GuideMEModelProvider extends ModelProvider {
+    public GuideMEModelProvider(PackOutput output) {
+        super(output, GuideME.MOD_ID);
     }
 
     @Override
-    protected void registerModels() {
+    protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
         // Generate the base item model
-        getBuilder(GuideItem.ID.withSuffix("_base").toString())
-                .parent(new ModelFile.UncheckedModelFile("item/generated"))
-                .texture("layer0", GuideItem.ID.withPrefix("item/"));
+        ModelTemplates.FLAT_ITEM.create(
+                GuideItem.BASE_MODEL_ID,
+                TextureMapping.layer0(GuideItem.ID.withPrefix("item/")),
+                itemModels.modelOutput);
 
         // Generate the dispatch model
-        getBuilder(GuideItem.ID.toString()).customLoader(this::createDispatchModel);
-    }
-
-    private CustomLoaderBuilder<ItemModelBuilder> createDispatchModel(ItemModelBuilder itemModelBuilder,
-            ExistingFileHelper existingFileHelper) {
-        return new CustomLoaderBuilder<>(
-                GuideItemDispatchModelLoader.ID, itemModelBuilder, existingFileHelper, false) {
-        };
+        itemModels.itemModelOutput.accept(GuideME.GUIDE_ITEM.get(), new GuideItemDispatchUnbaked());
     }
 }

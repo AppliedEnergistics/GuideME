@@ -15,7 +15,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
@@ -330,7 +330,7 @@ public final class MdxAttrs {
                 g = Integer.valueOf(colorStr.substring(5, 7), 16);
                 b = Integer.valueOf(colorStr.substring(7, 9), 16);
             }
-            return new ConstantColor(FastColor.ARGB32.color(a, r, g, b));
+            return new ConstantColor(ARGB.color(a, r, g, b));
         }
 
         return defaultColor;

@@ -1,9 +1,9 @@
 package guideme.siteexport;
 
+import guideme.document.block.recipes.RecipeDisplayHolder;
 import java.nio.file.Path;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.ApiStatus;
@@ -47,5 +47,5 @@ public interface ResourceExporter {
      */
     ResourceLocation getPageSpecificResourceLocation(String suffix);
 
-    void referenceRecipe(RecipeHolder<?> recipe);
+    void referenceRecipe(RecipeDisplayHolder<?> recipe);
 }

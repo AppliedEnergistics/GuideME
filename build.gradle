@@ -174,7 +174,7 @@ neoForge {
             systemProperty('guideme.showOnStartup', 'testmod:guide')
         }
         data {
-            data()
+            clientData()
             programArguments = [
                     '--mod', 'guideme',
                     '--all',

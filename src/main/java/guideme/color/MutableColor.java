@@ -1,6 +1,6 @@
 package guideme.color;
 
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 
 /**
@@ -39,10 +39,10 @@ public final class MutableColor implements ColorValue {
     }
 
     public static MutableColor ofArgb32(int packedColor) {
-        var r = FastColor.ARGB32.red(packedColor);
-        var g = FastColor.ARGB32.green(packedColor);
-        var b = FastColor.ARGB32.blue(packedColor);
-        var a = FastColor.ARGB32.alpha(packedColor);
+        var r = ARGB.red(packedColor);
+        var g = ARGB.green(packedColor);
+        var b = ARGB.blue(packedColor);
+        var a = ARGB.alpha(packedColor);
         return MutableColor.ofBytes(r, g, b, a);
     }
 
@@ -66,7 +66,7 @@ public final class MutableColor implements ColorValue {
     }
 
     public int toArgb32() {
-        return FastColor.ARGB32.color(
+        return ARGB.color(
                 alphaByte(),
                 redByte(),
                 greenByte(),
@@ -74,11 +74,11 @@ public final class MutableColor implements ColorValue {
     }
 
     public int toAbgr32() {
-        return FastColor.ABGR32.color(
+        return ARGB.color(
                 alphaByte(),
-                blueByte(),
+                redByte(),
                 greenByte(),
-                redByte());
+                blueByte());
     }
 
     public float red() {

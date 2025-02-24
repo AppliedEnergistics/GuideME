@@ -5,6 +5,7 @@ import guideme.layout.LayoutContext;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 /**
  * Shows items in a grid-like fashion, i.e. to show-case variants.
@@ -36,6 +37,12 @@ public class LytItemGrid extends LytBox {
                 y,
                 cols * LytSlot.OUTER_SIZE,
                 rows * LytSlot.OUTER_SIZE);
+    }
+
+    public void addItem(SlotDisplay display) {
+        var slot = new LytSlot(display);
+        slots.add(slot);
+        append(slot);
     }
 
     public void addItem(Item item) {

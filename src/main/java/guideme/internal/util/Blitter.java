@@ -27,12 +27,12 @@ import guideme.internal.GuideME;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -195,10 +195,10 @@ public final class Blitter {
     }
 
     public Blitter colorArgb(int packedArgb) {
-        this.a = FastColor.ARGB32.alpha(packedArgb);
-        this.r = FastColor.ARGB32.red(packedArgb);
-        this.g = FastColor.ARGB32.green(packedArgb);
-        this.b = FastColor.ARGB32.blue(packedArgb);
+        this.a = ARGB.alpha(packedArgb);
+        this.r = ARGB.red(packedArgb);
+        this.g = ARGB.green(packedArgb);
+        this.b = ARGB.blue(packedArgb);
         return this;
     }
 
@@ -242,7 +242,7 @@ public final class Blitter {
     }
 
     public void blit(GuiGraphics guiGraphics) {
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
         RenderSystem.setShaderTexture(0, this.texture);
 
         // With no source rectangle, we'll use the entirety of the texture. This happens rarely though.

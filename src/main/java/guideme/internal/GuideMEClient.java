@@ -8,15 +8,14 @@ import guideme.internal.command.StructureCommands;
 import guideme.internal.data.GuideMELanguageProvider;
 import guideme.internal.data.GuideMEModelProvider;
 import guideme.internal.hotkey.OpenGuideHotkey;
-import guideme.internal.item.GuideItem;
-import guideme.internal.item.GuideItemDispatchModelLoader;
+import guideme.internal.item.GuideItemDispatchUnbaked;
+import guideme.internal.network.RequestManager;
 import guideme.internal.screen.GlobalInMemoryHistory;
 import guideme.internal.screen.GuideNavigation;
 import guideme.internal.search.GuideSearch;
 import guideme.render.GuiAssets;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -29,10 +28,10 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
@@ -69,6 +68,7 @@ public class GuideMEClient {
         });
         modBus.addListener(this::gatherData);
         modBus.addListener(this::registerHotkeys);
+        modBus.addListener(this::registerItemModel);
 
         NeoForge.EVENT_BUS.addListener(this::registerClientCommands);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
@@ -76,23 +76,22 @@ public class GuideMEClient {
 
         OpenGuideHotkey.init();
 
-        modBus.addListener((ModelEvent.RegisterAdditional e) -> {
-            e.register(new ModelResourceLocation(GuideItem.BASE_MODEL_ID, ModelResourceLocation.STANDALONE_VARIANT));
-        });
-        modBus.addListener((ModelEvent.RegisterGeometryLoaders e) -> e.register(
-                GuideItemDispatchModelLoader.ID, new GuideItemDispatchModelLoader()));
-
-        modBus.addListener((RegisterClientReloadListenersEvent evt) -> {
-            evt.registerReloadListener(new GuideReloadListener());
+        modBus.addListener((AddClientReloadListenersEvent evt) -> {
+            evt.addListener(GuideReloadListener.ID, new GuideReloadListener());
         });
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre evt) -> {
             search.processWork();
             processDevWatchers();
+            RequestManager.getInstance().processTimeouts();
         });
 
         GuideOnStartup.init(modBus);
 
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+    }
+
+    private void registerItemModel(RegisterItemModelsEvent event) {
+        event.register(GuideItemDispatchUnbaked.ID, GuideItemDispatchUnbaked.CODEC);
     }
 
     private void processDevWatchers() {
@@ -131,11 +130,11 @@ public class GuideMEClient {
         StructureCommands.register(event.getDispatcher());
     }
 
-    private void gatherData(GatherDataEvent event) {
+    private void gatherData(GatherDataEvent.Client event) {
         DataGenerator gen = event.getGenerator();
         PackOutput packOutput = gen.getPackOutput();
-        gen.addProvider(event.includeClient(), new GuideMELanguageProvider(packOutput));
-        gen.addProvider(event.includeClient(), new GuideMEModelProvider(packOutput, event.getExistingFileHelper()));
+        gen.addProvider(true, new GuideMELanguageProvider(packOutput));
+        gen.addProvider(true, new GuideMEModelProvider(packOutput));
     }
 
     public boolean isShowDebugGuiOverlays() {

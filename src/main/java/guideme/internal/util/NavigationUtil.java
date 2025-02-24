@@ -19,7 +19,7 @@ public final class NavigationUtil {
 
         var icon = ItemStack.EMPTY;
         if (navigation != null && navigation.iconItemId() != null) {
-            var iconItem = BuiltInRegistries.ITEM.getHolder(navigation.iconItemId()).orElse(null);
+            var iconItem = BuiltInRegistries.ITEM.get(navigation.iconItemId()).orElse(null);
             if (iconItem != null) {
                 if (navigation.iconComponents() != null) {
                     var patch = DataComponentPatch.CODEC.parse(JavaOps.INSTANCE, navigation.iconComponents())

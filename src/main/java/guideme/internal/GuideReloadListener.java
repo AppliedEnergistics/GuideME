@@ -1,8 +1,5 @@
 package guideme.internal;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import guideme.Guide;
 import guideme.compiler.PageCompiler;
@@ -17,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.metadata.language.LanguageMetadataSection;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -27,9 +25,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadListener.Result> {
-    private static final Logger LOG = LoggerFactory.getLogger(GuideReloadListener.class);
+    public static final ResourceLocation ID = GuideME.makeId("guides");
 
-    private static final Gson GSON = new Gson();
+    private static final Logger LOG = LoggerFactory.getLogger(GuideReloadListener.class);
 
     @Override
     protected Result prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
@@ -105,21 +103,16 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
     }
 
     private static Map<ResourceLocation, MutableGuide> loadDataDrivenGuides(ResourceManager resourceManager) {
-        var dataDrivenGuideJsons = new HashMap<ResourceLocation, JsonElement>();
-        SimpleJsonResourceReloadListener.scanDirectory(resourceManager, "guideme_guides", GSON, dataDrivenGuideJsons);
+        var dataDrivenGuideJsons = new HashMap<ResourceLocation, DataDrivenGuide>();
+        var guideJsonIds = new FileToIdConverter("guideme_guides", ".json");
+        SimpleJsonResourceReloadListener.scanDirectory(resourceManager, guideJsonIds, JsonOps.INSTANCE,
+                DataDrivenGuide.CODEC, dataDrivenGuideJsons);
 
         // Load the data driven guides
         Map<ResourceLocation, MutableGuide> dataDrivenGuides = new HashMap<>();
         for (var entry : dataDrivenGuideJsons.entrySet()) {
             var guideId = entry.getKey();
-
-            var result = DataDrivenGuide.CODEC.parse(JsonOps.INSTANCE, entry.getValue());
-            if (result instanceof DataResult.Error<?> error) {
-                LOG.error("Failed to load data driven guide {}: {}", guideId, error.message());
-                continue;
-            }
-
-            var guideSpec = result.getOrThrow();
+            var guideSpec = entry.getValue();
 
             var guide = (MutableGuide) Guide.builder(guideId)
                     .register(false)

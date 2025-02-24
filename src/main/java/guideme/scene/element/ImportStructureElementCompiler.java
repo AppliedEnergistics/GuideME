@@ -70,7 +70,7 @@ public class ImportStructureElementCompiler implements SceneElementTagCompiler {
         }
 
         var template = new StructureTemplate();
-        var blocks = scene.getLevel().registryAccess().registryOrThrow(Registries.BLOCK).asLookup();
+        var blocks = scene.getLevel().registryAccess().lookupOrThrow(Registries.BLOCK);
         template.load(blocks, compoundTag);
         var random = new SingleThreadedRandomSource(0L);
         var settings = new StructurePlaceSettings();

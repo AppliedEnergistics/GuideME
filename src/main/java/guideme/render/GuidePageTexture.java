@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
@@ -30,7 +31,7 @@ public class GuidePageTexture {
     private static final Logger LOG = LoggerFactory.getLogger(GuidePageTexture.class);
 
     // Textures in use by the current page
-    private static final Map<GuidePageTexture, DynamicTexture> usedTextures = new IdentityHashMap<>();
+    private static final Map<GuidePageTexture, AbstractTexture> usedTextures = new IdentityHashMap<>();
 
     private final ResourceLocation id;
 
@@ -80,7 +81,7 @@ public class GuidePageTexture {
     public AbstractTexture use() {
         return usedTextures.computeIfAbsent(this, guidePageTexture -> {
             if (guidePageTexture.imageContent == null) {
-                return MissingTextureAtlasSprite.getTexture();
+                return Minecraft.getInstance().getTextureManager().getTexture(MissingTextureAtlasSprite.getLocation());
             }
 
             try {
@@ -88,14 +89,15 @@ public class GuidePageTexture {
                 return new DynamicTexture(nativeImage);
             } catch (IOException e) {
                 LOG.error("Failed to read image {}: {}", guidePageTexture.id, e.toString());
-                return MissingTextureAtlasSprite.getTexture();
+                return Minecraft.getInstance().getTextureManager().getTexture(MissingTextureAtlasSprite.getLocation());
             }
         });
     }
 
     public static void releaseUsedTextures() {
-        for (DynamicTexture texture : usedTextures.values()) {
-            if (texture != MissingTextureAtlasSprite.getTexture()) {
+        for (var texture : usedTextures.values()) {
+            if (texture != Minecraft.getInstance().getTextureManager()
+                    .getTexture(MissingTextureAtlasSprite.getLocation())) {
                 texture.close();
             }
         }

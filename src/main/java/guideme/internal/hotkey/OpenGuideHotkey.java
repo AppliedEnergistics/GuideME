@@ -91,9 +91,9 @@ public final class OpenGuideHotkey {
         // Compute the progress value between [0,1]
         float progress = ticksKeyHeld;
         if (holding) {
-            progress += minecraft.getTimer().getRealtimeDeltaTicks();
+            progress += minecraft.getDeltaTracker().getRealtimeDeltaTicks();
         } else {
-            progress -= minecraft.getTimer().getRealtimeDeltaTicks();
+            progress -= minecraft.getDeltaTracker().getRealtimeDeltaTicks();
         }
         progress /= (float) TICKS_TO_OPEN;
         var component = makeProgressBar(Mth.clamp(progress, 0, 1));

@@ -28,6 +28,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20;
 import org.slf4j.Logger;
@@ -113,7 +114,9 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     }
 
     protected final void ensureDocumentLayout() {
-        if (!documentLayoutInvalid) {
+        var document = getDocument();
+
+        if (document == null || !documentLayoutInvalid && getDocument().hasLayout()) {
             return;
         }
 
@@ -123,11 +126,8 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         var context = new LayoutContext(new MinecraftFontMetrics());
 
         // Build layout if needed
-        var document = getDocument();
-        if (document != null) {
-            document.updateLayout(context, docViewport.width());
-            scrollbar.setContentHeight(document.getContentHeight());
-        }
+        document.updateLayout(context, docViewport.width());
+        scrollbar.setContentHeight(document.getContentHeight());
     }
 
     protected final void updateDocumentLayout() {
@@ -510,11 +510,12 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
             dispatchInteraction(
                     hoveredElement,
                     el -> el.getTooltip(docPos.x(), docPos.y()))
-                    .ifPresent(tooltip -> renderTooltip(guiGraphics, tooltip, x, y));
+                    .ifPresent(tooltip -> renderTooltip(guiGraphics, tooltip, x, y, null));
         }
     }
 
-    private void renderTooltip(GuiGraphics guiGraphics, GuideTooltip tooltip, int mouseX, int mouseY) {
+    private void renderTooltip(GuiGraphics guiGraphics, GuideTooltip tooltip, int mouseX, int mouseY,
+            @Nullable ResourceLocation sprite) {
         var minecraft = Minecraft.getInstance();
         var clientLines = tooltip.getLines();
 
@@ -527,7 +528,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
 
         for (var clientTooltipComponent : clientLines) {
             frameWidth = Math.max(frameWidth, clientTooltipComponent.getWidth(minecraft.font));
-            frameHeight += clientTooltipComponent.getHeight();
+            frameHeight += clientTooltipComponent.getHeight(font);
         }
 
         if (!tooltip.getIcon().isEmpty()) {
@@ -547,7 +548,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
 
         int zOffset = 400;
 
-        TooltipRenderUtil.renderTooltipBackground(guiGraphics, x, y, frameWidth, frameHeight, zOffset);
+        TooltipRenderUtil.renderTooltipBackground(guiGraphics, x, y, frameWidth, frameHeight, zOffset, sprite);
 
         if (!tooltip.getIcon().isEmpty()) {
             x += 18;
@@ -563,7 +564,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         for (int i = 0; i < clientLines.size(); ++i) {
             var line = clientLines.get(i);
             line.renderText(minecraft.font, x, currentY, poseStack.last().pose(), bufferSource);
-            currentY += line.getHeight() + (i == 0 ? 2 : 0);
+            currentY += line.getHeight(font) + (i == 0 ? 2 : 0);
         }
 
         bufferSource.endBatch();
@@ -579,8 +580,8 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
 
         for (int i = 0; i < clientLines.size(); ++i) {
             var line = clientLines.get(i);
-            line.renderImage(minecraft.font, x, currentY, guiGraphics);
-            currentY += line.getHeight() + (i == 0 ? 2 : 0);
+            line.renderImage(minecraft.font, x, currentY, frameWidth, frameHeight, guiGraphics);
+            currentY += line.getHeight(font) + (i == 0 ? 2 : 0);
         }
         poseStack.popPose();
     }
