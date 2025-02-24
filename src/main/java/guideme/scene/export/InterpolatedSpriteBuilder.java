@@ -32,10 +32,10 @@ final class InterpolatedSpriteBuilder {
             var frame = frames.get(i);
             var nextFrame = frames.get((i + 1) % frames.size());
 
-            for (var j = 0; j < frame.time; j++) {
-                var f = j / (float) frame.time;
+            for (var j = 0; j < frame.time(); j++) {
+                var f = j / (float) frame.time();
 
-                var interpFrame = new InterpolatedFrame(frame.index, nextFrame.index, f);
+                var interpFrame = new InterpolatedFrame(frame.index(), nextFrame.index(), f);
                 var newIndex = interpFrames.indexOf(interpFrame);
                 if (newIndex != -1) {
                     interpolated.add(newIndex);
@@ -95,9 +95,9 @@ final class InterpolatedSpriteBuilder {
             float alpha) {
         for (var y = 0; y < frameHeight; y++) {
             for (var x = 0; x < frameWidth; x++) {
-                var srcColor = source.getPixelRGBA(srcX + x, srcY + y);
-                var destColor = dest.getPixelRGBA(destX + x, destY + y);
-                dest.setPixelRGBA(destX + x, destY + y, ARGB.lerp(alpha, destColor, srcColor));
+                var srcColor = source.getPixel(srcX + x, srcY + y);
+                var destColor = dest.getPixel(destX + x, destY + y);
+                dest.setPixel(destX + x, destY + y, ARGB.lerp(alpha, destColor, srcColor));
             }
         }
     }

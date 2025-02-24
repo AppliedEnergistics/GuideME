@@ -97,10 +97,10 @@ public final class DefaultExtensions {
     private static List<RecipeTypeMappingSupplier> vanillaRecipeTypes() {
         return List.of(
                 mappings -> {
-                    mappings.add(RecipeType.CRAFTING, VanillaRecipes::createCrafting);
-                    mappings.add(RecipeType.BLASTING, VanillaRecipes::createBlasting);
-                    mappings.add(RecipeType.SMELTING, VanillaRecipes::createSmelting);
-                    mappings.add(RecipeType.SMITHING, VanillaRecipes::createSmithing);
+                    // TODO mappings.add(RecipeType.CRAFTING, VanillaRecipes::createCrafting);
+                    // TODO mappings.add(RecipeType.BLASTING, VanillaRecipes::createBlasting);
+                    // TODO mappings.add(RecipeType.SMELTING, VanillaRecipes::createSmelting);
+                    // TODO mappings.add(RecipeType.SMITHING, VanillaRecipes::createSmithing);
                 });
     }
 

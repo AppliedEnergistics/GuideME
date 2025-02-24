@@ -23,7 +23,7 @@ final class RenderTypeIntrospection {
             if (textureShard.texture.isPresent()) {
                 var texture = textureShard.texture.get();
 
-                return List.of(new Sampler(texture, textureShard.blur, textureShard.mipmap));
+                return List.of(new Sampler(texture, textureShard.blur.toBoolean(false), textureShard.mipmap));
             } else {
                 LOG.warn("Render type {} is using dynamic texture", type);
             }

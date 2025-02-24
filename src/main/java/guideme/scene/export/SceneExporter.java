@@ -1,6 +1,7 @@
 package guideme.scene.export;
 
 import com.google.flatbuffers.FlatBufferBuilder;
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -22,6 +23,7 @@ import guideme.flatbuffers.scene.ExpVertexElementUsage;
 import guideme.flatbuffers.scene.ExpVertexFormat;
 import guideme.flatbuffers.scene.ExpVertexFormatElement;
 import guideme.internal.siteexport.CacheBusting;
+import guideme.internal.util.Platform;
 import guideme.scene.CameraSettings;
 import guideme.scene.GuidebookLevelRenderer;
 import guideme.scene.GuidebookScene;
@@ -153,7 +155,7 @@ public class SceneExporter {
                     animatedTexture.frameRowSize,
                     animatedTexture.frames);
             try (var interpFrames = interpResult.frames()) {
-                image = interpFrames.asByteArray();
+                image = Platform.exportAsPng(interpFrames);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -172,7 +174,7 @@ public class SceneExporter {
             framesOffset = builder.endVector();
         } else {
             try {
-                image = contents.originalImage.asByteArray();
+                image = Platform.exportAsPng(contents.originalImage);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -184,8 +186,8 @@ public class SceneExporter {
             for (var frame : animatedTexture.frames) {
                 ExpAnimatedTexturePartFrame.createExpAnimatedTexturePartFrame(
                         builder,
-                        frame.index,
-                        frame.time);
+                        frame.index(),
+                        frame.time());
             }
             framesOffset = builder.endVector();
         }
@@ -290,7 +292,7 @@ public class SceneExporter {
 
         var shaderNameOffset = 0;
         if (state.shaderState.shader.isPresent()) {
-            shaderNameOffset = builder.createSharedString(state.shaderState.shader.get().get().getName());
+            shaderNameOffset = builder.createSharedString(state.shaderState.shader.get().configId().toString());
         }
 
         var nameOffset = builder.createSharedString(type.name);

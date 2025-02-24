@@ -108,25 +108,23 @@ public class RecipeCompiler extends BlockTagCompiler {
             var registryAccess = Platform.getClientRegistryAccess();
 
             // We try to find non-special recipes first then fall back to special
-            List<RecipeHolder<T>> fallbackCandidates = new ArrayList<>();
-            for (var recipe : recipeManager.recipeMap().byType(recipeType)) {
-                if (recipe.value().isSpecial()) {
-                    fallbackCandidates.add(recipe);
-                    continue;
-                }
-
-                recipeManager.
-
-                if (recipe.value().getResultItem(registryAccess).getItem() == resultItem) {
-                    return factory.apply(recipe);
-                }
-            }
-
-            for (var recipe : fallbackCandidates) {
-                if (recipe.value().getResultItem(registryAccess).getItem() == resultItem) {
-                    return factory.apply(recipe);
-                }
-            }
+//  TODO          List<RecipeHolder<T>> fallbackCandidates = new ArrayList<>();
+//  TODO          for (var recipe : recipeManager.recipeMap().byType(recipeType)) {
+//  TODO              if (recipe.value().isSpecial()) {
+//  TODO                  fallbackCandidates.add(recipe);
+//  TODO                  continue;
+//  TODO              }
+//  TODO
+//  TODO              if (recipe.value().getResultItem(registryAccess).getItem() == resultItem) {
+//  TODO                  return factory.apply(recipe);
+//  TODO              }
+//  TODO          }
+//TODO
+//  TODO          for (var recipe : fallbackCandidates) {
+//  TODO              if (recipe.value().getResultItem(registryAccess).getItem() == resultItem) {
+//  TODO                  return factory.apply(recipe);
+//  TODO              }
+//  TODO          }
 
             return null;
         }

@@ -15,6 +15,8 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import guideme.internal.util.Platform;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogParameters;
 import net.minecraft.client.renderer.FogRenderer;
@@ -62,21 +64,10 @@ public class OffScreenRenderer implements AutoCloseable {
     public byte[] captureAsPng(Runnable r) {
         renderToBuffer(r);
 
-        Path tempFile = null;
         try {
-            tempFile = Files.createTempFile("siteexport", ".png");
-            nativeImage.writeToFile(tempFile);
-            return Files.readAllBytes(tempFile);
+            return Platform.exportAsPng(nativeImage);
         } catch (IOException e) {
             throw new RuntimeException("failed to encode image as PNG", e);
-        } finally {
-            if (tempFile != null) {
-                try {
-                    Files.deleteIfExists(tempFile);
-                } catch (IOException e) {
-                    LOG.error("Failed to delete temporary file {}", tempFile, e);
-                }
-            }
         }
     }
 

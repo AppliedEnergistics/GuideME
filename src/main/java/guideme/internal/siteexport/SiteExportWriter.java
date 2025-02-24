@@ -74,18 +74,18 @@ public class SiteExportWriter {
                     out.value(value.toString());
                 }
             })
-            // Serialize Ingredient as arrays of the corresponding item IDs
-            .registerTypeAdapter(Ingredient.class, new WriteOnlyTypeAdapter<Ingredient>() {
-                @Override
-                public void write(JsonWriter out, Ingredient value) throws IOException {
-                    out.beginArray();
-                    for (var item : value.getItems()) {
-                        var itemId = BuiltInRegistries.ITEM.getKey(item.getItem());
-                        out.value(itemId.toString());
-                    }
-                    out.endArray();
-                }
-            })
+// TODO            // Serialize Ingredient as arrays of the corresponding item IDs
+// TODO            .registerTypeAdapter(Ingredient.class, new WriteOnlyTypeAdapter<Ingredient>() {
+// TODO                @Override
+// TODO                public void write(JsonWriter out, Ingredient value) throws IOException {
+// TODO                    out.beginArray();
+// TODO                    for (var item : value.getItems()) {
+// TODO                        var itemId = BuiltInRegistries.ITEM.getKey(item.getItem());
+// TODO                        out.value(itemId.toString());
+// TODO                    }
+// TODO                    out.endArray();
+// TODO                }
+// TODO            })
             // Serialize Items & Fluids using their registered ID
             .registerTypeHierarchyAdapter(Item.class, new WriteOnlyTypeAdapter<Item>() {
                 @Override
@@ -165,41 +165,41 @@ public class SiteExportWriter {
             fields.put("shapeless", true);
         }
 
-        ItemStack resultItem = recipe.getResultItem(null);
-        fields.put("resultItem", resultItem);
-        fields.put("resultCount", resultItem.getCount());
-        fields.put("ingredients", recipe.getIngredients());
+  // TODO      ItemStack resultItem = recipe.getResultItem(null);
+  // TODO      fields.put("resultItem", resultItem);
+  // TODO      fields.put("resultCount", resultItem.getCount());
+  // TODO      fields.put("ingredients", recipe.getIngredients());
 
         addRecipe(id, recipe, fields);
     }
 
-    public void addRecipe(ResourceLocation id, AbstractCookingRecipe recipe) {
-        addRecipe(id, recipe, Map.of(
-                "resultItem", recipe.getResultItem(null),
-                "ingredient", recipe.getIngredients().get(0)));
-    }
+ // TODO   public void addRecipe(ResourceLocation id, AbstractCookingRecipe recipe) {
+ // TODO       addRecipe(id, recipe, Map.of(
+ // TODO               "resultItem", recipe.getResultItem(null),
+ // TODO               "ingredient", recipe.getIngredients().get(0)));
+ // TODO   }
 
-    public void addRecipe(ResourceLocation id, SmithingTransformRecipe recipe) {
-        addRecipe(id, recipe, Map.of(
-                "resultItem", recipe.getResultItem(null),
-                "base", recipe.base,
-                "addition", recipe.addition,
-                "template", recipe.template));
-    }
+// TODO   public void addRecipe(ResourceLocation id, SmithingTransformRecipe recipe) {
+// TODO       addRecipe(id, recipe, Map.of(
+// TODO               "resultItem", recipe.getResultItem(null),
+// TODO               "base", recipe.base,
+// TODO               "addition", recipe.addition,
+// TODO               "template", recipe.template));
+// TODO   }
 
-    public void addRecipe(ResourceLocation id, SmithingTrimRecipe recipe) {
-        addRecipe(id, recipe, Map.of(
-                "base", recipe.base,
-                "addition", recipe.addition,
-                "template", recipe.template));
-    }
+// TODO   public void addRecipe(ResourceLocation id, SmithingTrimRecipe recipe) {
+// TODO       addRecipe(id, recipe, Map.of(
+// TODO               "base", recipe.base,
+// TODO               "addition", recipe.addition,
+// TODO               "template", recipe.template));
+// TODO   }
 
-    public void addRecipe(ResourceLocation id, StonecutterRecipe recipe) {
-        addRecipe(id, recipe,
-                Map.of(
-                        "resultItem", recipe.getResultItem(null),
-                        "ingredient", recipe.getIngredients().get(0)));
-    }
+// TODO   public void addRecipe(ResourceLocation id, StonecutterRecipe recipe) {
+// TODO       addRecipe(id, recipe,
+// TODO               Map.of(
+// TODO                       "resultItem", recipe.getResultItem(null),
+// TODO                       "ingredient", recipe.getIngredients().get(0)));
+// TODO   }
 
     public void addRecipe(ResourceLocation id, Recipe<?> recipe, Map<String, Object> element) {
         // Auto-transform ingredients

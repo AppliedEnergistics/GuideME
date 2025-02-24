@@ -66,7 +66,7 @@ public class GuidebookLightmap implements AutoCloseable {
                 int x = (int) vector3f2.x();
                 int y = (int) vector3f2.y();
                 int z = (int) vector3f2.z();
-                lightmapPixels.setPixelRGBA(blockLightLvl, skyLightLvl, 0xFF000000 | z << 16 | y << 8 | x);
+                lightmapPixels.setPixel(blockLightLvl, skyLightLvl, 0xFF000000 | z << 16 | y << 8 | x);
             }
         }
 

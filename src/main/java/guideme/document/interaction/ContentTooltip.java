@@ -36,7 +36,7 @@ public class ContentTooltip implements GuideTooltip {
         this.components = List.of(
                 new ClientTooltipComponent() {
                     @Override
-                    public int getHeight() {
+                    public int getHeight(Font font) {
                         return getLayoutBox().height();
                     }
 
@@ -60,7 +60,7 @@ public class ContentTooltip implements GuideTooltip {
                     }
 
                     @Override
-                    public void renderImage(Font font, int x, int y, GuiGraphics guiGraphics) {
+                    public void renderImage(Font font, int x, int y, int width, int height, GuiGraphics guiGraphics) {
                         getLayoutBox(); // Updates layout
 
                         var pose = guiGraphics.pose();

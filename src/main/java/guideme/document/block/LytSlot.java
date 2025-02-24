@@ -37,9 +37,7 @@ public class LytSlot extends LytBlock implements InteractiveElement {
 
     public LytSlot(SlotDisplay display) {
         this.display = display;
-        var context = SlotDisplayContext.fromLevel(Platform.getClientRegistryAccess());
-        display.resolve(ContextMap.EMPTY, new DisplayContentsFactory.ForStacks<>() {
-        })
+        // TODO
     }
 
     public LytSlot(ItemStack stack) {
@@ -103,11 +101,12 @@ public class LytSlot extends LytBlock implements InteractiveElement {
     }
 
     private ItemStack getDisplayedStack() {
-        if (stacks.length == 0) {
-            return ItemStack.EMPTY;
-        }
-
-        var cycle = System.nanoTime() / TimeUnit.MILLISECONDS.toNanos(CYCLE_TIME);
-        return stacks[(int) (cycle % stacks.length)];
+// TODO       if (stacks.length == 0) {
+// TODO           return ItemStack.EMPTY;
+// TODO       }
+//TODO
+// TODO       var cycle = System.nanoTime() / TimeUnit.MILLISECONDS.toNanos(CYCLE_TIME);
+// TODO       return stacks[(int) (cycle % stacks.length)];
+        return ItemStack.EMPTY;
     }
 }

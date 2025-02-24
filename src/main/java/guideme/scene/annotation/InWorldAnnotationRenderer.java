@@ -19,6 +19,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.ARGB;
 import org.joml.Vector3f;
 
+import static com.mojang.blaze3d.platform.GlConst.GL_DEPTH_BUFFER_BIT;
+
 public final class InWorldAnnotationRenderer {
 
     private static final RenderType OCCLUDED = RenderType.create(
@@ -83,7 +85,7 @@ public final class InWorldAnnotationRenderer {
 
         for (var pass = 1; pass <= 2; pass++) {
             if (pass == 2) {
-                RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+                RenderSystem.clear(GL_DEPTH_BUFFER_BIT);
             }
 
             var consumer = buffers.getBuffer(RenderType.translucent());
@@ -253,7 +255,7 @@ public final class InWorldAnnotationRenderer {
     private static void quad(VertexConsumer consumer, Vector3f faceNormal, int color,
             Vector3f v1, Vector3f v2, Vector3f v3, Vector3f v4,
             TextureAtlasSprite sprite) {
-        var d = Direction.getNearest(faceNormal.x, faceNormal.y, faceNormal.z);
+        var d = Direction.getApproximateNearest(faceNormal.x, faceNormal.y, faceNormal.z);
         var shade = switch (d) {
             case DOWN -> 0.5F;
             case NORTH, SOUTH -> 0.8F;

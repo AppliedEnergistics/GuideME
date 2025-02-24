@@ -8,6 +8,7 @@ import guideme.scene.GuidebookScene;
 import java.util.Set;
 import java.util.function.Function;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
@@ -35,7 +36,7 @@ public class EntityElementCompiler implements SceneElementTagCompiler {
         var data = MdxAttrs.getCompoundTag(compiler, errorSink, el, "data", new CompoundTag());
         data.putString("id", entityId);
 
-        var entity = EntityType.loadEntityRecursive(data, scene.getLevel(), Function.identity());
+        var entity = EntityType.loadEntityRecursive(data, scene.getLevel(), EntitySpawnReason.LOAD, Function.identity());
         if (entity == null) {
             errorSink.appendError(compiler, "Failed to load entity '" + entityId, el);
             return;
