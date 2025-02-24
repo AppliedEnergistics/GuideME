@@ -5,9 +5,12 @@ import guideme.document.interaction.GuideTooltip;
 import guideme.document.interaction.InteractiveElement;
 import guideme.document.interaction.TextTooltip;
 import guideme.layout.LayoutContext;
+import guideme.render.GuiAssets;
 import guideme.render.GuidePageTexture;
 import guideme.render.RenderContext;
 import java.util.Optional;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.network.chat.Component;
@@ -83,8 +86,7 @@ public class LytImage extends LytBlock implements InteractiveElement {
     @Override
     public void render(RenderContext context) {
         if (texture == null) {
-            var texture = MissingTextureAtlasSprite.getTexture();
-            context.fillTexturedRect(getBounds(), texture);
+            context.fillIcon(getBounds(), GuiAssets.MISSING_TEXTURE);
         } else {
             context.fillTexturedRect(getBounds(), texture);
         }

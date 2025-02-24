@@ -42,7 +42,7 @@ public abstract class IndepentScaleScreen extends Screen {
         var scaledGraphics = new ScaledGuiGraphics(
                 Minecraft.getInstance(),
                 guiGraphics.pose(),
-                guiGraphics.bufferSource(),
+                guiGraphics.bufferSource,
                 (float) this.effectiveScale);
 
         var renderContext = new SimpleRenderContext(guiGraphics);

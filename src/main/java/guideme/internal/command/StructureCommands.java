@@ -104,7 +104,7 @@ public final class StructureCommands {
                     }
 
                     var origin = BlockPosArgument.getBlockPos(context, "origin");
-                    placeAllStructures(level, origin);
+                    placeAllStructures(context.getSource(), level, origin);
                     return 0;
                 }));
 
@@ -124,7 +124,7 @@ public final class StructureCommands {
                                     }
 
                                     var origin = BlockPosArgument.getBlockPos(context, "origin");
-                                    placeAllStructures(level, new MutableObject<>(origin), guide);
+                                    placeAllStructures(context.getSource(), level, new MutableObject<>(origin), guide);
                                     return 0;
                                 })));
 
@@ -144,27 +144,26 @@ public final class StructureCommands {
                             }
 
                             var origin = BlockPosArgument.getBlockPos(context, "origin");
-                            importStructure(getIntegratedServerLevel(context), origin);
+                            importStructure(context.getSource(), getIntegratedServerLevel(context), origin);
                             return 0;
                         }));
         rootCommand.then(importSubcommand);
     }
 
-    private static void placeAllStructures(ServerLevel level, BlockPos origin) {
+    private static void placeAllStructures(CommandSourceStack source, ServerLevel level, BlockPos origin) {
 
         var currentPos = new MutableObject<>(origin);
 
         for (var guide : GuideRegistry.getAll()) {
-            placeAllStructures(level, currentPos, guide);
+            placeAllStructures(source, level, currentPos, guide);
         }
 
     }
 
-    private static void placeAllStructures(ServerLevel level, MutableObject<BlockPos> origin, MutableGuide guide) {
+    private static void placeAllStructures(CommandSourceStack source, ServerLevel level, MutableObject<BlockPos> origin, MutableGuide guide) {
         var minecraft = Minecraft.getInstance();
         var server = minecraft.getSingleplayerServer();
-        var player = minecraft.player;
-        if (server == null || player == null) {
+        if (server == null) {
             return;
         }
 
@@ -203,7 +202,7 @@ public final class StructureCommands {
                 });
             } catch (IOException e) {
                 LOG.error("Failed to find all structures.", e);
-                player.sendSystemMessage(Component.literal(e.toString()));
+                source.sendFailure(Component.literal(e.toString()));
                 return;
             }
         }
@@ -230,22 +229,23 @@ public final class StructureCommands {
                         new StructurePlaceSettings(),
                         new SingleThreadedRandomSource(0L),
                         Block.UPDATE_CLIENTS)) {
-                    player.sendSystemMessage(Component.literal("Failed to place " + snbtFile));
+                    source.sendFailure(Component.literal("Failed to place " + snbtFile));
                 }
 
                 origin.setValue(origin.getValue().offset(structure.getSize().getX() + 2, 0, 0));
             } catch (Exception e) {
                 LOG.error("Failed to place {}.", snbtFile, e);
-                player.sendSystemMessage(Component.literal("Failed to place " + snbtFile + ": " + e));
+                source.sendFailure(Component.literal("Failed to place " + snbtFile + ": " + e));
             }
         }
+
+        source.sendSuccess(() -> Component.literal("Placed " + structures.size() + " structures"), true);
     }
 
-    private static void importStructure(ServerLevel level, BlockPos origin) {
+    private static void importStructure(CommandSourceStack source, ServerLevel level, BlockPos origin) {
         var minecraft = Minecraft.getInstance();
         var server = minecraft.getSingleplayerServer();
-        var player = minecraft.player;
-        if (server == null || player == null) {
+        if (server == null) {
             return;
         }
 
@@ -259,13 +259,13 @@ public final class StructureCommands {
                     lastOpenedOrSavedPath = selectedPath; // remember for save dialog
                     try {
                         if (placeStructure(level, origin, selectedPath)) {
-                            player.sendSystemMessage(Component.literal("Placed structure"));
+                            source.sendSuccess(() -> Component.literal("Placed structure"), true);
                         } else {
-                            player.sendSystemMessage(Component.literal("Failed to place structure"));
+                            source.sendFailure(Component.literal("Failed to place structure"));
                         }
                     } catch (Exception e) {
                         LOG.error("Failed to place structure.", e);
-                        player.sendSystemMessage(Component.literal(e.toString()));
+                        source.sendFailure(Component.literal(e.toString()));
                     }
 
                     return null;
@@ -320,13 +320,13 @@ public final class StructureCommands {
                                                     var sizeY = IntegerArgumentType.getInteger(context, "sizeY");
                                                     var sizeZ = IntegerArgumentType.getInteger(context, "sizeZ");
                                                     var size = new Vec3i(sizeX, sizeY, sizeZ);
-                                                    exportStructure(level, origin, size);
+                                                    exportStructure(context.getSource(), level, origin, size);
                                                     return 0;
                                                 })))));
         rootCommand.then(exportSubcommand);
     }
 
-    private static void exportStructure(ServerLevel level, BlockPos origin, Vec3i size) {
+    private static void exportStructure(CommandSourceStack source, ServerLevel level, BlockPos origin, Vec3i size) {
         var minecraft = Minecraft.getInstance();
         var server = minecraft.getSingleplayerServer();
         var player = minecraft.player;
@@ -376,10 +376,10 @@ public final class StructureCommands {
                             NbtIo.writeCompressed(compound, Paths.get(selectedPath));
                         }
 
-                        player.sendSystemMessage(Component.literal("Saved structure"));
+                        source.sendSuccess(() -> Component.literal("Saved structure"), true);
                     } catch (IOException e) {
                         LOG.error("Failed to save structure.", e);
-                        player.sendSystemMessage(Component.literal(e.toString()));
+                        source.sendFailure(Component.literal(e.toString()));
                     }
 
                     return null;

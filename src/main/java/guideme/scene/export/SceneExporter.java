@@ -86,14 +86,12 @@ public class SceneExporter {
         var modelViewStack = RenderSystem.getModelViewStack();
         modelViewStack.pushMatrix();
         modelViewStack.identity();
-        RenderSystem.applyModelViewMatrix();
         RenderSystem.backupProjectionMatrix();
-        RenderSystem.setProjectionMatrix(new Matrix4f(), VertexSorting.ORTHOGRAPHIC_Z);
+        RenderSystem.setProjectionMatrix(new Matrix4f(), ProjectionType.ORTHOGRAPHIC);
 
         GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource);
 
         modelViewStack.popMatrix();
-        RenderSystem.applyModelViewMatrix();
         RenderSystem.restoreProjectionMatrix();
 
         // Concat all vertex buffers

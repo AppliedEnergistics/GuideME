@@ -1,5 +1,6 @@
 package guideme.internal.siteexport;
 
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Lighting;
@@ -8,12 +9,16 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.nio.channels.WritableByteChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.FogParameters;
 import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
@@ -21,8 +26,12 @@ import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL12;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OffScreenRenderer implements AutoCloseable {
+    private static final Logger LOG = LoggerFactory.getLogger(OffScreenRenderer.class);
+
     private final NativeImage nativeImage;
     private final TextureTarget fb;
     private final int width;
@@ -33,9 +42,9 @@ public class OffScreenRenderer implements AutoCloseable {
         this.height = height;
         RenderSystem.viewport(0, 0, width, height);
         nativeImage = new NativeImage(width, height, true);
-        fb = new TextureTarget(width, height, true /* with depth */, true /* check error */);
+        fb = new TextureTarget(width, height, true /* with depth */, false /* with stencil */);
         fb.setClearColor(0, 0, 0, 0);
-        fb.clear(true /* check error */);
+        fb.clear();
     }
 
     @Override
@@ -53,10 +62,21 @@ public class OffScreenRenderer implements AutoCloseable {
     public byte[] captureAsPng(Runnable r) {
         renderToBuffer(r);
 
+        Path tempFile = null;
         try {
-            return nativeImage.asByteArray();
+            tempFile = Files.createTempFile("siteexport", ".png");
+            nativeImage.writeToFile(tempFile);
+            return Files.readAllBytes(tempFile);
         } catch (IOException e) {
             throw new RuntimeException("failed to encode image as PNG", e);
+        } finally {
+            if (tempFile != null) {
+                try {
+                    Files.deleteIfExists(tempFile);
+                } catch (IOException e) {
+                    LOG.error("Failed to delete temporary file {}", tempFile, e);
+                }
+            }
         }
     }
 
@@ -83,7 +103,7 @@ public class OffScreenRenderer implements AutoCloseable {
         // This is an oversimplification. Not all animated textures may have the same loop frequency
         // But the greatest common divisor could be so inconvenient that we're essentially looping forever.
         var maxTime = animatedSprites.stream()
-                .mapToInt(s -> s.contents().animatedTexture.frames.stream().mapToInt(value -> value.time).sum())
+                .mapToInt(s -> s.contents().animatedTexture.frames.stream().mapToInt(SpriteContents.FrameInfo::time).sum())
                 .max()
                 .orElse(0);
 
@@ -124,7 +144,7 @@ public class OffScreenRenderer implements AutoCloseable {
 
     private void renderToBuffer(Runnable r) {
         fb.bindWrite(true);
-        GlStateManager._clear(GL12.GL_COLOR_BUFFER_BIT | GL12.GL_DEPTH_BUFFER_BIT, false);
+        GlStateManager._clear(GL12.GL_COLOR_BUFFER_BIT | GL12.GL_DEPTH_BUFFER_BIT);
         r.run();
         fb.unbindWrite();
 
@@ -142,14 +162,13 @@ public class OffScreenRenderer implements AutoCloseable {
                 0.0f, 16,
                 16, 0.0f,
                 1000.0f, 21000.0f);
-        RenderSystem.setProjectionMatrix(matrix4f, VertexSorting.ORTHOGRAPHIC_Z);
+        RenderSystem.setProjectionMatrix(matrix4f, ProjectionType.ORTHOGRAPHIC);
 
         var poseStack = RenderSystem.getModelViewStack();
         poseStack.identity();
         poseStack.translate(0.0f, 0.0f, -11000.0f);
-        RenderSystem.applyModelViewMatrix();
         Lighting.setupFor3DItems();
-        FogRenderer.setupNoFog();
+        RenderSystem.setShaderFog(FogParameters.NO_FOG);
     }
 
     public void setupOrtographicRendering() {
@@ -161,13 +180,13 @@ public class OffScreenRenderer implements AutoCloseable {
         // Set up GL state for GUI rendering where the 16x16 item will fill the entire framebuffer
         RenderSystem.setProjectionMatrix(
                 new Matrix4f().ortho(-1, 1, 1, -1, 1000, 3000),
-                VertexSorting.ORTHOGRAPHIC_Z);
+                ProjectionType.ORTHOGRAPHIC);
 
         var poseStack = RenderSystem.getModelViewStack();
         poseStack.identity();
         poseStack.translate(0.0F, 0.0F, -2000.0F);
 
-        FogRenderer.setupNoFog();
+        RenderSystem.setShaderFog(FogParameters.NO_FOG);
 
         poseStack.scale(1, -1, -1);
         poseStack.rotate(new Quaternionf().rotationY(Mth.DEG_TO_RAD * -180));
@@ -182,7 +201,6 @@ public class OffScreenRenderer implements AutoCloseable {
         poseStack.rotate(flip);
         poseStack.rotate(rotate);
 
-        RenderSystem.applyModelViewMatrix();
         Lighting.setupLevel();
     }
 
@@ -195,14 +213,13 @@ public class OffScreenRenderer implements AutoCloseable {
         }
 
         projMat.mul(new Matrix4f().perspective(fov, aspectRatio, 0.05F, 16));
-        RenderSystem.setProjectionMatrix(projMat, VertexSorting.DISTANCE_TO_ORIGIN);
+        RenderSystem.setProjectionMatrix(projMat, ProjectionType.PERSPECTIVE);
 
         var poseStack = RenderSystem.getModelViewStack();
         poseStack.identity();
         var vm = createViewMatrix(eyePos, lookAt);
         poseStack.mul(vm);
 
-        RenderSystem.applyModelViewMatrix();
         Lighting.setupLevel();
     }
 

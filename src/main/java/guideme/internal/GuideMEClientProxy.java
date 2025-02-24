@@ -43,7 +43,7 @@ class GuideMEClientProxy extends GuideMEServerProxy {
         if (player == Minecraft.getInstance().player) {
             var guide = Guides.getById(id);
             if (guide == null) {
-                player.sendSystemMessage(GuidebookText.ItemInvalidGuideId.text(id.toString()));
+                Minecraft.getInstance().gui.setOverlayMessage(GuidebookText.ItemInvalidGuideId.text(id.toString()), false);
                 return false;
             } else {
                 return GuideMEClient.openGuideAtPreviousPage(guide, guide.getStartPage());
@@ -58,7 +58,7 @@ class GuideMEClientProxy extends GuideMEServerProxy {
         if (player == Minecraft.getInstance().player) {
             var guide = Guides.getById(id);
             if (guide == null) {
-                player.sendSystemMessage(GuidebookText.ItemInvalidGuideId.text(id.toString()));
+                Minecraft.getInstance().gui.setOverlayMessage(GuidebookText.ItemInvalidGuideId.text(id.toString()), false);
                 return false;
             } else {
                 if (anchor == null) {

@@ -41,7 +41,8 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -155,8 +156,8 @@ public class SiteExporter implements ResourceExporter {
     }
 
     private void referenceIngredient(Ingredient ingredient) {
-        for (var item : ingredient.getItems()) {
-            referenceItem(item);
+        for (var stack : ingredient.display().resolveForStacks(ContextMap.EMPTY)) {
+            referenceItem(stack);
         }
     }
 
@@ -475,10 +476,10 @@ public class SiteExporter implements ResourceExporter {
                         baseName,
                         () -> {
                             if (sprite != null) {
-                                var r = FastColor.ARGB32.red(color) / 255.f;
-                                var g = FastColor.ARGB32.green(color) / 255.f;
-                                var b = FastColor.ARGB32.blue(color) / 255.f;
-                                var a = FastColor.ARGB32.alpha(color) / 255.f;
+                                var r = ARGB.red(color) / 255.f;
+                                var g = ARGB.green(color) / 255.f;
+                                var b = ARGB.blue(color) / 255.f;
+                                var a = ARGB.alpha(color) / 255.f;
                                 guiGraphics.blit(0, 0, 0, 16, 16, sprite, r, g, b, a);
                             }
                         },

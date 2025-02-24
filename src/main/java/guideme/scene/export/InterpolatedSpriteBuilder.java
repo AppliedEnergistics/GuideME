@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.renderer.texture.SpriteContents;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 
 /**
  * Creates a new animation sprite-sheet for sprite-sheets that have interpolation enabled. Interpolating frames is too
@@ -97,7 +97,7 @@ final class InterpolatedSpriteBuilder {
             for (var x = 0; x < frameWidth; x++) {
                 var srcColor = source.getPixelRGBA(srcX + x, srcY + y);
                 var destColor = dest.getPixelRGBA(destX + x, destY + y);
-                dest.setPixelRGBA(destX + x, destY + y, FastColor.ARGB32.lerp(alpha, destColor, srcColor));
+                dest.setPixelRGBA(destX + x, destY + y, ARGB.lerp(alpha, destColor, srcColor));
             }
         }
     }

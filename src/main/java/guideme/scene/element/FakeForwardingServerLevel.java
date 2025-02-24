@@ -171,12 +171,6 @@ class FakeForwardingServerLevel implements ServerLevelAccessor {
     }
 
     @Override
-    public void neighborShapeChanged(Direction direction, BlockState queried, BlockPos pos, BlockPos offsetPos,
-            int flags, int recursionLevel) {
-        delegate.neighborShapeChanged(direction, queried, pos, offsetPos, flags, recursionLevel);
-    }
-
-    @Override
     public void playSound(@Nullable Player player, BlockPos pos, SoundEvent sound, SoundSource source) {
         delegate.playSound(player, pos, sound, source);
     }
@@ -300,49 +294,6 @@ class FakeForwardingServerLevel implements ServerLevelAccessor {
 
     @Override
     @Nullable
-    public Player getNearestPlayer(TargetingConditions predicate, LivingEntity target) {
-        return delegate.getNearestPlayer(predicate, target);
-    }
-
-    @Override
-    @Nullable
-    public Player getNearestPlayer(TargetingConditions predicate, LivingEntity target, double x, double y, double z) {
-        return delegate.getNearestPlayer(predicate, target, x, y, z);
-    }
-
-    @Override
-    @Nullable
-    public Player getNearestPlayer(TargetingConditions predicate, double x, double y, double z) {
-        return delegate.getNearestPlayer(predicate, x, y, z);
-    }
-
-    @Override
-    @Nullable
-    public <T extends LivingEntity> T getNearestEntity(Class<? extends T> entityClazz, TargetingConditions conditions,
-            @Nullable LivingEntity target, double x, double y, double z, AABB boundingBox) {
-        return delegate.getNearestEntity(entityClazz, conditions, target, x, y, z, boundingBox);
-    }
-
-    @Override
-    @Nullable
-    public <T extends LivingEntity> T getNearestEntity(List<? extends T> entities, TargetingConditions predicate,
-            @Nullable LivingEntity target, double x, double y, double z) {
-        return delegate.getNearestEntity(entities, predicate, target, x, y, z);
-    }
-
-    @Override
-    public List<Player> getNearbyPlayers(TargetingConditions predicate, LivingEntity target, AABB area) {
-        return delegate.getNearbyPlayers(predicate, target, area);
-    }
-
-    @Override
-    public <T extends LivingEntity> List<T> getNearbyEntities(Class<T> entityClazz, TargetingConditions entityPredicate,
-            LivingEntity entity, AABB area) {
-        return delegate.getNearbyEntities(entityClazz, entityPredicate, entity, area);
-    }
-
-    @Override
-    @Nullable
     public Player getPlayerByUUID(UUID uniqueId) {
         return delegate.getPlayerByUUID(uniqueId);
     }
@@ -407,11 +358,6 @@ class FakeForwardingServerLevel implements ServerLevelAccessor {
     @Override
     public DimensionType dimensionType() {
         return delegate.dimensionType();
-    }
-
-    @Override
-    public int getMinBuildHeight() {
-        return delegate.getMinBuildHeight();
     }
 
     @Override
@@ -578,11 +524,6 @@ class FakeForwardingServerLevel implements ServerLevelAccessor {
     }
 
     @Override
-    public int getMaxLightLevel() {
-        return delegate.getMaxLightLevel();
-    }
-
-    @Override
     public Stream<BlockState> getBlockStates(AABB area) {
         return delegate.getBlockStates(area);
     }
@@ -620,23 +561,8 @@ class FakeForwardingServerLevel implements ServerLevelAccessor {
     }
 
     @Override
-    public int getMaxBuildHeight() {
-        return delegate.getMaxBuildHeight();
-    }
-
-    @Override
     public int getSectionsCount() {
         return delegate.getSectionsCount();
-    }
-
-    @Override
-    public int getMinSection() {
-        return delegate.getMinSection();
-    }
-
-    @Override
-    public int getMaxSection() {
-        return delegate.getMaxSection();
     }
 
     @Override

@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadListener.Result> {
+    public static final ResourceLocation ID = GuideME.makeId("guides");
+
     private static final Logger LOG = LoggerFactory.getLogger(GuideReloadListener.class);
 
     private static final Gson GSON = new Gson();

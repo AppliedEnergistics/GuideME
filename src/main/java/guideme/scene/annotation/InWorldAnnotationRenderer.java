@@ -16,7 +16,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import org.joml.Vector3f;
 
 public final class InWorldAnnotationRenderer {
@@ -260,8 +260,8 @@ public final class InWorldAnnotationRenderer {
             case WEST, EAST -> 0.6F;
             default -> 1.0F;
         };
-        color = FastColor.ARGB32.multiply(
-                FastColor.ARGB32.color(255, (int) (shade * 255), (int) (shade * 255), (int) (shade * 255)),
+        color = ARGB.multiply(
+                ARGB.color(255, (int) (shade * 255), (int) (shade * 255), (int) (shade * 255)),
                 color);
 
         vertex(consumer, faceNormal, color, v1, sprite.getU0(), sprite.getV1());

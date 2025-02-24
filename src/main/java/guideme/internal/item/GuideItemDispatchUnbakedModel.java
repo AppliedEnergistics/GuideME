@@ -2,58 +2,36 @@ package guideme.internal.item;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
-import guideme.internal.GuideRegistry;
-import java.util.function.Function;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
-import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.context.ContextMap;
+import net.neoforged.neoforge.client.model.ExtendedUnbakedModel;
 
-public class GuideItemDispatchUnbakedModel implements IUnbakedGeometry<GuideItemDispatchUnbakedModel> {
+public class GuideItemDispatchUnbakedModel implements ExtendedUnbakedModel {
+
     @Override
-    public BakedModel bake(IGeometryBakingContext geometryBakingContext,
-            ModelBaker modelBaker,
-            Function<Material, TextureAtlasSprite> sprites,
-            ModelState modelState,
-            ItemOverrides itemOverrides) {
-        var baseModel = modelBaker.bake(GuideItem.BASE_MODEL_ID, modelState, sprites);
+    public BakedModel bake(TextureSlots textures, ModelBaker baker, ModelState modelState, boolean useAmbientOcclusion, boolean usesBlockLight, ItemTransforms itemTransforms, ContextMap additionalProperties) {
+        var baseModel = baker.bake(GuideItem.BASE_MODEL_ID, modelState);
 
         class Loader extends CacheLoader<ResourceLocation, BakedModel> {
             @Override
             public BakedModel load(ResourceLocation modelId) {
-                var model = modelBaker.getModel(modelId);
-                model.resolveParents(modelBaker::getModel);
-                return model.bake(modelBaker, sprites, modelState);
+                var model = baker.getModel(modelId);
+                model.resolveDependencies(baker::getModel);
+                return model.bake(textures, baker, modelState, useAmbientOcclusion, usesBlockLight, itemTransforms, additionalProperties);
             }
         }
 
         var modelCache = CacheBuilder.newBuilder().build(new Loader());
 
-        var overrides = new ItemOverrides() {
-            @Override
-            public @Nullable BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level,
-                    @Nullable LivingEntity entity, int seed) {
-                var guideId = GuideItem.getGuideId(stack);
-                if (guideId != null) {
-                    var guide = GuideRegistry.getById(guideId);
-                    if (guide != null && guide.getItemSettings().itemModel().isPresent()) {
-                        return modelCache.getUnchecked(guide.getItemSettings().itemModel().get());
-                    }
-                }
+        return new GuideItemDispatchModel(baseModel, modelCache);
+    }
 
-                return baseModel;
-            }
-        };
-
-        return new GuideItemDispatchModel(baseModel, overrides);
+    @Override
+    public void resolveDependencies(Resolver resolver) {
     }
 }

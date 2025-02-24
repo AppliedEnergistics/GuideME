@@ -1,19 +1,32 @@
 package guideme.internal.item;
 
-import net.minecraft.client.renderer.block.model.ItemOverrides;
+import com.google.common.cache.LoadingCache;
+import guideme.internal.GuideRegistry;
 import net.minecraft.client.resources.model.BakedModel;
-import net.neoforged.neoforge.client.model.BakedModelWrapper;
+import net.minecraft.client.resources.model.DelegateBakedModel;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
-public class GuideItemDispatchModel extends BakedModelWrapper<BakedModel> {
-    private final ItemOverrides itemOverrides;
+import java.util.List;
 
-    public GuideItemDispatchModel(BakedModel originalModel, ItemOverrides itemOverrides) {
+public class GuideItemDispatchModel extends DelegateBakedModel {
+    private final LoadingCache<ResourceLocation, BakedModel> modelCache;
+
+    public GuideItemDispatchModel(BakedModel originalModel, LoadingCache<ResourceLocation, BakedModel> modelCache) {
         super(originalModel);
-        this.itemOverrides = itemOverrides;
+        this.modelCache = modelCache;
     }
 
     @Override
-    public ItemOverrides getOverrides() {
-        return this.itemOverrides;
+    public List<BakedModel> getRenderPasses(ItemStack stack) {
+        var guideId = GuideItem.getGuideId(stack);
+        if (guideId != null) {
+            var guide = GuideRegistry.getById(guideId);
+            if (guide != null && guide.getItemSettings().itemModel().isPresent()) {
+                return List.of(modelCache.getUnchecked(guide.getItemSettings().itemModel().get()));
+            }
+        }
+
+        return super.getRenderPasses(stack);
     }
 }

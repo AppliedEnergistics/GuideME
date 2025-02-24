@@ -5,6 +5,7 @@ import guideme.PageAnchor;
 import guideme.internal.screen.GuideScreen;
 import guideme.internal.util.Platform;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.Util;
@@ -12,6 +13,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryDataLoader;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.RegistryLayer;
@@ -20,6 +24,7 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
+import net.minecraft.tags.TagLoader;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import net.neoforged.bus.api.IEventBus;
@@ -158,15 +163,17 @@ public final class GuideOnStartup {
             var resourceManager = new MultiPackResourceManager(PackType.SERVER_DATA,
                     packRepository.openAllSelected());
 
+            var postponedTags = TagLoader.loadTagsForExistingRegistries(resourceManager, layeredAccess.getLayer(RegistryLayer.STATIC));
             var worldgenLayer = RegistryDataLoader.load(
                     resourceManager,
-                    layeredAccess.getAccessForLoading(RegistryLayer.WORLDGEN),
+                    TagLoader.buildUpdatedLookups(layeredAccess.getAccessForLoading(RegistryLayer.WORLDGEN), postponedTags),
                     RegistryDataLoader.WORLDGEN_REGISTRIES);
             layeredAccess = layeredAccess.replaceFrom(RegistryLayer.WORLDGEN, worldgenLayer);
 
             var stuff = ReloadableServerResources.loadResources(
                     resourceManager,
                     layeredAccess,
+                    postponedTags,
                     FeatureFlagSet.of(),
                     Commands.CommandSelection.ALL,
                     0,
@@ -179,7 +186,7 @@ public final class GuideOnStartup {
                             throw e;
                         }
                     }).get();
-            stuff.updateRegistryTags();
+            stuff.updateStaticRegistryTags();
             Platform.fallbackClientRecipeManager = stuff.getRecipeManager();
             Platform.fallbackClientRegistryAccess = layeredAccess.compositeAccess();
         } catch (Exception e) {

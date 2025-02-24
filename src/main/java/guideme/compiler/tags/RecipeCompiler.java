@@ -15,6 +15,8 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Function;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Recipe;
@@ -75,7 +77,8 @@ public class RecipeCompiler extends BlockTagCompiler {
                 return;
             }
 
-            var recipe = recipeManager.byKey(recipeId).orElse(null);
+            var recipeKey = ResourceKey.create(Registries.RECIPE, recipeId);
+            var recipe = recipeManager.byKey(recipeKey).orElse(null);
             if (recipe == null) {
                 parent.appendError(compiler, "Couldn't find recipe " + recipeId, el);
                 return;
@@ -106,11 +109,13 @@ public class RecipeCompiler extends BlockTagCompiler {
 
             // We try to find non-special recipes first then fall back to special
             List<RecipeHolder<T>> fallbackCandidates = new ArrayList<>();
-            for (var recipe : recipeManager.byType(recipeType)) {
+            for (var recipe : recipeManager.recipeMap().byType(recipeType)) {
                 if (recipe.value().isSpecial()) {
                     fallbackCandidates.add(recipe);
                     continue;
                 }
+
+                recipeManager.
 
                 if (recipe.value().getResultItem(registryAccess).getItem() == resultItem) {
                     return factory.apply(recipe);

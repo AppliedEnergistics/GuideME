@@ -1,5 +1,6 @@
 package guideme.scene;
 
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import guideme.color.ColorValue;
@@ -343,16 +344,14 @@ public class LytGuidebookScene extends LytBox {
 
             RenderSystem.backupProjectionMatrix();
             RenderSystem.setProjectionMatrix(scene.getCameraSettings().getProjectionMatrix(),
-                    VertexSorting.ORTHOGRAPHIC_Z);
+                    ProjectionType.ORTHOGRAPHIC);
             var modelViewStack = RenderSystem.getModelViewStack();
             modelViewStack.pushMatrix();
             modelViewStack.identity();
             modelViewStack.mul(scene.getCameraSettings().getViewMatrix());
-            RenderSystem.applyModelViewMatrix();
 
             RenderSystem.renderCrosshair(2);
             modelViewStack.popMatrix();
-            RenderSystem.applyModelViewMatrix();
             RenderSystem.restoreProjectionMatrix();
         }
 

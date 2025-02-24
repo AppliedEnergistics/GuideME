@@ -207,15 +207,13 @@ final class SpriteLayer {
             RenderSystem.enableBlend();
             RenderSystem.enableDepthTest();
             RenderSystem.setShaderTexture(0, atlasLocation);
-            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+            RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
             var modelViewStack = RenderSystem.getModelViewStack();
             modelViewStack.pushMatrix();
             modelViewStack.mul(poseStack.last().pose());
             modelViewStack.translate(x, y, z);
-            RenderSystem.applyModelViewMatrix();
             BufferUploader.drawWithShader(meshData);
             modelViewStack.popMatrix();
-            RenderSystem.applyModelViewMatrix();
         }
     }
 }

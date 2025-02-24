@@ -29,10 +29,10 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
@@ -77,13 +77,13 @@ public class GuideMEClient {
         OpenGuideHotkey.init();
 
         modBus.addListener((ModelEvent.RegisterAdditional e) -> {
-            e.register(new ModelResourceLocation(GuideItem.BASE_MODEL_ID, ModelResourceLocation.STANDALONE_VARIANT));
+            e.register(GuideItem.BASE_MODEL_ID);
         });
-        modBus.addListener((ModelEvent.RegisterGeometryLoaders e) -> e.register(
+        modBus.addListener((ModelEvent.RegisterLoaders e) -> e.register(
                 GuideItemDispatchModelLoader.ID, new GuideItemDispatchModelLoader()));
 
-        modBus.addListener((RegisterClientReloadListenersEvent evt) -> {
-            evt.registerReloadListener(new GuideReloadListener());
+        modBus.addListener((AddClientReloadListenersEvent evt) -> {
+            evt.addListener(GuideReloadListener.ID, new GuideReloadListener());
         });
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre evt) -> {
             search.processWork();
@@ -134,8 +134,8 @@ public class GuideMEClient {
     private void gatherData(GatherDataEvent event) {
         DataGenerator gen = event.getGenerator();
         PackOutput packOutput = gen.getPackOutput();
-        gen.addProvider(event.includeClient(), new GuideMELanguageProvider(packOutput));
-        gen.addProvider(event.includeClient(), new GuideMEModelProvider(packOutput, event.getExistingFileHelper()));
+        gen.addProvider(true, new GuideMELanguageProvider(packOutput));
+        gen.addProvider(true, new GuideMEModelProvider(packOutput));
     }
 
     public boolean isShowDebugGuiOverlays() {
