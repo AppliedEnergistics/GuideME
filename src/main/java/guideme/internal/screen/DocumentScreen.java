@@ -515,7 +515,8 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         }
     }
 
-    private void renderTooltip(GuiGraphics guiGraphics, GuideTooltip tooltip, int mouseX, int mouseY, @Nullable ResourceLocation sprite) {
+    private void renderTooltip(GuiGraphics guiGraphics, GuideTooltip tooltip, int mouseX, int mouseY,
+            @Nullable ResourceLocation sprite) {
         var minecraft = Minecraft.getInstance();
         var clientLines = tooltip.getLines();
 

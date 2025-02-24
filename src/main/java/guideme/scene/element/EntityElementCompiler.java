@@ -36,7 +36,8 @@ public class EntityElementCompiler implements SceneElementTagCompiler {
         var data = MdxAttrs.getCompoundTag(compiler, errorSink, el, "data", new CompoundTag());
         data.putString("id", entityId);
 
-        var entity = EntityType.loadEntityRecursive(data, scene.getLevel(), EntitySpawnReason.LOAD, Function.identity());
+        var entity = EntityType.loadEntityRecursive(data, scene.getLevel(), EntitySpawnReason.LOAD,
+                Function.identity());
         if (entity == null) {
             errorSink.appendError(compiler, "Failed to load entity '" + entityId, el);
             return;

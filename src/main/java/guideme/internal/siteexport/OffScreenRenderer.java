@@ -6,20 +6,15 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexSorting;
+import guideme.internal.util.Platform;
 import java.io.IOException;
 import java.nio.FloatBuffer;
-import java.nio.channels.WritableByteChannel;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import guideme.internal.util.Platform;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogParameters;
-import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Mth;
@@ -94,7 +89,8 @@ public class OffScreenRenderer implements AutoCloseable {
         // This is an oversimplification. Not all animated textures may have the same loop frequency
         // But the greatest common divisor could be so inconvenient that we're essentially looping forever.
         var maxTime = animatedSprites.stream()
-                .mapToInt(s -> s.contents().animatedTexture.frames.stream().mapToInt(SpriteContents.FrameInfo::time).sum())
+                .mapToInt(s -> s.contents().animatedTexture.frames.stream().mapToInt(SpriteContents.FrameInfo::time)
+                        .sum())
                 .max()
                 .orElse(0);
 

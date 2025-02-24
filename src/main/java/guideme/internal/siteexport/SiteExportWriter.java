@@ -40,14 +40,9 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
-import net.minecraft.world.item.crafting.SmithingTransformRecipe;
-import net.minecraft.world.item.crafting.SmithingTrimRecipe;
-import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.slf4j.Logger;
@@ -165,19 +160,19 @@ public class SiteExportWriter {
             fields.put("shapeless", true);
         }
 
-  // TODO      ItemStack resultItem = recipe.getResultItem(null);
-  // TODO      fields.put("resultItem", resultItem);
-  // TODO      fields.put("resultCount", resultItem.getCount());
-  // TODO      fields.put("ingredients", recipe.getIngredients());
+        // TODO ItemStack resultItem = recipe.getResultItem(null);
+        // TODO fields.put("resultItem", resultItem);
+        // TODO fields.put("resultCount", resultItem.getCount());
+        // TODO fields.put("ingredients", recipe.getIngredients());
 
         addRecipe(id, recipe, fields);
     }
 
- // TODO   public void addRecipe(ResourceLocation id, AbstractCookingRecipe recipe) {
- // TODO       addRecipe(id, recipe, Map.of(
- // TODO               "resultItem", recipe.getResultItem(null),
- // TODO               "ingredient", recipe.getIngredients().get(0)));
- // TODO   }
+    // TODO public void addRecipe(ResourceLocation id, AbstractCookingRecipe recipe) {
+    // TODO addRecipe(id, recipe, Map.of(
+    // TODO "resultItem", recipe.getResultItem(null),
+    // TODO "ingredient", recipe.getIngredients().get(0)));
+    // TODO }
 
 // TODO   public void addRecipe(ResourceLocation id, SmithingTransformRecipe recipe) {
 // TODO       addRecipe(id, recipe, Map.of(

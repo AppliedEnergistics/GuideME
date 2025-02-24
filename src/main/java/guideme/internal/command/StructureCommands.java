@@ -160,7 +160,8 @@ public final class StructureCommands {
 
     }
 
-    private static void placeAllStructures(CommandSourceStack source, ServerLevel level, MutableObject<BlockPos> origin, MutableGuide guide) {
+    private static void placeAllStructures(CommandSourceStack source, ServerLevel level, MutableObject<BlockPos> origin,
+            MutableGuide guide) {
         var minecraft = Minecraft.getInstance();
         var server = minecraft.getSingleplayerServer();
         if (server == null) {

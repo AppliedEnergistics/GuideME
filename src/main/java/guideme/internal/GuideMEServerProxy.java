@@ -4,8 +4,6 @@ import guideme.PageAnchor;
 import guideme.internal.network.OpenGuideRequest;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;

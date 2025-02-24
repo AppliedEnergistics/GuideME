@@ -2,7 +2,6 @@ package guideme.scene;
 
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import guideme.color.ColorValue;
 import guideme.color.LightDarkMode;
 import guideme.color.SymbolicColor;

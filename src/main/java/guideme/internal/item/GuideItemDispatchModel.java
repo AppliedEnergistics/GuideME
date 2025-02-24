@@ -2,12 +2,11 @@ package guideme.internal.item;
 
 import com.google.common.cache.LoadingCache;
 import guideme.internal.GuideRegistry;
+import java.util.List;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.DelegateBakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.List;
 
 public class GuideItemDispatchModel extends DelegateBakedModel {
     private final LoadingCache<ResourceLocation, BakedModel> modelCache;

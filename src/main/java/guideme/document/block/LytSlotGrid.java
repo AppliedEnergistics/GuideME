@@ -4,10 +4,9 @@ import guideme.document.LytRect;
 import guideme.layout.LayoutContext;
 import guideme.render.GuiAssets;
 import guideme.render.RenderContext;
+import java.util.List;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
-
-import java.util.List;
 
 public class LytSlotGrid extends LytBox {
     private final int width;

@@ -3,10 +3,8 @@ package guideme.scene;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import guideme.color.LightDarkMode;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
@@ -14,7 +12,6 @@ import guideme.scene.level.GuidebookLevel;
 import java.util.Collection;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogParameters;
-import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -260,11 +257,11 @@ public class GuidebookLevelRenderer {
     }
 
     private static <E extends Entity, S extends EntityRenderState> void renderEntity(GuidebookLevel level,
-                                                                                     PoseStack poseStack,
-                                                                                     E entity,
-                                                                                     MultiBufferSource buffers,
-                                                                                     float partialTicks,
-                                                                                     EntityRenderer<? super E, S> renderer) {
+            PoseStack poseStack,
+            E entity,
+            MultiBufferSource buffers,
+            float partialTicks,
+            EntityRenderer<? super E, S> renderer) {
         var probePos = BlockPos.containing(entity.getLightProbePosition(partialTicks));
         int packedLight = LevelRenderer.getLightColor(level, probePos);
 

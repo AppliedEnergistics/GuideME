@@ -1,8 +1,5 @@
 package guideme.internal;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import guideme.Guide;
 import guideme.compiler.PageCompiler;
@@ -108,7 +105,8 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
     private static Map<ResourceLocation, MutableGuide> loadDataDrivenGuides(ResourceManager resourceManager) {
         var dataDrivenGuideJsons = new HashMap<ResourceLocation, DataDrivenGuide>();
         var guideJsonIds = new FileToIdConverter("guideme_guides", ".json");
-        SimpleJsonResourceReloadListener.scanDirectory(resourceManager, guideJsonIds, JsonOps.INSTANCE, DataDrivenGuide.CODEC, dataDrivenGuideJsons);
+        SimpleJsonResourceReloadListener.scanDirectory(resourceManager, guideJsonIds, JsonOps.INSTANCE,
+                DataDrivenGuide.CODEC, dataDrivenGuideJsons);
 
         // Load the data driven guides
         Map<ResourceLocation, MutableGuide> dataDrivenGuides = new HashMap<>();

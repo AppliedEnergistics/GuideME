@@ -14,7 +14,8 @@ import net.neoforged.neoforge.client.model.ExtendedUnbakedModel;
 public class GuideItemDispatchUnbakedModel implements ExtendedUnbakedModel {
 
     @Override
-    public BakedModel bake(TextureSlots textures, ModelBaker baker, ModelState modelState, boolean useAmbientOcclusion, boolean usesBlockLight, ItemTransforms itemTransforms, ContextMap additionalProperties) {
+    public BakedModel bake(TextureSlots textures, ModelBaker baker, ModelState modelState, boolean useAmbientOcclusion,
+            boolean usesBlockLight, ItemTransforms itemTransforms, ContextMap additionalProperties) {
         var baseModel = baker.bake(GuideItem.BASE_MODEL_ID, modelState);
 
         class Loader extends CacheLoader<ResourceLocation, BakedModel> {
@@ -22,7 +23,8 @@ public class GuideItemDispatchUnbakedModel implements ExtendedUnbakedModel {
             public BakedModel load(ResourceLocation modelId) {
                 var model = baker.getModel(modelId);
                 model.resolveDependencies(baker::getModel);
-                return model.bake(textures, baker, modelState, useAmbientOcclusion, usesBlockLight, itemTransforms, additionalProperties);
+                return model.bake(textures, baker, modelState, useAmbientOcclusion, usesBlockLight, itemTransforms,
+                        additionalProperties);
             }
         }
 

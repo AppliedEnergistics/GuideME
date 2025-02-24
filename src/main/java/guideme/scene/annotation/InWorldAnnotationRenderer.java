@@ -1,6 +1,7 @@
 package guideme.scene.annotation;
 
-import com.mojang.blaze3d.platform.GlConst;
+import static com.mojang.blaze3d.platform.GlConst.GL_DEPTH_BUFFER_BIT;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -18,8 +19,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.util.ARGB;
 import org.joml.Vector3f;
-
-import static com.mojang.blaze3d.platform.GlConst.GL_DEPTH_BUFFER_BIT;
 
 public final class InWorldAnnotationRenderer {
 

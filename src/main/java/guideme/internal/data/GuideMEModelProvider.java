@@ -20,8 +20,7 @@ public class GuideMEModelProvider extends ModelProvider {
         ModelTemplates.FLAT_ITEM.create(
                 GuideItem.ID.withSuffix("_base"),
                 TextureMapping.layer0(GuideItem.ID.withPrefix("item/")),
-                itemModels.modelOutput
-        );
+                itemModels.modelOutput);
 
         // Generate the dispatch model
         itemModels.declareCustomModelItem(GuideME.GUIDE_ITEM.get());
