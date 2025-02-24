@@ -253,17 +253,7 @@ public interface RenderContext {
     }
 
     default void pushScissor(LytRect bounds) {
-        var dest = new Vector3f();
-        var pose = poseStack().last().pose();
-        pose.transformPosition(bounds.x(), bounds.y(), 0, dest);
-        var left = dest.x;
-        var top = dest.y;
-        pose.transformPosition(bounds.right(), bounds.bottom(), 0, dest);
-        guiGraphics().enableScissor(
-                (int) left,
-                (int) top,
-                (int) dest.x,
-                (int) dest.y);
+        guiGraphics().enableScissor(bounds.x(), bounds.y(), bounds.right(), bounds.bottom());
     }
 
     default void popScissor() {
