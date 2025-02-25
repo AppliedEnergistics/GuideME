@@ -78,7 +78,11 @@ public class LytDocument extends LytNode implements LytBlockContainer {
         invalidateLayout();
     }
 
-    private void invalidateLayout() {
+    public boolean hasLayout() {
+        return layout != null;
+    }
+
+    public void invalidateLayout() {
         layout = null;
     }
 

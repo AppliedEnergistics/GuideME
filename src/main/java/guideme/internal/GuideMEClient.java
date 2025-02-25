@@ -1,5 +1,6 @@
 package guideme.internal;
 
+import com.sun.jna.platform.win32.DdemlUtil;
 import guideme.Guide;
 import guideme.PageAnchor;
 import guideme.color.LightDarkMode;
@@ -10,6 +11,7 @@ import guideme.internal.data.GuideMEModelProvider;
 import guideme.internal.hotkey.OpenGuideHotkey;
 import guideme.internal.item.GuideItem;
 import guideme.internal.item.GuideItemDispatchModelLoader;
+import guideme.internal.network.RequestManager;
 import guideme.internal.screen.GlobalInMemoryHistory;
 import guideme.internal.screen.GuideNavigation;
 import guideme.internal.search.GuideSearch;
@@ -87,6 +89,7 @@ public class GuideMEClient {
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre evt) -> {
             search.processWork();
             processDevWatchers();
+            RequestManager.getInstance().processTimeouts();
         });
 
         GuideOnStartup.init(modBus);

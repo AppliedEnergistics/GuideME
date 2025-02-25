@@ -134,8 +134,8 @@ public class LytStandardRecipeBox<T extends RecipeDisplay> extends LytVBox imple
             return this;
         }
 
-        public Builder outputFromResultOf(RecipeDisplayHolder<?> recipe) {
-            var resultDisplay = recipe.value().result();
+        public Builder outputFromResultOf(RecipeDisplay recipe) {
+            var resultDisplay = recipe.result();
             if (resultDisplay.type() != SlotDisplay.Empty.TYPE) {
                 output(resultDisplay);
             }

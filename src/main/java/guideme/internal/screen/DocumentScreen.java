@@ -114,7 +114,9 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     }
 
     protected final void ensureDocumentLayout() {
-        if (!documentLayoutInvalid) {
+        var document = getDocument();
+
+        if (document == null || !documentLayoutInvalid && getDocument().hasLayout()) {
             return;
         }
 
@@ -124,11 +126,8 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         var context = new LayoutContext(new MinecraftFontMetrics());
 
         // Build layout if needed
-        var document = getDocument();
-        if (document != null) {
-            document.updateLayout(context, docViewport.width());
-            scrollbar.setContentHeight(document.getContentHeight());
-        }
+        document.updateLayout(context, docViewport.width());
+        scrollbar.setContentHeight(document.getContentHeight());
     }
 
     protected final void updateDocumentLayout() {

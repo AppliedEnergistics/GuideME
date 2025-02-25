@@ -30,6 +30,9 @@ import guideme.scene.element.ImportStructureElementCompiler;
 import guideme.scene.element.IsometricCameraElementCompiler;
 import guideme.scene.element.SceneBlockElementCompiler;
 import guideme.scene.element.SceneElementTagCompiler;
+import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -96,6 +99,8 @@ public final class DefaultExtensions {
     private static List<RecipeTypeMappingSupplier> vanillaRecipeTypes() {
         return List.of(
                 mappings -> {
+                    mappings.add(ShapelessCraftingRecipeDisplay.class, VanillaRecipes::create);
+                    mappings.add(ShapedCraftingRecipeDisplay.class, VanillaRecipes::create);
                     // TODO mappings.add(RecipeType.CRAFTING, VanillaRecipes::createCrafting);
                     // TODO mappings.add(RecipeType.BLASTING, VanillaRecipes::createBlasting);
                     // TODO mappings.add(RecipeType.SMELTING, VanillaRecipes::createSmelting);

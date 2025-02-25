@@ -33,6 +33,10 @@ public final class DefaultStyles {
             .color(SymbolicColor.BODY_TEXT)
             .build();
 
+    public static final TextStyle ERROR_TEXT = TextStyle.builder()
+            .color(SymbolicColor.ERROR_TEXT)
+            .build();
+
     public static final TextStyle CRAFTING_RECIPE_TYPE = TextStyle.builder()
             .font(Minecraft.UNIFORM_FONT)
             .color(SymbolicColor.CRAFTING_RECIPE_TYPE)

@@ -8,9 +8,18 @@ import guideme.layout.LayoutContext;
 import guideme.render.GuiAssets;
 import guideme.render.GuiSprite;
 import guideme.render.RenderContext;
+
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.core.Holder;
+import net.minecraft.util.context.ContextMap;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.display.DisplayContentsFactory;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 /**
@@ -25,6 +34,8 @@ public class LytSlot extends LytBlock implements InteractiveElement {
     public static final int OUTER_SIZE_LARGE = ITEM_SIZE + 2 * LARGE_PADDING;
     private static final int CYCLE_TIME = 2000;
 
+    private final List<ItemStack> stacks;
+
     private boolean largeSlot;
 
     private final SlotDisplay display;
@@ -32,10 +43,14 @@ public class LytSlot extends LytBlock implements InteractiveElement {
     public LytSlot(SlotDisplay display) {
         this.display = display;
         // TODO
+        this.stacks = display
+                .resolve(ContextMap.EMPTY, SlotDisplay.ItemStackContentsFactory.INSTANCE)
+                .toList();
     }
 
     public LytSlot(ItemStack stack) {
         this.display = new SlotDisplay.ItemStackSlotDisplay(stack);
+        this.stacks = List.of(stack);
     }
 
     public boolean isLargeSlot() {
@@ -95,12 +110,11 @@ public class LytSlot extends LytBlock implements InteractiveElement {
     }
 
     private ItemStack getDisplayedStack() {
-// TODO       if (stacks.length == 0) {
-// TODO           return ItemStack.EMPTY;
-// TODO       }
-//TODO
-// TODO       var cycle = System.nanoTime() / TimeUnit.MILLISECONDS.toNanos(CYCLE_TIME);
-// TODO       return stacks[(int) (cycle % stacks.length)];
-        return ItemStack.EMPTY;
+       if (stacks.size() == 0) {
+           return ItemStack.EMPTY;
+       }
+
+       var cycle = System.nanoTime() / TimeUnit.MILLISECONDS.toNanos(CYCLE_TIME);
+       return stacks.get((int) (cycle % stacks.size()));
     }
 }
