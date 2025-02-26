@@ -107,15 +107,33 @@ export async function findRecipeResultItem(zipContent: ZipContent,
 
 }
 
-export function splitIdAndData(id: string): [string, string | undefined] {
-    if (id.endsWith("}")) {
-        const startOfData = id.indexOf('{');
-        return [
-            id.substring(0, startOfData),
-            id.substring(startOfData + 1, id.length - 1),
-        ];
+export function splitIdAndData(id: string|object): [string, string | undefined][] {
+    if (typeof id !== "string") {
+        if (id === null) {
+            throw new Error(`Invalid id`);
+        }
+        if ("item" in id) {
+            return [[id.item as string, '']]
+        }
+        if ("tag" in id) {
+            return [[id.tag as string, '']];
+        }
+        throw new Error(`Invalid id: ${id}`);
     }
-    return [id, undefined];
+
+    const result: [string, string|undefined][] = [];
+    for (const item of id.split(",")) {
+        if (item.endsWith("}")) {
+            const startOfData = item.indexOf('{');
+            result.push([
+                item.substring(0, startOfData),
+                item.substring(startOfData + 1, id.length - 1),
+            ]);
+        } else {
+            result.push([item, undefined]);
+        }
+    }
+    return result;
 }
 
 export async function loadTranslations(zipContent: Record<string, ZipItem>): Promise<Record<string, Record<string, string>>> {

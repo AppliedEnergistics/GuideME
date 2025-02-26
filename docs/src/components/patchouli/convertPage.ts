@@ -97,7 +97,7 @@ export async function convertPage(zipContent: ZipContent,
                 const startOfNbt = entityId.indexOf("{");
                 let dataAttr = '';
                 if (startOfNbt !== -1 && entityId.endsWith("}")) {
-                    dataAttr = `data="${entityId.substring(startOfNbt)}"`;
+                    dataAttr = ` data="${entityId.substring(startOfNbt)}"`;
                     entityId = entityId.substring(0, startOfNbt);
                 }
                 
@@ -164,6 +164,7 @@ export async function convertPage(zipContent: ZipContent,
                 break;
             case "patchouli:crafting":
             case "patchouli:smelting":
+            case "patchouli:blasting":
                 if (patchouliPage.title) {
                     lines.push("## " + translate(patchouliPage.title));
                     lines.push("");
@@ -178,15 +179,15 @@ export async function convertPage(zipContent: ZipContent,
                 }
                 break;
             case "patchouli:spotlight":
-                if (patchouliPage.link_recipe) {
-                    pageItemIds.push(splitIdAndData(patchouliPage.item)[0]);
-                    writeLogLine(` Setting page ${pageId} as target for item ${patchouliPage.item}`);
-                }
                 if (patchouliPage.title) {
                     lines.push("## " + translate(patchouliPage.title));
                     lines.push("");
                 }
-                for (const item of patchouliPage.item.split(",")) {
+                for (const [item,] of splitIdAndData(patchouliPage.item)) {
+                    if (patchouliPage.link_recipe) {
+                        pageItemIds.push(item);
+                        writeLogLine(` Setting page ${pageId} as target for item ${patchouliPage.item}`);
+                    }
                     lines.push(`<ItemImage id="${item}" />`)
                 }
                 lines.push("");
