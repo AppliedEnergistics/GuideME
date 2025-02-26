@@ -54,11 +54,14 @@ export function relativePageLink(pageId: string, targetPageId: string): string {
         }
     }
 
+    let result: string;
     if (commonPrefix >= pageIdParts.length - 1) {
-        return "./" + targetPageParts.pop() + ".md";
+        result = "./" + targetPageParts.pop() + ".md";
+    } else {
+        result = "../".repeat(pageIdParts.length - 1 - commonPrefix) + targetPageParts.slice(commonPrefix).join("/") + ".md";
     }
 
-    return "../".repeat(pageIdParts.length - 1 - commonPrefix) + targetPageParts.pop() + ".md";
+    return result;
 }
 
 export async function findRecipeResultItem(zipContent: ZipContent,
