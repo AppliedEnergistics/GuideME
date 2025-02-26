@@ -8,6 +8,7 @@ import guideme.internal.network.OpenGuideRequest;
 import guideme.internal.network.RecipeForReply;
 import guideme.internal.network.RecipeForRequest;
 import guideme.internal.network.RequestManager;
+import java.util.function.Supplier;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
@@ -21,8 +22,6 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.function.Supplier;
 
 @Mod(value = GuideME.MOD_ID)
 public class GuideME {

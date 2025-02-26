@@ -1,15 +1,5 @@
 package guideme.internal.network;
 
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.display.RecipeDisplay;
-import net.minecraft.world.item.crafting.display.SlotDisplayContext;
-import net.neoforged.neoforge.network.PacketDistributor;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -19,6 +9,15 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
+import net.neoforged.neoforge.network.PacketDistributor;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RequestManager {
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(15);
@@ -51,12 +50,12 @@ public class RequestManager {
         var request = new RecipeForRequest(
                 UUID.randomUUID(),
                 DEFAULT_TIMEOUT.toMillis(),
-                resultItem
-        );
+                resultItem);
         return sendRequest(request, request.requestId(), RecipeForReply.class);
     }
 
-    private <T> CompletableFuture<T> sendRequest(CustomPacketPayload requestPayload, UUID id, Class<T> expectedReplyType) {
+    private <T> CompletableFuture<T> sendRequest(CustomPacketPayload requestPayload, UUID id,
+            Class<T> expectedReplyType) {
         if (pendingRequests.containsKey(id)) {
             throw new IllegalStateException("Duplicate request id: " + id);
         }
@@ -71,8 +70,7 @@ public class RequestManager {
                     } else {
                         future.complete(result);
                     }
-                }
-        );
+                });
         pendingRequests.put(id, request);
         PacketDistributor.sendToServer(requestPayload);
         return future;
@@ -127,8 +125,8 @@ public class RequestManager {
     }
 
     record PendingRequest<T>(UUID id,
-                             Instant deadline,
-                             Class<T> expectedPayloadType,
-                             BiConsumer<@Nullable T, @Nullable Throwable> handler) {
+            Instant deadline,
+            Class<T> expectedPayloadType,
+            BiConsumer<@Nullable T, @Nullable Throwable> handler) {
     }
 }

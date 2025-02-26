@@ -45,14 +45,14 @@ final class VanillaRecipes {
         var ingredientCount = ingredients.size();
         var grid = new LytSlotGrid(recipe.width(), recipe.height());
 
-            for (var x = 0; x < recipe.width(); x++) {
-                for (var y = 0; y < recipe.height(); y++) {
-                    var index = y * recipe.width() + x;
-                    if (index < ingredients.size()) {
-                        grid.setDisplay(x, y, ingredients.get(index));
-                    }
+        for (var x = 0; x < recipe.width(); x++) {
+            for (var y = 0; y < recipe.height(); y++) {
+                var index = y * recipe.width() + x;
+                if (index < ingredients.size()) {
+                    grid.setDisplay(x, y, ingredients.get(index));
                 }
             }
+        }
 
         String title = GuidebookText.Crafting.text().getString();
 

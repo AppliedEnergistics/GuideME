@@ -8,13 +8,13 @@ import guideme.internal.command.StructureCommands;
 import guideme.internal.data.GuideMELanguageProvider;
 import guideme.internal.data.GuideMEModelProvider;
 import guideme.internal.hotkey.OpenGuideHotkey;
-import guideme.internal.item.GuideItem;
 import guideme.internal.item.GuideItemDispatchUnbaked;
 import guideme.internal.network.RequestManager;
 import guideme.internal.screen.GlobalInMemoryHistory;
 import guideme.internal.screen.GuideNavigation;
 import guideme.internal.search.GuideSearch;
 import guideme.render.GuiAssets;
+import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -30,7 +30,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
@@ -44,8 +43,6 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 @Mod(value = GuideME.MOD_ID, dist = Dist.CLIENT)
 public class GuideMEClient {

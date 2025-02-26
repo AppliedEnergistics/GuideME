@@ -3,9 +3,8 @@ package guideme.compiler.tags;
 import guideme.document.block.LytBlock;
 import guideme.extensions.Extension;
 import guideme.extensions.ExtensionPoint;
-import net.minecraft.world.item.crafting.display.RecipeDisplay;
-
 import java.util.function.Function;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
 
 /**
  * Allows mods to register mappings between recipe type and their custom recipe blocks for use in {@code <RecipeFor/>}

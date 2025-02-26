@@ -30,13 +30,12 @@ import guideme.scene.element.ImportStructureElementCompiler;
 import guideme.scene.element.IsometricCameraElementCompiler;
 import guideme.scene.element.SceneBlockElementCompiler;
 import guideme.scene.element.SceneElementTagCompiler;
-import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
-import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
 
 public final class DefaultExtensions {
     private static final List<Registration<?>> EXTENSIONS = List.of(

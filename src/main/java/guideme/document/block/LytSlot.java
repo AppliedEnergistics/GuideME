@@ -8,18 +8,12 @@ import guideme.layout.LayoutContext;
 import guideme.render.GuiAssets;
 import guideme.render.GuiSprite;
 import guideme.render.RenderContext;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.core.Holder;
 import net.minecraft.util.context.ContextMap;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.display.DisplayContentsFactory;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 /**
@@ -110,11 +104,11 @@ public class LytSlot extends LytBlock implements InteractiveElement {
     }
 
     private ItemStack getDisplayedStack() {
-       if (stacks.size() == 0) {
-           return ItemStack.EMPTY;
-       }
+        if (stacks.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
 
-       var cycle = System.nanoTime() / TimeUnit.MILLISECONDS.toNanos(CYCLE_TIME);
-       return stacks.get((int) (cycle % stacks.size()));
+        var cycle = System.nanoTime() / TimeUnit.MILLISECONDS.toNanos(CYCLE_TIME);
+        return stacks.get((int) (cycle % stacks.size()));
     }
 }

@@ -11,11 +11,6 @@ import guideme.internal.network.RecipeForReply;
 import guideme.internal.network.RequestManager;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstNode;
-import net.minecraft.world.item.crafting.display.RecipeDisplay;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -24,6 +19,10 @@ import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Function;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Shows a Recipe-Book-Like representation of the recipe needed to craft a given item.
@@ -54,8 +53,7 @@ public class RecipeCompiler extends BlockTagCompiler {
                     RequestManager.getInstance()
                             .requestRecipeFor(item.getDefaultInstance())
                             .thenApply(RecipeForReply::displays)
-                            .thenApply(displays -> createRecipeDisplaysCarousel(compiler, displays))
-            );
+                            .thenApply(displays -> createRecipeDisplaysCarousel(compiler, displays)));
             placeholder.setSourceNode((MdAstNode) el);
             parent.append(placeholder);
         } else {

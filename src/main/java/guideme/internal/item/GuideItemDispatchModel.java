@@ -16,19 +16,19 @@ public class GuideItemDispatchModel implements ItemModel {
     private final BakingContext bakingContext;
 
     public GuideItemDispatchModel(BakedModel baseModel,
-                                  BakingContext bakingContext) {
+            BakingContext bakingContext) {
         this.baseModel = baseModel;
         this.bakingContext = bakingContext;
     }
 
     @Override
     public void update(ItemStackRenderState renderState,
-                       ItemStack stack,
-                       ItemModelResolver itemModelResolver,
-                       ItemDisplayContext displayContext,
-                       @Nullable ClientLevel level,
-                       @Nullable LivingEntity entity,
-                       int seed) {
+            ItemStack stack,
+            ItemModelResolver itemModelResolver,
+            ItemDisplayContext displayContext,
+            @Nullable ClientLevel level,
+            @Nullable LivingEntity entity,
+            int seed) {
         BakedModel model = baseModel;
 
         var guideId = GuideItem.getGuideId(stack);
