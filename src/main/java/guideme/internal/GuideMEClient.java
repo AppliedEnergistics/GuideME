@@ -1,6 +1,5 @@
 package guideme.internal;
 
-import com.sun.jna.platform.win32.DdemlUtil;
 import guideme.Guide;
 import guideme.PageAnchor;
 import guideme.color.LightDarkMode;
@@ -10,13 +9,12 @@ import guideme.internal.data.GuideMELanguageProvider;
 import guideme.internal.data.GuideMEModelProvider;
 import guideme.internal.hotkey.OpenGuideHotkey;
 import guideme.internal.item.GuideItem;
-import guideme.internal.item.GuideItemDispatchModelLoader;
+import guideme.internal.item.GuideItemDispatchUnbaked;
 import guideme.internal.network.RequestManager;
 import guideme.internal.screen.GlobalInMemoryHistory;
 import guideme.internal.screen.GuideNavigation;
 import guideme.internal.search.GuideSearch;
 import guideme.render.GuiAssets;
-import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -34,6 +32,7 @@ import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
@@ -45,6 +44,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 @Mod(value = GuideME.MOD_ID, dist = Dist.CLIENT)
 public class GuideMEClient {
@@ -70,18 +71,13 @@ public class GuideMEClient {
         });
         modBus.addListener(this::gatherData);
         modBus.addListener(this::registerHotkeys);
+        modBus.addListener(this::registerItemModel);
 
         NeoForge.EVENT_BUS.addListener(this::registerClientCommands);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
         modBus.addListener(this::resetSprites);
 
         OpenGuideHotkey.init();
-
-        modBus.addListener((ModelEvent.RegisterAdditional e) -> {
-            e.register(GuideItem.BASE_MODEL_ID);
-        });
-        modBus.addListener((ModelEvent.RegisterLoaders e) -> e.register(
-                GuideItemDispatchModelLoader.ID, new GuideItemDispatchModelLoader()));
 
         modBus.addListener((AddClientReloadListenersEvent evt) -> {
             evt.addListener(GuideReloadListener.ID, new GuideReloadListener());
@@ -95,6 +91,10 @@ public class GuideMEClient {
         GuideOnStartup.init(modBus);
 
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+    }
+
+    private void registerItemModel(RegisterItemModelsEvent event) {
+        event.register(GuideItemDispatchUnbaked.ID, GuideItemDispatchUnbaked.CODEC);
     }
 
     private void processDevWatchers() {

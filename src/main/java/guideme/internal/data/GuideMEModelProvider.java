@@ -2,6 +2,7 @@ package guideme.internal.data;
 
 import guideme.internal.GuideME;
 import guideme.internal.item.GuideItem;
+import guideme.internal.item.GuideItemDispatchUnbaked;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
@@ -18,11 +19,11 @@ public class GuideMEModelProvider extends ModelProvider {
     protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
         // Generate the base item model
         ModelTemplates.FLAT_ITEM.create(
-                GuideItem.ID.withSuffix("_base"),
+                GuideItem.BASE_MODEL_ID,
                 TextureMapping.layer0(GuideItem.ID.withPrefix("item/")),
                 itemModels.modelOutput);
 
         // Generate the dispatch model
-        itemModels.declareCustomModelItem(GuideME.GUIDE_ITEM.get());
+        itemModels.itemModelOutput.accept(GuideME.GUIDE_ITEM.get(), new GuideItemDispatchUnbaked());
     }
 }
