@@ -4,6 +4,7 @@ import guideme.document.LytRect;
 import guideme.document.interaction.GuideTooltip;
 import guideme.document.interaction.InteractiveElement;
 import guideme.document.interaction.ItemTooltip;
+import guideme.internal.util.Platform;
 import guideme.layout.LayoutContext;
 import guideme.render.GuiAssets;
 import guideme.render.GuiSprite;
@@ -12,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 
@@ -36,10 +36,7 @@ public class LytSlot extends LytBlock implements InteractiveElement {
 
     public LytSlot(SlotDisplay display) {
         this.display = display;
-        // TODO
-        this.stacks = display
-                .resolve(ContextMap.EMPTY, SlotDisplay.ItemStackContentsFactory.INSTANCE)
-                .toList();
+        this.stacks = display.resolveForStacks(Platform.getSlotDisplayContext());
     }
 
     public LytSlot(ItemStack stack) {

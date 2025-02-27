@@ -9,6 +9,7 @@ import guideme.document.block.LytHBox;
 import guideme.document.block.LytParagraph;
 import guideme.document.block.LytSlotGrid;
 import guideme.document.block.LytVBox;
+import guideme.internal.util.Platform;
 import guideme.render.GuiAssets;
 import guideme.render.RenderContext;
 import guideme.scene.LytItemImage;
@@ -59,6 +60,18 @@ public class LytStandardRecipeBox<T extends RecipeDisplay> extends LytVBox imple
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    public static Builder builder(RecipeDisplay display) {
+        var builder = new Builder();
+
+        var icon = display.craftingStation().resolveForFirstStack(Platform.getSlotDisplayContext());
+        if (!icon.isEmpty()) {
+            builder.icon(icon);
+            builder.title(icon.getItemName().getString());
+        }
+
+        return builder;
     }
 
     public static class Builder {

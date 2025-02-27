@@ -36,6 +36,9 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeAccess;
+import net.minecraft.world.item.crafting.RecipePropertySet;
+import net.minecraft.world.item.crafting.SelectableRecipe;
+import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
@@ -316,14 +319,25 @@ public class GuidebookLevel extends Level {
 
     @Override
     public RecipeAccess recipeAccess() {
-        // TODO
-        return Platform.getClientRecipeManager();
+        if (Minecraft.getInstance().level != null) {
+            return Minecraft.getInstance().level.recipeAccess();
+        }
+        return new RecipeAccess() {
+            @Override
+            public RecipePropertySet propertySet(ResourceKey<RecipePropertySet> propertySet) {
+                return RecipePropertySet.EMPTY;
+            }
+
+            @Override
+            public SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes() {
+                return SelectableRecipe.SingleInputSet.empty();
+            }
+        };
     }
 
     @Override
     public FuelValues fuelValues() {
-        // TODO
-        return Minecraft.getInstance().level.fuelValues();
+        return Platform.fuelValues();
     }
 
     @Override

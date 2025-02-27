@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DetectedVersion;
 import net.minecraft.client.Minecraft;
@@ -43,22 +44,27 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.SmithingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.StonecutterRecipeDisplay;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.crafting.display.FluidStackContentsFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
@@ -82,7 +88,7 @@ public class SiteExporter implements ResourceExporter {
 
     private ParsedGuidePage currentPage;
 
-    private final Set<RecipeHolder<?>> recipes = new HashSet<>();
+    private final Set<RecipeDisplayHolder<?>> recipes = new HashSet<>();
 
     private final Set<Item> items = new HashSet<>();
 
@@ -151,77 +157,87 @@ public class SiteExporter implements ResourceExporter {
         fluids.add(fluid);
     }
 
-    private void referenceIngredient(Ingredient ingredient) {
-        for (var stack : ingredient.display().resolveForStacks(ContextMap.EMPTY)) {
+    public void referenceFluid(FluidStack fluid) {
+        fluids.add(fluid.getFluid());
+    }
+
+    private void referenceIngredient(SlotDisplay display) {
+        for (var stack : display.resolveForStacks(Platform.getSlotDisplayContext())) {
             referenceItem(stack);
         }
     }
 
     @Override
     public void referenceRecipe(RecipeDisplayHolder<?> holder) {
-// TODO       if (!recipes.add(holder)) {
-// TODO           return; // Already added
-// TODO       }
-//TODO
-// TODO       var recipe = holder.value();
-//TODO
-// TODO       var registryAccess = Platform.getClientRegistryAccess();
-// TODO       var resultItem = recipe.getResultItem(registryAccess);
-// TODO       if (!resultItem.isEmpty()) {
-// TODO           referenceItem(resultItem);
-// TODO       }
-// TODO       for (var ingredient : getIngredients(recipe)) {
-// TODO           referenceIngredient(ingredient);
-// TODO       }
+        if (!recipes.add(holder)) {
+            return; // Already added
+        }
+
+        visitDisplays(holder.value(), display -> {
+            display.resolve(Platform.getSlotDisplayContext(), SlotDisplay.ItemStackContentsFactory.INSTANCE)
+                    .forEach(this::referenceItem);
+            display.resolve(Platform.getSlotDisplayContext(), FluidStackContentsFactory.INSTANCE)
+                    .forEach(this::referenceFluid);
+        });
     }
-//TODO
-// TODO   private static NonNullList<Ingredient> getIngredients(Recipe<?> recipe) {
-// TODO       // Special handling for upgrade recipes since those do not override getIngredients
-// TODO       if (recipe instanceof SmithingTrimRecipe trimRecipe) {
-// TODO           var ingredients = NonNullList.withSize(3, Ingredient.EMPTY);
-// TODO           ingredients.set(0, trimRecipe.template);
-// TODO           ingredients.set(1, trimRecipe.base);
-// TODO           ingredients.set(2, trimRecipe.addition);
-// TODO           return ingredients;
-// TODO       }
-//TODO
-// TODO       if (recipe instanceof SmithingTransformRecipe transformRecipe) {
-// TODO           var ingredients = NonNullList.withSize(3, Ingredient.EMPTY);
-// TODO           ingredients.set(0, transformRecipe.template);
-// TODO           ingredients.set(1, transformRecipe.base);
-// TODO           ingredients.set(2, transformRecipe.addition);
-// TODO           return ingredients;
-// TODO       }
-//TODO
-// TODO       return recipe.getIngredients();
-// TODO   }
+
+    @MustBeInvokedByOverriders
+    protected void visitDisplays(RecipeDisplay recipe, Consumer<SlotDisplay> visitor) {
+        visitor.accept(recipe.result());
+        visitor.accept(recipe.craftingStation());
+
+        switch (recipe) {
+            case ShapedCraftingRecipeDisplay craftingRecipe -> {
+                for (var display : craftingRecipe.ingredients()) {
+                    visitor.accept(display);
+                }
+            }
+            case ShapelessCraftingRecipeDisplay craftingRecipe -> {
+                for (var display : craftingRecipe.ingredients()) {
+                    visitor.accept(display);
+                }
+            }
+            case SmithingRecipeDisplay smithingTransformRecipe -> {
+                visitor.accept(smithingTransformRecipe.base());
+                visitor.accept(smithingTransformRecipe.template());
+                visitor.accept(smithingTransformRecipe.addition());
+            }
+            case FurnaceRecipeDisplay furnaceRecipeDisplay -> {
+                visitor.accept(furnaceRecipeDisplay.ingredient());
+                visitor.accept(furnaceRecipeDisplay.result());
+            }
+            case StonecutterRecipeDisplay stonecutterRecipeDisplay -> {
+                visitor.accept(stonecutterRecipeDisplay.input());
+                visitor.accept(stonecutterRecipeDisplay.result());
+            }
+            default -> {
+            }
+        }
+    }
 
     private void dumpRecipes(SiteExportWriter writer) {
         for (var holder : recipes) {
-// TODO          var id = holder.id();
-// TODO          var recipe = holder.value();
-//
-// TODO          if (recipe instanceof CraftingRecipe craftingRecipe) {
-// TODO              if (craftingRecipe.isSpecial()) {
-// TODO                  continue;
-// TODO              }
-// TODO              writer.addRecipe(id, craftingRecipe);
-// TODO          } else if (recipe instanceof AbstractCookingRecipe cookingRecipe) {
-// TODO              writer.addRecipe(id, cookingRecipe);
-// TODO          } else if (recipe instanceof SmithingTransformRecipe smithingTransformRecipe) {
-// TODO              writer.addRecipe(id, smithingTransformRecipe);
-// TODO          } else if (recipe instanceof SmithingTrimRecipe smithingTrimRecipe) {
-// TODO              writer.addRecipe(id, smithingTrimRecipe);
-// TODO          } else if (recipe instanceof StonecutterRecipe stonecutterRecipe) {
-// TODO              writer.addRecipe(id, stonecutterRecipe);
-// TODO          } else {
-// TODO              var recipeFields = getCustomRecipeFields(id, recipe);
-// TODO              if (recipeFields != null) {
-// TODO                  writer.addRecipe(id, recipe, recipeFields);
-// TODO              } else {
-// TODO                  LOG.warn("Unable to handle recipe {} of type {}", holder.id(), recipe.getType());
-// TODO              }
-// TODO          }
+            var id = holder.id();
+            var recipe = holder.value();
+
+            if (recipe instanceof ShapedCraftingRecipeDisplay craftingRecipe) {
+                writer.addRecipe(id, craftingRecipe);
+            } else if (recipe instanceof ShapelessCraftingRecipeDisplay cookingRecipe) {
+                writer.addRecipe(id, cookingRecipe);
+            } else if (recipe instanceof SmithingRecipeDisplay smithingTransformRecipe) {
+                writer.addRecipe(id, smithingTransformRecipe);
+            } else if (recipe instanceof FurnaceRecipeDisplay smithingTrimRecipe) {
+                writer.addRecipe(id, smithingTrimRecipe);
+            } else if (recipe instanceof StonecutterRecipeDisplay stonecutterRecipeDisplay) {
+                writer.addRecipe(id, stonecutterRecipeDisplay);
+            } else {
+                var recipeFields = getCustomRecipeFields(id, recipe);
+                if (recipeFields != null) {
+                    writer.addRecipe(id, recipe, recipeFields);
+                } else {
+                    LOG.warn("Unable to handle recipe {} of type {}", holder.id(), recipe.type());
+                }
+            }
         }
     }
 
@@ -231,7 +247,7 @@ public class SiteExporter implements ResourceExporter {
      */
     @Nullable
     @ApiStatus.OverrideOnly
-    protected Map<String, Object> getCustomRecipeFields(ResourceLocation id, Recipe<?> recipe) {
+    protected Map<String, Object> getCustomRecipeFields(ResourceLocation id, RecipeDisplay recipe) {
         return null;
     }
 
@@ -578,5 +594,4 @@ public class SiteExporter implements ResourceExporter {
     private static ResourceLocation getFluidId(Fluid fluid) {
         return BuiltInRegistries.FLUID.getKey(fluid);
     }
-
 }

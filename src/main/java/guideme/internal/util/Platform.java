@@ -9,7 +9,11 @@ import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.context.ContextMap;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
+import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.slf4j.Logger;
@@ -27,16 +31,6 @@ public class Platform {
             return Minecraft.getInstance().level.registryAccess();
         }
         return Objects.requireNonNull(Platform.fallbackClientRegistryAccess);
-    }
-
-    public static RecipeManager getClientRecipeManager() {
-        var minecraft = Minecraft.getInstance();
-        if (minecraft.level != null) {
-            // TODO return minecraft.level.getRecipeManager();
-            return null;
-        }
-
-        return fallbackClientRecipeManager;
     }
 
     public static Component getFluidDisplayName(Fluid fluid) {
@@ -59,5 +53,26 @@ public class Platform {
                 }
             }
         }
+    }
+
+    public static ContextMap getSlotDisplayContext() {
+        var level = Minecraft.getInstance().level;
+        if (level != null) {
+            return SlotDisplayContext.fromLevel(level);
+        } else {
+            return new ContextMap.Builder()
+                    .withParameter(SlotDisplayContext.FUEL_VALUES, fuelValues())
+                    .withParameter(SlotDisplayContext.REGISTRIES, getClientRegistryAccess())
+                    .create(SlotDisplayContext.CONTEXT);
+        }
+    }
+
+    public static FuelValues fuelValues() {
+        var level = Minecraft.getInstance().level;
+        if (level != null) {
+            return fuelValues();
+        }
+
+        return FuelValues.vanillaBurnTimes(getClientRegistryAccess(), FeatureFlags.VANILLA_SET);
     }
 }

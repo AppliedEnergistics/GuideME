@@ -40,9 +40,13 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.SmithingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.StonecutterRecipeDisplay;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.slf4j.Logger;
@@ -69,18 +73,18 @@ public class SiteExportWriter {
                     out.value(value.toString());
                 }
             })
-// TODO            // Serialize Ingredient as arrays of the corresponding item IDs
-// TODO            .registerTypeAdapter(Ingredient.class, new WriteOnlyTypeAdapter<Ingredient>() {
-// TODO                @Override
-// TODO                public void write(JsonWriter out, Ingredient value) throws IOException {
-// TODO                    out.beginArray();
-// TODO                    for (var item : value.getItems()) {
-// TODO                        var itemId = BuiltInRegistries.ITEM.getKey(item.getItem());
-// TODO                        out.value(itemId.toString());
-// TODO                    }
-// TODO                    out.endArray();
-// TODO                }
-// TODO            })
+            // Serialize Ingredient as arrays of the corresponding item IDs
+            .registerTypeAdapter(SlotDisplay.class, new WriteOnlyTypeAdapter<SlotDisplay>() {
+                @Override
+                public void write(JsonWriter out, SlotDisplay value) throws IOException {
+                    out.beginArray();
+                    for (var item : value.resolveForStacks(Platform.getSlotDisplayContext())) {
+                        var itemId = BuiltInRegistries.ITEM.getKey(item.getItem());
+                        out.value(itemId.toString());
+                    }
+                    out.endArray();
+                }
+            })
             // Serialize Items & Fluids using their registered ID
             .registerTypeHierarchyAdapter(Item.class, new WriteOnlyTypeAdapter<Item>() {
                 @Override
@@ -150,58 +154,64 @@ public class SiteExportWriter {
         siteExport.fluids.put(fluidInfo.id, fluidInfo);
     }
 
-    public void addRecipe(ResourceLocation id, CraftingRecipe recipe) {
+    public void addRecipe(ResourceLocation id, ShapelessCraftingRecipeDisplay recipe) {
         Map<String, Object> fields = new HashMap<>();
-        if (recipe instanceof ShapedRecipe shapedRecipe) {
-            fields.put("shapeless", false);
-            fields.put("width", shapedRecipe.getWidth());
-            fields.put("height", shapedRecipe.getHeight());
-        } else {
-            fields.put("shapeless", true);
-        }
+        fields.put("shapeless", true);
 
-        // TODO ItemStack resultItem = recipe.getResultItem(null);
-        // TODO fields.put("resultItem", resultItem);
-        // TODO fields.put("resultCount", resultItem.getCount());
-        // TODO fields.put("ingredients", recipe.getIngredients());
+        var resultItem = recipe.result().resolveForFirstStack(Platform.getSlotDisplayContext());
+        fields.put("resultItem", resultItem);
+        fields.put("resultCount", resultItem.getCount());
+        fields.put("ingredients", recipe.ingredients());
 
         addRecipe(id, recipe, fields);
     }
 
-    // TODO public void addRecipe(ResourceLocation id, AbstractCookingRecipe recipe) {
-    // TODO addRecipe(id, recipe, Map.of(
-    // TODO "resultItem", recipe.getResultItem(null),
-    // TODO "ingredient", recipe.getIngredients().get(0)));
-    // TODO }
+    public void addRecipe(ResourceLocation id, ShapedCraftingRecipeDisplay recipe) {
+        Map<String, Object> fields = new HashMap<>();
+        fields.put("shapeless", false);
+        fields.put("width", recipe.width());
+        fields.put("height", recipe.height());
 
-// TODO   public void addRecipe(ResourceLocation id, SmithingTransformRecipe recipe) {
-// TODO       addRecipe(id, recipe, Map.of(
-// TODO               "resultItem", recipe.getResultItem(null),
-// TODO               "base", recipe.base,
-// TODO               "addition", recipe.addition,
-// TODO               "template", recipe.template));
-// TODO   }
+        var resultItem = recipe.result().resolveForFirstStack(Platform.getSlotDisplayContext());
+        fields.put("resultItem", resultItem);
+        fields.put("resultCount", resultItem.getCount());
+        fields.put("ingredients", recipe.ingredients());
 
-// TODO   public void addRecipe(ResourceLocation id, SmithingTrimRecipe recipe) {
-// TODO       addRecipe(id, recipe, Map.of(
-// TODO               "base", recipe.base,
-// TODO               "addition", recipe.addition,
-// TODO               "template", recipe.template));
-// TODO   }
+        addRecipe(id, recipe, fields);
+    }
 
-// TODO   public void addRecipe(ResourceLocation id, StonecutterRecipe recipe) {
-// TODO       addRecipe(id, recipe,
-// TODO               Map.of(
-// TODO                       "resultItem", recipe.getResultItem(null),
-// TODO                       "ingredient", recipe.getIngredients().get(0)));
-// TODO   }
+    public void addRecipe(ResourceLocation id, FurnaceRecipeDisplay recipe) {
+        var resultItem = recipe.result().resolveForFirstStack(Platform.getSlotDisplayContext());
 
-    public void addRecipe(ResourceLocation id, Recipe<?> recipe, Map<String, Object> element) {
+        addRecipe(id, recipe, Map.of(
+                "resultItem", resultItem,
+                "ingredient", recipe.ingredient()));
+    }
+
+    public void addRecipe(ResourceLocation id, SmithingRecipeDisplay recipe) {
+        var resultItem = recipe.result().resolveForFirstStack(Platform.getSlotDisplayContext());
+
+        addRecipe(id, recipe, Map.of(
+                "resultItem", resultItem,
+                "base", recipe.base(),
+                "addition", recipe.addition(),
+                "template", recipe.template()));
+    }
+
+    public void addRecipe(ResourceLocation id, StonecutterRecipeDisplay recipe) {
+        var resultItem = recipe.result().resolveForFirstStack(Platform.getSlotDisplayContext());
+
+        addRecipe(id, recipe,
+                Map.of(
+                        "resultItem", resultItem,
+                        "ingredient", recipe.input()));
+    }
+
+    public void addRecipe(ResourceLocation id, RecipeDisplay recipe, Map<String, Object> element) {
         // Auto-transform ingredients
-
         var jsonElement = GSON.toJsonTree(element);
 
-        var type = BuiltInRegistries.RECIPE_TYPE.getKey(recipe.getType()).toString();
+        var type = BuiltInRegistries.RECIPE_DISPLAY.getKey(recipe.type()).toString();
         jsonElement.getAsJsonObject().addProperty("type", type);
 
         if (siteExport.recipes.put(id.toString(), jsonElement) != null) {
