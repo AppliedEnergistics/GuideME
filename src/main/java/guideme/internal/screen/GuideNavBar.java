@@ -138,7 +138,6 @@ public class GuideNavBar extends AbstractWidget {
         }
 
         var renderContext = new SimpleRenderContext(graphics);
-        var viewport = renderContext.viewport();
 
         double currentTime = GLFW.glfwGetTime();
 
@@ -211,6 +210,8 @@ public class GuideNavBar extends AbstractWidget {
             var pose = graphics.pose();
             pose.pushPose();
             pose.translate(getX(), getY() - scrollOffset, 0);
+
+            var viewport = renderContext.viewport();
 
             // Draw a backdrop on the hovered row before starting batch rendering
             var hoveredRow = pickRow(mouseX, mouseY);
