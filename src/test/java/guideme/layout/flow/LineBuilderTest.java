@@ -30,7 +30,7 @@ class LineBuilderTest {
         var lines = getLines(3, "A BC");
 
         assertThat(lines).extracting(this::getTextContent).containsExactly(
-                "A",
+                "A ",
                 "BC");
     }
 
@@ -55,6 +55,17 @@ class LineBuilderTest {
 
         assertThat(lines).extracting(this::getTextContent).containsExactly(
                 "A B");
+    }
+
+    /**
+     * Consider CJK characters as break opportunities and don't fall back to the last whitespace in mixed language text.
+     */
+    @Test
+    void testBreakBetweenCJKCharacters() {
+        var lines = getLines(5, "A Bを変更す");
+
+        assertThat(lines).extracting(this::getTextContent).containsExactly(
+                "A Bを変", "更す");
     }
 
     private static ArrayList<Line> getLines(int charsPerLine, String... textChunks) {

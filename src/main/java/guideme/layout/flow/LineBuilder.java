@@ -11,6 +11,7 @@ import guideme.document.flow.LytFlowText;
 import guideme.layout.LayoutContext;
 import guideme.style.ResolvedTextStyle;
 import guideme.style.TextAlignment;
+import java.text.BreakIterator;
 import java.util.List;
 import java.util.function.Consumer;
 import org.jetbrains.annotations.Nullable;
@@ -202,18 +203,13 @@ class LineBuilder implements Consumer<LytFlowContent> {
     }
 
     private void iterateRuns(CharSequence text, ResolvedTextStyle style, char lastChar, LineConsumer consumer) {
-        int lastBreakOpportunity = -1;
-        float widthAtBreakOpportunity = 0;
         float curLineWidth = 0;
 
         var fontScale = style.fontScale();
         var lineBuffer = new StringBuilder();
 
         boolean lastCharWasWhitespace = Character.isWhitespace(lastChar);
-        // When starting after a whitespace on an existing line, we have a break opportunity at the start
-        if (lastCharWasWhitespace) {
-            lastBreakOpportunity = 0;
-        }
+        boolean canBreakAtStart = lastCharWasWhitespace;
 
         for (var i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
@@ -236,8 +232,6 @@ class LineBuilder implements Consumer<LytFlowContent> {
                 } else {
                     consumer.visitRun(lineBuffer, curLineWidth, true);
                     lineBuffer.setLength(0);
-                    widthAtBreakOpportunity = curLineWidth = 0;
-                    lastBreakOpportunity = 0;
                     lastCharWasWhitespace = true;
                     remainingLineWidth = getAvailableHorizontalSpace();
                     continue;
@@ -249,9 +243,6 @@ class LineBuilder implements Consumer<LytFlowContent> {
                 if (lastCharWasWhitespace && style.whiteSpace().isCollapseWhitespace()) {
                     continue; // White space collapsing
                 }
-                // Treat spaces as a safe-point for going back to when needing to line-break later
-                lastBreakOpportunity = lineBuffer.length();
-                widthAtBreakOpportunity = curLineWidth;
                 lastCharWasWhitespace = true;
             } else {
                 lastCharWasWhitespace = false;
@@ -260,12 +251,32 @@ class LineBuilder implements Consumer<LytFlowContent> {
             var advance = context.getAdvance(codePoint, style) * fontScale;
             // Break line if necessary
             if (curLineWidth + advance > remainingLineWidth) {
-                // If we had a break opportunity, use it
-                // In this scenario, the space itself is discarded
-                if (lastBreakOpportunity != -1) {
-                    consumer.visitRun(lineBuffer.subSequence(0, lastBreakOpportunity), widthAtBreakOpportunity, true);
+                int precedingBreakOpportunity;
+
+                // BreakIterator will only ever break *AFTER* whitespace, but since we ignore the last break opportunity
+                // we need to also ignore that...
+                if (lastCharWasWhitespace) {
+                    precedingBreakOpportunity = lineBuffer.length();
+                } else {
+                    // Find break opportunities and include the current character in it.
+                    var breakIterator = BreakIterator.getLineInstance();
+                    breakIterator.setText(lineBuffer.toString() + (char) codePoint);
+                    precedingBreakOpportunity = breakIterator.preceding(lineBuffer.length() + 1);
+                }
+
+                // If the preceding text chunk ended on a whitespace, we can break there if the
+                // current word does not offer us any opportunity to.
+                if (precedingBreakOpportunity > 0 || precedingBreakOpportunity == 0 && canBreakAtStart) {
+                    // Determine width up until the break opportunity.
+                    var widthAtBreakOpportunity = 0f;
+                    for (var j = 0; j < precedingBreakOpportunity; j++) {
+                        widthAtBreakOpportunity += context.getAdvance(lineBuffer.charAt(j), style) * fontScale;
+                    }
+
+                    consumer.visitRun(lineBuffer.subSequence(0, precedingBreakOpportunity), widthAtBreakOpportunity,
+                            true);
                     curLineWidth -= widthAtBreakOpportunity;
-                    lineBuffer.delete(0, lastBreakOpportunity);
+                    lineBuffer.delete(0, precedingBreakOpportunity);
                     if (!lineBuffer.isEmpty() && Character.isWhitespace(lineBuffer.charAt(0))) {
                         var firstChar = lineBuffer.charAt(0);
                         lineBuffer.deleteCharAt(0);
@@ -278,8 +289,6 @@ class LineBuilder implements Consumer<LytFlowContent> {
                     lineBuffer.setLength(0);
                     curLineWidth = 0;
                 }
-                lastBreakOpportunity = 0;
-                widthAtBreakOpportunity = curLineWidth;
                 remainingLineWidth = getAvailableHorizontalSpace();
                 // If a white-space character broke the line, ignore it as it
                 // would otherwise be at the start of the next line

@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.1.4 (Minecraft 1.21.1)
+
+- Switch to Unicode line-breaking to improve breaking long lines for Chinese, Japanese, Korean, and other languages.
+
 ## 21.1.3 (Minecraft 1.21.1)
 
 - Disable superfluous tracing code slowing down startup.
