@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.1.3 (Minecraft 1.21.1)
+
+- Disable superfluous tracing code slowing down startup.
+
 ## 21.1.2 (Minecraft 1.21.1)
 
 - Fix navbar content being cut off when it was scrolled down.
