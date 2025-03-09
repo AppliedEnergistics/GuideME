@@ -131,9 +131,11 @@ public class GuideNavBar extends AbstractWidget {
             return; // do not render the navbar if there are no nodes.
         }
 
-        updateLayout();
-
         widthTransition.update();
+
+        if (state != State.CLOSED) {
+            updateLayout();
+        }
 
         var renderContext = new SimpleRenderContext(graphics);
 
