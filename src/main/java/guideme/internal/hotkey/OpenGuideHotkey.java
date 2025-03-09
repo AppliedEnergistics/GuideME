@@ -55,7 +55,14 @@ public final class OpenGuideHotkey {
 
     public static void init() {
         MinecraftForge.EVENT_BUS.addListener(
-                (ItemTooltipEvent evt) -> handleTooltip(evt.getItemStack(), evt.getFlags(), evt.getToolTip()));
+                (ItemTooltipEvent evt) -> {
+                    // Ignore events fired for anything but the current local player,
+                    // for example while building the search tree for the creative menu
+                    if (evt.getEntity() != Minecraft.getInstance().player) {
+                        return;
+                    }
+                    handleTooltip(evt.getItemStack(), evt.getFlags(), evt.getToolTip());
+                });
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent evt) -> {
             if (evt.phase == TickEvent.Phase.END) {
                 newTick = true;

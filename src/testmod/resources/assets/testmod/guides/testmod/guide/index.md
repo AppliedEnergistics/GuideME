@@ -5,6 +5,8 @@ item_ids:
 
 # Start Page
 
+[Japanese](./japanese.md)
+
 [Markdown](./markdown.md)
 
 Welcome to the world of <ItemImage id="minecraft:stone" />
