@@ -3,6 +3,11 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.1.5 (Minecraft 1.21.1)
+
+- Disable the open guide hotkey from participating in building the creative menu search tree, which may have caused
+  crashes if the player searches in the creative menu for the first time, while hovering over an item.
+
 ## 21.1.4 (Minecraft 1.21.1)
 
 - Switch to Unicode line-breaking to improve breaking long lines for Chinese, Japanese, Korean, and other languages.
