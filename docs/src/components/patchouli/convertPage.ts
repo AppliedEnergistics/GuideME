@@ -2,6 +2,7 @@ import {expandFormatting} from "@site/src/components/patchouli/formatting";
 import {PatchouliEntry, ZipContent} from "@site/src/components/patchouli/types";
 import {extractFile, findRecipeResultItem, relativePageLink, splitIdAndData} from "@site/src/components/patchouli/util";
 import {convertMultiblock} from "@site/src/components/patchouli/convertMultiblock";
+import {cropPngTo200x200} from "@site/src/components/patchouli/cropImage";
 
 export async function convertPage(zipContent: ZipContent,
                                   macros: Record<string, string>,
@@ -155,8 +156,15 @@ export async function convertPage(zipContent: ZipContent,
                         lines.push("TODO: Missing image " + image);
                         lines.push("")
                     } else {
+                        let imageContent = await extractFile(zipContent, pathInZip);
+                        try {
+                            imageContent = await cropPngTo200x200(imageContent);
+                        } catch (e) {
+                            writeLogLine(`Failed to crop image ${pathInZip} to 200x200: ${e}. Using original image instead.`);
+                        }
+
                         const filename = path.substring(path.lastIndexOf("/") + 1);
-                        outputFiles[`${pageDir}/${filename}`] = await extractFile(zipContent, pathInZip);
+                        outputFiles[`${pageDir}/${filename}`] = imageContent;
                         lines.push(`![](${filename})`);
                         lines.push("");
                     }

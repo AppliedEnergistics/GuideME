@@ -120,6 +120,7 @@ export async function convertBook(zipContent: ZipContent,
         const convertCategoryTranslation = async (language: string | undefined, categoryData: PatchouliCategory) => {
             await convertCategory(
                 zipContent,
+                bookJson.macros,
                 bookNamespace,
                 bookId,
                 categoryId,
