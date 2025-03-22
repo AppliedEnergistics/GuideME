@@ -334,17 +334,20 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
 
     @Override
     public boolean scaledMouseReleased(double mouseX, double mouseY, int button) {
-        if (super.scaledMouseReleased(mouseX, mouseY, button)) {
-            return true;
-        }
-
         if (mouseCaptureTarget != null) {
             var currentTarget = mouseCaptureTarget;
 
             var docPointUnclamped = getDocumentPointUnclamped(mouseX, mouseY);
-            currentTarget.mouseReleased(this, docPointUnclamped.x(), docPointUnclamped.y(), button);
+            boolean handled = currentTarget.mouseReleased(this, docPointUnclamped.x(), docPointUnclamped.y(), button);
 
             releaseMouseCapture(currentTarget);
+            if (handled) {
+                return true;
+            }
+        }
+
+        if (super.scaledMouseReleased(mouseX, mouseY, button)) {
+            return true;
         }
 
         var docPoint = getDocumentPoint(mouseX, mouseY);

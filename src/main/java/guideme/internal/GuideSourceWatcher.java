@@ -51,8 +51,11 @@ class GuideSourceWatcher implements AutoCloseable {
     private final DirectoryWatcher sourceWatcher;
 
     // Queued changes that come in from a separate thread
-    private final Map<ResourceLocation, ParsedGuidePage> changedPages = new HashMap<>();
-    private final Set<ResourceLocation> deletedPages = new HashSet<>();
+    private record PageLangKey(String sourceLang, ResourceLocation pageId) {
+    }
+
+    private final Map<PageLangKey, ParsedGuidePage> changedPages = new HashMap<>();
+    private final Set<PageLangKey> deletedPages = new HashSet<>();
 
     private final ExecutorService watchExecutor;
 
@@ -178,7 +181,7 @@ class GuideSourceWatcher implements AutoCloseable {
         deletedPages.clear();
     }
 
-    public synchronized List<GuidePageChange> takeChanges(String currentLanguage) {
+    public synchronized List<GuidePageChange> takeChanges() {
 
         if (deletedPages.isEmpty() && changedPages.isEmpty()) {
             return List.of();
@@ -187,12 +190,15 @@ class GuideSourceWatcher implements AutoCloseable {
         var changes = new ArrayList<GuidePageChange>();
 
         for (var deletedPage : deletedPages) {
-            changes.add(new GuidePageChange(deletedPage, null, null));
+            ParsedGuidePage newPage = null;
+            changes.add(new GuidePageChange(deletedPage.sourceLang(), deletedPage.pageId(), null, newPage));
         }
         deletedPages.clear();
 
-        for (var changedPage : changedPages.values()) {
-            changes.add(new GuidePageChange(changedPage.getId(), null, changedPage));
+        for (var entry : changedPages.entrySet()) {
+            var pageKey = entry.getKey();
+            var changedPage = entry.getValue();
+            changes.add(new GuidePageChange(pageKey.sourceLang(), pageKey.pageId(), null, changedPage));
         }
         changedPages.clear();
 
@@ -238,20 +244,19 @@ class GuideSourceWatcher implements AutoCloseable {
 
     // Only call while holding the lock!
     private synchronized void pageChanged(Path path) {
-        var pageId = getPageId(path);
-        if (pageId == null) {
+        var pageKey = getPageLangKey(path);
+        if (pageKey == null) {
             return; // Probably not a page
         }
 
-        var validLanguages = LangUtil.getValidLanguages();
-        var language = Objects.requireNonNullElse(LangUtil.getLangFromPageId(pageId, validLanguages), defaultLanguage);
+        var language = Objects.requireNonNullElse(pageKey.sourceLang(), defaultLanguage);
 
         // If it was previously deleted in the same change-set, undelete it
-        deletedPages.remove(pageId);
+        deletedPages.remove(pageKey);
 
         try (var in = Files.newInputStream(path)) {
-            var page = PageCompiler.parse(sourcePackId, language, pageId, in);
-            changedPages.put(pageId, page);
+            var page = PageCompiler.parse(sourcePackId, language, pageKey.pageId, in);
+            changedPages.put(pageKey, page);
         } catch (Exception e) {
             LOG.error("Failed to reload guidebook page {}", path, e);
         }
@@ -259,14 +264,27 @@ class GuideSourceWatcher implements AutoCloseable {
 
     // Only call while holding the lock!
     private synchronized void pageDeleted(Path path) {
-        var pageId = getPageId(path);
-        if (pageId == null) {
+        var pageKey = getPageLangKey(path);
+        if (pageKey == null) {
             return; // Probably not a page
         }
 
+        // If a language specific page is deleted, make it fall back to the default language page instead
+        var defaultLangPath = sourceFolder.resolve(pageKey.pageId().toString());
+        if (!defaultLangPath.equals(path)) {
+            try (var in = Files.newInputStream(defaultLangPath)) {
+                var page = PageCompiler.parse(sourcePackId, defaultLanguage, pageKey.pageId(), in);
+                changedPages.put(pageKey, page);
+                deletedPages.remove(pageKey);
+                return;
+            } catch (Exception e) {
+                LOG.error("Failed to load default language guidebook page {}", path, e);
+            }
+        }
+
         // If it was previously changed in the same change-set, remove the change
-        changedPages.remove(pageId);
-        deletedPages.add(pageId);
+        changedPages.remove(pageKey);
+        deletedPages.add(pageKey);
     }
 
     @Nullable
@@ -280,5 +298,19 @@ class GuideSourceWatcher implements AutoCloseable {
             return null;
         }
         return new ResourceLocation(namespace, relativePathStr);
+    }
+
+    @Nullable
+    private PageLangKey getPageLangKey(Path path) {
+        var pageId = getPageId(path);
+        if (pageId == null) {
+            return null;
+        }
+        var languages = LangUtil.getValidLanguages();
+        var lang = LangUtil.getLangFromPageId(pageId, languages);
+        if (lang != null) {
+            pageId = LangUtil.stripLangFromPageId(pageId, languages);
+        }
+        return new PageLangKey(lang, pageId);
     }
 }

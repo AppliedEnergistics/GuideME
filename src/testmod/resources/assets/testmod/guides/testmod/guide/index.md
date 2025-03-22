@@ -29,3 +29,23 @@ You may ~~need~~ a door!
 <GameScene zoom="8">
   <ImportStructure src="end_portal.nbt" />
 </GameScene>
+
+## Recipes
+
+<Row>
+    <RecipeFor id="minecraft:oak_planks" />
+    <RecipeFor id="minecraft:red_bed" />
+    <RecipeFor id="minecraft:stick" />
+    <RecipesFor id="minecraft:green_bed" />
+</Row>
+
+***
+
+<Row>
+  <BlockImage id="minecraft:oak_log" scale="4" />
+  <BlockImage id="minecraft:spruce_log" scale="4" />
+  <BlockImage id="minecraft:acacia_log" scale="4" />
+  <BlockImage id="minecraft:birch_log" scale="4" />
+  <BlockImage id="minecraft:jungle_log" scale="4" />
+  <BlockImage id="minecraft:mangrove_log" scale="4" />
+</Row>

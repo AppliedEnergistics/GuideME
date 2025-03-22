@@ -260,6 +260,7 @@ public interface RenderContext {
         var left = dest.x;
         var top = dest.y;
         pose.transformPosition(bounds.right(), bounds.bottom(), 0, dest);
+        guiGraphics().flush(); // Previously recorded draws should not use the scissor rect
         guiGraphics().enableScissor(
                 (int) left,
                 (int) top,
@@ -268,6 +269,7 @@ public interface RenderContext {
     }
 
     default void popScissor() {
+        guiGraphics().flush(); // The recorded draws must be flushed before the scissor rect is reset
         guiGraphics().disableScissor();
     }
 
