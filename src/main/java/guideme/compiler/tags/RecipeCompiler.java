@@ -35,12 +35,31 @@ public class RecipeCompiler extends BlockTagCompiler {
 
     @Override
     public Set<String> getTagNames() {
-        return Set.of("Recipe", "RecipeFor");
+        return Set.of("Recipe", "RecipeFor", "RecipesFor");
     }
 
     @Override
     protected void compile(PageCompiler compiler, LytBlockContainer parent, MdxJsxElementFields el) {
-        if ("RecipeFor".equals(el.name())) {
+        if ("RecipesFor".equals(el.name())) {
+            var itemAndId = MdxAttrs.getRequiredItemAndId(compiler, parent, el, "id");
+            if (itemAndId == null) {
+                return;
+            }
+
+            var item = itemAndId.getRight();
+            for (var recipe : recipeManager.getRecipes()) {
+                if (recipe.value().getResultItem(Platform.getClientRegistryAccess()).is(item)) {
+                    for (var mapping : getMappings(compiler)) {
+                        var block = mapping.tryCreate(recipe);
+                        if (block != null) {
+                            block.setSourceNode((MdAstNode) el);
+                            parent.append(block);
+                            break;
+                        }
+                    }
+                }
+            }
+        } else if ("RecipeFor".equals(el.name())) {
             var itemAndId = MdxAttrs.getRequiredItemAndId(compiler, parent, el, "id");
             if (itemAndId == null) {
                 return;

@@ -146,9 +146,19 @@ There are optional attributes:
 
 ### Recipes
 
-To show the recipes used to create a certain item, use the `<RecipeFor id="item_id" />` tag.
+To show the first recipe used to create a certain item, use the `<RecipeFor id="item_id" />` tag.
+
+To show all recipes used to create a certain item, use the `<RecipesFor id="item_id" />` tag.
 
 To show a specific recipe, use the `<Recipe id="recipe/id" />` tag.
+
+These tags can be wrapped in a `<Row></Row>` tag to have them automatically wrap and use less vertical space.
+
+:::note
+
+Custom recipe types from mods need special support. See [custom recipe types](../20-integration/recipe-types.md).
+
+:::
 
 ### Item Grids
 

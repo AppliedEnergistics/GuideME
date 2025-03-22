@@ -3,6 +3,16 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.1.6 (Minecraft 1.21.1)
+
+- Fix wrapping of content in `<Row />` elements.
+- Fix live-reload of translated pages in multi-language guides.
+- Add `<RecipesFor id="minecraft:oak_log" />` to show all recipes that result in a given item. Combine this with a `<Row></Row>` element
+  to get a wrapped list of recipes.
+- Fix handling of dragging a document element (i.e. the camera in game scenes), when the mouse was released on a
+  Minecraft UI element (such as the document navigation bar).
+- Fix drawing not being flushed properly before/after the scissor region changes when using RenderContext.
+
 ## 21.1.5 (Minecraft 1.21.1)
 
 - Disable the open guide hotkey from participating in building the creative menu search tree, which may have caused
