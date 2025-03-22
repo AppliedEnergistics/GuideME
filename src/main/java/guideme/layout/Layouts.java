@@ -34,28 +34,43 @@ public final class Layouts {
             int paddingLeft, int paddingTop, int paddingRight, int paddingBottom,
             int gap,
             AlignItems alignItems) {
-        // Margins have been applied outside
-        // Paddings need to be considered here
-        var innerX = x + paddingLeft;
-        var innerY = y + paddingTop;
-        var innerWidth = availableWidth - paddingLeft - paddingRight;
 
-        // Layout children vertically, without padding
-        LytBlock previousBlock = null;
-        var contentWidth = paddingLeft;
-        var contentHeight = paddingTop;
-        for (var child : children) {
-            innerY = offsetIntoContentArea(LytAxis.VERTICAL, innerY, previousBlock, child);
-            // Block width is the width available for the inner content area of the child
-            var blockWidth = Math.max(1, innerWidth - child.getMarginLeft() - child.getMarginRight());
-            var childBounds = child.layout(context, innerX + child.getMarginLeft(), innerY, blockWidth);
-            innerY += childBounds.height() + child.getMarginBottom() + gap;
-            contentWidth = Math.max(contentWidth, childBounds.right() - x);
-            contentHeight = Math.max(contentHeight, childBounds.bottom() - y);
-            previousBlock = child;
+        int contentWidth = 0;
+        int contentHeight = 0;
+        for (int iteration = 1; iteration <= 2; iteration++) {
+            // Margins have been applied outside
+            // Paddings need to be considered here
+            var innerX = x + paddingLeft;
+            var innerY = y + paddingTop;
+            var innerWidth = availableWidth - paddingLeft - paddingRight;
+
+            // Layout children vertically, without padding
+            LytBlock previousBlock = null;
+            contentWidth = paddingLeft;
+            contentHeight = paddingTop;
+            for (var child : children) {
+                innerY = offsetIntoContentArea(LytAxis.VERTICAL, innerY, previousBlock, child);
+                // Block width is the width available for the inner content area of the child
+                var blockWidth = Math.max(1, innerWidth - child.getMarginLeft() - child.getMarginRight());
+                var childBounds = child.layout(context, innerX + child.getMarginLeft(), innerY, blockWidth);
+                innerY += childBounds.height() + child.getMarginBottom() + gap;
+                contentWidth = Math.max(contentWidth, childBounds.right() - x);
+                contentHeight = Math.max(contentHeight, childBounds.bottom() - y);
+                previousBlock = child;
+            }
+
+            // If content width exceeds available space it means one of the children had a fixed size exceeding
+            // our available space. In that case, redo the layout again to give all other children that space we're
+            // going
+            // to use anyway
+            if (contentWidth > availableWidth) {
+                availableWidth = contentWidth;
+                continue;
+            }
+            break;
         }
 
-        if (fullWidth) {
+        if (fullWidth && contentWidth < availableWidth) {
             contentWidth = availableWidth;
         }
 
@@ -68,6 +83,7 @@ public final class Layouts {
                 contentHeight + paddingBottom);
     }
 
+    @Deprecated(forRemoval = true)
     public static LytRect horizontalLayout(
             LayoutContext context,
             List<LytBlock> children,
@@ -80,6 +96,26 @@ public final class Layouts {
                 gap, alignItems);
     }
 
+    @Deprecated(forRemoval = true)
+    public static LytRect horizontalLayout(
+            LayoutContext context,
+            List<LytBlock> children,
+            int x, int y, int availableWidth, boolean fullWidth,
+            int paddingLeft, int paddingTop, int paddingRight, int paddingBottom,
+            int gap,
+            AlignItems alignItems) {
+        return horizontalLayout(
+                context,
+                children,
+                x, y,
+                availableWidth,
+                fullWidth,
+                paddingLeft, paddingTop, paddingRight, paddingBottom,
+                gap,
+                alignItems,
+                true);
+    }
+
     /**
      * Lays out all children along the horizontal axis, and returns the bounding box of the content area.
      */
@@ -89,7 +125,8 @@ public final class Layouts {
             int x, int y, int availableWidth, boolean fullWidth,
             int paddingLeft, int paddingTop, int paddingRight, int paddingBottom,
             int gap,
-            AlignItems alignItems) {
+            AlignItems alignItems,
+            boolean wrap) {
         // Margins have been applied outside
         // Paddings need to be considered here
         var innerX = x + paddingLeft;
@@ -100,24 +137,37 @@ public final class Layouts {
         LytBlock previousBlock = null;
         var contentWidth = paddingLeft;
         var contentHeight = paddingTop;
-        for (var child : children) {
+        var maxContentWidth = contentWidth;
+
+        var itemsOnLine = 0;
+        for (int i = 0; i < children.size(); i++) {
+            var child = children.get(i);
             // Account for margins of the child, and margin collapsing
             innerX = offsetIntoContentArea(LytAxis.HORIZONTAL, innerX, previousBlock, child);
             var blockWidth = Math.max(1, innerWidth - contentWidth - child.getMarginLeft() - child.getMarginRight());
             var childBounds = child.layout(context, innerX, innerY + child.getMarginTop(), blockWidth);
-            innerX += childBounds.width() + child.getMarginRight() + gap;
-            contentWidth = Math.max(contentWidth, childBounds.right() - x);
-            contentHeight = Math.max(contentHeight, childBounds.bottom() - y);
-            previousBlock = child;
 
-            if (innerX > innerWidth) {
+            // Wrap, but not if we're the first item on the line
+            if (wrap && childBounds.right() + child.getMarginRight() > x + innerWidth && itemsOnLine > 0) {
                 innerX = x + paddingLeft;
                 innerY = y + contentHeight + gap;
+                previousBlock = null;
+                itemsOnLine = 0;
+                contentWidth = paddingLeft;
+                i--;
+                continue; // Redo on the new line
             }
+
+            innerX += childBounds.width() + child.getMarginRight() + gap;
+            contentWidth = Math.max(contentWidth, childBounds.right() - x);
+            maxContentWidth = Math.max(maxContentWidth, contentWidth);
+            contentHeight = Math.max(contentHeight, childBounds.bottom() - y);
+            previousBlock = child;
+            itemsOnLine++;
         }
 
-        if (fullWidth) {
-            contentWidth = availableWidth;
+        if (fullWidth && maxContentWidth < availableWidth) {
+            maxContentWidth = availableWidth;
         }
 
         // Align on the orthogonal axis
@@ -125,7 +175,7 @@ public final class Layouts {
 
         return new LytRect(
                 x, y,
-                contentWidth + paddingRight,
+                maxContentWidth + paddingRight,
                 contentHeight + paddingBottom);
     }
 

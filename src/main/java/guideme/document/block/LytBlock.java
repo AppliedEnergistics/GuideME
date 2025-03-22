@@ -48,7 +48,7 @@ public abstract class LytBlock extends LytNode {
 
     public final LytRect layout(LayoutContext context, int x, int y, int availableWidth) {
         bounds = computeLayout(context, x, y, availableWidth);
-        if (fullWidth) {
+        if (fullWidth && bounds.width() < availableWidth) {
             bounds = bounds.withWidth(availableWidth);
         }
         return bounds;
