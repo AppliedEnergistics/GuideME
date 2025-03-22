@@ -56,7 +56,7 @@ public class RecipeCompiler extends BlockTagCompiler {
 
             var item = itemAndId.getRight();
             for (var recipe : recipeManager.getRecipes()) {
-                if (recipe.value().getResultItem(Platform.getClientRegistryAccess()).is(item)) {
+                if (recipe.getResultItem(Platform.getClientRegistryAccess()).is(item)) {
                     for (var mapping : getMappings(compiler)) {
                         var block = mapping.tryCreate(recipe);
                         if (block != null) {

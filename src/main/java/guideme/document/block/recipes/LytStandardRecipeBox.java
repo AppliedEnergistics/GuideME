@@ -200,6 +200,7 @@ public class LytStandardRecipeBox<T extends Recipe<?>> extends LytVBox implement
 
             var titleRow = new LytHBox();
             titleRow.setAlignItems(AlignItems.CENTER);
+            titleRow.setWrap(false);
             if (icon != null) {
                 titleRow.append(icon);
             }
@@ -220,6 +221,7 @@ public class LytStandardRecipeBox<T extends Recipe<?>> extends LytVBox implement
                 var gridRow = new LytHBox();
                 gridRow.setGap(2);
                 gridRow.setAlignItems(AlignItems.CENTER);
+                gridRow.setWrap(false);
 
                 for (var block : leftDecoration) {
                     gridRow.append(block);
