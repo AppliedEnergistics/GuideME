@@ -41,24 +41,24 @@ public class RecipeCompiler extends BlockTagCompiler {
     @Override
     protected void compile(PageCompiler compiler, LytBlockContainer parent, MdxJsxElementFields el) {
         if ("RecipesFor".equals(el.name())) {
-            var itemAndId = MdxAttrs.getRequiredItemAndId(compiler, parent, el, "id");
-            if (itemAndId == null) {
-                return;
-            }
-
-            var item = itemAndId.getRight();
-            for (var recipe : recipeManager.getRecipes()) {
-                if (recipe.value().getResultItem(Platform.getClientRegistryAccess()).is(item)) {
-                    for (var mapping : getMappings(compiler)) {
-                        var block = mapping.tryCreate(recipe);
-                        if (block != null) {
-                            block.setSourceNode((MdAstNode) el);
-                            parent.append(block);
-                            break;
-                        }
-                    }
-                }
-            }
+            // TODO 1.21.4 var itemAndId = MdxAttrs.getRequiredItemAndId(compiler, parent, el, "id");
+            // TODO 1.21.4 if (itemAndId == null) {
+            // TODO 1.21.4 return;
+            // TODO 1.21.4 }
+// TODO 1.21.4
+            // TODO 1.21.4 var item = itemAndId.getRight();
+            // TODO 1.21.4 for (var recipe : recipeManager.getRecipes()) {
+            // TODO 1.21.4 if (recipe.value().getResultItem(Platform.getClientRegistryAccess()).is(item)) {
+            // TODO 1.21.4 for (var mapping : getMappings(compiler)) {
+            // TODO 1.21.4 var block = mapping.tryCreate(recipe);
+            // TODO 1.21.4 if (block != null) {
+            // TODO 1.21.4 block.setSourceNode((MdAstNode) el);
+            // TODO 1.21.4 parent.append(block);
+            // TODO 1.21.4 break;
+            // TODO 1.21.4 }
+            // TODO 1.21.4 }
+            // TODO 1.21.4 }
+            // TODO 1.21.4 }
         } else if ("RecipeFor".equals(el.name())) {
             var itemAndId = MdxAttrs.getRequiredItemAndId(compiler, parent, el, "id");
             if (itemAndId == null) {
