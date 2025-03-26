@@ -2,6 +2,8 @@ package guideme.scene.export;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -42,7 +44,7 @@ import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.GZIPOutputStream;
-import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.joml.Matrix4f;
@@ -287,31 +289,29 @@ public class SceneExporter {
 
     private int writeMaterial(RenderType type, FlatBufferBuilder builder) {
 
-        var state = ((RenderType.CompositeRenderType) type).state();
+        var state = ((RenderType.CompositeRenderType) type).state;
+        var pipeline = type.getRenderPipeline();
 
-        var shaderNameOffset = 0;
-        if (state.shaderState.shader.isPresent()) {
-            shaderNameOffset = builder.createSharedString(state.shaderState.shader.get().configId().toString());
-        }
+        var shaderNameOffset = builder.createSharedString(pipeline.getLocation().toString());
 
         var nameOffset = builder.createSharedString(type.name);
 
-        var disableCulling = state.cullState == RenderStateShard.NO_CULL;
+        var disableCulling = !pipeline.isCull();
 
         // Handle transparency
-        var transparencyState = state.transparencyState;
+        var transparencyState = pipeline.getBlendFunction().orElse(null);
         int transparency;
-        if (transparencyState == RenderStateShard.NO_TRANSPARENCY) {
+        if (transparencyState == null) {
             transparency = ExpTransparency.DISABLED;
-        } else if (transparencyState == RenderStateShard.ADDITIVE_TRANSPARENCY) {
+        } else if (transparencyState.equals(BlendFunction.ADDITIVE)) {
             transparency = ExpTransparency.ADDITIVE;
-        } else if (transparencyState == RenderStateShard.LIGHTNING_TRANSPARENCY) {
+        } else if (transparencyState.equals(BlendFunction.LIGHTNING)) {
             transparency = ExpTransparency.LIGHTNING;
-        } else if (transparencyState == RenderStateShard.GLINT_TRANSPARENCY) {
+        } else if (transparencyState.equals(BlendFunction.GLINT)) {
             transparency = ExpTransparency.GLINT;
-        } else if (transparencyState == RenderStateShard.CRUMBLING_TRANSPARENCY) {
+        } else if (transparencyState.equals(RenderPipelines.CRUMBLING.getBlendFunction().orElse(null))) {
             transparency = ExpTransparency.CRUMBLING;
-        } else if (transparencyState == RenderStateShard.TRANSLUCENT_TRANSPARENCY) {
+        } else if (transparencyState.equals(BlendFunction.TRANSLUCENT)) {
             transparency = ExpTransparency.TRANSLUCENT;
         } else {
             LOG.warn("Cannot handle transparency state {} of render type {}", transparencyState, type);
@@ -320,14 +320,14 @@ public class SceneExporter {
 
         // Handle depth-testing
         int depthTest;
-        var depthTestShard = state.depthTestState;
-        if (depthTestShard == RenderStateShard.NO_DEPTH_TEST) {
+        var depthTestShard = pipeline.getDepthTestFunction();
+        if (depthTestShard == DepthTestFunction.NO_DEPTH_TEST) {
             depthTest = ExpDepthTest.DISABLED;
-        } else if (depthTestShard == RenderStateShard.EQUAL_DEPTH_TEST) {
+        } else if (depthTestShard == DepthTestFunction.EQUAL_DEPTH_TEST) {
             depthTest = ExpDepthTest.EQUAL;
-        } else if (depthTestShard == RenderStateShard.LEQUAL_DEPTH_TEST) {
+        } else if (depthTestShard == DepthTestFunction.LEQUAL_DEPTH_TEST) {
             depthTest = ExpDepthTest.LEQUAL;
-        } else if (depthTestShard == RenderStateShard.GREATER_DEPTH_TEST) {
+        } else if (depthTestShard == DepthTestFunction.GREATER_DEPTH_TEST) {
             depthTest = ExpDepthTest.GREATER;
         } else {
             LOG.warn("Cannot handle depth-test state {} of render type {}", depthTestShard, type);
@@ -336,7 +336,7 @@ public class SceneExporter {
 
         var samplersOffset = 0;
         var samplers = RenderTypeIntrospection.getSamplers(type);
-        if (samplers.size() > 0) {
+        if (!samplers.isEmpty()) {
             var sampler = samplers.get(0);
 
             var texturePath = resourceExporter.exportTexture(sampler.texture());

@@ -2,7 +2,6 @@ package guideme.internal.siteexport;
 
 import com.google.common.io.MoreFiles;
 import com.google.common.io.RecursiveDeleteOption;
-import com.mojang.blaze3d.platform.NativeImage;
 import guideme.Guide;
 import guideme.GuidePage;
 import guideme.compiler.PageCompiler;
@@ -26,19 +25,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.IntUnaryOperator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DetectedVersion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -54,7 +55,6 @@ import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.SmithingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.StonecutterRecipeDisplay;
-import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
@@ -66,7 +66,6 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,9 +131,9 @@ public class SiteExporter implements ResourceExporter {
                     .append(Component.literal("[" + outputFolder.getFileName().toString() + "]")
                             .withStyle(style -> style
                                     .withClickEvent(
-                                            new ClickEvent(ClickEvent.Action.OPEN_FILE, outputFolder.toString()))
-                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                            Component.literal("Click to open export folder")))
+                                            new ClickEvent.OpenFile(outputFolder.toString()))
+                                    .withHoverEvent(
+                                            new HoverEvent.ShowText(Component.literal("Click to open export folder")))
                                     .applyFormats(ChatFormatting.UNDERLINE, ChatFormatting.GREEN))));
         } catch (Exception e) {
             e.printStackTrace();
@@ -434,14 +433,12 @@ public class SiteExporter implements ResourceExporter {
                 client.getItemModelResolver().appendItemLayers(renderState, stack, ItemDisplayContext.GUI, null, null,
                         0);
 
-                var models = new HashSet<BakedModel>();
+                var quadLists = new HashSet<List<BakedQuad>>();
                 for (var layer : renderState.layers) {
-                    if (layer.model != null) {
-                        models.add(layer.model);
-                    }
+                    quadLists.add(layer.prepareQuadList());
                 }
 
-                var sprites = guessSprites(models);
+                var sprites = guessSprites(quadLists);
 
                 var iconPath = renderAndWrite(renderer, baseName, () -> {
                     guiGraphics.renderItem(stack, 0, 0);
@@ -454,13 +451,12 @@ public class SiteExporter implements ResourceExporter {
         }
     }
 
-    private Set<TextureAtlasSprite> guessSprites(Collection<BakedModel> models) {
+    private Set<TextureAtlasSprite> guessSprites(Collection<List<BakedQuad>> quadLists) {
         var result = Collections.newSetFromMap(new IdentityHashMap<TextureAtlasSprite, Boolean>());
-        var randomSource = new SingleThreadedRandomSource(0);
 
-        for (var model : models) {
-            for (var quad : model.getQuads(null, null, randomSource)) {
-                result.add(quad.getSprite());
+        for (var quadList : quadLists) {
+            for (var quad : quadList) {
+                result.add(quad.sprite());
             }
         }
 
@@ -561,17 +557,9 @@ public class SiteExporter implements ResourceExporter {
             }
         }
 
-        texture.bind();
-        int w, h;
-        int[] intResult = new int[1];
-        GL11.glGetTexLevelParameteriv(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH, intResult);
-        w = intResult[0];
-        GL11.glGetTexLevelParameteriv(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT, intResult);
-        h = intResult[0];
-
         byte[] imageContent;
-        try (var nativeImage = new NativeImage(w, h, false)) {
-            nativeImage.downloadTexture(0, false);
+        try (var nativeImage = TextureDownloader.downloadTexture(texture.getTexture(), 0,
+                IntUnaryOperator.identity())) {
             imageContent = Platform.exportAsPng(nativeImage);
         } catch (IOException e) {
             throw new RuntimeException(e);

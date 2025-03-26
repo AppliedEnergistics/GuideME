@@ -1,21 +1,22 @@
 package guideme.internal.item;
 
 import guideme.internal.GuideRegistry;
+import java.util.List;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.item.BlockModelWrapper;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 public class GuideItemDispatchModel implements ItemModel {
-    private final BakedModel baseModel;
+    private final ItemModel baseModel;
     private final BakingContext bakingContext;
 
-    public GuideItemDispatchModel(BakedModel baseModel,
+    public GuideItemDispatchModel(ItemModel baseModel,
             BakingContext bakingContext) {
         this.baseModel = baseModel;
         this.bakingContext = bakingContext;
@@ -29,16 +30,18 @@ public class GuideItemDispatchModel implements ItemModel {
             @Nullable ClientLevel level,
             @Nullable LivingEntity entity,
             int seed) {
-        BakedModel model = baseModel;
+
+        ItemModel itemModel = baseModel;
 
         var guideId = GuideItem.getGuideId(stack);
         if (guideId != null) {
             var guide = GuideRegistry.getById(guideId);
             if (guide != null && guide.getItemSettings().itemModel().isPresent()) {
-                model = bakingContext.bake(guide.getItemSettings().itemModel().get());
+                itemModel = new BlockModelWrapper.Unbaked(guide.getItemSettings().itemModel().get(), List.of())
+                        .bake(bakingContext);
             }
         }
 
-        renderState.newLayer().setupBlockModel(model, model.getRenderType(stack));
+        itemModel.update(renderState, stack, itemModelResolver, displayContext, level, entity, seed);
     }
 }

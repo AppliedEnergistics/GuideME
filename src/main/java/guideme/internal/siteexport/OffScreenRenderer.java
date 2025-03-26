@@ -2,16 +2,22 @@ package guideme.internal.siteexport;
 
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import guideme.internal.util.Platform;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.function.IntUnaryOperator;
 import java.util.stream.Collectors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogParameters;
@@ -22,38 +28,35 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.lwjgl.opengl.GL12;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class OffScreenRenderer implements AutoCloseable {
-    private static final Logger LOG = LoggerFactory.getLogger(OffScreenRenderer.class);
-
     private final NativeImage nativeImage;
     private final TextureTarget fb;
     private final int width;
     private final int height;
+    private final GpuDevice device;
+    private final CommandEncoder commandEncoder;
+    private final GpuTexture colorTexture;
+    private final GpuTexture depthTexture;
 
     public OffScreenRenderer(int width, int height) {
         this.width = width;
         this.height = height;
-        RenderSystem.viewport(0, 0, width, height);
-        nativeImage = new NativeImage(width, height, true);
-        fb = new TextureTarget(width, height, true /* with depth */, false /* with stencil */);
-        fb.setClearColor(0, 0, 0, 0);
-        fb.clear();
+        nativeImage = new NativeImage(width, height, false);
+        fb = new TextureTarget("GuideME OSR", width, height, true /* with depth */, false /* with stencil */);
+
+        device = RenderSystem.getDevice();
+        commandEncoder = device.createCommandEncoder();
+
+        colorTexture = Objects.requireNonNull(fb.getColorTexture(), "colorTexture");
+        depthTexture = Objects.requireNonNull(fb.getDepthTexture(), "depthTexture");
+        commandEncoder.createRenderPass(colorTexture, OptionalInt.of(0), depthTexture, OptionalDouble.of(1.0)).close();
     }
 
     @Override
     public void close() {
         nativeImage.close();
         fb.destroyBuffers();
-
-        var minecraft = Minecraft.getInstance();
-        if (minecraft != null) {
-            var window = minecraft.getWindow();
-            RenderSystem.viewport(0, 0, window.getWidth(), window.getHeight());
-        }
     }
 
     public byte[] captureAsPng(Runnable r) {
@@ -103,8 +106,8 @@ public class OffScreenRenderer implements AutoCloseable {
                                 Map.Entry::getKey,
                                 e -> e.getValue().stream().map(TextureAtlasSprite::createTicker).toList()));
         for (var sprite : animatedSprites) {
-            textureManager.getTexture(sprite.atlasLocation()).bind();
-            sprite.uploadFirstFrame();
+            var atlas = textureManager.getTexture(sprite.atlasLocation());
+            sprite.uploadFirstFrame(atlas.getTexture());
         }
 
         int width = nativeImage.getWidth();
@@ -114,9 +117,9 @@ public class OffScreenRenderer implements AutoCloseable {
             for (var i = 0; i < maxTime; i++) {
                 // Bind all animated textures to their corresponding frames
                 for (var entry : tickers.entrySet()) {
-                    textureManager.getTexture(entry.getKey()).bind();
+                    var texture = textureManager.getTexture(entry.getKey());
                     for (var ticker : entry.getValue()) {
-                        ticker.tickAndUpload();
+                        ticker.tickAndUpload(texture.getTexture());
                     }
                 }
 
@@ -130,16 +133,12 @@ public class OffScreenRenderer implements AutoCloseable {
     }
 
     private void renderToBuffer(Runnable r) {
-        fb.bindWrite(true);
-        GlStateManager._clear(GL12.GL_COLOR_BUFFER_BIT | GL12.GL_DEPTH_BUFFER_BIT);
-        r.run();
-        fb.unbindWrite();
+        try (var renderPass = commandEncoder.createRenderPass(colorTexture, OptionalInt.of(0), depthTexture,
+                OptionalDouble.of(1.0))) {
+            r.run();
+        }
 
-        // Load the framebuffer back into CPU memory
-        fb.bindRead();
-        nativeImage.downloadTexture(0, false);
-        nativeImage.flipY();
-        fb.unbindRead();
+        TextureDownloader.downloadTexture(colorTexture, 0, IntUnaryOperator.identity(), nativeImage);
     }
 
     public void setupItemRendering() {

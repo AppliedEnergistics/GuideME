@@ -1,13 +1,14 @@
 package guideme.internal;
 
 import guideme.PageAnchor;
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import org.jetbrains.annotations.Nullable;
 
 public interface GuideMEProxy {
@@ -15,7 +16,8 @@ public interface GuideMEProxy {
         return GuideME.PROXY;
     }
 
-    default void addGuideTooltip(ResourceLocation guideId, Item.TooltipContext context, List<Component> lines,
+    default void addGuideTooltip(ResourceLocation guideId, Item.TooltipContext context, TooltipDisplay tooltipDisplay,
+            Consumer<Component> lineConsumer,
             TooltipFlag tooltipFlag) {
     }
 

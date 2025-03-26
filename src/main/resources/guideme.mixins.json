@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8.3",
+  "package": "guideme.hooks.mixins",
+  "compatibilityLevel": "JAVA_11",
+  "client": [
+    "GlCommandEncoderMixin"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

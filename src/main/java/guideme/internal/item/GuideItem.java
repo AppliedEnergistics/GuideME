@@ -2,7 +2,7 @@ package guideme.internal.item;
 
 import guideme.internal.GuideME;
 import guideme.internal.GuideMEProxy;
-import java.util.List;
+import java.util.function.Consumer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,14 +38,14 @@ public class GuideItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines,
-            TooltipFlag tooltipFlag) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay,
+            Consumer<Component> appendLine, TooltipFlag tooltipFlag) {
         var guideId = getGuideId(stack);
         if (guideId != null) {
             GuideMEProxy.instance().addGuideTooltip(
                     guideId,
-                    context,
-                    lines,
+                    context, tooltipDisplay,
+                    appendLine,
                     tooltipFlag);
         }
     }

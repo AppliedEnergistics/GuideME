@@ -1,14 +1,12 @@
 package guideme.internal.util;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import guideme.document.LytRect;
-import net.minecraft.client.renderer.CoreShaders;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
 
 /**
@@ -19,9 +17,6 @@ public final class DashedRectangle {
     }
 
     public static void render(PoseStack stack, LytRect bounds, DashPattern pattern, float z) {
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder builder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
@@ -38,8 +33,7 @@ public final class DashedRectangle {
         buildVerticalDashedLine(builder, stack, t, bounds.right() - pattern.width(), bounds.y(), bounds.bottom(), z,
                 pattern, false);
 
-        BufferUploader.drawWithShader(builder.buildOrThrow());
-        RenderSystem.disableBlend();
+        RenderType.gui().draw(builder.buildOrThrow());
     }
 
     private static void buildHorizontalDashedLine(BufferBuilder builder, PoseStack stack,

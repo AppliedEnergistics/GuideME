@@ -4,7 +4,7 @@ import guideme.Guide;
 import guideme.Guides;
 import guideme.PageAnchor;
 import guideme.compiler.ParsedGuidePage;
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -13,19 +13,21 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import org.jetbrains.annotations.Nullable;
 
 class GuideMEClientProxy extends GuideMEServerProxy {
     @Override
-    public void addGuideTooltip(ResourceLocation guideId, Item.TooltipContext context, List<Component> lines,
+    public void addGuideTooltip(ResourceLocation guideId, Item.TooltipContext context, TooltipDisplay tooltipDisplay,
+            Consumer<Component> lineConsumer,
             TooltipFlag tooltipFlag) {
         var guide = GuideRegistry.getById(guideId);
         if (guide == null) {
-            lines.add(GuidebookText.ItemInvalidGuideId.text().withStyle(ChatFormatting.RED));
+            lineConsumer.accept(GuidebookText.ItemInvalidGuideId.text().withStyle(ChatFormatting.RED));
             return;
         }
 
-        lines.addAll(guide.getItemSettings().tooltipLines());
+        guide.getItemSettings().tooltipLines().forEach(lineConsumer);
     }
 
     @Override

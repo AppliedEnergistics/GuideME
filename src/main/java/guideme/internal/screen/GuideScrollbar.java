@@ -1,14 +1,9 @@
 package guideme.internal.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.CoreShaders;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.joml.Vector3f;
@@ -54,17 +49,16 @@ public class GuideScrollbar extends AbstractWidget {
         var max = new Vector3f();
         pose.transformPosition(right, bottom, 0, max);
 
-        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
-        var builder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        builder.addVertex(min.x, max.y, 0.0f).setColor(128, 128, 128, 255);
-        builder.addVertex(max.x, max.y, 0.0f).setColor(128, 128, 128, 255);
-        builder.addVertex(max.x, min.y, 0.0f).setColor(128, 128, 128, 255);
-        builder.addVertex(min.x, min.y, 0.0f).setColor(128, 128, 128, 255);
-        builder.addVertex(min.x, max.y - 1, 0.0f).setColor(192, 192, 192, 255);
-        builder.addVertex(max.x - 1, max.y - 1, 0.0f).setColor(192, 192, 192, 255);
-        builder.addVertex(max.x - 1, min.y, 0.0f).setColor(192, 192, 192, 255);
-        builder.addVertex(min.x, min.y, 0.0f).setColor(192, 192, 192, 255);
-        BufferUploader.drawWithShader(builder.buildOrThrow());
+        var buffer = guiGraphics.bufferSource.getBuffer(RenderType.gui());
+        buffer.addVertex(min.x, max.y, 0.0f).setColor(128, 128, 128, 255);
+        buffer.addVertex(max.x, max.y, 0.0f).setColor(128, 128, 128, 255);
+        buffer.addVertex(max.x, min.y, 0.0f).setColor(128, 128, 128, 255);
+        buffer.addVertex(min.x, min.y, 0.0f).setColor(128, 128, 128, 255);
+        buffer.addVertex(min.x, max.y - 1, 0.0f).setColor(192, 192, 192, 255);
+        buffer.addVertex(max.x - 1, max.y - 1, 0.0f).setColor(192, 192, 192, 255);
+        buffer.addVertex(max.x - 1, min.y, 0.0f).setColor(192, 192, 192, 255);
+        buffer.addVertex(min.x, min.y, 0.0f).setColor(192, 192, 192, 255);
+        guiGraphics.bufferSource.endBatch(RenderType.gui());
     }
 
     /**

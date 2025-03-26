@@ -1,7 +1,8 @@
 package guideme.scene.annotation;
 
-import static com.mojang.blaze3d.platform.GlConst.GL_DEPTH_BUFFER_BIT;
-
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -12,6 +13,7 @@ import guideme.internal.GuideME;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -22,20 +24,20 @@ import org.joml.Vector3f;
 
 public final class InWorldAnnotationRenderer {
 
+    public static final RenderPipeline OCCLUDED_PIPELINE = RenderPipelines.TRANSLUCENT.toBuilder()
+            .withLocation(GuideME.makeId("pipeline/annotation_occluded"))
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .withDepthTestFunction(DepthTestFunction.GREATER_DEPTH_TEST)
+            .withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS)
+            .build();
+
     private static final RenderType OCCLUDED = RenderType.create(
-            "annotation_occluded",
-            DefaultVertexFormat.BLOCK,
-            VertexFormat.Mode.QUADS,
-            0x100000,
-            false,
-            true,
+            "guideme_annotation_occluded",
+            0x1000,
+            OCCLUDED_PIPELINE,
             RenderType.CompositeState.builder()
                     .setLightmapState(RenderType.LIGHTMAP)
-                    .setShaderState(RenderType.RENDERTYPE_TRANSLUCENT_SHADER)
                     .setTextureState(RenderStateShard.BLOCK_SHEET_MIPPED)
-                    .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
-                    .setDepthTestState(RenderStateShard.GREATER_DEPTH_TEST)
-                    .setWriteMaskState(RenderStateShard.COLOR_WRITE)
                     .createCompositeState(false));
 
     private InWorldAnnotationRenderer() {
@@ -84,7 +86,8 @@ public final class InWorldAnnotationRenderer {
 
         for (var pass = 1; pass <= 2; pass++) {
             if (pass == 2) {
-                RenderSystem.clear(GL_DEPTH_BUFFER_BIT);
+                RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(
+                        Minecraft.getInstance().getMainRenderTarget().getDepthTexture(), 1.0);
             }
 
             var consumer = buffers.getBuffer(RenderType.translucent());

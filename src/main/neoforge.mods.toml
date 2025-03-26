@@ -4,6 +4,9 @@ logoFile = "logo.png"
 authors = "shartte"
 license = "See GitHub repository for details"
 
+[[mixins]]
+config="guideme.mixins.json"
+
 [[mods]]
 modId = "guideme"
 version = "${version}"

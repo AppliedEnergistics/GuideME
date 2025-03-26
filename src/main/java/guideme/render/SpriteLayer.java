@@ -2,13 +2,12 @@ package guideme.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.CoreShaders;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.resources.ResourceLocation;
 
@@ -204,15 +203,11 @@ final class SpriteLayer {
                 return;
             }
 
-            RenderSystem.enableBlend();
-            RenderSystem.enableDepthTest();
-            RenderSystem.setShaderTexture(0, atlasLocation);
-            RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
             var modelViewStack = RenderSystem.getModelViewStack();
             modelViewStack.pushMatrix();
             modelViewStack.mul(poseStack.last().pose());
             modelViewStack.translate(x, y, z);
-            BufferUploader.drawWithShader(meshData);
+            RenderType.guiTextured(atlasLocation).draw(meshData);
             modelViewStack.popMatrix();
         }
     }

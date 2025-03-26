@@ -13,6 +13,7 @@ import guideme.internal.network.RequestManager;
 import guideme.internal.screen.GlobalInMemoryHistory;
 import guideme.internal.screen.GuideNavigation;
 import guideme.internal.search.GuideSearch;
+import guideme.internal.util.Blitter;
 import guideme.render.GuiAssets;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
@@ -33,6 +34,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 import net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
@@ -69,6 +71,7 @@ public class GuideMEClient {
         modBus.addListener(this::gatherData);
         modBus.addListener(this::registerHotkeys);
         modBus.addListener(this::registerItemModel);
+        modBus.addListener(this::registerRenderPipelines);
 
         NeoForge.EVENT_BUS.addListener(this::registerClientCommands);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
@@ -88,6 +91,10 @@ public class GuideMEClient {
         GuideOnStartup.init(modBus);
 
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+    }
+
+    private void registerRenderPipelines(RegisterRenderPipelinesEvent event) {
+        event.registerPipeline(Blitter.GUI_TEXTURED_OPAQUE);
     }
 
     private void registerItemModel(RegisterItemModelsEvent event) {

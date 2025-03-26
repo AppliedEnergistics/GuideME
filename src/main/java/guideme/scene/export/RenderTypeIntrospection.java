@@ -18,7 +18,7 @@ final class RenderTypeIntrospection {
             return List.of();
         }
 
-        var state = compositeRenderType.state();
+        var state = compositeRenderType.state;
         if (state.textureState instanceof RenderStateShard.TextureStateShard textureShard) {
             if (textureShard.texture.isPresent()) {
                 var texture = textureShard.texture.get();

@@ -60,8 +60,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.ticks.LevelTickAccess;
 import net.minecraft.world.ticks.TickPriority;
-import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.common.world.AuxiliaryLightManager;
+import net.neoforged.neoforge.model.data.ModelData;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -164,19 +164,14 @@ class FakeForwardingServerLevel implements ServerLevelAccessor {
     }
 
     @Override
-    public void blockUpdated(BlockPos pos, Block block) {
-        delegate.blockUpdated(pos, block);
+    public void playSound(@Nullable Entity p_393651_, BlockPos p_250192_, SoundEvent p_249887_, SoundSource p_250593_) {
+        delegate.playSound(p_393651_, p_250192_, p_249887_, p_250593_);
     }
 
     @Override
-    public void playSound(@Nullable Player player, BlockPos pos, SoundEvent sound, SoundSource source) {
-        delegate.playSound(player, pos, sound, source);
-    }
-
-    @Override
-    public void playSound(@Nullable Player player, BlockPos pos, SoundEvent sound, SoundSource source, float volume,
-            float pitch) {
-        delegate.playSound(player, pos, sound, source, volume, pitch);
+    public void playSound(@Nullable Entity p_393763_, BlockPos p_46776_, SoundEvent p_46777_, SoundSource p_46778_,
+            float p_46779_, float p_46780_) {
+        delegate.playSound(p_393763_, p_46776_, p_46777_, p_46778_, p_46779_, p_46780_);
     }
 
     @Override
@@ -186,8 +181,8 @@ class FakeForwardingServerLevel implements ServerLevelAccessor {
     }
 
     @Override
-    public void levelEvent(@Nullable Player player, int type, BlockPos pos, int data) {
-        delegate.levelEvent(player, type, pos, data);
+    public void levelEvent(@Nullable Entity entity, int type, BlockPos pos, int data) {
+        delegate.levelEvent(entity, type, pos, data);
     }
 
     @Override

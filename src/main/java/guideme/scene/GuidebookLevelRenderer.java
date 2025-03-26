@@ -1,7 +1,6 @@
 package guideme.scene;
 
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -27,8 +26,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
@@ -52,8 +51,6 @@ public class GuidebookLevelRenderer {
             LightDarkMode lightDarkMode) {
         lightmap.update(level);
 
-        RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT);
-
         level.onRenderFrame();
 
         RenderSystem.setShaderGameTime(level.getGameTime(), level.getPartialTick());
@@ -62,7 +59,6 @@ public class GuidebookLevelRenderer {
         render(level, cameraSettings, buffers, annotations, lightDarkMode);
         buffers.endBatch();
 
-        RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT);
     }
 
     public void render(GuidebookLevel level,
@@ -166,27 +162,20 @@ public class GuidebookLevelRenderer {
             }
 
             if (blockState.getRenderShape() != RenderShape.INVISIBLE) {
-                var be = level.getBlockEntity(pos);
-                ModelData modelData = ModelData.EMPTY;
-                if (be != null) {
-                    modelData = be.getModelData();
-                }
-
                 var model = blockRenderDispatcher.getBlockModel(blockState);
-                modelData = model.getModelData(level, pos, blockState, modelData);
-                var renderTypes = model.getRenderTypes(blockState, randomSource, modelData);
 
-                for (var renderType : renderTypes) {
-                    if (renderType != RenderType.translucent() || translucent) {
-                        var bufferBuilder = buffers.getBuffer(renderType);
-
-                        poseStack.pushPose();
-                        poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
-                        blockRenderDispatcher.renderBatched(blockState, pos, level, poseStack, bufferBuilder, true,
-                                randomSource, modelData, renderType);
-                        poseStack.popPose();
-                    }
+                var modelParts = model.collectParts(level, pos, blockState, randomSource);
+                if (!translucent) {
+                    modelParts.removeIf(part -> {
+                        return part.getRenderType(blockState).getRenderPipeline().getBlendFunction().isPresent();
+                    });
                 }
+
+                poseStack.pushPose();
+                poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
+                blockRenderDispatcher.renderBatched(blockState, pos, level, poseStack, buffers::getBuffer, true,
+                        modelParts);
+                poseStack.popPose();
             }
         });
     }
@@ -229,7 +218,8 @@ public class GuidebookLevelRenderer {
             stack.translate(pos.getX(), pos.getY(), pos.getZ());
 
             int packedLight = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos());
-            renderer.render(blockEntity, partialTicks, stack, buffers, packedLight, OverlayTexture.NO_OVERLAY);
+            renderer.render(blockEntity, partialTicks, stack, buffers, packedLight, OverlayTexture.NO_OVERLAY,
+                    Vec3.ZERO);
             stack.popPose();
         }
     }

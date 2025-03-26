@@ -1,11 +1,11 @@
 package guideme.compiler.tags;
 
-import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.compiler.PageCompiler;
 import guideme.document.LytErrorSink;
+import guideme.internal.util.Platform;
 import guideme.libs.mdast.mdx.model.MdxJsxAttribute;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import java.util.regex.Pattern;
@@ -13,7 +13,9 @@ import net.minecraft.ResourceLocationException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.StringRepresentable;
@@ -67,7 +69,8 @@ public final class MdxAttrs {
         }
 
         try {
-            return new TagParser(new StringReader(nbtString)).readStruct();
+            var tagParser = TagParser.create(RegistryOps.create(NbtOps.INSTANCE, Platform.getClientRegistryAccess()));
+            return (CompoundTag) tagParser.parseFully(nbtString);
         } catch (CommandSyntaxException e) {
             errorSink.appendError(compiler, e.getMessage(), el);
             return defaultValue;

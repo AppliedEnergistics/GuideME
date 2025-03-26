@@ -1,10 +1,5 @@
 package guideme.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import guideme.color.ColorValue;
 import guideme.color.LightDarkMode;
 import guideme.document.LytRect;
@@ -13,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.CoreShaders;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix4f;
@@ -55,53 +50,46 @@ public final class SimpleRenderContext implements RenderContext {
     @Override
     public void fillRect(LytRect rect, ColorValue topLeft, ColorValue topRight, ColorValue bottomRight,
             ColorValue bottomLeft) {
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
-        var builder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+
+        var buffers = beginBatch();
+        var buffer = buffers.getBuffer(RenderType.gui());
         var matrix = poseStack().last().pose();
         final int z = 0;
-        builder.addVertex(matrix, rect.right(), rect.y(), z).setColor(resolveColor(topRight));
-        builder.addVertex(matrix, rect.x(), rect.y(), z).setColor(resolveColor(topLeft));
-        builder.addVertex(matrix, rect.x(), rect.bottom(), z).setColor(resolveColor(bottomLeft));
-        builder.addVertex(matrix, rect.right(), rect.bottom(), z).setColor(resolveColor(bottomRight));
-        BufferUploader.drawWithShader(builder.buildOrThrow());
-        RenderSystem.disableBlend();
+        buffer.addVertex(matrix, rect.right(), rect.y(), z).setColor(resolveColor(topRight));
+        buffer.addVertex(matrix, rect.x(), rect.y(), z).setColor(resolveColor(topLeft));
+        buffer.addVertex(matrix, rect.x(), rect.bottom(), z).setColor(resolveColor(bottomLeft));
+        buffer.addVertex(matrix, rect.right(), rect.bottom(), z).setColor(resolveColor(bottomRight));
+        buffers.endBatch(RenderType.gui());
     }
 
     @Override
-    public void fillTexturedRect(LytRect rect, AbstractTexture texture, ColorValue topLeft, ColorValue topRight,
+    public void fillTexturedRect(LytRect rect, ResourceLocation textureId, ColorValue topLeft, ColorValue topRight,
             ColorValue bottomRight, ColorValue bottomLeft, float u0, float v0, float u1, float v1) {
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
-        RenderSystem.setShaderTexture(0, texture.getId());
-        var builder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        RenderType renderType = RenderType.guiTextured(textureId);
+
+        var buffers = beginBatch();
+        var buffer = buffers.getBuffer(renderType);
         var matrix = poseStack().last().pose();
         final int z = 0;
-        builder.addVertex(matrix, rect.right(), rect.y(), z).setUv(u1, v0).setColor(resolveColor(topRight));
-        builder.addVertex(matrix, rect.x(), rect.y(), z).setUv(u0, v0).setColor(resolveColor(topLeft));
-        builder.addVertex(matrix, rect.x(), rect.bottom(), z).setUv(u0, v1).setColor(resolveColor(bottomLeft));
-        builder.addVertex(matrix, rect.right(), rect.bottom(), z).setUv(u1, v1).setColor(resolveColor(bottomRight));
-        BufferUploader.drawWithShader(builder.buildOrThrow());
-        RenderSystem.disableBlend();
+        buffer.addVertex(matrix, rect.right(), rect.y(), z).setUv(u1, v0).setColor(resolveColor(topRight));
+        buffer.addVertex(matrix, rect.x(), rect.y(), z).setUv(u0, v0).setColor(resolveColor(topLeft));
+        buffer.addVertex(matrix, rect.x(), rect.bottom(), z).setUv(u0, v1).setColor(resolveColor(bottomLeft));
+        buffer.addVertex(matrix, rect.right(), rect.bottom(), z).setUv(u1, v1).setColor(resolveColor(bottomRight));
+        buffers.endBatch();
     }
 
     @Override
     public void fillTriangle(Vec2 p1, Vec2 p2, Vec2 p3, ColorValue color) {
         var resolvedColor = resolveColor(color);
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
-        var builder = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        var buffers = beginBatch();
+        var buffer = buffers.getBuffer(RenderType.gui());
         var matrix = poseStack().last().pose();
         final int z = 0;
-        builder.addVertex(matrix, p1.x, p1.y, z).setColor(resolvedColor);
-        builder.addVertex(matrix, p2.x, p2.y, z).setColor(resolvedColor);
-        builder.addVertex(matrix, p3.x, p3.y, z).setColor(resolvedColor);
-        BufferUploader.drawWithShader(builder.buildOrThrow());
-        RenderSystem.disableBlend();
+        buffer.addVertex(matrix, p1.x, p1.y, z).setColor(resolvedColor);
+        buffer.addVertex(matrix, p2.x, p2.y, z).setColor(resolvedColor);
+        buffer.addVertex(matrix, p3.x, p3.y, z).setColor(resolvedColor);
+        buffers.endBatch(RenderType.gui());
     }
 
     @Override

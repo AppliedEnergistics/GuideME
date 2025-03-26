@@ -15,7 +15,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -89,25 +88,25 @@ public interface RenderContext {
         spriteLayer.render(poseStack(), x, y, 0);
     }
 
-    default void fillTexturedRect(LytRect rect, AbstractTexture texture, ColorValue topLeft, ColorValue topRight,
+    default void fillTexturedRect(LytRect rect, ResourceLocation texture, ColorValue topLeft, ColorValue topRight,
             ColorValue bottomRight, ColorValue bottomLeft) {
         // Just use the entire texture by default
         fillTexturedRect(rect, texture, topLeft, topRight, bottomRight, bottomLeft, 0, 0, 1, 1);
     }
 
-    void fillTexturedRect(LytRect rect, AbstractTexture texture, ColorValue topLeft, ColorValue topRight,
+    void fillTexturedRect(LytRect rect, ResourceLocation textureId, ColorValue topLeft, ColorValue topRight,
             ColorValue bottomRight, ColorValue bottomLeft, float u0, float v0, float u1, float v1);
+
+    default void fillTexturedRect(LytRect rect, ResourceLocation textureId) {
+        fillTexturedRect(rect, textureId, ConstantColor.WHITE);
+    }
+
+    default void fillTexturedRect(LytRect rect, ResourceLocation textureId, ColorValue color) {
+        fillTexturedRect(rect, textureId, color, color, color, color);
+    }
 
     default void fillTexturedRect(LytRect rect, GuidePageTexture texture) {
         fillTexturedRect(rect, texture.use(), ConstantColor.WHITE);
-    }
-
-    default void fillTexturedRect(LytRect rect, AbstractTexture texture) {
-        fillTexturedRect(rect, texture, ConstantColor.WHITE);
-    }
-
-    default void fillTexturedRect(LytRect rect, AbstractTexture texture, ColorValue color) {
-        fillTexturedRect(rect, texture, color, color, color, color);
     }
 
     default void fillTexturedRect(LytRect rect, GuidePageTexture texture, ColorValue color) {
@@ -115,18 +114,8 @@ public interface RenderContext {
     }
 
     default void fillTexturedRect(LytRect rect, TextureAtlasSprite sprite, ColorValue color) {
-        var texture = Minecraft.getInstance().getTextureManager().getTexture(sprite.atlasLocation());
-        fillTexturedRect(rect, texture, color, color, color, color,
+        fillTexturedRect(rect, sprite.atlasLocation(), color, color, color, color,
                 sprite.getU0(), sprite.getV0(), sprite.getU1(), sprite.getV1());
-    }
-
-    default void fillTexturedRect(LytRect rect, ResourceLocation textureId) {
-        fillTexturedRect(rect, textureId, ConstantColor.WHITE);
-    }
-
-    default void fillTexturedRect(LytRect rect, ResourceLocation textureId, ColorValue color) {
-        var texture = Minecraft.getInstance().getTextureManager().getTexture(textureId);
-        fillTexturedRect(rect, texture, color);
     }
 
     void fillTriangle(Vec2 p1, Vec2 p2, Vec2 p3, ColorValue color);

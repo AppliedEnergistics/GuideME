@@ -1,8 +1,6 @@
 package guideme.scene;
 
-import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
@@ -19,10 +17,11 @@ public class GuidebookLightmap implements AutoCloseable {
     private final NativeImage lightmapPixels;
 
     public GuidebookLightmap() {
-        lightmapTexture = new DynamicTexture(16, 16, false);
+        lightmapTexture = new DynamicTexture(() -> "GuideME Lightmap", 16, 16, false);
         lightmapPixels = Objects.requireNonNull(lightmapTexture.getPixels());
         lightmapPixels.fillRect(0, 0, 16, 16, -1);
         lightmapTexture.upload();
+        lightmapTexture.setFilter(true, false);
     }
 
     public float getSkyDarken(Level level, float partialTick) {
@@ -81,14 +80,6 @@ public class GuidebookLightmap implements AutoCloseable {
     private float notGamma(float value) {
         float f = 1.0F - value;
         return 1.0F - f * f * f * f;
-    }
-
-    public void bind() {
-        RenderSystem.setShaderTexture(2, lightmapTexture.getId());
-        lightmapTexture.bind();
-        RenderSystem.texParameter(GlConst.GL_TEXTURE_2D, GlConst.GL_TEXTURE_MIN_FILTER, GlConst.GL_LINEAR);
-        RenderSystem.texParameter(GlConst.GL_TEXTURE_2D, GlConst.GL_TEXTURE_MAG_FILTER, GlConst.GL_LINEAR);
-        RenderSystem.setShaderColor(1, 1, 1, 1);
     }
 
     @Override

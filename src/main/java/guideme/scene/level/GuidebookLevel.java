@@ -279,13 +279,15 @@ public class GuidebookLevel extends Level {
     }
 
     @Override
-    public void playSeededSound(@Nullable Player player, double d, double e, double f, Holder<SoundEvent> holder,
-            SoundSource soundSource, float g, float h, long l) {
+    public void playSeededSound(@Nullable Entity p_394382_, double p_220364_, double p_220365_, double p_220366_,
+            Holder<SoundEvent> p_394088_, SoundSource p_220368_, float p_220369_, float p_220370_, long p_220371_) {
+
     }
 
     @Override
-    public void playSeededSound(@Nullable Player player, Entity entity, Holder<SoundEvent> holder,
-            SoundSource soundSource, float f, float g, long l) {
+    public void playSeededSound(@Nullable Entity p_394455_, Entity p_393481_, Holder<SoundEvent> p_263359_,
+            SoundSource p_263020_, float p_263055_, float p_262914_, long p_262991_) {
+
     }
 
     @Override
@@ -297,15 +299,6 @@ public class GuidebookLevel extends Level {
     @Override
     public MapItemSavedData getMapData(MapId mapId) {
         return null;
-    }
-
-    @Override
-    public void setMapData(MapId mapId, MapItemSavedData data) {
-    }
-
-    @Override
-    public MapId getFreeMapId() {
-        return new MapId(1);
     }
 
     @Override
@@ -356,7 +349,7 @@ public class GuidebookLevel extends Level {
     }
 
     @Override
-    public void levelEvent(@Nullable Player player, int type, BlockPos pos, int data) {
+    public void levelEvent(@Nullable Entity player, int type, BlockPos pos, int data) {
     }
 
     @Override
