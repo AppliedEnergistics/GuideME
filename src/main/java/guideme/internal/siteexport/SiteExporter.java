@@ -6,7 +6,6 @@ import guideme.Guide;
 import guideme.GuidePage;
 import guideme.compiler.PageCompiler;
 import guideme.compiler.ParsedGuidePage;
-import guideme.document.block.recipes.RecipeDisplayHolder;
 import guideme.indices.CategoryIndex;
 import guideme.indices.ItemIndex;
 import guideme.internal.GuideOnStartup;
@@ -44,10 +43,18 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.SmithingTransformRecipe;
+import net.minecraft.world.item.crafting.SmithingTrimRecipe;
+import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
@@ -87,7 +94,7 @@ public class SiteExporter implements ResourceExporter {
 
     private ParsedGuidePage currentPage;
 
-    private final Set<RecipeDisplayHolder<?>> recipes = new HashSet<>();
+    private final Set<RecipeHolder<?>> recipes = new HashSet<>();
 
     private final Set<Item> items = new HashSet<>();
 
@@ -167,17 +174,19 @@ public class SiteExporter implements ResourceExporter {
     }
 
     @Override
-    public void referenceRecipe(RecipeDisplayHolder<?> holder) {
+    public void referenceRecipe(RecipeHolder<?> holder) {
         if (!recipes.add(holder)) {
             return; // Already added
         }
 
-        visitDisplays(holder.value(), display -> {
-            display.resolve(Platform.getSlotDisplayContext(), SlotDisplay.ItemStackContentsFactory.INSTANCE)
-                    .forEach(this::referenceItem);
-            display.resolve(Platform.getSlotDisplayContext(), FluidStackContentsFactory.INSTANCE)
-                    .forEach(this::referenceFluid);
-        });
+        for (var recipeDisplay : holder.value().display()) {
+            visitDisplays(recipeDisplay, display -> {
+                display.resolve(Platform.getSlotDisplayContext(), SlotDisplay.ItemStackContentsFactory.INSTANCE)
+                        .forEach(this::referenceItem);
+                display.resolve(Platform.getSlotDisplayContext(), FluidStackContentsFactory.INSTANCE)
+                        .forEach(this::referenceFluid);
+            });
+        }
     }
 
     @MustBeInvokedByOverriders
@@ -219,22 +228,25 @@ public class SiteExporter implements ResourceExporter {
             var id = holder.id();
             var recipe = holder.value();
 
-            if (recipe instanceof ShapedCraftingRecipeDisplay craftingRecipe) {
+            if (recipe instanceof CraftingRecipe craftingRecipe) {
+                if (craftingRecipe.isSpecial()) {
+                    continue;
+                }
                 writer.addRecipe(id, craftingRecipe);
-            } else if (recipe instanceof ShapelessCraftingRecipeDisplay cookingRecipe) {
+            } else if (recipe instanceof AbstractCookingRecipe cookingRecipe) {
                 writer.addRecipe(id, cookingRecipe);
-            } else if (recipe instanceof SmithingRecipeDisplay smithingTransformRecipe) {
+            } else if (recipe instanceof SmithingTransformRecipe smithingTransformRecipe) {
                 writer.addRecipe(id, smithingTransformRecipe);
-            } else if (recipe instanceof FurnaceRecipeDisplay smithingTrimRecipe) {
+            } else if (recipe instanceof SmithingTrimRecipe smithingTrimRecipe) {
                 writer.addRecipe(id, smithingTrimRecipe);
-            } else if (recipe instanceof StonecutterRecipeDisplay stonecutterRecipeDisplay) {
-                writer.addRecipe(id, stonecutterRecipeDisplay);
+            } else if (recipe instanceof StonecutterRecipe stonecutterRecipe) {
+                writer.addRecipe(id, stonecutterRecipe);
             } else {
                 var recipeFields = getCustomRecipeFields(id, recipe);
                 if (recipeFields != null) {
                     writer.addRecipe(id, recipe, recipeFields);
                 } else {
-                    LOG.warn("Unable to handle recipe {} of type {}", holder.id(), recipe.type());
+                    LOG.warn("Unable to handle recipe {} of type {}", holder.id(), recipe.getType());
                 }
             }
         }
@@ -246,7 +258,7 @@ public class SiteExporter implements ResourceExporter {
      */
     @Nullable
     @ApiStatus.OverrideOnly
-    protected Map<String, Object> getCustomRecipeFields(ResourceLocation id, RecipeDisplay recipe) {
+    protected Map<String, Object> getCustomRecipeFields(ResourceKey<Recipe<?>> id, Recipe<?> recipe) {
         return null;
     }
 

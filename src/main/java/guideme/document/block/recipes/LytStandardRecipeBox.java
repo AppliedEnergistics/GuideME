@@ -9,7 +9,6 @@ import guideme.document.block.LytHBox;
 import guideme.document.block.LytParagraph;
 import guideme.document.block.LytSlotGrid;
 import guideme.document.block.LytVBox;
-import guideme.internal.util.Platform;
 import guideme.render.GuiAssets;
 import guideme.render.RenderContext;
 import guideme.scene.LytItemImage;
@@ -18,6 +17,9 @@ import guideme.siteexport.ResourceExporter;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.level.ItemLike;
@@ -35,15 +37,15 @@ import org.jetbrains.annotations.Nullable;
  * <p/>
  * Use the {@link #builder()} method to get started.
  */
-public class LytStandardRecipeBox<T extends RecipeDisplay> extends LytVBox implements ExportableResourceProvider {
-    private final RecipeDisplayHolder<? extends T> holder;
+public class LytStandardRecipeBox<T extends Recipe<?>> extends LytVBox implements ExportableResourceProvider {
+    private final RecipeHolder<? extends T> holder;
 
     @ApiStatus.Internal
-    LytStandardRecipeBox(RecipeDisplayHolder<? extends T> holder) {
+    LytStandardRecipeBox(RecipeHolder<? extends T> holder) {
         this.holder = holder;
     }
 
-    public RecipeDisplayHolder<? extends T> getRecipe() {
+    public RecipeHolder<? extends T> getRecipe() {
         return holder;
     }
 
@@ -60,18 +62,6 @@ public class LytStandardRecipeBox<T extends RecipeDisplay> extends LytVBox imple
 
     public static Builder builder() {
         return new Builder();
-    }
-
-    public static Builder builder(RecipeDisplay display) {
-        var builder = new Builder();
-
-        var icon = display.craftingStation().resolveForFirstStack(Platform.getSlotDisplayContext());
-        if (!icon.isEmpty()) {
-            builder.icon(icon);
-            builder.title(icon.getItemName().getString());
-        }
-
-        return builder;
     }
 
     public static class Builder {
@@ -92,7 +82,7 @@ public class LytStandardRecipeBox<T extends RecipeDisplay> extends LytVBox imple
             this.title.setStyle(DefaultStyles.CRAFTING_RECIPE_TYPE);
         }
 
-        public <T extends RecipeDisplay> LytStandardRecipeBox<T> build(RecipeDisplayHolder<T> recipe) {
+        public <T extends Recipe<?>> LytStandardRecipeBox<T> build(RecipeHolder<T> recipe) {
             var box = new LytStandardRecipeBox<>(recipe);
             build(box);
             return box;
@@ -121,7 +111,12 @@ public class LytStandardRecipeBox<T extends RecipeDisplay> extends LytVBox imple
         }
 
         public Builder input(SlotDisplay display) {
-            this.input = LytSlotGrid.row(List.of(display), false);
+            this.input = LytSlotGrid.rowFromDisplays(List.of(display), false);
+            return this;
+        }
+
+        public Builder input(Ingredient ingredient) {
+            this.input = LytSlotGrid.rowFromIngredients(List.of(ingredient), false);
             return this;
         }
 
@@ -151,6 +146,17 @@ public class LytStandardRecipeBox<T extends RecipeDisplay> extends LytVBox imple
             var resultDisplay = recipe.result();
             if (resultDisplay.type() != SlotDisplay.Empty.TYPE) {
                 output(resultDisplay);
+            }
+            return this;
+        }
+
+        public Builder outputFromResultOf(RecipeHolder<?> recipe) {
+            for (var recipeDisplay : recipe.value().display()) {
+                var resultDisplay = recipeDisplay.result();
+                if (resultDisplay.type() != SlotDisplay.Empty.TYPE) {
+                    output(resultDisplay);
+                    break; // Only use the first
+                }
             }
             return this;
         }
@@ -197,7 +203,7 @@ public class LytStandardRecipeBox<T extends RecipeDisplay> extends LytVBox imple
         }
 
         @ApiStatus.Internal
-        <T extends RecipeDisplay> void build(LytStandardRecipeBox<T> box) {
+        <T extends Recipe<?>> void build(LytStandardRecipeBox<T> box) {
             if (this.customBody != null) {
                 if (!this.leftDecoration.isEmpty()) {
                     throw new IllegalStateException("Cannot combine a custom recipe body with left decorations");

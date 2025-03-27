@@ -4,7 +4,11 @@ import guideme.document.block.LytBlock;
 import guideme.extensions.Extension;
 import guideme.extensions.ExtensionPoint;
 import java.util.function.Function;
-import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import java.util.stream.Stream;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeInput;
+import net.minecraft.world.item.crafting.RecipeType;
 
 /**
  * Allows mods to register mappings between recipe type and their custom recipe blocks for use in {@code <RecipeFor/>}
@@ -20,6 +24,8 @@ public interface RecipeTypeMappingSupplier extends Extension {
     void collect(RecipeTypeMappings mappings);
 
     interface RecipeTypeMappings {
-        <T extends RecipeDisplay> void add(Class<T> displayClass, Function<T, LytBlock> factory);
+        <T extends Recipe<C>, C extends RecipeInput> void add(
+                RecipeType<T> recipeType,
+                Function<RecipeHolder<T>, Stream<? extends LytBlock>> factory);
     }
 }

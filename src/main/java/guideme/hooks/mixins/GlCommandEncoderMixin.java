@@ -21,9 +21,34 @@ public class GlCommandEncoderMixin {
             OptionalDouble clearDepth,
             Operation<RenderPass> original) {
         colorBuffer = RenderToTextureHooks.replaceColorTarget(colorBuffer);
-        depthBuffer = RenderToTextureHooks.replaceDepthTest(depthBuffer);
+        depthBuffer = RenderToTextureHooks.replaceDepthTarget(depthBuffer);
 
         return original.call(colorBuffer, clearColor, depthBuffer, clearDepth);
     }
 
+    @WrapMethod(method = "clearColorTexture")
+    public void overrideRenderTargetForClearColorTexture(GpuTexture colorBuffer, int color, Operation<Void> original) {
+        colorBuffer = RenderToTextureHooks.replaceColorTarget(colorBuffer);
+        original.call(colorBuffer, color);
+    }
+
+    @WrapMethod(method = "clearColorAndDepthTextures")
+    public void overrideClearColorAndDepthTextures(GpuTexture colorBuffer, int color, GpuTexture depthBuffer,
+            double depthValue, Operation<Void> original) {
+        colorBuffer = RenderToTextureHooks.replaceColorTarget(colorBuffer);
+        depthBuffer = RenderToTextureHooks.replaceDepthTarget(depthBuffer);
+        original.call(colorBuffer, color, depthBuffer, depthValue);
+    }
+
+    @WrapMethod(method = "clearDepthTexture")
+    public void overrideClearDepthTexture(GpuTexture depthBuffer, double depthValue, Operation<Void> original) {
+        depthBuffer = RenderToTextureHooks.replaceDepthTarget(depthBuffer);
+        original.call(depthBuffer, depthValue);
+    }
+
+    @WrapMethod(method = "clearStencilTexture")
+    public void overrideClearDepthTexture(GpuTexture depthBuffer, int stencilValue, Operation<Void> original) {
+        depthBuffer = RenderToTextureHooks.replaceDepthTarget(depthBuffer);
+        original.call(depthBuffer, stencilValue);
+    }
 }

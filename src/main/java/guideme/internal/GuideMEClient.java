@@ -9,13 +9,13 @@ import guideme.internal.data.GuideMELanguageProvider;
 import guideme.internal.data.GuideMEModelProvider;
 import guideme.internal.hotkey.OpenGuideHotkey;
 import guideme.internal.item.GuideItemDispatchUnbaked;
-import guideme.internal.network.RequestManager;
 import guideme.internal.screen.GlobalInMemoryHistory;
 import guideme.internal.screen.GuideNavigation;
 import guideme.internal.search.GuideSearch;
 import guideme.internal.util.Blitter;
 import guideme.render.GuiAssets;
 import java.util.Objects;
+import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -24,13 +24,17 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.item.crafting.RecipeMap;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
@@ -56,6 +60,9 @@ public class GuideMEClient {
     public static SoundEvent GUIDE_CLICK_EVENT = SoundEvent.createVariableRangeEvent(GUIDE_CLICK_ID);
 
     private final GuideSearch search = new GuideSearch();
+
+    private RecipeMap recipeMap = RecipeMap.EMPTY;
+    private Set<RecipeType<?>> availableRecipeTypes = Set.of();
 
     public GuideMEClient(ModContainer modContainer, IEventBus modBus) {
         INSTANCE = this;
@@ -85,12 +92,24 @@ public class GuideMEClient {
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre evt) -> {
             search.processWork();
             processDevWatchers();
-            RequestManager.getInstance().processTimeouts();
         });
 
         GuideOnStartup.init(modBus);
 
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+
+        NeoForge.EVENT_BUS.addListener(this::onReceiveRecipes);
+        NeoForge.EVENT_BUS.addListener(this::onPlayerDisconnect);
+    }
+
+    private void onReceiveRecipes(RecipesReceivedEvent event) {
+        recipeMap = event.getRecipeMap();
+        availableRecipeTypes = Set.copyOf(event.getRecipeTypes());
+    }
+
+    private void onPlayerDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
+        recipeMap = RecipeMap.EMPTY;
+        availableRecipeTypes = Set.of();
     }
 
     private void registerRenderPipelines(RegisterRenderPipelinesEvent event) {
@@ -201,6 +220,14 @@ public class GuideMEClient {
 
     public GuideSearch getSearch() {
         return search;
+    }
+
+    public RecipeMap getRecipeMap() {
+        return recipeMap;
+    }
+
+    public boolean isRecipeTypeAvailable(RecipeType<?> recipeType) {
+        return availableRecipeTypes.contains(recipeType);
     }
 
     private static class ClientConfig {

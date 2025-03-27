@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.5.1-beta (Minecraft 1.21.5)
+
+- First port to Minecraft 1.21.5
+
 ## 21.1.6 (Minecraft 1.21.1)
 
 - Fix wrapping of content in `<Row />` elements.

@@ -15,7 +15,7 @@ public final class RenderToTextureHooks {
         return colorTarget;
     }
 
-    public static GpuTexture replaceDepthTest(GpuTexture depthTarget) {
+    public static GpuTexture replaceDepthTarget(GpuTexture depthTarget) {
         if (targetOverride != null && depthTarget == Minecraft.getInstance().getMainRenderTarget().getDepthTexture()) {
             return targetOverride.getDepthTexture();
         }

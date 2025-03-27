@@ -6,6 +6,7 @@ import guideme.render.GuiAssets;
 import guideme.render.RenderContext;
 import java.util.List;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 public class LytSlotGrid extends LytBox {
@@ -20,15 +21,55 @@ public class LytSlotGrid extends LytBox {
         this.slots = new LytSlot[width * height];
     }
 
-    public static LytSlotGrid columnFromStack(List<ItemStack> items, boolean skipEmpty) {
-        return column(items.stream().map(SlotDisplay.ItemStackSlotDisplay::new).toList(), skipEmpty);
+    public static LytSlotGrid columnFromStacks(List<ItemStack> items, boolean skipEmpty) {
+        return columnFromDisplays(items.stream().map(SlotDisplay.ItemStackSlotDisplay::new).toList(), skipEmpty);
     }
 
     public static LytSlotGrid rowFromStacks(List<ItemStack> items, boolean skipEmpty) {
-        return row(items.stream().map(SlotDisplay.ItemStackSlotDisplay::new).toList(), skipEmpty);
+        return rowFromDisplays(items.stream().map(SlotDisplay.ItemStackSlotDisplay::new).toList(), skipEmpty);
     }
 
-    public static LytSlotGrid column(List<? extends SlotDisplay> displays, boolean skipEmpty) {
+    public static LytSlotGrid columnFromIngredients(List<Ingredient> ingredients, boolean skipEmpty) {
+        if (!skipEmpty) {
+            var grid = new LytSlotGrid(1, ingredients.size());
+            for (int i = 0; i < ingredients.size(); i++) {
+                grid.setIngredient(0, i, ingredients.get(i));
+            }
+            return grid;
+        }
+
+        var nonEmptyIngredients = (int) ingredients.stream().filter(i -> !i.isEmpty()).count();
+        var grid = new LytSlotGrid(1, nonEmptyIngredients);
+        var index = 0;
+        for (var ingredient : ingredients) {
+            if (!ingredient.isEmpty()) {
+                grid.setIngredient(0, index++, ingredient);
+            }
+        }
+        return grid;
+    }
+
+    public static LytSlotGrid rowFromIngredients(List<Ingredient> ingredients, boolean skipEmpty) {
+        if (!skipEmpty) {
+            var grid = new LytSlotGrid(ingredients.size(), 1);
+            for (int i = 0; i < ingredients.size(); i++) {
+                grid.setIngredient(i, 0, ingredients.get(i));
+            }
+            return grid;
+        }
+
+        var nonEmptyIngredients = (int) ingredients.stream().filter(i -> !i.isEmpty()).count();
+        var grid = new LytSlotGrid(nonEmptyIngredients, 1);
+        var index = 0;
+        for (var ingredient : ingredients) {
+            if (!ingredient.isEmpty()) {
+                grid.setIngredient(index++, 0, ingredient);
+            }
+        }
+        return grid;
+    }
+
+    public static LytSlotGrid columnFromDisplays(List<? extends SlotDisplay> displays, boolean skipEmpty) {
         if (!skipEmpty) {
             var grid = new LytSlotGrid(1, displays.size());
             for (int i = 0; i < displays.size(); i++) {
@@ -48,7 +89,7 @@ public class LytSlotGrid extends LytBox {
         return grid;
     }
 
-    public static LytSlotGrid row(List<? extends SlotDisplay> displays, boolean skipEmpty) {
+    public static LytSlotGrid rowFromDisplays(List<? extends SlotDisplay> displays, boolean skipEmpty) {
         if (!skipEmpty) {
             var grid = new LytSlotGrid(displays.size(), 1);
             for (int i = 0; i < displays.size(); i++) {
@@ -102,7 +143,15 @@ public class LytSlotGrid extends LytBox {
         setDisplay(x, y, new SlotDisplay.ItemStackSlotDisplay(item));
     }
 
+    public void setIngredient(int x, int y, Ingredient ingredient) {
+        setSlot(x, y, new LytSlot(ingredient));
+    }
+
     public void setDisplay(int x, int y, SlotDisplay display) {
+        setSlot(x, y, new LytSlot(display));
+    }
+
+    private void setSlot(int x, int y, LytSlot newSlot) {
         if (x < 0 || x >= width) {
             throw new IndexOutOfBoundsException("x: " + x);
         }
@@ -117,7 +166,7 @@ public class LytSlotGrid extends LytBox {
             slots[slotIndex] = null;
         }
 
-        slot = slots[slotIndex] = new LytSlot(display);
+        slot = slots[slotIndex] = newSlot;
         append(slot);
     }
 

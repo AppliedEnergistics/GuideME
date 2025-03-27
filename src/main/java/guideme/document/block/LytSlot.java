@@ -13,7 +13,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.core.Holder;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 /**
@@ -28,19 +31,19 @@ public class LytSlot extends LytBlock implements InteractiveElement {
     public static final int OUTER_SIZE_LARGE = ITEM_SIZE + 2 * LARGE_PADDING;
     private static final int CYCLE_TIME = 2000;
 
-    private final List<ItemStack> stacks;
-
     private boolean largeSlot;
 
-    private final SlotDisplay display;
+    private final List<ItemStack> stacks;
 
     public LytSlot(SlotDisplay display) {
-        this.display = display;
         this.stacks = display.resolveForStacks(Platform.getSlotDisplayContext());
     }
 
+    public LytSlot(Ingredient ingredient) {
+        this.stacks = ingredient.items().map(Holder::value).map(Item::getDefaultInstance).toList();
+    }
+
     public LytSlot(ItemStack stack) {
-        this.display = new SlotDisplay.ItemStackSlotDisplay(stack);
         this.stacks = List.of(stack);
     }
 

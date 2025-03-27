@@ -2,6 +2,7 @@
 package guideme.internal.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import guideme.internal.GuideMEClient;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,7 +12,12 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeMap;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.material.Fluid;
@@ -74,5 +80,25 @@ public class Platform {
         }
 
         return FuelValues.vanillaBurnTimes(getClientRegistryAccess(), FeatureFlags.VANILLA_SET);
+    }
+
+    public static RecipeMap getRecipeMap() {
+        return GuideMEClient.instance().getRecipeMap();
+    }
+
+    public static boolean isRecipeTypeAvailable(RecipeType<?> recipeType) {
+        return GuideMEClient.instance().isRecipeTypeAvailable(recipeType);
+    }
+
+    public static boolean recipeHasResult(Recipe<?> recipe, Item item) {
+        for (var recipeDisplay : recipe.display()) {
+            boolean hasResult = recipeDisplay.result()
+                    .resolve(Platform.getSlotDisplayContext(), SlotDisplay.ItemStackContentsFactory.INSTANCE)
+                    .anyMatch(is -> is.is(item));
+            if (hasResult) {
+                return true;
+            }
+        }
+        return false;
     }
 }

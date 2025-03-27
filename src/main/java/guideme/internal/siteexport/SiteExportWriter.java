@@ -31,22 +31,26 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay;
-import net.minecraft.world.item.crafting.display.RecipeDisplay;
-import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
-import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
-import net.minecraft.world.item.crafting.display.SlotDisplay;
-import net.minecraft.world.item.crafting.display.SmithingRecipeDisplay;
-import net.minecraft.world.item.crafting.display.StonecutterRecipeDisplay;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.minecraft.world.item.crafting.SingleItemRecipe;
+import net.minecraft.world.item.crafting.SmithingTransformRecipe;
+import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.slf4j.Logger;
@@ -74,12 +78,12 @@ public class SiteExportWriter {
                 }
             })
             // Serialize Ingredient as arrays of the corresponding item IDs
-            .registerTypeAdapter(SlotDisplay.class, new WriteOnlyTypeAdapter<SlotDisplay>() {
+            .registerTypeAdapter(Ingredient.class, new WriteOnlyTypeAdapter<Ingredient>() {
                 @Override
-                public void write(JsonWriter out, SlotDisplay value) throws IOException {
+                public void write(JsonWriter out, Ingredient value) throws IOException {
                     out.beginArray();
-                    for (var item : value.resolveForStacks(Platform.getSlotDisplayContext())) {
-                        var itemId = BuiltInRegistries.ITEM.getKey(item.getItem());
+                    for (var item : value.items().toList()) {
+                        var itemId = BuiltInRegistries.ITEM.getKey(item.value());
                         out.value(itemId.toString());
                     }
                     out.endArray();
@@ -154,64 +158,61 @@ public class SiteExportWriter {
         siteExport.fluids.put(fluidInfo.id, fluidInfo);
     }
 
-    public void addRecipe(ResourceLocation id, ShapelessCraftingRecipeDisplay recipe) {
+    public void addRecipe(ResourceKey<Recipe<?>> id, CraftingRecipe recipe) {
         Map<String, Object> fields = new HashMap<>();
-        fields.put("shapeless", true);
+        if (recipe instanceof ShapedRecipe shapedRecipe) {
+            fields.put("shapeless", false);
+            fields.put("width", shapedRecipe.getWidth());
+            fields.put("height", shapedRecipe.getHeight());
+            fields.put("ingredients", shapedRecipe.getIngredients().stream().map(i -> {
+                return i.isPresent() ? i.get() : List.of();
+            }).toList());
 
-        var resultItem = recipe.result().resolveForFirstStack(Platform.getSlotDisplayContext());
-        fields.put("resultItem", resultItem);
-        fields.put("resultCount", resultItem.getCount());
-        fields.put("ingredients", recipe.ingredients());
+            var resultItem = shapedRecipe.result;
+            fields.put("resultItem", resultItem);
+            fields.put("resultCount", resultItem.getCount());
+        } else if (recipe instanceof ShapelessRecipe shapelessRecipe) {
+            fields.put("shapeless", true);
+            fields.put("ingredients", shapelessRecipe.ingredients);
+
+            var resultItem = shapelessRecipe.result;
+            fields.put("resultItem", resultItem);
+            fields.put("resultCount", resultItem.getCount());
+        } else {
+            LOG.warn("Cannot handle crafting recipe of type {}", recipe);
+            return;
+        }
 
         addRecipe(id, recipe, fields);
     }
 
-    public void addRecipe(ResourceLocation id, ShapedCraftingRecipeDisplay recipe) {
-        Map<String, Object> fields = new HashMap<>();
-        fields.put("shapeless", false);
-        fields.put("width", recipe.width());
-        fields.put("height", recipe.height());
-
-        var resultItem = recipe.result().resolveForFirstStack(Platform.getSlotDisplayContext());
-        fields.put("resultItem", resultItem);
-        fields.put("resultCount", resultItem.getCount());
-        fields.put("ingredients", recipe.ingredients());
-
-        addRecipe(id, recipe, fields);
-    }
-
-    public void addRecipe(ResourceLocation id, FurnaceRecipeDisplay recipe) {
-        var resultItem = recipe.result().resolveForFirstStack(Platform.getSlotDisplayContext());
-
+    public void addRecipe(ResourceKey<Recipe<?>> id, SingleItemRecipe recipe) {
         addRecipe(id, recipe, Map.of(
-                "resultItem", resultItem,
-                "ingredient", recipe.ingredient()));
+                "resultItem", recipe.result(),
+                "ingredient", recipe.input()));
     }
 
-    public void addRecipe(ResourceLocation id, SmithingRecipeDisplay recipe) {
-        var resultItem = recipe.result().resolveForFirstStack(Platform.getSlotDisplayContext());
-
+    public void addRecipe(ResourceKey<Recipe<?>> id, SmithingTransformRecipe recipe) {
         addRecipe(id, recipe, Map.of(
-                "resultItem", resultItem,
-                "base", recipe.base(),
-                "addition", recipe.addition(),
-                "template", recipe.template()));
+                "resultItem", recipe.result.display().resolveForFirstStack(ContextMap.EMPTY),
+                "base", recipe.baseIngredient(),
+                "addition", recipe.additionIngredient(),
+                "template", recipe.templateIngredient()));
     }
 
-    public void addRecipe(ResourceLocation id, StonecutterRecipeDisplay recipe) {
-        var resultItem = recipe.result().resolveForFirstStack(Platform.getSlotDisplayContext());
-
-        addRecipe(id, recipe,
-                Map.of(
-                        "resultItem", resultItem,
-                        "ingredient", recipe.input()));
+    public void addRecipe(ResourceKey<Recipe<?>> id, SmithingTrimRecipe recipe) {
+        addRecipe(id, recipe, Map.of(
+                "base", recipe.baseIngredient(),
+                "addition", recipe.additionIngredient(),
+                "template", recipe.templateIngredient()));
     }
 
-    public void addRecipe(ResourceLocation id, RecipeDisplay recipe, Map<String, Object> element) {
+    public void addRecipe(ResourceKey<Recipe<?>> id, Recipe<?> recipe, Map<String, Object> element) {
         // Auto-transform ingredients
+
         var jsonElement = GSON.toJsonTree(element);
 
-        var type = BuiltInRegistries.RECIPE_DISPLAY.getKey(recipe.type()).toString();
+        var type = BuiltInRegistries.RECIPE_TYPE.getKey(recipe.getType()).toString();
         jsonElement.getAsJsonObject().addProperty("type", type);
 
         if (siteExport.recipes.put(id.toString(), jsonElement) != null) {
