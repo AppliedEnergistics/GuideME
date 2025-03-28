@@ -5,9 +5,11 @@ import guideme.layout.LayoutContext;
 import guideme.render.GuiAssets;
 import guideme.render.RenderContext;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
+import org.jetbrains.annotations.Nullable;
 
 public class LytSlotGrid extends LytBox {
     private final int width;
@@ -29,42 +31,42 @@ public class LytSlotGrid extends LytBox {
         return rowFromDisplays(items.stream().map(SlotDisplay.ItemStackSlotDisplay::new).toList(), skipEmpty);
     }
 
-    public static LytSlotGrid columnFromIngredients(List<Ingredient> ingredients, boolean skipEmpty) {
+    public static LytSlotGrid columnFromIngredients(List<@Nullable Ingredient> ingredients, boolean skipEmpty) {
         if (!skipEmpty) {
             var grid = new LytSlotGrid(1, ingredients.size());
             for (int i = 0; i < ingredients.size(); i++) {
-                grid.setIngredient(0, i, ingredients.get(i));
+                if (ingredients.get(i) != null) {
+                    grid.setIngredient(0, i, ingredients.get(i));
+                }
             }
             return grid;
         }
 
-        var nonEmptyIngredients = (int) ingredients.stream().filter(i -> !i.isEmpty()).count();
-        var grid = new LytSlotGrid(1, nonEmptyIngredients);
+        var nonEmptyIngredients = ingredients.stream().filter(i -> i != null && !i.isEmpty()).toList();
+        var grid = new LytSlotGrid(1, nonEmptyIngredients.size());
         var index = 0;
-        for (var ingredient : ingredients) {
-            if (!ingredient.isEmpty()) {
-                grid.setIngredient(0, index++, ingredient);
-            }
+        for (var ingredient : nonEmptyIngredients) {
+            grid.setIngredient(0, index++, ingredient);
         }
         return grid;
     }
 
-    public static LytSlotGrid rowFromIngredients(List<Ingredient> ingredients, boolean skipEmpty) {
+    public static LytSlotGrid rowFromIngredients(List<@Nullable Ingredient> ingredients, boolean skipEmpty) {
         if (!skipEmpty) {
             var grid = new LytSlotGrid(ingredients.size(), 1);
             for (int i = 0; i < ingredients.size(); i++) {
-                grid.setIngredient(i, 0, ingredients.get(i));
+                if (ingredients.get(i) != null) {
+                    grid.setIngredient(i, 0, ingredients.get(i));
+                }
             }
             return grid;
         }
 
-        var nonEmptyIngredients = (int) ingredients.stream().filter(i -> !i.isEmpty()).count();
-        var grid = new LytSlotGrid(nonEmptyIngredients, 1);
+        var nonEmptyIngredients = ingredients.stream().filter(i -> i != null && !i.isEmpty()).toList();
+        var grid = new LytSlotGrid(nonEmptyIngredients.size(), 1);
         var index = 0;
-        for (var ingredient : ingredients) {
-            if (!ingredient.isEmpty()) {
-                grid.setIngredient(index++, 0, ingredient);
-            }
+        for (var ingredient : nonEmptyIngredients) {
+            grid.setIngredient(index++, 0, ingredient);
         }
         return grid;
     }
@@ -147,6 +149,10 @@ public class LytSlotGrid extends LytBox {
         setSlot(x, y, new LytSlot(ingredient));
     }
 
+    public void setIngredient(int x, int y, Optional<Ingredient> ingredient) {
+        setSlot(x, y, new LytSlot(ingredient));
+    }
+
     public void setDisplay(int x, int y, SlotDisplay display) {
         setSlot(x, y, new LytSlot(display));
     }
@@ -179,8 +185,8 @@ public class LytSlotGrid extends LytBox {
                     var index = getSlotIndex(x, y);
                     if (index >= slots.length || slots[index] == null) {
                         context.drawIcon(
-                                bounds.x() + LytSlot.OUTER_SIZE * x,
-                                bounds.y() + LytSlot.OUTER_SIZE * y,
+                                bounds.x() + guideme.document.block.LytSlot.OUTER_SIZE * x,
+                                bounds.y() + guideme.document.block.LytSlot.OUTER_SIZE * y,
                                 GuiAssets.SLOT_BACKGROUND);
                     }
                 }
@@ -195,6 +201,6 @@ public class LytSlotGrid extends LytBox {
     }
 
     private static boolean isEmpty(SlotDisplay d) {
-        return d.type() == SlotDisplay.Empty.TYPE;
+        return d.type() == net.minecraft.world.item.crafting.display.SlotDisplay.Empty.TYPE;
     }
 }

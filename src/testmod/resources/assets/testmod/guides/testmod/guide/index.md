@@ -21,6 +21,8 @@ You may ~~need~~ a door!
 
 <RecipeFor id="minecraft:oak_door" />
 <Recipe id="minecraft:iron_nugget_from_blasting" />
+<RecipeFor id="minecraft:netherite_pickaxe" />
+<Recipe id="minecraft:shaper_armor_trim_smithing_template_smithing_trim" />
 
 <GameScene>
   <ImportStructure src="test.nbt" />

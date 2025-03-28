@@ -97,7 +97,7 @@ public final class DefaultExtensions {
     private static List<RecipeTypeMappingSupplier> vanillaRecipeTypes() {
         return List.of(
                 mappings -> {
-                    mappings.add(RecipeType.CRAFTING, VanillaRecipes::createCrafting);
+                    mappings.addStreamFactory(RecipeType.CRAFTING, VanillaRecipes::createCrafting);
                     mappings.add(RecipeType.BLASTING, VanillaRecipes::createBlasting);
                     mappings.add(RecipeType.SMELTING, VanillaRecipes::createSmelting);
                     mappings.add(RecipeType.SMITHING, VanillaRecipes::createSmithing);

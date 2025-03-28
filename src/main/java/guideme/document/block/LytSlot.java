@@ -43,8 +43,16 @@ public class LytSlot extends LytBlock implements InteractiveElement {
         this.stacks = ingredient.items().map(Holder::value).map(Item::getDefaultInstance).toList();
     }
 
+    public LytSlot(Optional<Ingredient> ingredient) {
+        if (ingredient.isPresent()) {
+            this.stacks = ingredient.get().items().map(Holder::value).map(Item::getDefaultInstance).toList();
+        } else {
+            this.stacks = List.of();
+        }
+    }
+
     public LytSlot(ItemStack stack) {
-        this.stacks = List.of(stack);
+        this.stacks = stack.isEmpty() ? List.of() : List.of(stack);
     }
 
     public boolean isLargeSlot() {

@@ -177,7 +177,7 @@ public class RecipeCompiler extends BlockTagCompiler {
         List<RecipeTypeMapping<?, ?>> result = new ArrayList<>();
         var mappings = new RecipeTypeMappingSupplier.RecipeTypeMappings() {
             @Override
-            public <T extends Recipe<C>, C extends RecipeInput> void add(RecipeType<T> recipeType,
+            public <T extends Recipe<C>, C extends RecipeInput> void addStreamFactory(RecipeType<T> recipeType,
                     Function<RecipeHolder<T>, Stream<? extends LytBlock>> factory) {
                 result.add(new RecipeTypeMapping<>(recipeType, factory));
             }
@@ -200,7 +200,7 @@ public class RecipeCompiler extends BlockTagCompiler {
         List<RecipeTypeMapping<?, ?>> result = new ArrayList<>();
         var mappings = new RecipeTypeMappingSupplier.RecipeTypeMappings() {
             @Override
-            public <T extends Recipe<C>, C extends RecipeInput> void add(RecipeType<T> recipeType,
+            public <T extends Recipe<C>, C extends RecipeInput> void addStreamFactory(RecipeType<T> recipeType,
                     Function<RecipeHolder<T>, Stream<? extends LytBlock>> factory) {
                 Objects.requireNonNull(recipeType, "recipeType");
                 Objects.requireNonNull(factory, "factory");

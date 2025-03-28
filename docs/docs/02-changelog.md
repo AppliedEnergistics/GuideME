@@ -3,6 +3,13 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.5.2-beta (Minecraft 1.21.5)
+
+- Java API: Add back the semantics of `RecipeTypeMappings.add`, which supports mapping RecipeHolders to a nullable LytBlock for custom recipes.
+- Java API: The registration method for factories that return a `Stream<LytBlock>` has been renamed to `addMulti`.
+- Java API: Added convenience constructors to `LytSlot` for aiding with new idioms used by Vanilla, such as `Optional<Ingredient>` being used instead of empty ingredients (which no longer exist).
+- Java API: Made the row/column factory methods for `LytSlotGrid` accept null-entries in the ingredient lists to better interface with Ingredients no longer being able to be empty.
+
 ## 21.5.1-beta (Minecraft 1.21.5)
 
 - First port to Minecraft 1.21.5

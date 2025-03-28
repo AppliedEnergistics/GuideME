@@ -54,7 +54,7 @@ public final class Blitter {
 
     public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_OPAQUE_TYPE = Util.memoize(
             textureId -> RenderType.create(
-                    "ae2:gui_textured_opaque",
+                    "guideme:gui_textured_opaque",
                     1536,
                     GUI_TEXTURED_OPAQUE,
                     RenderType.CompositeState.builder()

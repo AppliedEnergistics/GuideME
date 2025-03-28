@@ -3,8 +3,8 @@ package guideme.internal.extensions;
 import guideme.document.block.LytSlotGrid;
 import guideme.document.block.recipes.LytStandardRecipeBox;
 import guideme.internal.GuidebookText;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.BlastingRecipe;
@@ -19,6 +19,7 @@ import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.level.block.Blocks;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,50 +82,44 @@ final class VanillaRecipes {
 
     }
 
-    public static Stream<LytStandardRecipeBox<SmeltingRecipe>> createSmelting(RecipeHolder<SmeltingRecipe> recipe) {
-        return Stream.of(LytStandardRecipeBox.builder()
+    public static LytStandardRecipeBox<SmeltingRecipe> createSmelting(RecipeHolder<SmeltingRecipe> recipe) {
+        return LytStandardRecipeBox.builder()
                 .title(GuidebookText.Smelting.text().getString())
                 .icon(Blocks.FURNACE)
                 .input(LytSlotGrid.rowFromIngredients(List.of(recipe.value().input()), true))
                 .outputFromResultOf(recipe)
-                .build(recipe));
+                .build(recipe);
     }
 
-    public static Stream<LytStandardRecipeBox<BlastingRecipe>> createBlasting(RecipeHolder<BlastingRecipe> recipe) {
-        return Stream.of(LytStandardRecipeBox.builder()
+    public static LytStandardRecipeBox<BlastingRecipe> createBlasting(RecipeHolder<BlastingRecipe> recipe) {
+        return LytStandardRecipeBox.builder()
                 .title(GuidebookText.Blasting.text().getString())
                 .icon(Blocks.BLAST_FURNACE)
                 .input(LytSlotGrid.rowFromIngredients(List.of(recipe.value().input()), true))
                 .outputFromResultOf(recipe)
-                .build(recipe));
+                .build(recipe);
     }
 
-    public static Stream<LytStandardRecipeBox<SmithingRecipe>> createSmithing(RecipeHolder<SmithingRecipe> holder) {
-        return Stream.of(LytStandardRecipeBox.builder()
+    public static LytStandardRecipeBox<SmithingRecipe> createSmithing(RecipeHolder<SmithingRecipe> holder) {
+        return LytStandardRecipeBox.builder()
                 .icon(Blocks.SMITHING_TABLE)
                 .title(Items.SMITHING_TABLE.getName().getString())
                 .input(LytSlotGrid.rowFromIngredients(getSmithingIngredients(holder.value()), true))
                 .outputFromResultOf(holder)
-                .build(holder));
+                .build(holder);
     }
 
-    private static List<Ingredient> getSmithingIngredients(SmithingRecipe recipe) {
+    private static List<@Nullable Ingredient> getSmithingIngredients(SmithingRecipe recipe) {
         if (recipe instanceof SmithingTrimRecipe trimRecipe) {
-            return Stream.of(
-                    trimRecipe.templateIngredient(),
-                    Optional.of(trimRecipe.baseIngredient()),
-                    trimRecipe.additionIngredient())
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .toList();
+            return Arrays.asList(
+                    trimRecipe.templateIngredient().orElse(null),
+                    trimRecipe.baseIngredient(),
+                    trimRecipe.additionIngredient().orElse(null));
         } else if (recipe instanceof SmithingTransformRecipe transformRecipe) {
-            return Stream.of(
-                    transformRecipe.templateIngredient(),
-                    Optional.of(transformRecipe.baseIngredient()),
-                    transformRecipe.additionIngredient())
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .toList();
+            return Arrays.asList(
+                    transformRecipe.templateIngredient().orElse(null),
+                    transformRecipe.baseIngredient(),
+                    transformRecipe.additionIngredient().orElse(null));
         } else {
             LOG.warn("Cannot determine ingredients of smithing recipe type {}", recipe.getClass());
             return List.of();
