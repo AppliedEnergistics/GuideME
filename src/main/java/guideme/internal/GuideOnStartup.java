@@ -7,7 +7,6 @@ import guideme.internal.util.Platform;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -42,7 +41,7 @@ public final class GuideOnStartup {
     private GuideOnStartup() {
     }
 
-    public static void init(IEventBus modBus) {
+    public static void init() {
 
         var guidesToValidate = getGuideIdsToValidate();
         var showOnStartup = getShowOnStartup();
@@ -175,7 +174,14 @@ public final class GuideOnStartup {
                     FeatureFlagSet.of(),
                     Commands.CommandSelection.ALL,
                     0,
-                    Util.backgroundExecutor(),
+                    command -> {
+                        try {
+                            command.run();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            throw e;
+                        }
+                    },
                     command -> {
                         try {
                             command.run();

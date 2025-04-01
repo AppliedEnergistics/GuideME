@@ -83,6 +83,9 @@ public class Platform {
     }
 
     public static RecipeMap getRecipeMap() {
+        if (!isRecipeTypeAvailable(RecipeType.CRAFTING) && fallbackClientRecipeManager != null) {
+            return fallbackClientRecipeManager.recipeMap();
+        }
         return GuideMEClient.instance().getRecipeMap();
     }
 

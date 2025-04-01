@@ -182,6 +182,11 @@ neoForge {
                     '--existing', file('src/main/resources').absolutePath
             ]
         }
+        exportTestGuide {
+            client()
+            systemProperty('guideme.exportOnStartupAndExit', 'testmod:guide')
+            systemProperty('guideme.exportDestination.testmod.guide', file('build/exportedGuide').absolutePath)
+        }
     }
 
     unitTest {

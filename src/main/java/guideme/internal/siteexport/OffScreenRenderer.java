@@ -8,6 +8,7 @@ import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
+import guideme.hooks.RenderToTextureHooks;
 import guideme.internal.util.Platform;
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -133,12 +134,14 @@ public class OffScreenRenderer implements AutoCloseable {
     }
 
     private void renderToBuffer(Runnable r) {
-        try (var renderPass = commandEncoder.createRenderPass(colorTexture, OptionalInt.of(0), depthTexture,
-                OptionalDouble.of(1.0))) {
+        commandEncoder.clearColorAndDepthTextures(colorTexture, 0, depthTexture, 1.0);
+        RenderToTextureHooks.targetOverride = fb;
+        try {
             r.run();
+        } finally {
+            RenderToTextureHooks.targetOverride = null;
         }
-
-        TextureDownloader.downloadTexture(colorTexture, 0, IntUnaryOperator.identity(), nativeImage);
+        TextureDownloader.downloadTexture(colorTexture, 0, IntUnaryOperator.identity(), nativeImage, true);
     }
 
     public void setupItemRendering() {

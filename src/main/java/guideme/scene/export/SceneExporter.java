@@ -83,23 +83,25 @@ public class SceneExporter {
     public byte[] export(GuidebookScene scene) {
         var level = scene.getLevel();
 
-        var bufferSource = new MeshBuildingBufferSource();
+        List<Mesh> meshes;
+        try (var bufferSource = new MeshBuildingBufferSource()) {
 
-        // To avoid baking in the projection and camera, we need to reset these here
-        var modelViewStack = RenderSystem.getModelViewStack();
-        modelViewStack.pushMatrix();
-        modelViewStack.identity();
-        RenderSystem.backupProjectionMatrix();
-        RenderSystem.setProjectionMatrix(new Matrix4f(), ProjectionType.ORTHOGRAPHIC);
+            // To avoid baking in the projection and camera, we need to reset these here
+            var modelViewStack = RenderSystem.getModelViewStack();
+            modelViewStack.pushMatrix();
+            modelViewStack.identity();
+            RenderSystem.backupProjectionMatrix();
+            RenderSystem.setProjectionMatrix(new Matrix4f(), ProjectionType.ORTHOGRAPHIC);
 
-        GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource);
+            GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource);
 
-        modelViewStack.popMatrix();
-        RenderSystem.restoreProjectionMatrix();
+            modelViewStack.popMatrix();
+            RenderSystem.restoreProjectionMatrix();
+            meshes = bufferSource.getMeshes();
+        }
 
         // Concat all vertex buffers
         var builder = new FlatBufferBuilder(1024);
-        var meshes = bufferSource.getMeshes();
 
         int animatedTexturesOffset = writeAnimations(builder, meshes);
 

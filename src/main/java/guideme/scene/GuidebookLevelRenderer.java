@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.color.LightDarkMode;
+import guideme.internal.scene.FakeRenderEnvironment;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
@@ -107,37 +108,39 @@ public class GuidebookLevelRenderer {
      * Render without any setup.
      */
     public void renderContent(GuidebookLevel level, MultiBufferSource.BufferSource buffers) {
-        renderBlocks(level, buffers, false);
-        renderBlockEntities(level, buffers, level.getPartialTick());
-        renderEntities(level, buffers, level.getPartialTick());
+        try (var fake = FakeRenderEnvironment.create(level)) {
+            renderBlocks(level, buffers, false);
+            renderBlockEntities(level, buffers, level.getPartialTick());
+            renderEntities(level, buffers, level.getPartialTick());
 
-        // The order comes from LevelRenderer#renderLevel
-        buffers.endBatch(RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS));
-        buffers.endBatch(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
-        buffers.endBatch(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS));
-        buffers.endBatch(RenderType.entitySmoothCutout(TextureAtlas.LOCATION_BLOCKS));
+            // The order comes from LevelRenderer#renderLevel
+            buffers.endBatch(RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS));
+            buffers.endBatch(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
+            buffers.endBatch(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS));
+            buffers.endBatch(RenderType.entitySmoothCutout(TextureAtlas.LOCATION_BLOCKS));
 
-        // These would normally be pre-baked, but they are not for us
-        for (var layer : RenderType.chunkBufferLayers()) {
-            if (layer != RenderType.translucent()) {
-                buffers.endBatch(layer);
+            // These would normally be pre-baked, but they are not for us
+            for (var layer : RenderType.chunkBufferLayers()) {
+                if (layer != RenderType.translucent()) {
+                    buffers.endBatch(layer);
+                }
             }
+
+            buffers.endBatch(RenderType.solid());
+            buffers.endBatch(RenderType.endPortal());
+            buffers.endBatch(RenderType.endGateway());
+            buffers.endBatch(Sheets.solidBlockSheet());
+            buffers.endBatch(Sheets.cutoutBlockSheet());
+            buffers.endBatch(Sheets.bedSheet());
+            buffers.endBatch(Sheets.shulkerBoxSheet());
+            buffers.endBatch(Sheets.signSheet());
+            buffers.endBatch(Sheets.hangingSignSheet());
+            buffers.endBatch(Sheets.chestSheet());
+            buffers.endLastBatch();
+
+            renderBlocks(level, buffers, true);
+            buffers.endBatch(RenderType.translucent());
         }
-
-        buffers.endBatch(RenderType.solid());
-        buffers.endBatch(RenderType.endPortal());
-        buffers.endBatch(RenderType.endGateway());
-        buffers.endBatch(Sheets.solidBlockSheet());
-        buffers.endBatch(Sheets.cutoutBlockSheet());
-        buffers.endBatch(Sheets.bedSheet());
-        buffers.endBatch(Sheets.shulkerBoxSheet());
-        buffers.endBatch(Sheets.signSheet());
-        buffers.endBatch(Sheets.hangingSignSheet());
-        buffers.endBatch(Sheets.chestSheet());
-        buffers.endLastBatch();
-
-        renderBlocks(level, buffers, true);
-        buffers.endBatch(RenderType.translucent());
     }
 
     private void renderBlocks(GuidebookLevel level, MultiBufferSource buffers, boolean translucent) {
@@ -145,7 +148,9 @@ public class GuidebookLevelRenderer {
         var blockRenderDispatcher = Minecraft.getInstance().getBlockRenderer();
         var poseStack = new PoseStack();
 
-        level.getFilledBlocks().forEach(pos -> {
+        var it = level.getFilledBlocks().iterator();
+        while (it.hasNext()) {
+            var pos = it.next();
             var blockState = level.getBlockState(pos);
             var fluidState = blockState.getFluidState();
             if (!fluidState.isEmpty()) {
@@ -161,29 +166,33 @@ public class GuidebookLevelRenderer {
                 }
             }
 
-            if (blockState.getRenderShape() != RenderShape.INVISIBLE) {
-                var model = blockRenderDispatcher.getBlockModel(blockState);
-
-                var modelParts = model.collectParts(level, pos, blockState, randomSource);
-                if (!translucent) {
-                    modelParts.removeIf(part -> {
-                        return part.getRenderType(blockState).getRenderPipeline().getBlendFunction().isPresent();
-                    });
-                }
-
-                poseStack.pushPose();
-                poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
-                blockRenderDispatcher.renderBatched(blockState, pos, level, poseStack, buffers::getBuffer, true,
-                        modelParts);
-                poseStack.popPose();
+            if (blockState.getRenderShape() == RenderShape.INVISIBLE) {
+                continue;
             }
-        });
+
+            var model = blockRenderDispatcher.getBlockModel(blockState);
+
+            var modelParts = model.collectParts(level, pos, blockState, randomSource);
+            if (!translucent) {
+                modelParts.removeIf(part -> {
+                    return part.getRenderType(blockState).getRenderPipeline().getBlendFunction().isPresent();
+                });
+            }
+
+            poseStack.pushPose();
+            poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
+            blockRenderDispatcher.renderBatched(blockState, pos, level, poseStack, buffers::getBuffer, true,
+                    modelParts);
+            poseStack.popPose();
+        }
     }
 
     private void renderBlockEntities(GuidebookLevel level, MultiBufferSource buffers, float partialTick) {
         var poseStack = new PoseStack();
 
-        level.getFilledBlocks().forEach(pos -> {
+        var it = level.getFilledBlocks().iterator();
+        while (it.hasNext()) {
+            var pos = it.next();
             var blockState = level.getBlockState(pos);
             if (blockState.hasBlockEntity()) {
                 var blockEntity = level.getBlockEntity(pos);
@@ -191,7 +200,7 @@ public class GuidebookLevelRenderer {
                     this.handleBlockEntity(poseStack, blockEntity, buffers, partialTick);
                 }
             }
-        });
+        }
     }
 
     private static void markFluidSpritesActive(FluidState fluidState) {

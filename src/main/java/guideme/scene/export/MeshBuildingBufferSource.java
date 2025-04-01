@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.RenderType;
 /**
  * A buffer source we pass into the standard renderer to capture all rendered 3D data in buffers suitable for export.
  */
-class MeshBuildingBufferSource extends MultiBufferSource.BufferSource {
+class MeshBuildingBufferSource extends MultiBufferSource.BufferSource implements AutoCloseable {
     private final List<Mesh> meshes = new ArrayList<>();
 
     public MeshBuildingBufferSource() {
@@ -58,4 +58,9 @@ class MeshBuildingBufferSource extends MultiBufferSource.BufferSource {
         }
     }
 
+    @Override
+    public void close() {
+        fixedBuffers.values().forEach(ByteBufferBuilder::close);
+        sharedBuffer.close();
+    }
 }

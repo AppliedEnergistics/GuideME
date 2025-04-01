@@ -47,7 +47,7 @@ public class GlCommandEncoderMixin {
     }
 
     @WrapMethod(method = "clearStencilTexture")
-    public void overrideClearDepthTexture(GpuTexture depthBuffer, int stencilValue, Operation<Void> original) {
+    public void overrideClearStencilTexture(GpuTexture depthBuffer, int stencilValue, Operation<Void> original) {
         depthBuffer = RenderToTextureHooks.replaceDepthTarget(depthBuffer);
         original.call(depthBuffer, stencilValue);
     }

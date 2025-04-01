@@ -2,6 +2,8 @@ package guideme.internal.siteexport;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.TypeAdapter;
 import com.google.gson.internal.bind.JsonTreeWriter;
 import com.google.gson.stream.JsonReader;
@@ -9,6 +11,7 @@ import com.google.gson.stream.JsonWriter;
 import guideme.Guide;
 import guideme.compiler.MdAstNodeAdapter;
 import guideme.compiler.ParsedGuidePage;
+import guideme.extensions.ExtensionCollection;
 import guideme.indices.PageIndex;
 import guideme.internal.siteexport.model.ExportedPageJson;
 import guideme.internal.siteexport.model.FluidInfoJson;
@@ -19,6 +22,7 @@ import guideme.internal.util.Platform;
 import guideme.libs.mdast.MdAstVisitor;
 import guideme.libs.mdast.model.MdAstHeading;
 import guideme.libs.mdast.model.MdAstNode;
+import guideme.siteexport.ExportPostProcessor;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -34,6 +38,7 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.zip.GZIPOutputStream;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -49,8 +54,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
-import net.minecraft.world.item.crafting.SmithingTransformRecipe;
-import net.minecraft.world.item.crafting.SmithingTrimRecipe;
+import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.slf4j.Logger;
@@ -132,7 +136,11 @@ public class SiteExportWriter {
 
     private final SiteExportJson siteExport = new SiteExportJson();
 
+    private final ExtensionCollection extensions;
+
     public SiteExportWriter(Guide guide) {
+        extensions = guide.getExtensions();
+
         siteExport.defaultNamespace = guide.getDefaultNamespace();
         siteExport.navigationRootNodes = guide.getNavigationTree().getRootNodes()
                 .stream()
@@ -164,9 +172,7 @@ public class SiteExportWriter {
             fields.put("shapeless", false);
             fields.put("width", shapedRecipe.getWidth());
             fields.put("height", shapedRecipe.getHeight());
-            fields.put("ingredients", shapedRecipe.getIngredients().stream().map(i -> {
-                return i.isPresent() ? i.get() : List.of();
-            }).toList());
+            fields.put("ingredients", shapedRecipe.getIngredients().stream().map(this::unwrapIngredient).toList());
 
             var resultItem = shapedRecipe.result;
             fields.put("resultItem", resultItem);
@@ -192,25 +198,29 @@ public class SiteExportWriter {
                 "ingredient", recipe.input()));
     }
 
-    public void addRecipe(ResourceKey<Recipe<?>> id, SmithingTransformRecipe recipe) {
+    public void addRecipe(ResourceKey<Recipe<?>> id, SmithingRecipe recipe) {
+        var resultItem = recipe.display().getFirst().result().resolveForFirstStack(ContextMap.EMPTY);
+
         addRecipe(id, recipe, Map.of(
-                "resultItem", recipe.result.display().resolveForFirstStack(ContextMap.EMPTY),
+                "resultItem", resultItem,
                 "base", recipe.baseIngredient(),
-                "addition", recipe.additionIngredient(),
-                "template", recipe.templateIngredient()));
+                "addition", unwrapIngredient(recipe.additionIngredient()),
+                "template", unwrapIngredient(recipe.templateIngredient())));
     }
 
-    public void addRecipe(ResourceKey<Recipe<?>> id, SmithingTrimRecipe recipe) {
-        addRecipe(id, recipe, Map.of(
-                "base", recipe.baseIngredient(),
-                "addition", recipe.additionIngredient(),
-                "template", recipe.templateIngredient()));
+    private Object unwrapIngredient(Optional<Ingredient> ingredient) {
+        return ingredient.isPresent() ? ingredient.get() : List.of();
     }
 
     public void addRecipe(ResourceKey<Recipe<?>> id, Recipe<?> recipe, Map<String, Object> element) {
         // Auto-transform ingredients
 
-        var jsonElement = GSON.toJsonTree(element);
+        JsonElement jsonElement;
+        try {
+            jsonElement = GSON.toJsonTree(element);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to convert recipe " + id + " to json", e);
+        }
 
         var type = BuiltInRegistries.RECIPE_TYPE.getKey(recipe.getType()).toString();
         jsonElement.getAsJsonObject().addProperty("type", type);
@@ -225,10 +235,16 @@ public class SiteExportWriter {
     }
 
     public byte[] toByteArray() throws IOException {
+        var rootNode = (JsonObject) GSON.toJsonTree(siteExport);
+
+        for (var postProcessor : extensions.get(ExportPostProcessor.EXTENSION_POINT)) {
+            postProcessor.postProcess(rootNode);
+        }
+
         var bout = new ByteArrayOutputStream();
         try (var out = new GZIPOutputStream(bout);
                 var writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8))) {
-            GSON.toJson(siteExport, writer);
+            GSON.toJson(rootNode, writer);
         }
         return bout.toByteArray();
     }

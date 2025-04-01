@@ -8,11 +8,13 @@ import guideme.compiler.PageCompiler;
 import guideme.compiler.ParsedGuidePage;
 import guideme.indices.CategoryIndex;
 import guideme.indices.ItemIndex;
+import guideme.internal.GuideME;
 import guideme.internal.GuideOnStartup;
 import guideme.internal.siteexport.mdastpostprocess.PageExportPostProcessor;
 import guideme.internal.util.Platform;
 import guideme.navigation.NavigationNode;
 import guideme.siteexport.ExportableResourceProvider;
+import guideme.siteexport.RecipeExporter;
 import guideme.siteexport.ResourceExporter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -48,13 +50,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.SmithingTransformRecipe;
-import net.minecraft.world.item.crafting.SmithingTrimRecipe;
-import net.minecraft.world.item.crafting.StonecutterRecipe;
+import net.minecraft.world.item.crafting.SingleItemRecipe;
+import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
@@ -62,7 +65,9 @@ import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.SmithingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.StonecutterRecipeDisplay;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluid;
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.common.NeoForge;
@@ -71,7 +76,6 @@ import net.neoforged.neoforge.fluids.crafting.display.FluidStackContentsFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,10 +104,18 @@ public class SiteExporter implements ResourceExporter {
 
     private final Set<Fluid> fluids = new HashSet<>();
 
+    private final Map<ResourceLocation, Object> extraData = new HashMap<>();
+
     public SiteExporter(Minecraft client, Path outputFolder, Guide guide) {
         this.client = client;
         this.outputFolder = outputFolder;
         this.guide = guide;
+
+        // Reference resources used by our own recipe displays
+        referenceItem(Blocks.CRAFTING_TABLE);
+        referenceItem(Blocks.SMITHING_TABLE);
+        referenceItem(Blocks.STONECUTTER);
+        referenceItem(Items.FURNACE);
     }
 
     /**
@@ -167,9 +179,17 @@ public class SiteExporter implements ResourceExporter {
         fluids.add(fluid.getFluid());
     }
 
-    private void referenceIngredient(SlotDisplay display) {
+    @Override
+    public void referenceSlotDisplay(SlotDisplay display) {
         for (var stack : display.resolveForStacks(Platform.getSlotDisplayContext())) {
             referenceItem(stack);
+        }
+    }
+
+    @Override
+    public void referenceIngredient(Ingredient ingredient) {
+        for (var stack : ingredient.items().toList()) {
+            referenceItem(stack.value());
         }
     }
 
@@ -179,6 +199,7 @@ public class SiteExporter implements ResourceExporter {
             return; // Already added
         }
 
+        // we use displays to discover items we need to reference
         for (var recipeDisplay : holder.value().display()) {
             visitDisplays(recipeDisplay, display -> {
                 display.resolve(Platform.getSlotDisplayContext(), SlotDisplay.ItemStackContentsFactory.INSTANCE)
@@ -189,8 +210,14 @@ public class SiteExporter implements ResourceExporter {
         }
     }
 
-    @MustBeInvokedByOverriders
-    protected void visitDisplays(RecipeDisplay recipe, Consumer<SlotDisplay> visitor) {
+    @Override
+    public void addExtraData(ResourceLocation key, Object value) {
+        if (extraData.put(key, value) != null) {
+            throw new IllegalStateException("Duplicate key: " + key);
+        }
+    }
+
+    private void visitDisplays(RecipeDisplay recipe, Consumer<SlotDisplay> visitor) {
         visitor.accept(recipe.result());
         visitor.accept(recipe.craftingStation());
 
@@ -228,6 +255,20 @@ public class SiteExporter implements ResourceExporter {
             var id = holder.id();
             var recipe = holder.value();
 
+            boolean handled = false;
+            for (var recipeExporter : guide.getExtensions().get(RecipeExporter.EXTENSION_POINT)) {
+                var recipeData = recipeExporter.convertToJson(id, recipe, this);
+                if (recipeData != null) {
+                    writer.addRecipe(id, recipe, recipeData);
+                    handled = true;
+                    break;
+                }
+            }
+
+            if (handled) {
+                continue;
+            }
+
             if (recipe instanceof CraftingRecipe craftingRecipe) {
                 if (craftingRecipe.isSpecial()) {
                     continue;
@@ -235,12 +276,10 @@ public class SiteExporter implements ResourceExporter {
                 writer.addRecipe(id, craftingRecipe);
             } else if (recipe instanceof AbstractCookingRecipe cookingRecipe) {
                 writer.addRecipe(id, cookingRecipe);
-            } else if (recipe instanceof SmithingTransformRecipe smithingTransformRecipe) {
-                writer.addRecipe(id, smithingTransformRecipe);
-            } else if (recipe instanceof SmithingTrimRecipe smithingTrimRecipe) {
-                writer.addRecipe(id, smithingTrimRecipe);
-            } else if (recipe instanceof StonecutterRecipe stonecutterRecipe) {
-                writer.addRecipe(id, stonecutterRecipe);
+            } else if (recipe instanceof SmithingRecipe smithingRecipe) {
+                writer.addRecipe(id, smithingRecipe);
+            } else if (recipe instanceof SingleItemRecipe singleItemRecipe) {
+                writer.addRecipe(id, singleItemRecipe);
             } else {
                 var recipeFields = getCustomRecipeFields(id, recipe);
                 if (recipeFields != null) {
@@ -260,14 +299,6 @@ public class SiteExporter implements ResourceExporter {
     @ApiStatus.OverrideOnly
     protected Map<String, Object> getCustomRecipeFields(ResourceKey<Recipe<?>> id, Recipe<?> recipe) {
         return null;
-    }
-
-    @ApiStatus.OverrideOnly
-    protected void postProcess(SiteExportWriter writer) {
-    }
-
-    protected String getModVersion() {
-        return System.getProperty("appeng.version", "unknown");
     }
 
     @Override
@@ -333,7 +364,7 @@ public class SiteExporter implements ResourceExporter {
         return currentPage != null ? currentPage.getId() : null;
     }
 
-    private void export() throws Exception {
+    public void export() throws Exception {
         if (Files.isDirectory(outputFolder)) {
             MoreFiles.deleteDirectoryContents(outputFolder, RecursiveDeleteOption.ALLOW_INSECURE);
         } else {
@@ -372,8 +403,6 @@ public class SiteExporter implements ResourceExporter {
         indexWriter.addIndex(guide, ItemIndex.class);
         indexWriter.addIndex(guide, CategoryIndex.class);
 
-        postProcess(indexWriter);
-
         var guideContent = outputFolder.resolve("guide.json.gz");
         byte[] content = indexWriter.toByteArray();
 
@@ -400,6 +429,7 @@ public class SiteExporter implements ResourceExporter {
 
     private void writeSummary(String guideDataFilename) throws IOException {
         var modVersion = getModVersion();
+        var guideMeVersion = getGuideMeVersion();
         var generated = Instant.now().toEpochMilli();
         var gameVersion = DetectedVersion.tryDetectVersion().getName();
 
@@ -411,9 +441,27 @@ public class SiteExporter implements ResourceExporter {
             jsonWriter.name("generated").value(generated);
             jsonWriter.name("gameVersion").value(gameVersion);
             jsonWriter.name("modVersion").value(modVersion);
+            jsonWriter.name("guideMeVersion").value(guideMeVersion);
             jsonWriter.name("guideDataPath").value(guideDataFilename);
             jsonWriter.endObject();
         }
+    }
+
+    private String getModVersion() {
+        // Prefer the use of a version set via system propert
+        var modVersion = System.getProperty(
+                "guideme.exportModVersion." + guide.getId().getNamespace() + "." + guide.getId().getPath());
+        if (modVersion != null) {
+            return modVersion;
+        }
+
+        return ModList.get().getModContainerById(guide.getId().getNamespace())
+                .map(mc -> mc.getModInfo().getVersion().toString())
+                .orElse("unknown");
+    }
+
+    private String getGuideMeVersion() {
+        return ModList.get().getModContainerById(GuideME.MOD_ID).get().getModInfo().getVersion().toString();
     }
 
     private Path resolvePath(ResourceLocation id) {
@@ -561,13 +609,6 @@ public class SiteExporter implements ResourceExporter {
         var outputPath = getPathForWriting(id);
 
         var texture = Minecraft.getInstance().getTextureManager().getTexture(textureId);
-
-        if (texture instanceof TextureAtlas textureAtlas) {
-            for (var sprite : textureAtlas.sprites) {
-                if (sprite.animatedTexture != null) {
-                }
-            }
-        }
 
         byte[] imageContent;
         try (var nativeImage = TextureDownloader.downloadTexture(texture.getTexture(), 0,

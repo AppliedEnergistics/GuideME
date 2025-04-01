@@ -3,6 +3,13 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.5.3-beta (Minecraft 1.21.5)
+
+- Java API: Fix Off-Screen-Renderer for Website export.
+- Java API: Fix various website export issues.
+- Java API: Introduce new extension points for the site export,
+  and make it usable via new system properties.
+
 ## 21.5.2-beta (Minecraft 1.21.5)
 
 - Java API: Add back the semantics of `RecipeTypeMappings.add`, which supports mapping RecipeHolders to a nullable LytBlock for custom recipes.

@@ -12,6 +12,7 @@ import guideme.internal.item.GuideItemDispatchUnbaked;
 import guideme.internal.screen.GlobalInMemoryHistory;
 import guideme.internal.screen.GuideNavigation;
 import guideme.internal.search.GuideSearch;
+import guideme.internal.siteexport.SiteExportOnStartup;
 import guideme.internal.util.Blitter;
 import guideme.render.GuiAssets;
 import java.util.Objects;
@@ -94,7 +95,8 @@ public class GuideMEClient {
             processDevWatchers();
         });
 
-        GuideOnStartup.init(modBus);
+        GuideOnStartup.init();
+        SiteExportOnStartup.init();
 
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
 

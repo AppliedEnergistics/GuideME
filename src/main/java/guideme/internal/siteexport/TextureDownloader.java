@@ -2,7 +2,6 @@ package guideme.internal.siteexport;
 
 import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
-import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -21,6 +20,11 @@ final class TextureDownloader {
 
     public static void downloadTexture(GpuTexture texture, int mipLevel, IntUnaryOperator pixelOp,
             NativeImage nativeImage) {
+        downloadTexture(texture, mipLevel, pixelOp, nativeImage, false);
+    }
+
+    public static void downloadTexture(GpuTexture texture, int mipLevel, IntUnaryOperator pixelOp,
+            NativeImage nativeImage, boolean flipY) {
         var width = texture.getWidth(mipLevel);
         var height = texture.getHeight(mipLevel);
 
@@ -38,12 +42,19 @@ final class TextureDownloader {
             commandencoder.copyTextureToBuffer(texture, downloadBuffer, 0, () -> {
             }, 0);
 
-            try (GpuBuffer.ReadView readView = commandencoder.readBuffer(downloadBuffer)) {
-                try (var nativeimage = new NativeImage(width, height, false)) {
+            try (var readView = commandencoder.readBuffer(downloadBuffer)) {
+                if (flipY) {
                     for (int y = 0; y < height; y++) {
                         for (int x = 0; x < width; x++) {
                             int pixel = readView.data().getInt((x + y * width) * texture.getFormat().pixelSize());
-                            nativeimage.setPixelABGR(x, y, pixelOp.applyAsInt(pixel));
+                            nativeImage.setPixelABGR(x, height - y - 1, pixelOp.applyAsInt(pixel));
+                        }
+                    }
+                } else {
+                    for (int y = 0; y < height; y++) {
+                        for (int x = 0; x < width; x++) {
+                            int pixel = readView.data().getInt((x + y * width) * texture.getFormat().pixelSize());
+                            nativeImage.setPixelABGR(x, y, pixelOp.applyAsInt(pixel));
                         }
                     }
                 }

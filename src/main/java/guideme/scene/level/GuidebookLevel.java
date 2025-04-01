@@ -64,6 +64,8 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.LevelTickAccess;
 import net.neoforged.neoforge.entity.PartEntity;
+import net.neoforged.neoforge.model.data.ModelData;
+import net.neoforged.neoforge.model.data.ModelDataManager;
 import org.jetbrains.annotations.Nullable;
 
 public class GuidebookLevel extends Level {
@@ -88,6 +90,7 @@ public class GuidebookLevel extends Level {
     private final ClientLevel.ClientLevelData clientLevelData;
     private final DeltaTracker.Timer tracker = new DeltaTracker.Timer(20.0F, 0L, def -> def);
     private float partialTick;
+    private final ModelDataManager modelDataManager = new ModelDataManager(this);
 
     public GuidebookLevel() {
         this(Platform.getClientRegistryAccess());
@@ -204,6 +207,16 @@ public class GuidebookLevel extends Level {
 
     public float getPartialTick() {
         return partialTick;
+    }
+
+    @Override
+    public ModelData getModelData(BlockPos pos) {
+        return modelDataManager.getAt(pos);
+    }
+
+    @Override
+    public @Nullable ModelDataManager getModelDataManager() {
+        return modelDataManager;
     }
 
     public void onRenderFrame() {
