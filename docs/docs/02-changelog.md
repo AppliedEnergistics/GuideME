@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.1.7 (Minecraft 1.21.1)
+
+- Guard against crashes when mods return null results from their custom recipes.
+
 ## 21.1.6 (Minecraft 1.21.1)
 
 - Fix wrapping of content in `<Row />` elements.
