@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.1.7 (Minecraft 1.21.1)
+
+- Guard against crashes when mods return null results from their custom recipes.
+
 ## 21.5.3-beta (Minecraft 1.21.5)
 
 - Java API: Fix Off-Screen-Renderer for Website export.
