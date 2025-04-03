@@ -1,5 +1,6 @@
 package guideme.internal.screen;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.document.DefaultStyles;
@@ -29,6 +30,7 @@ import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL32C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -200,6 +202,10 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         context.endBatch(buffers);
 
         document.render(context);
+
+        // Clear the Z-Buffer for the scissor area since anything we render now should be on top
+        RenderSystem.clearDepth(1);
+        GL32C.glClear(GL32C.GL_DEPTH_BUFFER_BIT);
 
         context.popScissor();
 

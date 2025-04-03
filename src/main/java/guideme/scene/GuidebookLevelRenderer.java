@@ -24,6 +24,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.client.model.data.ModelData;
@@ -150,11 +151,14 @@ public class GuidebookLevelRenderer {
     }
 
     private void renderBlocks(GuidebookLevel level, MultiBufferSource buffers, boolean translucent) {
-        var randomSource = level.random;
         var blockRenderDispatcher = Minecraft.getInstance().getBlockRenderer();
         var poseStack = new PoseStack();
 
-        level.getFilledBlocks().forEach(pos -> {
+        var randomSource = new SingleThreadedRandomSource(0L);
+
+        var it = level.getFilledBlocks().iterator();
+        while (it.hasNext()) {
+            var pos = it.next();
             var blockState = level.getBlockState(pos);
             var fluidState = blockState.getFluidState();
             if (!fluidState.isEmpty()) {
@@ -183,6 +187,7 @@ public class GuidebookLevelRenderer {
 
                 for (var renderType : renderTypes) {
                     if (renderType != RenderType.translucent() || translucent) {
+                        randomSource.setSeed(blockState.getSeed(pos));
                         var bufferBuilder = buffers.getBuffer(renderType);
 
                         poseStack.pushPose();
@@ -193,7 +198,7 @@ public class GuidebookLevelRenderer {
                     }
                 }
             }
-        });
+        }
     }
 
     private void renderBlockEntities(GuidebookLevel level, MultiBufferSource buffers, float partialTick) {
