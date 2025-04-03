@@ -1,6 +1,7 @@
 package guideme.internal.screen;
 
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.RenderSystem;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.document.DefaultStyles;
@@ -201,6 +202,11 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         context.endBatch(buffers);
 
         document.render(context);
+
+        // Clear the Z-Buffer for the scissor area since anything we render now should be on top
+        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(
+                Minecraft.getInstance().getMainRenderTarget().getDepthTexture(),
+                1.0);
 
         context.popScissor();
 

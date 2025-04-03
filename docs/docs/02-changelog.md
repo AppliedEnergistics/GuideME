@@ -3,6 +3,11 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.5.4-beta (Minecraft 1.21.5)
+
+- Fix item images being shown on top of the navigation bar.
+- Use same random-source as normal level rendering to avoid constantly changing block appearance in game scenes.
+
 ## 21.1.7 (Minecraft 1.21.1)
 
 - Guard against crashes when mods return null results from their custom recipes.

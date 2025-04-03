@@ -9,6 +9,7 @@ import guideme.internal.scene.FakeRenderEnvironment;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
+import java.util.ArrayList;
 import java.util.Collection;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogParameters;
@@ -17,6 +18,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -26,6 +28,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
@@ -144,9 +147,11 @@ public class GuidebookLevelRenderer {
     }
 
     private void renderBlocks(GuidebookLevel level, MultiBufferSource buffers, boolean translucent) {
-        var randomSource = level.random;
         var blockRenderDispatcher = Minecraft.getInstance().getBlockRenderer();
         var poseStack = new PoseStack();
+
+        var randomSource = new SingleThreadedRandomSource(0L);
+        var modelParts = new ArrayList<BlockModelPart>();
 
         var it = level.getFilledBlocks().iterator();
         while (it.hasNext()) {
@@ -172,7 +177,9 @@ public class GuidebookLevelRenderer {
 
             var model = blockRenderDispatcher.getBlockModel(blockState);
 
-            var modelParts = model.collectParts(level, pos, blockState, randomSource);
+            modelParts.clear();
+            randomSource.setSeed(blockState.getSeed(pos));
+            model.collectParts(level, pos, blockState, randomSource, modelParts);
             if (!translucent) {
                 modelParts.removeIf(part -> {
                     return part.getRenderType(blockState).getRenderPipeline().getBlendFunction().isPresent();
