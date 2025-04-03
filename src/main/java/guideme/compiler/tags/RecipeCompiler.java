@@ -56,7 +56,7 @@ public class RecipeCompiler extends BlockTagCompiler {
 
             var item = itemAndId.getRight();
             for (var recipe : recipeManager.getRecipes()) {
-                if (recipe.getResultItem(Platform.getClientRegistryAccess()).is(item)) {
+                if (Platform.recipeHasResult(recipe, item)) {
                     for (var mapping : getMappings(compiler)) {
                         var block = mapping.tryCreate(recipe);
                         if (block != null) {
@@ -131,13 +131,13 @@ public class RecipeCompiler extends BlockTagCompiler {
                     continue;
                 }
 
-                if (recipe.getResultItem(registryAccess).getItem() == resultItem) {
+                if (Platform.recipeHasResult(recipe, resultItem)) {
                     return factory.apply(recipe);
                 }
             }
 
             for (var recipe : fallbackCandidates) {
-                if (recipe.getResultItem(registryAccess).getItem() == resultItem) {
+                if (Platform.recipeHasResult(recipe, resultItem)) {
                     return factory.apply((T) recipe);
                 }
             }
