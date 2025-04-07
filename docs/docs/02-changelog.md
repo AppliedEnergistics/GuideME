@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.1.8 (Minecraft 1.21.1)
+
+- Remove a misplaced black pixel in the border of recipe panels.
+
 ## 21.5.4-beta (Minecraft 1.21.5)
 
 - Fix item images being shown on top of the navigation bar.
