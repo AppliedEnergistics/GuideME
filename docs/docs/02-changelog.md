@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.1.8 (Minecraft 1.21.1)
+
+- Remove a misplaced black pixel in the border of recipe panels.
+
 ## 21.1.7 (Minecraft 1.21.1)
 
 - Guard against crashes when mods return null results from their custom recipes.
