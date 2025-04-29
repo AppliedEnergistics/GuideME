@@ -29,4 +29,9 @@ public interface GuideMEProxy {
     Stream<ResourceLocation> getAvailableGuides();
 
     Stream<ResourceLocation> getAvailablePages(ResourceLocation guideId);
+
+    @Nullable
+    default Player getLocalPlayer() {
+        return null;
+    }
 }

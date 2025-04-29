@@ -83,4 +83,9 @@ class GuideMEClientProxy extends GuideMEServerProxy {
 
         return guide.getPages().stream().map(ParsedGuidePage::getId);
     }
+
+    @Override
+    public @Nullable Player getLocalPlayer() {
+        return Minecraft.getInstance().player;
+    }
 }

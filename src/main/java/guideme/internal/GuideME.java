@@ -7,7 +7,6 @@ import guideme.internal.item.GuideItem;
 import guideme.internal.network.OpenGuideRequest;
 import java.util.Objects;
 import java.util.function.Supplier;
-import net.minecraft.client.Minecraft;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
@@ -87,7 +86,9 @@ public class GuideME {
 
         ctx.enqueueWork(
                 () -> {
-                    var player = Minecraft.getInstance().player;
+                    var player = Objects.requireNonNullElse(
+                            ctx.getSender(),
+                            GuideMEProxy.instance().getLocalPlayer());
                     var anchor = packet.pageAnchor().orElse(null);
                     if (anchor != null) {
                         GuideMEProxy.instance().openGuide(player, packet.guideId(), anchor);
