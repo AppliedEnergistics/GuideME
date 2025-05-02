@@ -152,7 +152,7 @@ jobs:
           files: ${{ needs.build.outputs.ARTIFACT_PATH }}
           curseforge-id: 1173950
           curseforge-token: ${{ secrets.CURSEFORGE }}
-          loaders: neoforge
+          loaders: forge
 
   deploy-modrinth:
     name: Deploy to Modrinth
@@ -175,4 +175,4 @@ jobs:
           files: ${{ needs.build.outputs.ARTIFACT_PATH }}
           modrinth-id: Ck4E7v7R
           modrinth-token: ${{ secrets.MODRINTH }}
-          loaders: neoforge
+          loaders: forge
