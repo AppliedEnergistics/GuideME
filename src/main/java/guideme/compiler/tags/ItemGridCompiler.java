@@ -21,9 +21,9 @@ public class ItemGridCompiler extends BlockTagCompiler {
         // We expect children to only contain ItemIcon elements
         for (var childNode : el.children()) {
             if (childNode instanceof MdxJsxElementFields jsxChild && "ItemIcon".equals(jsxChild.name())) {
-                var item = MdxAttrs.getRequiredItem(compiler, parent, jsxChild, "id");
-                if (item != null) {
-                    itemGrid.addItem(item);
+                var stack = MdxAttrs.getRequiredItemStack(compiler, parent, jsxChild);
+                if (stack != null) {
+                    itemGrid.addItem(stack);
                 }
 
                 continue;

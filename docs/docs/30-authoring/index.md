@@ -161,6 +161,9 @@ To show-case multiple related items in a grid-layout, use the following markup:
 </ItemGrid>
 ```
 
+Similar to `ItemImage` tags, the `ItemIcon` tag also supports additional itemstack data in the `tag` attribute,
+in [SNBT format](https://minecraft.wiki/w/NBT_format#SNBT_format).
+
 ### Category Index
 
 Pages can further be assigned to be part of multiple categories (orthogonal to the navigation bar).
@@ -207,6 +210,7 @@ The tag also supports the following attributes:
 
 | Attribute | Description                                                                                                                                       |
 |-----------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| tag       | Optional NBT data for the itemstack in [SNBT format](https://minecraft.wiki/w/NBT_format#SNBT_format).                                            |
 | scale     | Allows the item image to be scaled. Supports floating point numbers. `scale="1.5"` will show the item at 150% of its natural size.                |
 | float     | Allows the item image to be floated like  `FloatingImage` to make it show to the left or right with a block of text. (Allows values: left, right) |
 
@@ -233,7 +237,8 @@ The tag also supports the following attributes:
 
 :::warning
 
-The following should be used sparingly since it may not provide great contrast when switching between light- and dark-mode.
+The following should be used sparingly since it may not provide great contrast when switching between light- and
+dark-mode.
 
 :::
 
