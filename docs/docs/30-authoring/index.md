@@ -171,6 +171,11 @@ To show-case multiple related items in a grid-layout, use the following markup:
 </ItemGrid>
 ```
 
+Similar to `ItemImage` tags, the `ItemIcon` tag also accepts additional data components in the `components` attribute,
+same as the [Minecraft give command](https://minecraft.wiki/w/Commands/give).
+
+For example, `<ItemIcon id="minecraft:stone" components="minecraft:enchantment_glint_override=true" />` shows a stone item with enchanting glint visible. 
+
 ### Category Index
 
 Pages can further be assigned to be part of multiple categories (orthogonal to the navigation bar).
@@ -209,16 +214,19 @@ To show an item, use:
 
 ```
 <ItemImage id="mod:item_id" />
+
+<ItemImage id="mod:item_id" components="minecraft:enchantment_glint_override=true" />
 ```
 
 IDs from your own mod don't need to be qualified with the mod id.
 
 The tag also supports the following attributes:
 
-| Attribute | Description                                                                                                                                       |
-|-----------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| scale     | Allows the item image to be scaled. Supports floating point numbers. `scale="1.5"` will show the item at 150% of its natural size.                |
-| float     | Allows the item image to be floated like  `FloatingImage` to make it show to the left or right with a block of text. (Allows values: left, right) |
+| Attribute  | Description                                                                                                                                       |
+|------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| components | Optional data components for the itemstack in the same format used by the Minecraft [give command](https://minecraft.wiki/w/Commands/give).       |
+| scale      | Allows the item image to be scaled. Supports floating point numbers. `scale="1.5"` will show the item at 150% of its natural size.                |
+| float      | Allows the item image to be floated like  `FloatingImage` to make it show to the left or right with a block of text. (Allows values: left, right) |
 
 ### Block Images
 
@@ -243,7 +251,8 @@ The tag also supports the following attributes:
 
 :::warning
 
-The following should be used sparingly since it may not provide great contrast when switching between light- and dark-mode.
+The following should be used sparingly since it may not provide great contrast when switching between light- and
+dark-mode.
 
 :::
 

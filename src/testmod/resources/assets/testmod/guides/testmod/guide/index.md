@@ -9,7 +9,7 @@ item_ids:
 
 [Markdown](./markdown.md)
 
-Welcome to the world of <ItemImage id="minecraft:stone" />
+Welcome to the world of <ItemImage id="minecraft:stone" components="enchantment_glint_override=true" />
 
 You may ~~need~~ a door!
 

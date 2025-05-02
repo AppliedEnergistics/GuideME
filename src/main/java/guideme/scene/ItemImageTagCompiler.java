@@ -18,12 +18,12 @@ public class ItemImageTagCompiler extends BlockTagCompiler {
 
     @Override
     protected void compile(PageCompiler compiler, LytBlockContainer parent, MdxJsxElementFields el) {
-        var item = MdxAttrs.getRequiredItem(compiler, parent, el, "id");
+        var stack = MdxAttrs.getRequiredItemStack(compiler, parent, el);
         var scale = MdxAttrs.getFloat(compiler, parent, el, "scale", 1.0f);
 
-        if (item != null) {
+        if (stack != null) {
             var itemImage = new LytItemImage();
-            itemImage.setItem(item.getDefaultInstance());
+            itemImage.setItem(stack);
             itemImage.setScale(scale);
             parent.append(itemImage);
         }
