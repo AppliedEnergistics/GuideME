@@ -6,11 +6,14 @@ import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.compiler.PageCompiler;
 import guideme.document.LytErrorSink;
+import guideme.internal.util.Platform;
 import guideme.libs.mdast.mdx.model.MdxJsxAttribute;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import java.util.regex.Pattern;
 import net.minecraft.ResourceLocationException;
+import net.minecraft.commands.arguments.item.ItemParser;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
@@ -19,6 +22,7 @@ import net.minecraft.util.FastColor;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -134,6 +138,7 @@ public final class MdxAttrs {
         return Pair.of(entityTypeId, resultType);
     }
 
+    @Nullable
     public static Item getRequiredItem(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el,
             String attribute) {
         var result = getRequiredItemAndId(compiler, errorSink, el, attribute);
@@ -141,6 +146,38 @@ public final class MdxAttrs {
             return result.getRight();
         }
         return null;
+    }
+
+    @Nullable
+    public static ItemStack getRequiredItemStack(PageCompiler compiler, LytErrorSink errorSink,
+            MdxJsxElementFields el) {
+        var itemAndId = getRequiredItemAndId(compiler, errorSink, el, "id");
+        if (itemAndId == null) {
+            return null;
+        }
+
+        var stack = new ItemStack(itemAndId.getRight());
+        var componentsString = MdxAttrs.getString(compiler, errorSink, el, "components", null);
+        if (componentsString != null) {
+            var reader = new StringReader(itemAndId.getLeft() + "[" + componentsString + "]");
+            try {
+                new ItemParser(Platform.getClientRegistryAccess()).parse(reader, new ItemParser.Visitor() {
+                    @Override
+                    public <T> void visitComponent(DataComponentType<T> componentType, T value) {
+                        stack.set(componentType, value);
+                    }
+
+                    @Override
+                    public <T> void visitRemovedComponent(DataComponentType<T> componentType) {
+                        stack.remove(componentType);
+                    }
+                });
+            } catch (CommandSyntaxException e) {
+                errorSink.appendError(compiler, "Failed to parse component string: " + e.getMessage(), el);
+            }
+        }
+
+        return stack;
     }
 
     public static float getFloat(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el, String name,

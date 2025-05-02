@@ -3,6 +3,11 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.1.9 (Minecraft 1.21.1)
+
+- Adds the ability to specify data components on `ItemImage` and `ItemIcon` using the same format used by the `/give` command.
+  For example: `<ItemImage id="minecraft:stone" components="enchantment_glint_override=true" />` shows a piece of stone with enchantment glint applied.
+  
 ## 21.1.8 (Minecraft 1.21.1)
 
 - Remove a misplaced black pixel in the border of recipe panels.
