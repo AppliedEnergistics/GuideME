@@ -1,5 +1,6 @@
 package guideme.compiler.tags;
 
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
