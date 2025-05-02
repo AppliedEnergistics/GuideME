@@ -155,7 +155,9 @@ public final class MdxAttrs {
 
         var tag = MdxAttrs.getCompoundTag(compiler, errorSink, el, "tag", null);
 
-        return new ItemStack(item, 1, tag);
+        var stack = new ItemStack(item);
+        stack.setTag(tag);
+        return stack;
     }
 
     public static float getFloat(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el, String name,

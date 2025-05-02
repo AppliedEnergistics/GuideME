@@ -58,6 +58,9 @@ repositories {
     }
 }
 
+// We're actually launching into testmod, not the main source set
+obfuscation.createRemappingConfiguration(configurations.testmodRuntimeOnly)
+
 dependencies {
     compileOnly "org.jetbrains:annotations:24.1.0"
 
@@ -112,7 +115,7 @@ dependencies {
         def artifactId = basename.substring(0, versionSep)
         def version = basename.substring(versionSep + 1)
         logger.lifecycle("Adding extra mod {}", extraModJar)
-        testmodRuntimeOnly "extra-mods:$artifactId:$version"
+        modTestmodRuntimeOnly "extra-mods:$artifactId:$version"
     }
 }
 
