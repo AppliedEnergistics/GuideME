@@ -19,6 +19,7 @@ import net.minecraft.util.FastColor;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -134,6 +135,7 @@ public final class MdxAttrs {
         return Pair.of(entityTypeId, resultType);
     }
 
+    @Nullable
     public static Item getRequiredItem(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el,
             String attribute) {
         var result = getRequiredItemAndId(compiler, errorSink, el, attribute);
@@ -141,6 +143,19 @@ public final class MdxAttrs {
             return result.getRight();
         }
         return null;
+    }
+
+    @Nullable
+    public static ItemStack getRequiredItemStack(PageCompiler compiler, LytErrorSink errorSink,
+            MdxJsxElementFields el) {
+        var item = getRequiredItem(compiler, errorSink, el, "id");
+        if (item == null) {
+            return null;
+        }
+
+        var tag = MdxAttrs.getCompoundTag(compiler, errorSink, el, "tag", null);
+
+        return new ItemStack(item, 1, tag);
     }
 
     public static float getFloat(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el, String name,
