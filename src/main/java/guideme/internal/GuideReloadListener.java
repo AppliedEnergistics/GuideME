@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.metadata.language.LanguageMetadataSection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -36,7 +35,7 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
         profiler.startTick();
         var guidePages = new IdentityHashMap<ResourceLocation, Map<ResourceLocation, ParsedGuidePage>>();
 
-        String language = Minecraft.getInstance().getLanguageManager().getSelected();
+        String language = LangUtil.getCurrentLanguage();
         if (GuideMEClient.instance().isIgnoreTranslatedGuides()) {
             language = null;
         }

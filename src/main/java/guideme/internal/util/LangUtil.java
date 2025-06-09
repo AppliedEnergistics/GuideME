@@ -1,5 +1,6 @@
 package guideme.internal.util;
 
+import java.util.Locale;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -20,7 +21,10 @@ public final class LangUtil {
     public static String getCurrentLanguage() {
         var client = Minecraft.getInstance();
         if (client != null) {
-            return client.getLanguageManager().getSelected();
+            // Sometimes inexplicably, the language code is actually "en_US" instead of the minecraft default (en_us).
+            // ResourceLocations crash for non-lowercase path components, so we ensure we're not crashing later
+            // by forcing lowercase here.
+            return client.getLanguageManager().getSelected().toLowerCase(Locale.ROOT);
         }
         return "en_us";
     }
