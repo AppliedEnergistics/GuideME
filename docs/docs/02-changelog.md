@@ -3,6 +3,15 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.5.5-beta (Minecraft 1.21.5)
+
+- Fix a crash when Minecraft uses an unusual language code with uppercase components (i.e. `en_US` instead of the default `en_us`).
+  
+## 21.5.4-beta (Minecraft 1.21.5)
+
+- Adds the ability to specify data components on `ItemImage` and `ItemIcon` using the same format used by the `/give` command.
+  For example: `<ItemImage id="minecraft:stone" components="enchantment_glint_override=true" />` shows a piece of stone with enchantment glint applied.
+  
 ## 21.1.9 (Minecraft 1.21.1)
 
 - Adds the ability to specify data components on `ItemImage` and `ItemIcon` using the same format used by the `/give` command.
