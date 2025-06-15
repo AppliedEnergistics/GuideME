@@ -276,3 +276,11 @@ You can use the `<Color id="<id>">...</Color>` tag to color text using the follo
 ### Player Name
 
 You can insert the name of the current player by using `<PlayerName />`.
+
+### Key Bindings
+
+You can show the currently binding for a hotkey by using the `<KeyBind id="..." />` tag.
+
+The `id` attribute refers to the key binding by its unique identifier, such as `key.jump` for the jump button.
+
+Ids for default Minecraft keys can be found on the [Minecraft Wiki](https://minecraft.wiki/w/Controls).
