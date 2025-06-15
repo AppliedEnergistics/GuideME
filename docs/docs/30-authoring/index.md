@@ -276,3 +276,7 @@ You can use the `<Color id="<id>">...</Color>` tag to color text using the follo
 | `light_purple` | <ColorPreview color="#F5F" /> | <ColorPreview color="#F5F" /> |
 | `yellow`       | <ColorPreview color="#FF5" /> | <ColorPreview color="#FF5" /> |
 | `white`        | <ColorPreview color="#FFF" /> | <ColorPreview color="#FFF" /> |
+
+### Player Name
+
+You can insert the name of the current player by using `<PlayerName />`.
