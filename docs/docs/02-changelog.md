@@ -3,6 +3,78 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.5.5-beta (Minecraft 1.21.5)
+
+- Fix a crash when Minecraft uses an unusual language code with uppercase components (i.e. `en_US` instead of the default `en_us`).
+  
+## 21.5.4-beta (Minecraft 1.21.5)
+
+- Adds the ability to specify data components on `ItemImage` and `ItemIcon` using the same format used by the `/give` command.
+  For example: `<ItemImage id="minecraft:stone" components="enchantment_glint_override=true" />` shows a piece of stone with enchantment glint applied.
+  
+## 21.1.9 (Minecraft 1.21.1)
+
+- Adds the ability to specify data components on `ItemImage` and `ItemIcon` using the same format used by the `/give` command.
+  For example: `<ItemImage id="minecraft:stone" components="enchantment_glint_override=true" />` shows a piece of stone with enchantment glint applied.
+  
+## 21.1.8 (Minecraft 1.21.1)
+
+- Remove a misplaced black pixel in the border of recipe panels.
+
+## 21.5.4-beta (Minecraft 1.21.5)
+
+- Fix item images being shown on top of the navigation bar.
+- Use same random-source as normal level rendering to avoid constantly changing block appearance in game scenes.
+
+## 21.1.7 (Minecraft 1.21.1)
+
+- Guard against crashes when mods return null results from their custom recipes.
+
+## 21.5.3-beta (Minecraft 1.21.5)
+
+- Java API: Fix Off-Screen-Renderer for Website export.
+- Java API: Fix various website export issues.
+- Java API: Introduce new extension points for the site export,
+  and make it usable via new system properties.
+
+## 21.5.2-beta (Minecraft 1.21.5)
+
+- Java API: Add back the semantics of `RecipeTypeMappings.add`, which supports mapping RecipeHolders to a nullable LytBlock for custom recipes.
+- Java API: The registration method for factories that return a `Stream<LytBlock>` has been renamed to `addMulti`.
+- Java API: Added convenience constructors to `LytSlot` for aiding with new idioms used by Vanilla, such as `Optional<Ingredient>` being used instead of empty ingredients (which no longer exist).
+- Java API: Made the row/column factory methods for `LytSlotGrid` accept null-entries in the ingredient lists to better interface with Ingredients no longer being able to be empty.
+
+## 21.5.1-beta (Minecraft 1.21.5)
+
+- First port to Minecraft 1.21.5
+
+## 21.1.6 (Minecraft 1.21.1)
+
+- Fix wrapping of content in `<Row />` elements.
+- Fix live-reload of translated pages in multi-language guides.
+- Add `<RecipesFor id="minecraft:oak_log" />` to show all recipes that result in a given item. Combine this with a `<Row></Row>` element
+  to get a wrapped list of recipes.
+- Fix handling of dragging a document element (i.e. the camera in game scenes), when the mouse was released on a
+  Minecraft UI element (such as the document navigation bar).
+- Fix drawing not being flushed properly before/after the scissor region changes when using RenderContext.
+
+## 21.1.5 (Minecraft 1.21.1)
+
+- Disable the open guide hotkey from participating in building the creative menu search tree, which may have caused
+  crashes if the player searches in the creative menu for the first time, while hovering over an item.
+
+## 21.1.4 (Minecraft 1.21.1)
+
+- Switch to Unicode line-breaking to improve breaking long lines for Chinese, Japanese, Korean, and other languages.
+
+## 21.1.3 (Minecraft 1.21.1)
+
+- Disable superfluous tracing code slowing down startup.
+
+## 21.1.2 (Minecraft 1.21.1)
+
+- Fix navbar content being cut off when it was scrolled down.
+
 ## 21.1.1 (Minecraft 1.21.1)
 
 - Added support for [translating guides](./60-translation.md).
