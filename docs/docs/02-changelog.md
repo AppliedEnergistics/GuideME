@@ -7,6 +7,7 @@ import Video from '@site/src/components/Video';
 
 - Fix a crash when Minecraft uses an unusual language code with uppercase components (i.e. `en_US` instead of the default `en_us`).
 - Added a `<PlayerName />` tag to address the player by their current name.
+- Added a `<KeyBind id="..." />` tag to show what a keybind is currently bound to. See [authoring pages](./30-authoring/index.md#key-bindings) for details. 
   
 ## 21.5.4-beta (Minecraft 1.21.5)
 
