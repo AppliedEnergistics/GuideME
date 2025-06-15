@@ -9,7 +9,7 @@ import net.minecraft.client.Minecraft;
 /**
  * This tag compiles to the name of current players game profile.
  */
-public class PlayerNameTag extends FlowTagCompiler {
+public class PlayerNameTagCompiler extends FlowTagCompiler {
     @Override
     public Set<String> getTagNames() {
         return Set.of("PlayerName");
