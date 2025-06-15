@@ -3,8 +3,8 @@ pluginManagement {
     plugins {
         id 'com.gradleup.shadow' version '8.3.5'
         // https://projects.neoforged.net/neoforged/ModDevGradle
-        id 'net.neoforged.moddev.legacyforge' version '2.0.84'
-        id 'net.neoforged.moddev.repositories' version '2.0.84'
+        id 'net.neoforged.moddev.legacyforge' version '2.0.93'
+        id 'net.neoforged.moddev.repositories' version '2.0.93'
     }
 }
 
