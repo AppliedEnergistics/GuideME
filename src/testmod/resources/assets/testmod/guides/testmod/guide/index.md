@@ -7,7 +7,7 @@ item_ids:
 
 [Markdown](./markdown.md)
 
-Welcome to the world of <ItemImage id="minecraft:stone" />
+Welcome to the world of <ItemImage id="minecraft:stone" />, <PlayerName />!
 
 You may ~~need~~ a door!
 
