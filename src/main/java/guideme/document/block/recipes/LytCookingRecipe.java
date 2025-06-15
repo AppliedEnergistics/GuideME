@@ -38,7 +38,7 @@ public class LytCookingRecipe extends LytRecipeBox {
         setPadding(5);
         paddingTop = 15;
 
-        append(inputSlot = new LytSlot(recipe.getIngredients().getFirst()));
+        append(inputSlot = new LytSlot(recipe.getIngredients().get(0)));
         append(resultSlot = new LytSlot(recipe.getResultItem(Platform.getClientRegistryAccess())));
     }
 
