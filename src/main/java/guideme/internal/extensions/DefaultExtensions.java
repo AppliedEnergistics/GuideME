@@ -12,6 +12,7 @@ import guideme.compiler.tags.DivTagCompiler;
 import guideme.compiler.tags.FloatingImageCompiler;
 import guideme.compiler.tags.ItemGridCompiler;
 import guideme.compiler.tags.ItemLinkCompiler;
+import guideme.compiler.tags.PlayerNameTag;
 import guideme.compiler.tags.RecipeCompiler;
 import guideme.compiler.tags.RecipeTypeMappingSupplier;
 import guideme.compiler.tags.SubPagesCompiler;
@@ -79,7 +80,8 @@ public final class DefaultExtensions {
                 new BoxTagCompiler(BoxFlowDirection.COLUMN),
                 new SceneTagCompiler(),
                 new SubPagesCompiler(),
-                new CommandLinkCompiler());
+                new CommandLinkCompiler(),
+                new PlayerNameTag());
     }
 
     private static List<SceneElementTagCompiler> sceneElementTagCompilers() {
