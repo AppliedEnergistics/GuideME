@@ -107,6 +107,13 @@ export function expandFormatting(currentPageId: string, body: string, macros: Re
                 result += '\n';
             } else if (tag === 'br2') {
                 result += '\n\n';
+            } else if (tag.startsWith('k:')) {
+                let bindId = tag.substring(2);
+                // Key bind, Patchouli omits the key. prefix, but is non-comittal whether it's required
+                if (!bindId.startsWith(".key")) {
+                    bindId = "key." + bindId;
+                }
+                result += '<KeyBind id="' + bindId + '" />';
             } else if (tag.startsWith('li')) {
                 let level = parseInt(tag.slice(2)) || 0;
                 result += '\n' + '  '.repeat(level) + '- ';
