@@ -1,5 +1,5 @@
 dependencies {
-    implementation("dev.lukebemish.immaculate:dev.lukebemish.immaculate.gradle.plugin:0.1.6")
+    implementation("dev.lukebemish.immaculate:dev.lukebemish.immaculate.gradle.plugin:0.1.8")
 }
 
 repositories {
