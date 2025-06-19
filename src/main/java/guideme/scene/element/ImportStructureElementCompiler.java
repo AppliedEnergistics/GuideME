@@ -76,7 +76,7 @@ public class ImportStructureElementCompiler implements SceneElementTagCompiler {
 
         var fakeServerLevel = new FakeForwardingServerLevel(scene.getLevel());
         if (!template.placeInWorld(fakeServerLevel, BlockPos.ZERO, BlockPos.ZERO, settings, random, 0)) {
-            errorSink.appendError(compiler, "Placed to fail structure", el);
+            errorSink.appendError(compiler, "Failed to place structure", el);
         }
     }
 }
