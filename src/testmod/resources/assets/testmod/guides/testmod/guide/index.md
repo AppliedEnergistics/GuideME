@@ -9,6 +9,8 @@ item_ids:
 
 [Markdown](./markdown.md)
 
+<Recipe id="missingrecipe" fallbackText="The recipe for special item is disabled." />
+
 Welcome to the world of <ItemImage id="minecraft:stone" components="enchantment_glint_override=true" />, <PlayerName />!
 
 Keybinding Test: <KeyBind id="key.jump" />. Unbound key: <KeyBind id="key.spectatorOutlines" />.
