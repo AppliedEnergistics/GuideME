@@ -15,7 +15,7 @@ Welcome to the world of <ItemImage id="minecraft:stone" />, <PlayerName />!
 
 Keybinding Test: <KeyBind id="key.jump" />. Unbound key: <KeyBind id="key.spectatorOutlines" />.
 
-You may ~~need~~ a door!
+You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">door</Color>!
 
 <CommandLink command="/tp @s 0 90 0" title="Tooltip" close={true}>Teleport!</CommandLink>
 

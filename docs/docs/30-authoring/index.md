@@ -255,7 +255,13 @@ dark-mode.
 
 :::
 
-You can use the `<Color id="<id>">...</Color>` tag to color text using the following pre-defined symbolic colors:
+You can color text, but cannot specify different colors for dark- and light-mode: `<Color color="#ff0000">Colored Text</Color>`.
+
+You can use the `<Color id="<id>">...</Color>` tag to color text using a symbolic color, which can be defined as different colors for dark- and light-mode.
+
+A data-driven guide can add custom [symbolic colors](../20-data-driven-guides.md#custom-colors), while mods can contribute additional colors using [an extension](../20-integration/symbolic-colors.md).
+
+GuideME also defines the following basic symbolic colors representing the Minecraft text colors.
 
 | ID             | Light-Mode                    | Dark-Mode                     |
 |----------------|-------------------------------|-------------------------------|
