@@ -6,6 +6,7 @@ import Video from '@site/src/components/Video';
 ## 21.5.6-beta (Minecraft 1.21.5)
 
 - Fix rendering of text in floated elements.
+- Fix hover-status for widgets embedded in the document when the screen is scaled independently of the GUI (on odd GUI scales).
 
 ## 21.5.5-beta (Minecraft 1.21.5)
 
