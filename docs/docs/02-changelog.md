@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.5.6-beta (Minecraft 1.21.5)
+
+- Fix rendering of text in floated elements.
+
 ## 21.5.5-beta (Minecraft 1.21.5)
 
 - Fix a crash when Minecraft uses an unusual language code with uppercase components (i.e. `en_US` instead of the default `en_us`).

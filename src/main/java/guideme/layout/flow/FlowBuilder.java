@@ -49,11 +49,9 @@ public class FlowBuilder {
 
     public void renderFloatsBatch(RenderContext context, MultiBufferSource buffers,
             @Nullable LytFlowContent hoveredContent) {
-        for (var line : lines) {
-            for (var el = line.firstElement(); el != null; el = el.next) {
-                el.containsMouse = hoveredContent != null && hoveredContent.isInclusiveAncestor(el.getFlowContent());
-                el.renderBatch(context, buffers);
-            }
+        for (var el : floats) {
+            el.containsMouse = hoveredContent != null && hoveredContent.isInclusiveAncestor(el.getFlowContent());
+            el.renderBatch(context, buffers);
         }
     }
 
