@@ -2,11 +2,14 @@ package guideme.document.interaction;
 
 import guideme.document.LytRect;
 import guideme.document.block.LytBlock;
+import guideme.internal.screen.IndepentScaleScreen;
+import guideme.internal.screen.ScaledGuiGraphics;
 import guideme.layout.LayoutContext;
 import guideme.render.RenderContext;
 import guideme.ui.GuideUiHost;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.renderer.MultiBufferSource;
 
@@ -56,8 +59,15 @@ public class LytWidget extends LytBlock implements InteractiveElement {
 
         var mouseDocPos = uiHost.getDocumentPoint(mouseX, mouseY);
 
+        // This is a bit of a hack, but since scissor checks break out of the scaled environment,
+        // we pass the scaled gui graphics to the widget to fix calls to containsPointInScissor
+        GuiGraphics guiGraphics = context.guiGraphics();
+        if (minecraft.screen instanceof IndepentScaleScreen indepentScaleScreen) {
+            guiGraphics = new ScaledGuiGraphics(minecraft, context.guiGraphics().pose(),
+                    context.guiGraphics().bufferSource(), (float) indepentScaleScreen.getEffectiveScale());
+        }
         widget.render(
-                context.guiGraphics(),
+                guiGraphics,
                 mouseDocPos != null ? mouseDocPos.x() : -100,
                 mouseDocPos != null ? mouseDocPos.y() : -100,
                 minecraft.getTimer().getRealtimeDeltaTicks());
