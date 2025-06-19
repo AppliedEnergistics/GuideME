@@ -128,4 +128,8 @@ public abstract class IndepentScaleScreen extends Screen {
     protected final double toVirtual(double value) {
         return value / effectiveScale;
     }
+
+    public double getEffectiveScale() {
+        return effectiveScale;
+    }
 }

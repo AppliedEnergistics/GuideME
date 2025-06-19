@@ -5,13 +5,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.renderer.MultiBufferSource;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Really the only reason we have to use this subclass is that the scissor methods work in directly scaled screen
  * coordinates.
  */
-final class ScaledGuiGraphics extends GuiGraphics {
+@ApiStatus.Internal
+public final class ScaledGuiGraphics extends GuiGraphics {
     private final float scale;
 
     public ScaledGuiGraphics(Minecraft minecraft, PoseStack pose, MultiBufferSource.BufferSource bufferSource,
