@@ -9,6 +9,8 @@ import Video from '@site/src/components/Video';
 - Fix hover-status for widgets embedded in the document when the screen is scaled independently of the GUI (on odd GUI scales).
 - Add `fallbackText` attribute to `<Recipe />`, `<RecipeFor />` and `<RecipesFor />` to allow the guide author to explicitly handle when recipes are missing due to datapacks removing them.
   See [authoring pages](./30-authoring/index.md#recipes) for details.
+- Add a new configuration option to always hide recipe errors that result from recipes being removed or hidden by datapacks and guide authors not explicitly handling those cases with the `fallbackText` attribute.
+  This is primarily intended to be used by modpacks.
 
 ## 21.5.5-beta (Minecraft 1.21.5)
 
