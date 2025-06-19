@@ -169,4 +169,13 @@ public class LytParagraph extends LytBlock implements LytFlowContainer {
     public void setPaddingBottom(int paddingBottom) {
         this.paddingBottom = paddingBottom;
     }
+
+    /**
+     * Quick shorthand to create a paragrpah of plain text.
+     */
+    public static LytParagraph of(String text) {
+        var paragraph = new LytParagraph();
+        paragraph.appendText(text);
+        return paragraph;
+    }
 }
