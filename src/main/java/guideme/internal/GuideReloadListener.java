@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import guideme.Guide;
+import guideme.color.SymbolicColorResolver;
 import guideme.compiler.PageCompiler;
 import guideme.compiler.ParsedGuidePage;
 import guideme.internal.datadriven.DataDrivenGuide;
@@ -120,10 +121,16 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
 
             var guideSpec = result.getOrThrow();
 
-            var guide = (MutableGuide) Guide.builder(guideId)
+            var builder = Guide.builder(guideId)
                     .register(false)
                     .itemSettings(guideSpec.itemSettings())
-                    .defaultLanguage(guideSpec.defaultLanguage())
+                    .defaultLanguage(guideSpec.defaultLanguage());
+
+            if (!guideSpec.customColors().isEmpty()) {
+                builder.extension(SymbolicColorResolver.EXTENSION_POINT, guideSpec.customColors()::get);
+            }
+
+            var guide = (MutableGuide) builder
                     .build();
             dataDrivenGuides.put(guideId, guide);
         }

@@ -54,6 +54,24 @@ key to the appropriate [Minecraft language code](https://minecraft.wiki/w/Langua
 
 This makes the [full-text search](./40-search.md) use language-specific text analysis logic for your default pages.
 
+## Custom Colors
+
+A data driven guide can add custom symbolic colors for use with the `<Color />` tag. You have to specify
+the color value that should be used when the guide is in dark- or light-mode. Within your own guide pages
+you can omit the resource namespace prefix when referring to colors (so for the example below, `<Color id="test_color">...` would work).
+
+```json
+{
+  ...,
+  "custom_colors": {
+    "testmod:test_color": {
+      "dark_mode": "#ff0000",
+      "light_mode": "#00ff00"
+    }
+  }
+}
+```
+
 ## Writing Pages
 
 See [authoring pages](30-authoring/index.md).
