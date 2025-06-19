@@ -4,6 +4,7 @@ import guideme.compiler.PageCompiler;
 import guideme.document.block.LytBlock;
 import guideme.document.block.LytBlockContainer;
 import guideme.document.block.LytParagraph;
+import guideme.internal.GuideMEClient;
 import guideme.internal.util.Platform;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstNode;
@@ -96,7 +97,9 @@ public class RecipeCompiler extends BlockTagCompiler {
             }
 
             if (fallbackText == null) {
-                parent.appendError(compiler, "Couldn't find recipe for " + id, el);
+                if (!GuideMEClient.instance().isHideMissingRecipeErrors()) {
+                    parent.appendError(compiler, "Couldn't find recipe for " + id, el);
+                }
             } else if (!fallbackText.isEmpty()) {
                 parent.append(LytParagraph.of(fallbackText));
             }
@@ -126,7 +129,9 @@ public class RecipeCompiler extends BlockTagCompiler {
             }
 
             if (fallbackText == null) {
-                parent.appendError(compiler, "Couldn't find a handler for recipe " + recipeId, el);
+                if (!GuideMEClient.instance().isHideMissingRecipeErrors()) {
+                    parent.appendError(compiler, "Couldn't find a handler for recipe " + recipeId, el);
+                }
             } else if (!fallbackText.isEmpty()) {
                 parent.append(LytParagraph.of(fallbackText));
             }
@@ -141,8 +146,6 @@ public class RecipeCompiler extends BlockTagCompiler {
             Function<RecipeHolder<T>, LytBlock> factory) {
         @Nullable
         LytBlock tryCreate(RecipeManager recipeManager, Item resultItem) {
-            var registryAccess = Platform.getClientRegistryAccess();
-
             // We try to find non-special recipes first then fall back to special
             List<RecipeHolder<T>> fallbackCandidates = new ArrayList<>();
             for (var recipe : recipeManager.byType(recipeType)) {
