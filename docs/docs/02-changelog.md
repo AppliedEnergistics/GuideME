@@ -11,6 +11,9 @@ import Video from '@site/src/components/Video';
   See [authoring pages](./30-authoring/index.md#recipes) for details.
 - Add a new configuration option to always hide recipe errors that result from recipes being removed or hidden by datapacks and guide authors not explicitly handling those cases with the `fallbackText` attribute.
   This is primarily intended to be used by modpacks.
+- Adds the ability to color text both with a color specified in the page (`<Color color="#ff0000">text</Color>`), and by
+  adding guide-specific custom color constants, both in [data-driven guides](./20-data-driven-guides.md#custom-colors)
+  and for mods using an [extension point](./20-integration/symbolic-colors.md).
 
 ## 21.5.5-beta (Minecraft 1.21.5)
 
