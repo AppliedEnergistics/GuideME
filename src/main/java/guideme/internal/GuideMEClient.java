@@ -142,6 +142,10 @@ public class GuideMEClient {
         return clientConfig.ignoreTranslatedGuides.get();
     }
 
+    public boolean isHideMissingRecipeErrors() {
+        return clientConfig.hideMissingRecipeErrors.getAsBoolean();
+    }
+
     public boolean isFullWidthLayout() {
         return clientConfig.fullWidthLayout.get();
     }
@@ -195,6 +199,7 @@ public class GuideMEClient {
         final ModConfigSpec.BooleanValue showDebugGuiOverlays;
         final ModConfigSpec.BooleanValue fullWidthLayout;
         final ModConfigSpec.BooleanValue ignoreTranslatedGuides;
+        final ModConfigSpec.BooleanValue hideMissingRecipeErrors;
 
         public ClientConfig() {
             var builder = new ModConfigSpec.Builder();
@@ -203,6 +208,10 @@ public class GuideMEClient {
             ignoreTranslatedGuides = builder
                     .comment("Never load translated guide pages for your current language.")
                     .define("ignoreTranslatedGuides", false);
+            hideMissingRecipeErrors = builder
+                    .comment(
+                            "Never show errors in guides when recipes can't be found (i.e. because they were hidden by a datapack).")
+                    .define("hideMissingRecipeErrors", false);
             builder.pop();
 
             builder.push("gui");
