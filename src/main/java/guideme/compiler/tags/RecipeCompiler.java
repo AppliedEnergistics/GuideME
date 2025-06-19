@@ -3,6 +3,7 @@ package guideme.compiler.tags;
 import guideme.compiler.PageCompiler;
 import guideme.document.block.LytBlock;
 import guideme.document.block.LytBlockContainer;
+import guideme.document.block.LytParagraph;
 import guideme.internal.util.Platform;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstNode;
@@ -49,12 +50,15 @@ public class RecipeCompiler extends BlockTagCompiler {
             return;
         }
 
+        var fallbackText = el.getAttributeString("fallbackText", null);
+
         if ("RecipesFor".equals(el.name())) {
             var itemAndId = MdxAttrs.getRequiredItemAndId(compiler, parent, el, "id");
             if (itemAndId == null) {
                 return;
             }
 
+            boolean anyAdded = false;
             var item = itemAndId.getRight();
             for (var recipe : recipeManager.getRecipes()) {
                 if (Platform.recipeHasResult(recipe, item)) {
@@ -63,10 +67,15 @@ public class RecipeCompiler extends BlockTagCompiler {
                         if (block != null) {
                             block.setSourceNode((MdAstNode) el);
                             parent.append(block);
+                            anyAdded = true;
                             break;
                         }
                     }
                 }
+            }
+
+            if (!anyAdded && fallbackText != null && !fallbackText.isEmpty()) {
+                parent.append(LytParagraph.of(fallbackText));
             }
         } else if ("RecipeFor".equals(el.name())) {
             var itemAndId = MdxAttrs.getRequiredItemAndId(compiler, parent, el, "id");
@@ -86,8 +95,11 @@ public class RecipeCompiler extends BlockTagCompiler {
                 }
             }
 
-            // TODO This *can* be legit if there's no recipe due to datapacks
-            parent.appendError(compiler, "Couldn't find recipe for " + id, el);
+            if (fallbackText == null) {
+                parent.appendError(compiler, "Couldn't find recipe for " + id, el);
+            } else if (!fallbackText.isEmpty()) {
+                parent.append(LytParagraph.of(fallbackText));
+            }
         } else {
             var recipeId = MdxAttrs.getRequiredId(compiler, parent, el, "id");
             if (recipeId == null) {
@@ -96,7 +108,11 @@ public class RecipeCompiler extends BlockTagCompiler {
 
             var recipe = recipeManager.byKey(recipeId).orElse(null);
             if (recipe == null) {
-                parent.appendError(compiler, "Couldn't find recipe " + recipeId, el);
+                if (fallbackText == null) {
+                    parent.appendError(compiler, "Couldn't find recipe " + recipeId, el);
+                } else if (!fallbackText.isEmpty()) {
+                    parent.append(LytParagraph.of(fallbackText));
+                }
                 return;
             }
 
@@ -109,7 +125,11 @@ public class RecipeCompiler extends BlockTagCompiler {
                 }
             }
 
-            parent.appendError(compiler, "Couldn't find a handler for recipe " + recipeId, el);
+            if (fallbackText == null) {
+                parent.appendError(compiler, "Couldn't find a handler for recipe " + recipeId, el);
+            } else if (!fallbackText.isEmpty()) {
+                parent.append(LytParagraph.of(fallbackText));
+            }
         }
     }
 

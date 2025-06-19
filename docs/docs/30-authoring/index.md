@@ -152,6 +152,9 @@ To show all recipes used to create a certain item, use the `<RecipesFor id="item
 
 To show a specific recipe, use the `<Recipe id="recipe/id" />` tag.
 
+All recipe tags support a `fallbackText` attribute to specify the text to show when no recipe(s) can be found. If you just
+want to show nothing, you can set `fallbackText=""`.
+
 These tags can be wrapped in a `<Row></Row>` tag to have them automatically wrap and use less vertical space.
 
 :::note
