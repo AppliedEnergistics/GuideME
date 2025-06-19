@@ -60,7 +60,7 @@ public class GuidebookLevelRenderer {
         render(level, cameraSettings, buffers, annotations, lightDarkMode);
         buffers.endBatch();
 
-        RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+        // Do not clear depth here anymore, since we clear it after rendering the document
     }
 
     public void render(GuidebookLevel level,

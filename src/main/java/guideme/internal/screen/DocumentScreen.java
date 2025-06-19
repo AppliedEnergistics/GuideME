@@ -1,6 +1,8 @@
 package guideme.internal.screen;
 
+import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.RenderSystem;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.document.DefaultStyles;
@@ -201,6 +203,10 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         context.endBatch(buffers);
 
         document.render(context);
+
+        // Clear depth after rendering the document since some elements in it may render with ludicrous z-values
+        // Examples: scaled up item images have to scale their depth as well due to non-uniform scaling issues
+        RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
 
         context.popScissor();
 
