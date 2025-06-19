@@ -158,6 +158,10 @@ public class GuideMEClient {
         return clientConfig.ignoreTranslatedGuides.get();
     }
 
+    public boolean isHideMissingRecipeErrors() {
+        return clientConfig.hideMissingRecipeErrors.get();
+    }
+
     public boolean isFullWidthLayout() {
         return clientConfig.fullWidthLayout.get();
     }
@@ -211,6 +215,7 @@ public class GuideMEClient {
         final ForgeConfigSpec.BooleanValue showDebugGuiOverlays;
         final ForgeConfigSpec.BooleanValue fullWidthLayout;
         final ForgeConfigSpec.BooleanValue ignoreTranslatedGuides;
+        final ForgeConfigSpec.BooleanValue hideMissingRecipeErrors;
 
         public ClientConfig() {
             var builder = new ForgeConfigSpec.Builder();
@@ -219,6 +224,10 @@ public class GuideMEClient {
             ignoreTranslatedGuides = builder
                     .comment("Never load translated guide pages for your current language.")
                     .define("ignoreTranslatedGuides", false);
+            hideMissingRecipeErrors = builder
+                    .comment(
+                            "Never show errors in guides when recipes can't be found (i.e. because they were hidden by a datapack).")
+                    .define("hideMissingRecipeErrors", false);
             builder.pop();
 
             builder.push("gui");
