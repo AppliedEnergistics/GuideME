@@ -87,6 +87,19 @@ To show an image, just put it (.png or .jpg) in the `guidebook/assets` folder an
   To insert a break that prevents further text from wrapping from all previous floating images,
   use `<br clear="all" />`.
 
+## Comments
+
+You can add comments to your page using the MDX comment syntax:
+
+```markdown
+{/* comment */}
+
+
+{/*
+multiline comment
+*/}
+```
+
 ## Custom Tags
 
 The following custom tags are supported in our Markdown pages.
