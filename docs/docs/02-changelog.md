@@ -3,7 +3,7 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
-## 21.5.6-beta (Minecraft 1.21.5)
+## 21.5.7-beta (Minecraft 1.21.5)
 
 - Fix rendering of text in floated elements.
 - Fix hover-status for widgets embedded in the document when the screen is scaled independently of the GUI (on odd GUI scales).
@@ -15,13 +15,13 @@ import Video from '@site/src/components/Video';
   adding guide-specific custom color constants, both in [data-driven guides](./20-data-driven-guides.md#custom-colors)
   and for mods using an [extension point](./20-integration/symbolic-colors.md).
 
-## 21.5.5-beta (Minecraft 1.21.5)
+## 21.5.6-beta (Minecraft 1.21.5)
 
 - Fix a crash when Minecraft uses an unusual language code with uppercase components (i.e. `en_US` instead of the default `en_us`).
 - Added a `<PlayerName />` tag to address the player by their current name.
 - Added a `<KeyBind id="..." />` tag to show what a keybind is currently bound to. See [authoring pages](./30-authoring/index.md#key-bindings) for details. 
   
-## 21.5.4-beta (Minecraft 1.21.5)
+## 21.5.5-beta (Minecraft 1.21.5)
 
 - Adds the ability to specify data components on `ItemImage` and `ItemIcon` using the same format used by the `/give` command.
   For example: `<ItemImage id="minecraft:stone" components="enchantment_glint_override=true" />` shows a piece of stone with enchantment glint applied.
