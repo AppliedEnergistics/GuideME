@@ -5,6 +5,10 @@ import Video from '@site/src/components/Video';
 
 ## 21.5.7-beta (Minecraft 1.21.5)
 
+- Add support for [templating annotations in game scenes](./30-authoring/game-scenes.md#block-annotation-templates). This allows you to apply annotations to specific blocks in the scene by type rather than position.
+
+## 21.5.7-beta (Minecraft 1.21.5)
+
 - Fix rendering of text in floated elements.
 - Fix hover-status for widgets embedded in the document when the screen is scaled independently of the GUI (on odd GUI scales).
 - Add `fallbackText` attribute to `<Recipe />`, `<RecipeFor />` and `<RecipesFor />` to allow the guide author to explicitly handle when recipes are missing due to datapacks removing them.

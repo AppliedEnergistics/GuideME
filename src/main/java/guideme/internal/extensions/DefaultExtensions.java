@@ -24,6 +24,7 @@ import guideme.scene.BlockImageTagCompiler;
 import guideme.scene.ItemImageTagCompiler;
 import guideme.scene.SceneTagCompiler;
 import guideme.scene.annotation.BlockAnnotationElementCompiler;
+import guideme.scene.annotation.BlockAnnotationTemplateElementCompiler;
 import guideme.scene.annotation.BoxAnnotationElementCompiler;
 import guideme.scene.annotation.DiamondAnnotationElementCompiler;
 import guideme.scene.annotation.LineAnnotationElementCompiler;
@@ -95,7 +96,8 @@ public final class DefaultExtensions {
                 new BlockAnnotationElementCompiler(),
                 new BoxAnnotationElementCompiler(),
                 new LineAnnotationElementCompiler(),
-                new DiamondAnnotationElementCompiler());
+                new DiamondAnnotationElementCompiler(),
+                new BlockAnnotationTemplateElementCompiler());
     }
 
     private static List<RecipeTypeMappingSupplier> vanillaRecipeTypes() {

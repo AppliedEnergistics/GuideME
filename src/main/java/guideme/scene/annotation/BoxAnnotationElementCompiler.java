@@ -5,7 +5,9 @@ import guideme.compiler.PageCompiler;
 import guideme.compiler.tags.MdxAttrs;
 import guideme.document.LytErrorSink;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.scene.GuidebookScene;
 import java.util.Set;
+import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -24,7 +26,12 @@ public class BoxAnnotationElementCompiler extends AnnotationTagCompiler {
     @Override
     protected @Nullable SceneAnnotation createAnnotation(PageCompiler compiler, LytErrorSink errorSink,
             MdxJsxElementFields el) {
+        return createAnnotation(null, compiler, errorSink, el, BlockPos.ZERO);
+    }
 
+    @Override
+    protected @Nullable SceneAnnotation createAnnotation(GuidebookScene scene, PageCompiler compiler,
+            LytErrorSink errorSink, MdxJsxElementFields el, BlockPos instancePosition) {
         var min = MdxAttrs.getVector3(compiler, errorSink, el, "min", new Vector3f());
         var max = MdxAttrs.getVector3(compiler, errorSink, el, "max", new Vector3f());
         ensureMinMax(min, max);
@@ -32,6 +39,9 @@ public class BoxAnnotationElementCompiler extends AnnotationTagCompiler {
         var color = MdxAttrs.getColor(compiler, errorSink, el, "color", ConstantColor.WHITE);
         var thickness = MdxAttrs.getFloat(compiler, errorSink, el, "thickness", InWorldBoxAnnotation.DEFAULT_THICKNESS);
         var alwaysOnTop = MdxAttrs.getBoolean(compiler, errorSink, el, "alwaysOnTop", false);
+
+        min.add(instancePosition.getX(), instancePosition.getY(), instancePosition.getZ());
+        max.add(instancePosition.getX(), instancePosition.getY(), instancePosition.getZ());
 
         var annotation = new InWorldBoxAnnotation(min, max, color, thickness);
         annotation.setAlwaysOnTop(alwaysOnTop);

@@ -7,6 +7,7 @@ import guideme.document.block.LytVBox;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.scene.GuidebookScene;
 import guideme.scene.element.SceneElementTagCompiler;
+import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class AnnotationTagCompiler implements SceneElementTagCompiler {
@@ -14,7 +15,12 @@ public abstract class AnnotationTagCompiler implements SceneElementTagCompiler {
     @Override
     public final void compile(GuidebookScene scene, PageCompiler compiler, LytErrorSink errorSink,
             MdxJsxElementFields el) {
-        var annotation = createAnnotation(compiler, errorSink, el);
+        compileTemplate(scene, compiler, errorSink, el, BlockPos.ZERO);
+    }
+
+    public final void compileTemplate(GuidebookScene scene, PageCompiler compiler, LytErrorSink errorSink,
+            MdxJsxElementFields el, BlockPos instancePosition) {
+        var annotation = createAnnotation(scene, compiler, errorSink, el, instancePosition);
         if (annotation == null) {
             return; // Likely parsing error
         }
@@ -38,8 +44,27 @@ public abstract class AnnotationTagCompiler implements SceneElementTagCompiler {
         scene.addAnnotation(annotation);
     }
 
+    /**
+     * @deprecated Use
+     *             {@link #createAnnotation(GuidebookScene, PageCompiler, LytErrorSink, MdxJsxElementFields, BlockPos)}
+     *             instead.
+     */
     @Nullable
     protected abstract SceneAnnotation createAnnotation(PageCompiler compiler,
             LytErrorSink errorSink,
             MdxJsxElementFields el);
+
+    /**
+     * @param instancePosition Used when the annotation is compiled as part of a template, just add this to the position
+     *                         of the annotation. When an annotation is not in a template, {@link BlockPos#ZERO} is
+     *                         passed.
+     */
+    @Nullable
+    protected SceneAnnotation createAnnotation(GuidebookScene scene,
+            PageCompiler compiler,
+            LytErrorSink errorSink,
+            MdxJsxElementFields el,
+            BlockPos instancePosition) {
+        return null;
+    }
 }
