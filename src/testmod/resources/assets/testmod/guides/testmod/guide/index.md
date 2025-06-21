@@ -28,8 +28,12 @@ You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">do
 <RecipeFor id="minecraft:netherite_pickaxe" />
 <Recipe id="minecraft:shaper_armor_trim_smithing_template_smithing_trim" />
 
-<GameScene>
+<GameScene zoom={2}>
   <ImportStructure src="test.nbt" />
+
+  <DiamondAnnotation pos="1.5 0.5 0.5" color="#ff0000">
+    This will be shown in the tooltip! <ItemImage id="minecraft:stone" />
+  </DiamondAnnotation>
 </GameScene>
 
 <GameScene zoom="8">
