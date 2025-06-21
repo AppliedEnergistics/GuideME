@@ -23,6 +23,12 @@ You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">do
     <Entity id="minecraft:sheep" data="{Color: 2}" />
 </GameScene>
 
+<GameScene zoom={4}>
+    <ImportStructure src="redstone_test.nbt" />
+    <RemoveBlocks id="minecraft:stone" />
+    <ImportStructure src="redstone_test.nbt" pos="1 0 1" />
+</GameScene>
+
 <RecipeFor id="minecraft:oak_door" />
 <Recipe id="minecraft:iron_nugget_from_blasting" />
 <RecipeFor id="minecraft:netherite_pickaxe" />
