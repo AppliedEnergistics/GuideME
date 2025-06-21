@@ -3,23 +3,33 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
-## 21.5.6-beta (Minecraft 1.21.5)
+## 21.5.8-beta (Minecraft 1.21.5)
 
 - Add support for [templating annotations in game scenes](./30-authoring/game-scenes.md#block-annotation-templates). This allows you to apply annotations to specific blocks in the scene by type rather than position.
 - Add the ability to position structures when they are placed by `<ImportStructure />` using the new `pos="x y z"` attribute.
   This change allows the same structure to be added multiple times to a scene at different positions.
+- Add a new `<RemoveBlock id="..." />` tag to game scenes to clear out tags of a given type. This is useful for clearing out support blocks
+  from structures after they have been imported into a scene. See the [game scene documentation](./30-authoring/game-scenes.md#remove-blocks) for details.
 
 ## 21.5.7-beta (Minecraft 1.21.5)
 
 - Fix rendering of text in floated elements.
+- Fix hover-status for widgets embedded in the document when the screen is scaled independently of the GUI (on odd GUI scales).
+- Add `fallbackText` attribute to `<Recipe />`, `<RecipeFor />` and `<RecipesFor />` to allow the guide author to explicitly handle when recipes are missing due to datapacks removing them.
+  See [authoring pages](./30-authoring/index.md#recipes) for details.
+- Add a new configuration option to always hide recipe errors that result from recipes being removed or hidden by datapacks and guide authors not explicitly handling those cases with the `fallbackText` attribute.
+  This is primarily intended to be used by modpacks.
+- Adds the ability to color text both with a color specified in the page (`<Color color="#ff0000">text</Color>`), and by
+  adding guide-specific custom color constants, both in [data-driven guides](./20-data-driven-guides.md#custom-colors)
+  and for mods using an [extension point](./20-integration/symbolic-colors.md).
 
-## 21.5.5-beta (Minecraft 1.21.5)
+## 21.5.6-beta (Minecraft 1.21.5)
 
 - Fix a crash when Minecraft uses an unusual language code with uppercase components (i.e. `en_US` instead of the default `en_us`).
 - Added a `<PlayerName />` tag to address the player by their current name.
 - Added a `<KeyBind id="..." />` tag to show what a keybind is currently bound to. See [authoring pages](./30-authoring/index.md#key-bindings) for details. 
   
-## 21.5.4-beta (Minecraft 1.21.5)
+## 21.5.5-beta (Minecraft 1.21.5)
 
 - Adds the ability to specify data components on `ItemImage` and `ItemIcon` using the same format used by the `/give` command.
   For example: `<ItemImage id="minecraft:stone" components="enchantment_glint_override=true" />` shows a piece of stone with enchantment glint applied.

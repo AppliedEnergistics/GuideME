@@ -3,16 +3,11 @@ package guideme.scene.annotation;
 import guideme.compiler.PageCompiler;
 import guideme.compiler.tags.MdxAttrs;
 import guideme.document.LytErrorSink;
-import guideme.libs.mdast.mdx.model.MdxJsxAttribute;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.scene.GuidebookScene;
 import guideme.scene.element.SceneElementTagCompiler;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
 
 /**
  * This tag allows annotations to be applied to any blockstate currently in the scene.
@@ -27,12 +22,10 @@ public class BlockAnnotationTemplateElementCompiler implements SceneElementTagCo
 
     @Override
     public void compile(GuidebookScene scene, PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el) {
-        var pair = MdxAttrs.getRequiredBlockAndId(compiler, errorSink, el, "id");
-        if (pair == null) {
+        var predicate = MdxAttrs.getRequiredBlockStatePredicate(compiler, errorSink, el, "id");
+        if (predicate == null) {
             return;
         }
-
-        var predicate = getBlockStatePredicate(compiler, errorSink, el, pair.getRight());
 
         // Find the template to apply.
         for (var child : el.children()) {
@@ -70,43 +63,5 @@ public class BlockAnnotationTemplateElementCompiler implements SceneElementTagCo
             }
         }
         return null;
-    }
-
-    /**
-     * Reads all attributes of the element starting with {@code p:} and builds a predicate testing a block states
-     * properties against these values.
-     */
-    private static Predicate<BlockState> getBlockStatePredicate(PageCompiler compiler, LytErrorSink errorSink,
-            MdxJsxElementFields el, Block block) {
-        var predicate = BlockStatePredicate.forBlock(block);
-
-        for (var attrNode : el.attributes()) {
-            if (!(attrNode instanceof MdxJsxAttribute attr)) {
-                continue;
-            }
-            var attrName = attr.name;
-            if (!attrName.startsWith("p:")) {
-                continue;
-            }
-            var statePropertyName = attrName.substring("p:".length());
-            var stateDefinition = block.getStateDefinition();
-            var property = stateDefinition.getProperty(statePropertyName);
-            if (property == null) {
-                errorSink.appendError(compiler, "block doesn't have property " + statePropertyName, el);
-                continue;
-            }
-
-            String stringValue = attr.getStringValue();
-            var maybePropertyValue = property.getValue(stringValue);
-            if (maybePropertyValue.isEmpty()) {
-                errorSink.appendError(compiler, "Invalid value  for property " + property + ": " + stringValue, el);
-                continue;
-            }
-
-            var propertyValue = maybePropertyValue.get();
-            predicate.where(property, o -> Objects.equals(o, propertyValue));
-        }
-
-        return predicate;
     }
 }

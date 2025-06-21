@@ -33,6 +33,7 @@ import guideme.scene.element.ImportStructureElementCompiler;
 import guideme.scene.element.IsometricCameraElementCompiler;
 import guideme.scene.element.SceneBlockElementCompiler;
 import guideme.scene.element.SceneElementTagCompiler;
+import guideme.scene.element.SceneRemoveBlocksElementCompiler;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -97,7 +98,8 @@ public final class DefaultExtensions {
                 new BoxAnnotationElementCompiler(),
                 new LineAnnotationElementCompiler(),
                 new DiamondAnnotationElementCompiler(),
-                new BlockAnnotationTemplateElementCompiler());
+                new BlockAnnotationTemplateElementCompiler(),
+                new SceneRemoveBlocksElementCompiler());
     }
 
     private static List<RecipeTypeMappingSupplier> vanillaRecipeTypes() {
