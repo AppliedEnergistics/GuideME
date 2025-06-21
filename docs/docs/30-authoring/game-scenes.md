@@ -118,3 +118,100 @@ The tag supports the following attributes:
 | yaw       | An angle (in degrees) that specifies the rotation around the Y-axis. Defaults to 0. |
 | pitch     | An angle (in degrees) that specifies the rotation around the X-axis. Defaults to 0. |
 | roll      | An angle (in degrees) that specifies the rotation around the Z-axis. Defaults to 0. |
+
+## Annotations
+
+Annotations add elements to the scene to give additional information to the player. There
+are various types that are explained in the following sections.
+
+Every annotation tag allows for complex tooltip content to be added:
+
+```
+<BlockAnnotation x="0" y="0" z="0">
+This will be shown in the tooltip! <ItemImage id="minecraft:stone" />
+</BlockAnnotation>
+```
+
+Will show as: 
+
+![Game Scene Annotation Tooltip](./game-scene-annotation-tooltip.png)
+
+### BlockAnnotation
+
+Annotates a single block in the scene with a box outline. In addition to its content being shown in the tooltip, 
+it supports the following attributes:
+
+| Attribute | Description                                                                                   |
+|-----------|-----------------------------------------------------------------------------------------------|
+| x         | The x-coordinate of the block position to annotate. Defaults to 0.                            |
+| y         | The y-coordinate of the block position to annotate. Defaults to 0.                            |
+| z         | The z-coordinate of the block position to annotate. Defaults to 0.                            |
+| color     | Specify a color for the box around the block in HTML notation (`#RRGGBB`). Defaults to white. |
+
+Example:
+
+```jsx
+<BlockAnnotation x="0" y="0" z="0" color="#ff0000" />
+```
+
+![BlockAnnotation Example](./game-scene-blockannotation.png)
+
+### BoxAnnotation
+
+Annotates a block bounding box in the scene with a box outline.
+In addition to its content being shown in the tooltip, it supports the following attributes:
+
+| Attribute   | Description                                                                                                           |
+|-------------|-----------------------------------------------------------------------------------------------------------------------|
+| min         | The lower bound of the bounding box given as a vector of the form `x y z`, i.e. `0 0 0`.                              |
+| max         | The upper, exclusive bound of the bounding box given as a vector of the form `x y z`, i.e. `0 0 0`.                   |
+| color       | Specify a color for the box around the block in HTML notation (`#RRGGBB`). Defaults to white.                         |
+| thickness   | The thickness of the outline around the bounding box. Defaults to half a texture pixel in world-coordinates (0.5/16). |
+| alwaysOnTop | When set to true (default is false), the box will never be occluded by blocks in the scene.                           |
+
+Example:
+
+```jsx
+<BoxAnnotation min="0 0 0" max="1 1 2" color="#ff0000" />
+```
+
+![BoxAnnotation Example](./game-scene-boxannotation.png)
+
+### LineAnnotation
+
+Adds a three-dimensional line to the scene.
+In addition to its content being shown in the tooltip, it supports the following attributes:
+
+| Attribute   | Description                                                                                                        |
+|-------------|--------------------------------------------------------------------------------------------------------------------|
+| from        | The start of the line given as a vector of the form `x y z`, i.e. `0 0 0`.                                         |
+| to          | The end of the line given as a vector of the form `x y z`, i.e. `0 0 0`.                                           |
+| color       | Specify a color for the line in HTML notation (`#RRGGBB`). Defaults to white.                                      |
+| thickness   | The thickness of the line around the bounding box. Defaults to half a texture pixel in world-coordinates (0.5/16). |
+| alwaysOnTop | When set to true (default is false), the line will never be occluded by blocks in the scene.                       |
+
+Example:
+
+```jsx
+<LineAnnotation from="0 0 0" to="2 2 2" color="#ff0000" />
+```
+
+![BoxAnnotation Example](./game-scene-lineannotation.png)
+
+### DiamondAnnotation
+
+Adds a 2D diamond icon on top of the scene, anchored to a position in the scene.
+In addition to its content being shown in the tooltip, it supports the following attributes:
+
+| Attribute   | Description                                                                                                                                  |
+|-------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| pos         | The world position to anchor the diamond to, given as a vector of the form `x y z`. Note that `0.5 0.5 0.5` is the actual center of a block. |
+| color       | Specify a color for the diamond in HTML notation (`#RRGGBB`). Defaults to white.                                                             |
+
+Example:
+
+```jsx
+<DiamondAnnotation pos="1.5 0.5 0.5" color="#ff0000" />
+```
+
+![DiamondAnnotation Example](./game-scene-diamondannotation.png)

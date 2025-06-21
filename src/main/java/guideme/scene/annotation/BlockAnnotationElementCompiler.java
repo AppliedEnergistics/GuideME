@@ -8,6 +8,9 @@ import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import java.util.Set;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Annotates a single block in the scene identified by its position.
+ */
 public class BlockAnnotationElementCompiler extends AnnotationTagCompiler {
 
     public static final String TAG_NAME = "BlockAnnotation";
