@@ -246,7 +246,6 @@ to be two of the four.
     </DiamondAnnotation>
   </BlockAnnotationTemplate>
 </GameScene>
-
 ```
 
 ![BlockAnnotationTemplate Example](./game-scene-blockannotationtemplate.png)

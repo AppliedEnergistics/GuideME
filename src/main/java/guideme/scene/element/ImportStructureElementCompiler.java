@@ -2,6 +2,7 @@ package guideme.scene.element;
 
 import guideme.compiler.IdUtils;
 import guideme.compiler.PageCompiler;
+import guideme.compiler.tags.MdxAttrs;
 import guideme.document.LytErrorSink;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.scene.GuidebookScene;
@@ -41,6 +42,8 @@ public class ImportStructureElementCompiler implements SceneElementTagCompiler {
             return;
         }
 
+        var pos = MdxAttrs.getBlockPos(compiler, errorSink, el, "pos", BlockPos.ZERO);
+
         ResourceLocation absStructureSrc;
         try {
             absStructureSrc = IdUtils.resolveLink(structureSrc, compiler.getPageId());
@@ -77,7 +80,7 @@ public class ImportStructureElementCompiler implements SceneElementTagCompiler {
         settings.setIgnoreEntities(true); // Entities need a server level in structures
 
         var fakeServerLevel = new FakeForwardingServerLevel(scene.getLevel());
-        if (!template.placeInWorld(fakeServerLevel, BlockPos.ZERO, BlockPos.ZERO, settings, random, 0)) {
+        if (!template.placeInWorld(fakeServerLevel, pos, pos, settings, random, 0)) {
             errorSink.appendError(compiler, "Failed to place structure", el);
         }
     }
