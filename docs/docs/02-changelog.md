@@ -10,6 +10,7 @@ import Video from '@site/src/components/Video';
   This change allows the same structure to be added multiple times to a scene at different positions.
 - Add a new `<RemoveBlock id="..." />` tag to game scenes to clear out tags of a given type. This is useful for clearing out support blocks
   from structures after they have been imported into a scene. See the [game scene documentation](./30-authoring/game-scenes.md#remove-blocks) for details.
+- Fix rendering of diamond overlay annotations in game scenes.
 
 ## 21.5.7-beta (Minecraft 1.21.5)
 

@@ -336,10 +336,6 @@ public class LytGuidebookScene extends LytBox {
 
                 renderDebugCrosshairs();
 
-                if (!hideAnnotations) {
-                    renderOverlayAnnotations(scene, context);
-                }
-
                 RenderToTextureHooks.targetOverride = null;
                 context.popScissor(); // Our manually reset scissor will now be dropped back to the last valid one
 
@@ -361,6 +357,9 @@ public class LytGuidebookScene extends LytBox {
                 renderTarget.destroyBuffers();
             }
 
+            if (!hideAnnotations) {
+                renderOverlayAnnotations(scene, context);
+            }
         }
 
         /**
@@ -553,10 +552,16 @@ public class LytGuidebookScene extends LytBox {
         }
 
         private void renderOverlayAnnotations(GuidebookScene scene, RenderContext context) {
+            if (scene.getOverlayAnnotations().isEmpty()) {
+                return;
+            }
+
+            context.pushScissor(bounds);
             for (var annotation : scene.getOverlayAnnotations()) {
                 // Determine where it would be on screen
                 annotation.render(scene, context, bounds);
             }
+            context.popScissor();
         }
     }
 
