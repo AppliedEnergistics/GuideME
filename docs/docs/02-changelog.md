@@ -87,7 +87,7 @@ import Video from '@site/src/components/Video';
 - Added an option for Players to disable loading of guide translations.
 - Added support for the strikethrough Markdown extension (`~~text~~` or `~text~`).
 - Added rendering for Markdown blockquotes.
-- Added support for entities in game scenes using `<Entity />`. See [game scenes](./30-authoring/game-scenes.md#entities) for details.
+- Added support for entities in game scenes using `<Entity />`. See [game scenes](./30-authoring/game-scenes.md#entity) for details.
   ![entity in game scene](./30-authoring/game-scene-entity.png)
 - Add `<CommandLink command="/command" [title="tooltip"] [close={true}]>...</CommandLink>` that runs a command when clicked.
 - Added a [tag for coloring text](./30-authoring/index.md#colored-text) using pre-defined colors, for use with the 16 default Minecraft colors.

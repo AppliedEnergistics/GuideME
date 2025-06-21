@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 /**
- * Compiles a <code>&lt;AnnotationBox</code> tag into {@link InWorldBoxAnnotation}.
+ * Annotates a region of blocks given by its min and max block position.
  */
 public class BoxAnnotationElementCompiler extends AnnotationTagCompiler {
 
