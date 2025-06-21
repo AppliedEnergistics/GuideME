@@ -6,6 +6,8 @@ import Video from '@site/src/components/Video';
 ## 21.5.7-beta (Minecraft 1.21.5)
 
 - Add support for [templating annotations in game scenes](./30-authoring/game-scenes.md#block-annotation-templates). This allows you to apply annotations to specific blocks in the scene by type rather than position.
+- Add the ability to position structures when they are placed by `<ImportStructure />` using the new `pos="x y z"` attribute.
+  This change allows the same structure to be added multiple times to a scene at different positions.
 
 ## 21.5.7-beta (Minecraft 1.21.5)
 
