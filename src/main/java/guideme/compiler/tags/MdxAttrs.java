@@ -233,6 +233,35 @@ public final class MdxAttrs {
 
     @Contract("_, _, _, _, !null -> !null")
     @Nullable
+    public static BlockPos getBlockPos(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el,
+            String name,
+            @Nullable BlockPos defaultValue) {
+
+        var attrValue = getString(compiler, errorSink, el, name, null);
+        if (attrValue == null) {
+            return defaultValue;
+        }
+
+        var parts = attrValue.trim().split("\\s+", 3);
+        var result = new BlockPos.MutableBlockPos();
+        try {
+            result.setX(Integer.parseInt(parts[0]));
+            if (parts.length >= 2) {
+                result.setY(Integer.parseInt(parts[1]));
+            }
+            if (parts.length >= 3) {
+                result.setZ(Integer.parseInt(parts[2]));
+            }
+        } catch (NumberFormatException e) {
+            errorSink.appendError(compiler, "Invalid block position: '" + attrValue + "'", el);
+            return defaultValue;
+        }
+
+        return result;
+    }
+
+    @Contract("_, _, _, _, !null -> !null")
+    @Nullable
     public static Vector2f getVector2(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el,
             String name,
             @Nullable Vector2fc defaultValue) {
