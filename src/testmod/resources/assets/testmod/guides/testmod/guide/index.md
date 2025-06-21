@@ -27,9 +27,11 @@ You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">do
 <GameScene zoom={2}>
   <ImportStructure src="test.nbt" />
 
-  <DiamondAnnotation pos="1.5 0.5 0.5" color="#ff0000">
-    This will be shown in the tooltip! <ItemImage id="minecraft:stone" />
-  </DiamondAnnotation>
+  <BlockAnnotationTemplate id="minecraft:stripped_spruce_log" p:axis="x">
+    <DiamondAnnotation pos="0.5 0.5 0.5" color="#ff0000">
+      This will be shown in the tooltip! <ItemImage id="minecraft:stone" />
+    </DiamondAnnotation>
+  </BlockAnnotationTemplate>
 </GameScene>
 
 <GameScene zoom="8">

@@ -215,3 +215,38 @@ Example:
 ```
 
 ![DiamondAnnotation Example](./game-scene-diamondannotation.png)
+
+### Block Annotation Templates
+
+You can use `<BlockAnnotationTemplate />` to apply the same annotation to all blocks of a type (and specific blockstate properties)
+in the current scene.
+
+The `BlockAnnotationTemplate` tag requires an `id` attribute with the block id that the annotations should be applied to.
+Optionally, you can specify additional filters on blockstate properties using `p:<name>="<value>"` attributes.
+
+:::important
+
+Since the template will only apply to the blocks that are in the scene when the tag is parsed, make sure it comes 
+after any `ImportStructure` tags in your scene. If you combine multiple structures, you can also use this to your
+advantage.
+
+:::
+
+Example:
+
+This applies a diamond annotation to every stripped spruce log aligned with the x-axis in this scene, which happens 
+to be two of the four.
+
+```jsx
+<GameScene zoom={2}>
+  <ImportStructure src="test.nbt" />
+  <BlockAnnotationTemplate id="minecraft:stripped_spruce_log" p:axis="x">
+    <DiamondAnnotation pos="0.5 0.5 0.5" color="#ff0000">
+      Special Logs Tooltip
+    </DiamondAnnotation>
+  </BlockAnnotationTemplate>
+</GameScene>
+
+```
+
+![BlockAnnotationTemplate Example](./game-scene-blockannotationtemplate.png)

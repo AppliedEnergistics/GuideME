@@ -5,7 +5,9 @@ import guideme.compiler.PageCompiler;
 import guideme.compiler.tags.MdxAttrs;
 import guideme.document.LytErrorSink;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.scene.GuidebookScene;
 import java.util.Set;
+import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -21,7 +23,12 @@ public class LineAnnotationElementCompiler extends AnnotationTagCompiler {
     @Override
     protected @Nullable SceneAnnotation createAnnotation(PageCompiler compiler, LytErrorSink errorSink,
             MdxJsxElementFields el) {
+        return createAnnotation(null, compiler, errorSink, el, BlockPos.ZERO);
+    }
 
+    @Override
+    protected @Nullable SceneAnnotation createAnnotation(GuidebookScene scene, PageCompiler compiler,
+            LytErrorSink errorSink, MdxJsxElementFields el, BlockPos instancePosition) {
         var from = MdxAttrs.getVector3(compiler, errorSink, el, "from", new Vector3f());
         var to = MdxAttrs.getVector3(compiler, errorSink, el, "to", new Vector3f());
         var color = MdxAttrs.getColor(compiler, errorSink, el, "color", ConstantColor.WHITE);
@@ -30,6 +37,9 @@ public class LineAnnotationElementCompiler extends AnnotationTagCompiler {
                 InWorldLineAnnotation.DEFAULT_THICKNESS);
 
         var alwaysOnTop = MdxAttrs.getBoolean(compiler, errorSink, el, "alwaysOnTop", false);
+
+        from.add(instancePosition.getX(), instancePosition.getY(), instancePosition.getZ());
+        to.add(instancePosition.getX(), instancePosition.getY(), instancePosition.getZ());
 
         var annotation = new InWorldLineAnnotation(from, to, color, thickness);
         annotation.setAlwaysOnTop(alwaysOnTop);

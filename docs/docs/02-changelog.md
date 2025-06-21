@@ -5,6 +5,10 @@ import Video from '@site/src/components/Video';
 
 ## 21.5.6-beta (Minecraft 1.21.5)
 
+- Add support for [templating annotations in game scenes](./30-authoring/game-scenes.md#block-annotation-templates). This allows you to apply annotations to specific blocks in the scene by type rather than position.
+
+## 21.5.7-beta (Minecraft 1.21.5)
+
 - Fix rendering of text in floated elements.
 
 ## 21.5.5-beta (Minecraft 1.21.5)
