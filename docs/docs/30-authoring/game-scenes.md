@@ -39,7 +39,9 @@ void-world).
 It has a plot that provides LOAD/SAVE/CLEAR functionality in a 16x16 space to more easily author structures for the
 guidebook.
 
-The `ImportScene` tag can be used multiple times within a game scene, with the same or different structure files.
+The `ImportStructure` tag can be used multiple times within a game scene, with the same or different structure files.
+
+To place imported structures at different positions, you can use the `pos="x y z"` attribute to change the structures position.
 
 ## Block
 
@@ -249,3 +251,23 @@ to be two of the four.
 ```
 
 ![BlockAnnotationTemplate Example](./game-scene-blockannotationtemplate.png)
+
+
+## Remove Blocks
+
+If your structures contain dummy or structural support blocks that you'd like to remove before showing the scene,
+you can use the `<RemoveBlock id="block_id" />` tag. It will remove blocks of a given type without updating neighboring
+blocks. One use case for example is to remove blocks that are only present to support redstone wire or wall torches.
+
+Optionally, you can specify additional filters on blockstate properties using `p:<name>="<value>"` attributes.
+
+Example that removes all barrier blocks from the scene after importing a redstone structure:
+
+```jsx
+<GameScene>
+    <ImportStructure src="redstone_test.nbt" />
+    <RemoveBlocks id="minecraft:stone" />
+</GameScene>
+```
+
+![RemoveBlocks Example](./game-scene-removeblocks.png)

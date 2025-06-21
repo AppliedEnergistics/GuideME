@@ -9,6 +9,8 @@ import guideme.document.LytErrorSink;
 import guideme.internal.util.Platform;
 import guideme.libs.mdast.mdx.model.MdxJsxAttribute;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.commands.arguments.item.ItemParser;
@@ -25,6 +27,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Contract;
@@ -421,5 +424,51 @@ public final class MdxAttrs {
 
         errorSink.appendError(compiler, name + " should be {true} or {false}", el);
         return defaultValue;
+    }
+
+    /**
+     * Reads all attributes of the element starting with {@code p:} and builds a predicate testing a block states
+     * properties against these values. Which attribute the block id is read from is configurable.
+     */
+    @Nullable
+    public static Predicate<BlockState> getRequiredBlockStatePredicate(PageCompiler compiler, LytErrorSink errorSink,
+            MdxJsxElementFields el, String idAttribute) {
+        var pair = getRequiredBlockAndId(compiler, errorSink, el, idAttribute);
+        if (pair == null) {
+            return null;
+        }
+
+        var block = pair.getRight();
+
+        var predicate = BlockStatePredicate.forBlock(block);
+
+        for (var attrNode : el.attributes()) {
+            if (!(attrNode instanceof MdxJsxAttribute attr)) {
+                continue;
+            }
+            var attrName = attr.name;
+            if (!attrName.startsWith("p:")) {
+                continue;
+            }
+            var statePropertyName = attrName.substring("p:".length());
+            var stateDefinition = block.getStateDefinition();
+            var property = stateDefinition.getProperty(statePropertyName);
+            if (property == null) {
+                errorSink.appendError(compiler, "block doesn't have property " + statePropertyName, el);
+                continue;
+            }
+
+            String stringValue = attr.getStringValue();
+            var maybePropertyValue = property.getValue(stringValue);
+            if (maybePropertyValue.isEmpty()) {
+                errorSink.appendError(compiler, "Invalid value  for property " + property + ": " + stringValue, el);
+                continue;
+            }
+
+            var propertyValue = maybePropertyValue.get();
+            predicate.where(property, o -> Objects.equals(o, propertyValue));
+        }
+
+        return predicate;
     }
 }

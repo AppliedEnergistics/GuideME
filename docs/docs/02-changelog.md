@@ -3,11 +3,13 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
-## 21.5.6-beta (Minecraft 1.21.5)
+## 21.5.8-beta (Minecraft 1.21.5)
 
 - Add support for [templating annotations in game scenes](./30-authoring/game-scenes.md#block-annotation-templates). This allows you to apply annotations to specific blocks in the scene by type rather than position.
 - Add the ability to position structures when they are placed by `<ImportStructure />` using the new `pos="x y z"` attribute.
   This change allows the same structure to be added multiple times to a scene at different positions.
+- Add a new `<RemoveBlock id="..." />` tag to game scenes to clear out tags of a given type. This is useful for clearing out support blocks
+  from structures after they have been imported into a scene. See the [game scene documentation](./30-authoring/game-scenes.md#remove-blocks) for details.
 
 ## 21.5.7-beta (Minecraft 1.21.5)
 
