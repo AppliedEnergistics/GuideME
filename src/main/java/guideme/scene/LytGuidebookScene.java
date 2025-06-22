@@ -142,13 +142,16 @@ public class LytGuidebookScene extends LytBox {
         var sceneWidth = fullWidth ? availableWidth : Math.min(prefSceneSize.width(), availableWidth);
         var sceneHeight = prefSceneSize.height();
 
-        // We have to layout twice to get the preferred size
-        var toolbarBounds = toolbar.layout(context, x, y, 0);
-        // If the space isn't enough for both, reduce the scene width
-        if (sceneWidth + toolbarBounds.width() > availableWidth) {
-            sceneWidth = availableWidth - toolbarBounds.width();
+        var toolbarBounds = LytRect.empty();
+        if (interactive) {
+            // We have to layout twice to get the preferred size
+            toolbarBounds = toolbar.layout(context, x, y, 0);
+            // If the space isn't enough for both, reduce the scene width
+            if (sceneWidth + toolbarBounds.width() > availableWidth) {
+                sceneWidth = availableWidth - toolbarBounds.width();
+            }
+            toolbarBounds = toolbar.layout(context, x + sceneWidth, y, availableWidth - sceneWidth);
         }
-        toolbarBounds = toolbar.layout(context, x + sceneWidth, y, availableWidth - sceneWidth);
 
         // Enforce a minimum width
         if (sceneWidth < 10) {
