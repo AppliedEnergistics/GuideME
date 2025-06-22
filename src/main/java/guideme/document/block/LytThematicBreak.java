@@ -4,7 +4,6 @@ import guideme.color.SymbolicColor;
 import guideme.document.LytRect;
 import guideme.layout.LayoutContext;
 import guideme.render.RenderContext;
-import net.minecraft.client.renderer.MultiBufferSource;
 
 public class LytThematicBreak extends LytBlock {
     @Override
@@ -14,10 +13,6 @@ public class LytThematicBreak extends LytBlock {
 
     @Override
     protected void onLayoutMoved(int deltaX, int deltaY) {
-    }
-
-    @Override
-    public void renderBatch(RenderContext context, MultiBufferSource buffers) {
     }
 
     @Override

@@ -77,11 +77,20 @@ public interface MdxJsxElementFields extends UnistNode {
                 if (name.equals(jsxAttribute.name)) {
                     return jsxAttribute;
                 }
-            } else if (attributeNode instanceof MdxJsxExpressionAttribute jsxExpressionAttribute) {
+            } else if (attributeNode instanceof MdxJsxExpressionAttribute) {
                 throw new IllegalStateException("Attribute spreads unsupported!");
             }
         }
 
         return null;
+    }
+
+    default void removeAttribute(String name) {
+        attributes().removeIf(attributeNode -> {
+            if (attributeNode instanceof MdxJsxAttribute jsxAttribute) {
+                return name.equals(jsxAttribute.name);
+            }
+            return false;
+        });
     }
 }

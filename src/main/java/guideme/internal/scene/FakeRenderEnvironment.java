@@ -19,6 +19,7 @@ import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.stats.StatsCounter;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.connection.ConnectionType;
@@ -67,7 +68,7 @@ public class FakeRenderEnvironment implements AutoCloseable {
                 packetListener,
                 new StatsCounter(),
                 new ClientRecipeBook(),
-                false,
+                Input.EMPTY,
                 false);
 
         return new FakeRenderEnvironment(originalPlayer);

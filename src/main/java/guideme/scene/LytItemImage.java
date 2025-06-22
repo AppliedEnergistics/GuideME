@@ -6,7 +6,6 @@ import guideme.layout.LayoutContext;
 import guideme.render.RenderContext;
 import guideme.siteexport.ExportableResourceProvider;
 import guideme.siteexport.ResourceExporter;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
@@ -38,10 +37,6 @@ public class LytItemImage extends LytBlock implements ExportableResourceProvider
 
     @Override
     protected void onLayoutMoved(int deltaX, int deltaY) {
-    }
-
-    @Override
-    public void renderBatch(RenderContext context, MultiBufferSource buffers) {
     }
 
     @Override

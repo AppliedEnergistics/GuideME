@@ -11,7 +11,6 @@ import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.renderer.MultiBufferSource;
 
 /**
  * Wraps an {@link AbstractWidget} for use within the guidebook layout tree.
@@ -34,10 +33,6 @@ public class LytWidget extends LytBlock implements InteractiveElement {
     protected void onLayoutMoved(int deltaX, int deltaY) {
         widget.setX(widget.getX() + deltaX);
         widget.setY(widget.getY() + deltaY);
-    }
-
-    @Override
-    public void renderBatch(RenderContext context, MultiBufferSource buffers) {
     }
 
     @Override
@@ -64,7 +59,7 @@ public class LytWidget extends LytBlock implements InteractiveElement {
         GuiGraphics guiGraphics = context.guiGraphics();
         if (minecraft.screen instanceof IndepentScaleScreen indepentScaleScreen) {
             guiGraphics = new ScaledGuiGraphics(minecraft, context.guiGraphics().pose(),
-                    context.guiGraphics().bufferSource, (float) indepentScaleScreen.getEffectiveScale());
+                    context.guiGraphics().guiRenderState, (float) indepentScaleScreen.getEffectiveScale());
         }
         widget.render(
                 guiGraphics,

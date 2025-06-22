@@ -5,8 +5,8 @@ pluginManagement {
     plugins {
         id 'com.gradleup.shadow' version '8.3.5'
         // https://projects.neoforged.net/neoforged/ModDevGradle
-        id 'net.neoforged.moddev' version '2.0.93'
-        id 'net.neoforged.moddev.repositories' version '2.0.93'
+        id 'net.neoforged.moddev' version '2.0.103'
+        id 'net.neoforged.moddev.repositories' version '2.0.103'
     }
 }
 
@@ -20,6 +20,14 @@ dependencyResolutionManagement {
     rulesMode = RulesMode.FAIL_ON_PROJECT_RULES
     repositories {
         mavenCentral()
+        maven {
+            name = "Maven for PR #2517" // https://github.com/neoforged/NeoForge/pull/2517
+            url = uri("https://prmaven.neoforged.net/NeoForge/pr2517")
+            content {
+                includeModule("net.neoforged", "neoforge")
+                includeModule("net.neoforged", "testframework")
+            }
+        }
     }
 }
 

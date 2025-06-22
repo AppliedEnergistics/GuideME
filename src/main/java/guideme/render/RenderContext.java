@@ -1,6 +1,5 @@
 package guideme.render;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.color.LightDarkMode;
@@ -13,8 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -23,8 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec2;
 import net.neoforged.neoforge.fluids.FluidStack;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
+import org.joml.Matrix3x2fStack;
 
 public interface RenderContext {
 
@@ -36,7 +33,7 @@ public interface RenderContext {
 
     GuiGraphics guiGraphics();
 
-    default PoseStack poseStack() {
+    default Matrix3x2fStack poseStack() {
         return guiGraphics().pose();
     }
 
@@ -83,9 +80,8 @@ public interface RenderContext {
     }
 
     default void fillIcon(int x, int y, int width, int height, TextureAtlasSprite sprite, ColorValue color) {
-        var spriteLayer = new SpriteLayer();
-        spriteLayer.fillSprite(sprite.contents().name(), 0, 0, 0, width, height, resolveColor(color));
-        spriteLayer.render(poseStack(), x, y, 0);
+        guiGraphics().blitSprite(RenderPipelines.GUI_TEXTURED, sprite.contents().name(), x, y, width, height,
+                resolveColor(color));
     }
 
     default void fillTexturedRect(LytRect rect, ResourceLocation texture, ColorValue topLeft, ColorValue topRight,
@@ -156,12 +152,6 @@ public interface RenderContext {
     }
 
     default void renderText(String text, ResolvedTextStyle style, float x, float y) {
-        var bufferSource = beginBatch();
-        renderTextInBatch(text, style, x, y, bufferSource);
-        endBatch(bufferSource);
-    }
-
-    default void renderTextInBatch(String text, ResolvedTextStyle style, float x, float y, MultiBufferSource buffers) {
         var effectiveStyle = Style.EMPTY
                 .withBold(style.bold())
                 .withItalic(style.italic())
@@ -169,19 +159,28 @@ public interface RenderContext {
                 .withStrikethrough(style.strikethrough())
                 .withFont(style.font());
 
-        var matrix = poseStack().last().pose();
-        if (style.fontScale() != 1) {
-            matrix = new Matrix4f(matrix);
+        var pose = guiGraphics().pose();
 
-            matrix.scale(style.fontScale(), style.fontScale(), 1);
-            matrix.translate(new Vector3f(x / style.fontScale(), y / style.fontScale(), 0));
+        boolean popPose = false;
+        if (style.fontScale() != 1) {
+            pose.pushMatrix();
+            pose.scale(style.fontScale(), style.fontScale());
+            pose.translate(x / style.fontScale(), y / style.fontScale());
             x = 0;
             y = 0;
+            popPose = true;
         }
 
-        font().drawInBatch(Component.literal(text).withStyle(effectiveStyle), x, y, resolveColor(style.color()),
-                style.dropShadow(),
-                matrix, buffers, Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT);
+        guiGraphics().drawString(
+                font(),
+                Component.literal(text).withStyle(effectiveStyle),
+                (int) x, (int) y,
+                resolveColor(style.color()),
+                style.dropShadow());
+
+        if (popPose) {
+            pose.popMatrix();
+        }
     }
 
     default void fillRect(int x, int y, int width, int height, ColorValue color) {
@@ -208,26 +207,17 @@ public interface RenderContext {
         fillGradientHorizontal(new LytRect(x, y, width, height), left, right);
     }
 
-    default MultiBufferSource.BufferSource beginBatch() {
-        return Minecraft.getInstance().renderBuffers().bufferSource();
-    }
-
-    default void endBatch(MultiBufferSource.BufferSource batch) {
-        batch.endBatch();
-    }
-
     default void renderItem(ItemStack stack, int x, int y, float width, float height) {
         renderItem(stack, x, y, 0, width, height);
     }
 
-    default void renderFluid(Fluid fluid, int x, int y, int z, int width, int height) {
+    default void renderFluid(Fluid fluid, int x, int y, int width, int height) {
         FluidBlitter.create(new FluidStack(fluid, 1))
                 .dest(x, y, width, height)
-                .zOffset(z)
                 .blit(guiGraphics());
     }
 
-    default void renderFluid(FluidStack stack, int x, int y, int z, int width, int height) {
+    default void renderFluid(FluidStack stack, int x, int y, int width, int height) {
         FluidBlitter.create(stack)
                 .dest(x, y, width, height)
                 .blit(guiGraphics());

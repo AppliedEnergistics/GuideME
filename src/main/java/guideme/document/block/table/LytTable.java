@@ -7,7 +7,6 @@ import guideme.layout.LayoutContext;
 import guideme.render.RenderContext;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.renderer.MultiBufferSource;
 
 public class LytTable extends LytBlock {
     /**
@@ -71,34 +70,17 @@ public class LytTable extends LytBlock {
     }
 
     @Override
-    public void renderBatch(RenderContext context, MultiBufferSource buffers) {
-        for (var row : getChildren()) {
-            for (var cell : row.getChildren()) {
-                cell.renderBatch(context, buffers);
-            }
-        }
-    }
-
-    @Override
     public void render(RenderContext context) {
         // Render the table cell borders
         var bounds = getBounds();
         for (int i = 0; i < columns.size() - 1; i++) {
             var column = columns.get(i);
-            if (i == 0) {
-                // context.fillRect(column.x - 1, bounds.y(), 1, bounds.height(), SymbolicColor.TABLE_BORDER.ref());
-            }
             var colRight = column.x + column.width;
             context.fillRect(colRight, bounds.y(), 1, bounds.height(), SymbolicColor.TABLE_BORDER);
         }
 
         for (int i = 0; i < rows.size() - 1; i++) {
             var row = rows.get(i);
-
-            if (i == 0) {
-                // context.fillRect(bounds.x(), row.bounds.y() - 1, bounds.width(), 1,
-                // SymbolicColor.TABLE_BORDER.ref());
-            }
             context.fillRect(bounds.x(), row.bounds.bottom(), bounds.width(), 1, SymbolicColor.TABLE_BORDER);
         }
 

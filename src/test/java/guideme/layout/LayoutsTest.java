@@ -8,7 +8,6 @@ import guideme.document.block.LytBlock;
 import guideme.render.RenderContext;
 import java.util.List;
 import java.util.stream.Stream;
-import net.minecraft.client.renderer.MultiBufferSource;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -59,10 +58,6 @@ public class LayoutsTest {
 
         @Override
         protected void onLayoutMoved(int deltaX, int deltaY) {
-        }
-
-        @Override
-        public void renderBatch(RenderContext context, MultiBufferSource buffers) {
         }
 
         @Override

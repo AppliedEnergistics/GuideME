@@ -1,12 +1,14 @@
 package guideme.internal.datadriven;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import guideme.GuideItemSettings;
+import guideme.color.Colors;
 import guideme.color.ConstantColor;
+import java.util.Locale;
 import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ColorRGBA;
 import net.minecraft.util.ExtraCodecs;
 
 /**
@@ -15,11 +17,13 @@ import net.minecraft.util.ExtraCodecs;
 public record DataDrivenGuide(GuideItemSettings itemSettings, String defaultLanguage,
         Map<ResourceLocation, ConstantColor> customColors) {
 
+    private static final Codec<Integer> COLOR_VALUE_CODEC = Codec.STRING
+            .comapFlatMap(value -> DataResult.success(Colors.hexToRgb(value)),
+                    rgba -> String.format(Locale.ROOT, "#%08X", rgba));
+
     private static final Codec<ConstantColor> CONSTANT_COLOR_CODEC = RecordCodecBuilder.create(builder -> builder.group(
-            ColorRGBA.CODEC.xmap(ColorRGBA::rgba, ColorRGBA::new).fieldOf("dark_mode")
-                    .forGetter(ConstantColor::darkModeColor),
-            ColorRGBA.CODEC.xmap(ColorRGBA::rgba, ColorRGBA::new).fieldOf("light_mode")
-                    .forGetter(ConstantColor::lightModeColor))
+            COLOR_VALUE_CODEC.fieldOf("dark_mode").forGetter(ConstantColor::darkModeColor),
+            COLOR_VALUE_CODEC.fieldOf("light_mode").forGetter(ConstantColor::lightModeColor))
             .apply(builder, ConstantColor::new));
 
     @Deprecated(forRemoval = true)

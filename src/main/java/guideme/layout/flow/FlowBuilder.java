@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import net.minecraft.client.renderer.MultiBufferSource;
 import org.jetbrains.annotations.Nullable;
 
 public class FlowBuilder {
@@ -36,23 +35,6 @@ public class FlowBuilder {
 
         // Build bounding box around all lines
         return lineBuilder.getBounds();
-    }
-
-    public void renderBatch(RenderContext context, MultiBufferSource buffers, @Nullable LytFlowContent hoveredContent) {
-        for (var line : lines) {
-            for (var el = line.firstElement(); el != null; el = el.next) {
-                el.containsMouse = hoveredContent != null && hoveredContent.isInclusiveAncestor(el.getFlowContent());
-                el.renderBatch(context, buffers);
-            }
-        }
-    }
-
-    public void renderFloatsBatch(RenderContext context, MultiBufferSource buffers,
-            @Nullable LytFlowContent hoveredContent) {
-        for (var el : floats) {
-            el.containsMouse = hoveredContent != null && hoveredContent.isInclusiveAncestor(el.getFlowContent());
-            el.renderBatch(context, buffers);
-        }
     }
 
     public void render(RenderContext context, @Nullable LytFlowContent hoveredContent) {

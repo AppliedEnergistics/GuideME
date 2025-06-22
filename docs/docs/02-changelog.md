@@ -3,6 +3,13 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.8.1-beta (Minecraft 1.21.8)
+
+- First port to Minecraft 1.21.8
+- The `/guidemec export` command to export guide data for web use now works
+- Fixed rendering of in-world annotations in game scenes that was slightly broken since 1.21.5
+- Fixed several export related problems present since 1.21.5
+
 ## 21.5.9-beta (Minecraft 1.21.5)
 
 - Fix text in floating elements disappearing while scrolling.

@@ -42,25 +42,25 @@ public abstract class IndepentScaleScreen extends Screen {
         var scaledGraphics = new ScaledGuiGraphics(
                 Minecraft.getInstance(),
                 guiGraphics.pose(),
-                guiGraphics.bufferSource,
+                guiGraphics.guiRenderState,
                 (float) this.effectiveScale);
 
         var renderContext = new SimpleRenderContext(guiGraphics);
 
-        scaledGraphics.pose().pushPose();
+        scaledGraphics.pose().pushMatrix();
         // This scale has to be uniform, otherwise items rendered with it will have messed up normals (and broken
         // lighting)
-        scaledGraphics.pose().scale((float) effectiveScale, (float) effectiveScale, (float) effectiveScale);
+        scaledGraphics.pose().scale((float) effectiveScale, (float) effectiveScale);
         scaledRender(scaledGraphics, renderContext, toVirtual(mouseX), toVirtual(mouseY), partialTick);
 
         // Move this here to render the tooltip with scaling applied
-        if (this.deferredTooltipRendering != null) {
-            scaledGraphics.renderTooltip(this.font, this.deferredTooltipRendering.tooltip(),
-                    this.deferredTooltipRendering.positioner(), toVirtual(mouseX), toVirtual(mouseY));
-            this.deferredTooltipRendering = null;
-        }
+        // TODO 1.21.6 if (this.deferredTooltipRendering != null) {
+        // TODO 1.21.6 scaledGraphics.renderTooltip(this.font, this.deferredTooltipRendering.tooltip(),
+        // TODO 1.21.6 this.deferredTooltipRendering.positioner(), toVirtual(mouseX), toVirtual(mouseY));
+        // TODO 1.21.6 this.deferredTooltipRendering = null;
+        // TODO 1.21.6 }
 
-        scaledGraphics.pose().popPose();
+        scaledGraphics.pose().popMatrix();
     }
 
     protected void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,

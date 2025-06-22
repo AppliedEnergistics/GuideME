@@ -212,7 +212,7 @@ public class GuideSearchScreen extends DocumentScreen {
     @Override
     protected void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
-        renderBlurredBackground();
+        renderBlurredBackground(guiGraphics);
 
         context.fillIcon(screenRect, GuiAssets.GUIDE_BACKGROUND, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
 
@@ -239,15 +239,11 @@ public class GuideSearchScreen extends DocumentScreen {
             renderDocument(context);
         }
 
-        var poseStack = guiGraphics.pose();
-        poseStack.pushPose();
-        poseStack.translate(0, 0, 200);
+        guiGraphics.nextStratum();
 
         renderTitle(documentRect, context);
 
         super.scaledRender(guiGraphics, context, mouseX, mouseY, partialTick);
-
-        poseStack.popPose();
 
         renderDocumentTooltip(guiGraphics, mouseX, mouseY, partialTick);
     }

@@ -9,7 +9,6 @@ import guideme.render.GuiAssets;
 import guideme.render.GuidePageTexture;
 import guideme.render.RenderContext;
 import java.util.Optional;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
@@ -74,10 +73,6 @@ public class LytImage extends LytBlock implements InteractiveElement {
 
     @Override
     protected void onLayoutMoved(int deltaX, int deltaY) {
-    }
-
-    @Override
-    public void renderBatch(RenderContext context, MultiBufferSource buffers) {
     }
 
     @Override

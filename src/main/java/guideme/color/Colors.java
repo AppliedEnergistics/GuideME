@@ -4,7 +4,7 @@ import net.minecraft.util.ARGB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class Colors {
+public final class Colors {
     private static final Logger LOG = LoggerFactory.getLogger(Colors.class);
 
     /**

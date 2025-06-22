@@ -8,11 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
-import org.joml.Matrix4f;
+import org.joml.Matrix3x2f;
 
 public final class SimpleRenderContext implements RenderContext {
     private final List<LytRect> viewportStack = new ArrayList<>();
@@ -51,66 +52,75 @@ public final class SimpleRenderContext implements RenderContext {
     public void fillRect(LytRect rect, ColorValue topLeft, ColorValue topRight, ColorValue bottomRight,
             ColorValue bottomLeft) {
 
-        var buffers = beginBatch();
-        var buffer = buffers.getBuffer(RenderType.gui());
-        var matrix = poseStack().last().pose();
-        final int z = 0;
-        buffer.addVertex(matrix, rect.right(), rect.y(), z).setColor(resolveColor(topRight));
-        buffer.addVertex(matrix, rect.x(), rect.y(), z).setColor(resolveColor(topLeft));
-        buffer.addVertex(matrix, rect.x(), rect.bottom(), z).setColor(resolveColor(bottomLeft));
-        buffer.addVertex(matrix, rect.right(), rect.bottom(), z).setColor(resolveColor(bottomRight));
-        buffers.endBatch(RenderType.gui());
+        guiGraphics.submitGuiElementRenderState(new GradientColoredRectangleRenderState(
+                RenderPipelines.GUI,
+                TextureSetup.noTexture(),
+                new Matrix3x2f(poseStack()),
+                rect.x(),
+                rect.y(),
+                rect.right(),
+                rect.bottom(),
+                resolveColor(topLeft),
+                resolveColor(topRight),
+                resolveColor(bottomRight),
+                resolveColor(bottomLeft),
+                guiGraphics().peekScissorStack()));
     }
 
     @Override
     public void fillTexturedRect(LytRect rect, ResourceLocation textureId, ColorValue topLeft, ColorValue topRight,
             ColorValue bottomRight, ColorValue bottomLeft, float u0, float v0, float u1, float v1) {
-        RenderType renderType = RenderType.guiTextured(textureId);
 
-        var buffers = beginBatch();
-        var buffer = buffers.getBuffer(renderType);
-        var matrix = poseStack().last().pose();
-        final int z = 0;
-        buffer.addVertex(matrix, rect.right(), rect.y(), z).setUv(u1, v0).setColor(resolveColor(topRight));
-        buffer.addVertex(matrix, rect.x(), rect.y(), z).setUv(u0, v0).setColor(resolveColor(topLeft));
-        buffer.addVertex(matrix, rect.x(), rect.bottom(), z).setUv(u0, v1).setColor(resolveColor(bottomLeft));
-        buffer.addVertex(matrix, rect.right(), rect.bottom(), z).setUv(u1, v1).setColor(resolveColor(bottomRight));
-        buffers.endBatch();
+        var textureView = Minecraft.getInstance().getTextureManager().getTexture(textureId).getTextureView();
+        guiGraphics.submitGuiElementRenderState(new GradientBlitRenderState(
+                RenderPipelines.GUI_TEXTURED,
+                TextureSetup.singleTexture(textureView),
+                new Matrix3x2f(poseStack()),
+                rect.x(),
+                rect.y(),
+                rect.right(),
+                rect.bottom(),
+                u0,
+                v0,
+                u1,
+                v1,
+                resolveColor(topLeft),
+                resolveColor(topRight),
+                resolveColor(bottomRight),
+                resolveColor(bottomLeft),
+                guiGraphics().peekScissorStack()));
     }
 
     @Override
     public void fillTriangle(Vec2 p1, Vec2 p2, Vec2 p3, ColorValue color) {
-        var resolvedColor = resolveColor(color);
-
-        var buffers = beginBatch();
-        var buffer = buffers.getBuffer(RenderType.gui());
-        var matrix = poseStack().last().pose();
-        final int z = 0;
-        buffer.addVertex(matrix, p1.x, p1.y, z).setColor(resolvedColor);
-        buffer.addVertex(matrix, p2.x, p2.y, z).setColor(resolvedColor);
-        buffer.addVertex(matrix, p3.x, p3.y, z).setColor(resolvedColor);
-        buffers.endBatch(RenderType.gui());
+        guiGraphics.submitGuiElementRenderState(new FillTriangleRenderState(
+                RenderPipelines.GUI,
+                TextureSetup.noTexture(),
+                new Matrix3x2f(poseStack()),
+                p1,
+                p2,
+                p3,
+                resolveColor(color),
+                guiGraphics().peekScissorStack()));
     }
 
     @Override
     public void renderItem(ItemStack stack, int x, int y, int z, float width, float height) {
-        var mc = Minecraft.getInstance();
-
         var pose = poseStack();
-        pose.pushPose();
-        pose.translate(x, y, z + 1);
+        pose.pushMatrix();
+        pose.translate(x, y);
         // Purposefully do NOT scale the normals!
         // this happens on non-uniform scales when calling the normal scale method
-        pose.last().pose().scale(width / 16, height / 16, Math.max(width / 16, height / 16));
+        pose.scale(width / 16, height / 16);
         guiGraphics().renderItem(stack, 0, 0);
-        guiGraphics().renderItemDecorations(mc.font, stack, 0, 0);
-        pose.popPose();
+        guiGraphics().renderItemDecorations(font(), stack, 0, 0);
+        pose.popMatrix();
     }
 
     @Override
     public void pushScissor(LytRect bounds) {
 
-        var rootBounds = bounds.transform(poseStack().last().pose());
+        var rootBounds = bounds.transform(poseStack());
 
         viewportStack.add(rootBounds);
         RenderContext.super.pushScissor(bounds);
@@ -128,7 +138,7 @@ public final class SimpleRenderContext implements RenderContext {
     @Override
     public LytRect viewport() {
         var viewport = viewportStack.getLast();
-        var pose = new Matrix4f(guiGraphics().pose().last().pose());
+        var pose = new Matrix3x2f(guiGraphics().pose());
         pose.invert();
         var vp = viewport.transform(pose);
         return vp;

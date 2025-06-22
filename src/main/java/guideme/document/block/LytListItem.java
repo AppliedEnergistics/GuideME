@@ -6,7 +6,6 @@ import guideme.document.LytRect;
 import guideme.layout.LayoutContext;
 import guideme.render.RenderContext;
 import guideme.style.ResolvedTextStyle;
-import net.minecraft.client.renderer.MultiBufferSource;
 
 public class LytListItem extends LytVBox {
 
@@ -31,24 +30,6 @@ public class LytListItem extends LytVBox {
         return bounds.expand(LEVEL_MARGIN, 0, 0, 0);
     }
 
-    @Override
-    public void renderBatch(RenderContext context, MultiBufferSource buffers) {
-        if (isOrdered()) {
-            int number = getOrderedItemNumber();
-            String label = number + ".";
-
-            var width = context.getWidth(label, style);
-            var bounds = getBounds();
-            var x = bounds.x() + LEVEL_MARGIN - width - 2;
-
-            context.renderTextInBatch(label,
-                    style,
-                    x, (float) bounds.y(), buffers);
-        }
-
-        super.renderBatch(context, buffers);
-    }
-
     private int getOrderedItemNumber() {
         var number = 1;
         if (parent instanceof LytList list) {
@@ -68,7 +49,18 @@ public class LytListItem extends LytVBox {
 
     @Override
     public void render(RenderContext context) {
-        if (!isOrdered()) {
+        if (isOrdered()) {
+            int number = getOrderedItemNumber();
+            String label = number + ".";
+
+            var width = context.getWidth(label, style);
+            var bounds = getBounds();
+            var x = bounds.x() + LEVEL_MARGIN - width - 2;
+
+            context.renderText(label,
+                    style,
+                    x, (float) bounds.y());
+        } else {
             var bounds = getBounds();
 
             context.fillRect(

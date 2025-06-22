@@ -36,7 +36,6 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -365,7 +364,7 @@ public final class StructureCommands {
                                 origin,
                                 actualSize,
                                 false,
-                                Blocks.AIR);
+                                List.of());
 
                         var compound = structureTemplate.save(new CompoundTag());
                         if (selectedPath.toLowerCase(Locale.ROOT).endsWith(".snbt")) {

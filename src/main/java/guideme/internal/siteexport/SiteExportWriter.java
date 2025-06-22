@@ -41,10 +41,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.zip.GZIPOutputStream;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -56,6 +56,7 @@ import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -290,7 +291,11 @@ public class SiteExportWriter {
             return itemId;
         }
 
-        var serializedTag = (CompoundTag) stack.save(Platform.getClientRegistryAccess());
+        var tagValueOutput = TagValueOutput.createWithContext(ProblemReporter.DISCARDING,
+                Platform.getClientRegistryAccess());
+        tagValueOutput.store(ItemStack.MAP_CODEC, stack);
+
+        var serializedTag = tagValueOutput.buildResult();
 
         MessageDigest digest;
         try {

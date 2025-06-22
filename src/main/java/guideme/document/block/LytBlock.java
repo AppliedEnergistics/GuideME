@@ -4,7 +4,6 @@ import guideme.document.LytRect;
 import guideme.layout.LayoutContext;
 import guideme.render.RenderContext;
 import guideme.style.BorderStyle;
-import net.minecraft.client.renderer.MultiBufferSource;
 import org.joml.Vector2i;
 
 public abstract class LytBlock extends LytNode {
@@ -153,8 +152,6 @@ public abstract class LytBlock extends LytNode {
      * Implement to react to layout previously computed by {@link #computeLayout} being moved.
      */
     protected abstract void onLayoutMoved(int deltaX, int deltaY);
-
-    public abstract void renderBatch(RenderContext context, MultiBufferSource buffers);
 
     public abstract void render(RenderContext context);
 }

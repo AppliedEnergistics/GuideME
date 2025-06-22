@@ -1,12 +1,12 @@
 package guideme.internal.screen;
 
+import guideme.color.Colors;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import org.joml.Vector3f;
 
 public class GuideScrollbar extends AbstractWidget {
     private static final int WIDTH = 8;
@@ -43,22 +43,14 @@ public class GuideScrollbar extends AbstractWidget {
         int top = getY() + getThumbTop();
         int bottom = top + thumbHeight;
 
-        var pose = guiGraphics.pose().last().pose();
-        var min = new Vector3f();
-        pose.transformPosition(left, top, 0, min);
-        var max = new Vector3f();
-        pose.transformPosition(right, bottom, 0, max);
-
-        var buffer = guiGraphics.bufferSource.getBuffer(RenderType.gui());
-        buffer.addVertex(min.x, max.y, 0.0f).setColor(128, 128, 128, 255);
-        buffer.addVertex(max.x, max.y, 0.0f).setColor(128, 128, 128, 255);
-        buffer.addVertex(max.x, min.y, 0.0f).setColor(128, 128, 128, 255);
-        buffer.addVertex(min.x, min.y, 0.0f).setColor(128, 128, 128, 255);
-        buffer.addVertex(min.x, max.y - 1, 0.0f).setColor(192, 192, 192, 255);
-        buffer.addVertex(max.x - 1, max.y - 1, 0.0f).setColor(192, 192, 192, 255);
-        buffer.addVertex(max.x - 1, min.y, 0.0f).setColor(192, 192, 192, 255);
-        buffer.addVertex(min.x, min.y, 0.0f).setColor(192, 192, 192, 255);
-        guiGraphics.bufferSource.endBatch(RenderType.gui());
+        guiGraphics.fill(
+                RenderPipelines.GUI,
+                left, top, right, bottom,
+                Colors.rgb(128, 128, 128));
+        guiGraphics.fill(
+                RenderPipelines.GUI,
+                left, top, right - 1, bottom - 1,
+                Colors.rgb(192, 192, 192));
     }
 
     /**

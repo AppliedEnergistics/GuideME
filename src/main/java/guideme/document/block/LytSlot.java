@@ -12,7 +12,6 @@ import guideme.render.RenderContext;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -74,11 +73,6 @@ public class LytSlot extends LytBlock implements InteractiveElement {
 
     @Override
     protected void onLayoutMoved(int deltaX, int deltaY) {
-    }
-
-    @Override
-    public void renderBatch(RenderContext context, MultiBufferSource buffers) {
-
     }
 
     @Override

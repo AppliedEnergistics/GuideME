@@ -7,7 +7,6 @@ import guideme.layout.LayoutContext;
 import guideme.layout.flow.FlowBuilder;
 import guideme.render.RenderContext;
 import java.util.stream.Stream;
-import net.minecraft.client.renderer.MultiBufferSource;
 import org.jetbrains.annotations.Nullable;
 
 public class LytParagraph extends LytBlock implements LytFlowContainer {
@@ -80,16 +79,6 @@ public class LytParagraph extends LytBlock implements LytFlowContainer {
         }
 
         return super.pickNode(x, y);
-    }
-
-    @Override
-    public void renderBatch(RenderContext context, MultiBufferSource buffers) {
-        // Since we overwrite isCulled, we render even if our actual line content is culled, for floats
-        if (context.intersectsViewport(bounds)) {
-            content.renderBatch(context, buffers, hoveredContent);
-        }
-
-        content.renderFloatsBatch(context, buffers, hoveredContent);
     }
 
     @Override
