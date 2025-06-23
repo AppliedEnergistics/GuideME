@@ -6,6 +6,7 @@ import Video from '@site/src/components/Video';
 ## 21.5.9-beta (Minecraft 1.21.5)
 
 - Fix text in floating elements disappearing while scrolling.
+- Fix layout of game scenes still including the vertical toolbar even if it was hidden.
 
 ## 21.5.8-beta (Minecraft 1.21.5)
 
