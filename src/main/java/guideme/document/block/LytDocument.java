@@ -126,7 +126,7 @@ public class LytDocument extends LytNode implements LytBlockContainer {
 
     public void renderBatch(RenderContext context, MultiBufferSource buffers) {
         for (var block : blocks) {
-            if (!context.intersectsViewport(block.getBounds())) {
+            if (block.isCulled(context.viewport())) {
                 continue;
             }
             block.renderBatch(context, buffers);
