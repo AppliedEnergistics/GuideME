@@ -208,8 +208,8 @@ public class GuideNavBar extends AbstractWidget {
             graphics.enableScissor(getX(), getY(), getX() + width, getY() + height);
 
             var pose = graphics.pose();
-            pose.pushPose();
-            pose.translate(getX(), getY() - scrollOffset, 0);
+            pose.pushMatrix();
+            pose.translate(getX(), getY() - scrollOffset);
 
             var viewport = renderContext.viewport();
 
@@ -219,21 +219,14 @@ public class GuideNavBar extends AbstractWidget {
                 renderContext.fillRect(hoveredRow.getBounds(), SymbolicColor.NAVBAR_ROW_HOVER);
             }
 
-            // Render Text in batch
-            var buffers = renderContext.beginBatch();
-            for (var row : rows) {
-                if (!row.isVisible(viewport)) {
-                    continue; // Cull this row, it's not in the viewport
-                }
-                row.paragraph.renderBatch(renderContext, buffers);
-            }
-            renderContext.endBatch(buffers);
-
             // Render decorations, icons, etc.
             for (var row : rows) {
                 if (!row.isVisible(viewport)) {
                     continue; // Cull this row, it's not in the viewport
                 }
+
+                row.paragraph.render(renderContext);
+
                 if (row.hasChildren) {
                     float x = row.getBounds().x();
                     x += 5;
@@ -264,7 +257,7 @@ public class GuideNavBar extends AbstractWidget {
                 }
             }
 
-            pose.popPose();
+            pose.popMatrix();
 
             graphics.disableScissor();
         }

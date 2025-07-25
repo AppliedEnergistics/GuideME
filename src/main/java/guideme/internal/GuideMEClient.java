@@ -9,12 +9,15 @@ import guideme.internal.data.GuideMELanguageProvider;
 import guideme.internal.data.GuideMEModelProvider;
 import guideme.internal.hotkey.OpenGuideHotkey;
 import guideme.internal.item.GuideItemDispatchUnbaked;
+import guideme.internal.scene.ScenePictureInPictureRenderer;
 import guideme.internal.screen.GlobalInMemoryHistory;
 import guideme.internal.screen.GuideNavigation;
 import guideme.internal.search.GuideSearch;
 import guideme.internal.siteexport.SiteExportOnStartup;
+import guideme.internal.siteexport.TextureDownloader;
 import guideme.internal.util.Blitter;
 import guideme.render.GuiAssets;
+import guideme.scene.annotation.InWorldAnnotationRenderer;
 import java.util.Objects;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
@@ -35,10 +38,12 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.ConfigureGpuDeviceEvent;
 import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 import net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
@@ -80,6 +85,8 @@ public class GuideMEClient {
         modBus.addListener(this::registerHotkeys);
         modBus.addListener(this::registerItemModel);
         modBus.addListener(this::registerRenderPipelines);
+        modBus.addListener(this::registerPipRenderers);
+        modBus.addListener(this::configureGpuDevice);
 
         NeoForge.EVENT_BUS.addListener(this::registerClientCommands);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
@@ -114,8 +121,20 @@ public class GuideMEClient {
         availableRecipeTypes = Set.of();
     }
 
+    private void configureGpuDevice(ConfigureGpuDeviceEvent event) {
+        if (event.getAvailableFeatures().logicOp()) {
+            event.enableLogicOp();
+        }
+    }
+
     private void registerRenderPipelines(RegisterRenderPipelinesEvent event) {
         event.registerPipeline(Blitter.GUI_TEXTURED_OPAQUE);
+        event.registerPipeline(TextureDownloader.COPY_BLIT);
+        event.registerPipeline(InWorldAnnotationRenderer.OCCLUDED_PIPELINE);
+    }
+
+    private void registerPipRenderers(RegisterPictureInPictureRenderersEvent event) {
+        event.register(ScenePictureInPictureRenderer.State.class, ScenePictureInPictureRenderer::new);
     }
 
     private void registerItemModel(RegisterItemModelsEvent event) {

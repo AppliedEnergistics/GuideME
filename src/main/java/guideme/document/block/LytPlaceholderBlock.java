@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,11 +71,6 @@ public class LytPlaceholderBlock extends LytBlock {
     @Override
     protected void onLayoutMoved(int deltaX, int deltaY) {
         currentBlock.onLayoutMoved(deltaX, deltaY);
-    }
-
-    @Override
-    public void renderBatch(RenderContext context, MultiBufferSource buffers) {
-        currentBlock.renderBatch(context, buffers);
     }
 
     @Override

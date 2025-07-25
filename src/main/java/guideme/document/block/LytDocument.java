@@ -11,7 +11,6 @@ import guideme.render.SimpleRenderContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import net.minecraft.client.renderer.MultiBufferSource;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -121,15 +120,6 @@ public class LytDocument extends LytNode implements LytBlockContainer {
                 continue;
             }
             block.render(context);
-        }
-    }
-
-    public void renderBatch(RenderContext context, MultiBufferSource buffers) {
-        for (var block : blocks) {
-            if (block.isCulled(context.viewport())) {
-                continue;
-            }
-            block.renderBatch(context, buffers);
         }
     }
 

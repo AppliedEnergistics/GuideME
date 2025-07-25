@@ -2,10 +2,13 @@ package guideme.scene.export;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import guideme.flatbuffers.scene.ExpAnimatedTexturePart;
@@ -48,6 +51,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.joml.Matrix4f;
+import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +77,7 @@ public class SceneExporter {
     private static Set<TextureAtlasSprite> getSprites(GuidebookScene scene) {
         var level = scene.getLevel();
         var bufferSource = new MeshBuildingBufferSource();
-        GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource);
+        GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource, new PoseStack());
 
         return bufferSource.getMeshes().stream()
                 .flatMap(Mesh::getSprites)
@@ -83,17 +87,29 @@ public class SceneExporter {
     public byte[] export(GuidebookScene scene) {
         var level = scene.getLevel();
 
+        var device = RenderSystem.getDevice();
+
         List<Mesh> meshes;
-        try (var bufferSource = new MeshBuildingBufferSource()) {
+        try (var bufferSource = new MeshBuildingBufferSource();
+                var projectionMatrixBuffer = device.createBuffer(() -> "Projection matrix UBO",
+                        GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, RenderSystem.PROJECTION_MATRIX_UBO_SIZE)) {
 
             // To avoid baking in the projection and camera, we need to reset these here
+            // Write an identity matrix to the projection matrix buffer
+            try (var stack = MemoryStack.stackPush()) {
+                var buffer = Std140Builder.onStack(stack, RenderSystem.PROJECTION_MATRIX_UBO_SIZE)
+                        .putMat4f(new Matrix4f()).get();
+                RenderSystem.getDevice().createCommandEncoder().writeToBuffer(projectionMatrixBuffer.slice(), buffer);
+            }
+            var bufferSlice = projectionMatrixBuffer.slice(0, RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
+
             var modelViewStack = RenderSystem.getModelViewStack();
             modelViewStack.pushMatrix();
             modelViewStack.identity();
             RenderSystem.backupProjectionMatrix();
-            RenderSystem.setProjectionMatrix(new Matrix4f(), ProjectionType.ORTHOGRAPHIC);
+            RenderSystem.setProjectionMatrix(bufferSlice, ProjectionType.ORTHOGRAPHIC);
 
-            GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource);
+            GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource, new PoseStack());
 
             modelViewStack.popMatrix();
             RenderSystem.restoreProjectionMatrix();
@@ -291,8 +307,9 @@ public class SceneExporter {
 
     private int writeMaterial(RenderType type, FlatBufferBuilder builder) {
 
-        var state = ((RenderType.CompositeRenderType) type).state;
-        var pipeline = type.getRenderPipeline();
+        var compositeType = (RenderType.CompositeRenderType) type;
+
+        var pipeline = compositeType.renderPipeline;
 
         var shaderNameOffset = builder.createSharedString(pipeline.getLocation().toString());
 

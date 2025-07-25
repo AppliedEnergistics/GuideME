@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,8 +37,9 @@ import net.minecraft.DetectedVersion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.LoadingOverlay;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -87,7 +89,9 @@ public class SiteExporter implements ResourceExporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(SiteExporter.class);
 
-    private static final int ICON_DIMENSION = 128;
+    private static final int NATIVE_ICON_DIMENSION = 16;
+    private static final int ICON_SCALE = 8;
+    private static final int ICON_DIMENSION = ICON_SCALE * NATIVE_ICON_DIMENSION;
 
     private final Minecraft client;
     private final Map<ResourceLocation, String> exportedTextures = new HashMap<>();
@@ -106,6 +110,8 @@ public class SiteExporter implements ResourceExporter {
 
     private final Map<ResourceLocation, Object> extraData = new HashMap<>();
 
+    private final List<Runnable> cleanupCallbacks = new ArrayList<>();
+
     public SiteExporter(Minecraft client, Path outputFolder, Guide guide) {
         this.client = client;
         this.outputFolder = outputFolder;
@@ -121,25 +127,30 @@ public class SiteExporter implements ResourceExporter {
     /**
      * Export on the next tick.
      */
-    public void exportOnNextTickAndExit() {
+    public void exportOnNextTickAndExit(Runnable completionCallback, Consumer<Exception> errorCallback) {
         var exportDone = new MutableBoolean();
-        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post evt) -> {
-            if (client.getOverlay() instanceof LoadingOverlay) {
-                return; // Do nothing while it's loading
-            }
+        Consumer<ClientTickEvent.Post> listener = new Consumer<>() {
+            @Override
+            public void accept(ClientTickEvent.Post post) {
+                NeoForge.EVENT_BUS.unregister(this);
 
-            if (!exportDone.getValue()) {
-                exportDone.setTrue();
-
-                try {
-                    export();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.exit(1);
+                if (client.getOverlay() instanceof LoadingOverlay) {
+                    return; // Do nothing while it's loading
                 }
-                client.stop();
+
+                if (!exportDone.getValue()) {
+                    exportDone.setTrue();
+
+                    try {
+                        export();
+                    } catch (Exception e) {
+                        errorCallback.accept(e);
+                    }
+                    completionCallback.run();
+                }
             }
-        });
+        };
+        NeoForge.EVENT_BUS.addListener(listener);
     }
 
     public void export(ExportFeedbackSink feedback) {
@@ -410,6 +421,9 @@ public class SiteExporter implements ResourceExporter {
 
         // Write an uncompressed summary
         writeSummary(guideContent.getFileName().toString());
+
+        cleanupCallbacks.forEach(Runnable::run);
+        cleanupCallbacks.clear();
     }
 
     private void visitNavigationNodeIcons(NavigationNode navigationNode) {
@@ -431,7 +445,7 @@ public class SiteExporter implements ResourceExporter {
         var modVersion = getModVersion();
         var guideMeVersion = getGuideMeVersion();
         var generated = Instant.now().toEpochMilli();
-        var gameVersion = DetectedVersion.tryDetectVersion().getName();
+        var gameVersion = DetectedVersion.tryDetectVersion().name();
 
         // This file is not accessed via the CDN and thus doesn't need a cache-busting name
         try (var writer = Files.newBufferedWriter(outputFolder.resolve("index.json"), StandardCharsets.UTF_8)) {
@@ -476,10 +490,18 @@ public class SiteExporter implements ResourceExporter {
             MoreFiles.deleteRecursively(iconsFolder, RecursiveDeleteOption.ALLOW_INSECURE);
         }
 
-        try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
-            var guiGraphics = new GuiGraphics(client, client.renderBuffers().bufferSource());
+        // Set the GUI scale accordingly to get GuiGraphics to render out items full-screen, filling the scaled up
+        // buffer
+        var window = Minecraft.getInstance().getWindow();
+        var previousWindowWidth = window.getWidth();
+        var previousWindowHeight = window.getHeight();
+        var previousWindowScale = window.getGuiScale();
+        window.setWidth(ICON_DIMENSION);
+        window.setHeight(ICON_DIMENSION);
+        window.setGuiScale(ICON_SCALE);
 
-            renderer.setupItemRendering();
+        try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
+            var guiGraphics = new GuiGraphics(client, client.gameRenderer.guiRenderState);
 
             LOG.info("Exporting items...");
             for (var item : items) {
@@ -501,13 +523,20 @@ public class SiteExporter implements ResourceExporter {
                 var sprites = guessSprites(quadLists);
 
                 var iconPath = renderAndWrite(renderer, baseName, () -> {
+                    client.gameRenderer.guiRenderState.reset();
                     guiGraphics.renderItem(stack, 0, 0);
                     guiGraphics.renderItemDecorations(client.font, stack, 0, 0, "");
+                    client.gameRenderer.guiRenderer
+                            .render(client.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
                 }, sprites, true);
 
                 String absIconUrl = "/" + outputFolder.relativize(iconPath).toString().replace('\\', '/');
                 siteExport.addItem(itemId, stack, absIconUrl);
             }
+        } finally {
+            window.setWidth(previousWindowWidth);
+            window.setHeight(previousWindowHeight);
+            window.setGuiScale(previousWindowScale);
         }
     }
 
@@ -531,10 +560,18 @@ public class SiteExporter implements ResourceExporter {
             MoreFiles.deleteRecursively(fluidsFolder, RecursiveDeleteOption.ALLOW_INSECURE);
         }
 
-        try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
-            var guiGraphics = new GuiGraphics(client, client.renderBuffers().bufferSource());
+        // Set the GUI scale accordingly to get GuiGraphics to render out items full-screen, filling the scaled up
+        // buffer
+        var window = Minecraft.getInstance().getWindow();
+        var previousWindowWidth = window.getWidth();
+        var previousWindowHeight = window.getHeight();
+        var previousWindowScale = window.getGuiScale();
+        window.setWidth(ICON_DIMENSION);
+        window.setHeight(ICON_DIMENSION);
+        window.setGuiScale(ICON_SCALE);
 
-            renderer.setupItemRendering();
+        try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
+            var guiGraphics = new GuiGraphics(client, client.gameRenderer.guiRenderState);
 
             LOG.info("Exporting fluids...");
             for (var fluid : fluids) {
@@ -554,7 +591,10 @@ public class SiteExporter implements ResourceExporter {
                         baseName,
                         () -> {
                             if (sprite != null) {
-                                guiGraphics.blitSprite(RenderType::guiTextured, sprite, 0, 0, 16, 16, color);
+                                client.gameRenderer.guiRenderState.reset();
+                                guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, 0, 0, 16, 16, color);
+                                client.gameRenderer.guiRenderer
+                                        .render(client.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
                             }
                         },
                         sprite != null ? Set.of(sprite) : Set.of(),
@@ -567,6 +607,10 @@ public class SiteExporter implements ResourceExporter {
                 String absIconUrl = "/" + outputFolder.relativize(iconPath).toString().replace('\\', '/');
                 siteExport.addFluid(fluidId, fluidVariant, absIconUrl);
             }
+        } finally {
+            window.setWidth(previousWindowWidth);
+            window.setHeight(previousWindowHeight);
+            window.setGuiScale(previousWindowScale);
         }
 
     }
@@ -634,5 +678,10 @@ public class SiteExporter implements ResourceExporter {
 
     private static ResourceLocation getFluidId(Fluid fluid) {
         return BuiltInRegistries.FLUID.getKey(fluid);
+    }
+
+    @Override
+    public void addCleanupCallback(Runnable runnable) {
+        cleanupCallbacks.add(runnable);
     }
 }

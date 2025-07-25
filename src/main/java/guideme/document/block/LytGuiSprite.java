@@ -9,7 +9,6 @@ import guideme.layout.LayoutContext;
 import guideme.render.GuiSprite;
 import guideme.render.RenderContext;
 import java.util.Objects;
-import net.minecraft.client.renderer.MultiBufferSource;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -77,10 +76,6 @@ public class LytGuiSprite extends LytBlock implements InteractiveElement {
 
     @Override
     protected void onLayoutMoved(int deltaX, int deltaY) {
-    }
-
-    @Override
-    public void renderBatch(RenderContext context, MultiBufferSource buffers) {
     }
 
     @Override

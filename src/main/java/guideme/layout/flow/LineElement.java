@@ -3,7 +3,6 @@ package guideme.layout.flow;
 import guideme.document.LytRect;
 import guideme.document.flow.LytFlowContent;
 import guideme.render.RenderContext;
-import net.minecraft.client.renderer.MultiBufferSource;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class LineElement {
@@ -28,12 +27,6 @@ public abstract class LineElement {
     @Nullable
     public LytFlowContent getFlowContent() {
         return flowContent;
-    }
-
-    /**
-     * Render text content as part of batch rendering.
-     */
-    public void renderBatch(RenderContext context, MultiBufferSource buffers) {
     }
 
     /**

@@ -1,12 +1,13 @@
 package guideme.scene;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import java.util.Objects;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 import org.joml.Vector3f;
 
 /**
@@ -15,6 +16,10 @@ import org.joml.Vector3f;
 public class GuidebookLightmap implements AutoCloseable {
     private final DynamicTexture lightmapTexture;
     private final NativeImage lightmapPixels;
+
+    // For caching
+    private float lastSkyDarken = Float.NaN;
+    private DimensionType lastDimensionType;
 
     public GuidebookLightmap() {
         lightmapTexture = new DynamicTexture(() -> "GuideME Lightmap", 16, 16, false);
@@ -34,11 +39,16 @@ public class GuidebookLightmap implements AutoCloseable {
 
     public void update(Level level) {
         float f = getSkyDarken(level, 1.0f);
+
+        if (f == lastSkyDarken && level.dimensionType() == lastDimensionType) {
+            return;
+        }
+        lastSkyDarken = f;
+        lastDimensionType = level.dimensionType();
+
         Vector3f vector3f = new Vector3f(f, f, 1.0F).lerp(new Vector3f(1.0F, 1.0F, 1.0F), 0.35F);
         float g = f * 0.95F + 0.05F;
         float m = 1.5F;
-
-        var minecraft = Minecraft.getInstance();
 
         Vector3f vector3f2 = new Vector3f();
 
@@ -54,10 +64,9 @@ public class GuidebookLightmap implements AutoCloseable {
                 Vector3f vector3f3 = new Vector3f(vector3f).mul(p);
                 vector3f2.add(vector3f3);
                 vector3f2.lerp(new Vector3f(0.75F, 0.75F, 0.75F), 0.04F);
-
-                float v = minecraft.options.gamma().get().floatValue();
+                clampColor(vector3f2);
                 Vector3f vector3f5 = new Vector3f(notGamma(vector3f2.x), notGamma(vector3f2.y), notGamma(vector3f2.z));
-                vector3f2.lerp(vector3f5, Math.max(0.0F, v));
+                vector3f2.lerp(vector3f5, 0.5f /* default gamma setting */);
                 vector3f2.lerp(new Vector3f(0.75F, 0.75F, 0.75F), 0.04F);
                 clampColor(vector3f2);
                 vector3f2.mul(255.0F);
@@ -85,5 +94,9 @@ public class GuidebookLightmap implements AutoCloseable {
     @Override
     public void close() throws Exception {
         lightmapTexture.close();
+    }
+
+    public GpuTextureView getTextureView() {
+        return this.lightmapTexture.getTextureView();
     }
 }

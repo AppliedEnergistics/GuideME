@@ -19,47 +19,29 @@
 package guideme.internal.util;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import guideme.internal.GuideME;
 import java.util.Objects;
-import java.util.function.Function;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.gui.render.state.BlitRenderState;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
-import net.minecraft.util.TriState;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import org.joml.Matrix4f;
+import org.joml.Matrix3x2f;
 
 /**
  * Utility class for drawing rectangular textures in the UI.
  */
-@OnlyIn(Dist.CLIENT)
 public final class Blitter {
     public static final RenderPipeline GUI_TEXTURED_OPAQUE = RenderPipelines.GUI_TEXTURED.toBuilder()
             .withLocation(GuideME.makeId("pipeline/gui_textured_opaque"))
             .withoutBlend()
             .build();
-
-    public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_OPAQUE_TYPE = Util.memoize(
-            textureId -> RenderType.create(
-                    "guideme:gui_textured_opaque",
-                    1536,
-                    GUI_TEXTURED_OPAQUE,
-                    RenderType.CompositeState.builder()
-                            .setTextureState(new RenderStateShard.TextureStateShard(textureId, TriState.DEFAULT, false))
-                            .createCompositeState(false)));
 
     // This assumption is obviously bogus, but currently all textures are this size,
     // and it's impossible to get the texture size from an already loaded texture.
@@ -81,7 +63,6 @@ public final class Blitter {
     private Rect2i destRect = new Rect2i(0, 0, 0, 0);
     private boolean blending = true;
     private TextureTransform transform = TextureTransform.NONE;
-    private int zOffset;
 
     Blitter(ResourceLocation texture, int referenceWidth, int referenceHeight) {
         this.texture = texture;
@@ -252,11 +233,6 @@ public final class Blitter {
         return color(r, g, b);
     }
 
-    public Blitter zOffset(int offset) {
-        this.zOffset = offset;
-        return this;
-    }
-
     public void blit(GuiGraphics guiGraphics) {
         // With no source rectangle, we'll use the entirety of the texture. This happens rarely though.
         float minU, minV, maxU, maxV;
@@ -297,28 +273,23 @@ public final class Blitter {
             y2 += srcRect.getHeight();
         }
 
-        Matrix4f matrix = guiGraphics.pose().last().pose();
-
-        var bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS,
-                DefaultVertexFormat.POSITION_TEX_COLOR);
-        bufferbuilder.addVertex(matrix, x1, y2, zOffset)
-                .setUv(minU, maxV)
-                .setColor(r, g, b, a);
-        bufferbuilder.addVertex(matrix, x2, y2, zOffset)
-                .setUv(maxU, maxV)
-                .setColor(r, g, b, a);
-        bufferbuilder.addVertex(matrix, x2, y1, zOffset)
-                .setUv(maxU, minV)
-                .setColor(r, g, b, a);
-        bufferbuilder.addVertex(matrix, x1, y1, zOffset)
-                .setUv(minU, minV)
-                .setColor(r, g, b, a);
-
+        RenderPipeline pipeline;
         if (blending) {
-            RenderType.guiTextured(texture).draw(bufferbuilder.buildOrThrow());
+            pipeline = RenderPipelines.GUI_TEXTURED;
         } else {
-            GUI_TEXTURED_OPAQUE_TYPE.apply(texture).draw(bufferbuilder.buildOrThrow());
+            pipeline = GUI_TEXTURED_OPAQUE;
         }
-    }
 
+        var textureView = Minecraft.getInstance().getTextureManager().getTexture(this.texture).getTextureView();
+        guiGraphics.submitGuiElementRenderState(new BlitRenderState(
+                pipeline,
+                TextureSetup.singleTexture(textureView),
+                new Matrix3x2f(guiGraphics.pose()),
+                (int) x1, (int) y1,
+                (int) x2, (int) y2,
+                minU, maxU,
+                minV, maxV,
+                ARGB.color(a, r, g, b),
+                guiGraphics.peekScissorStack()));
+    }
 }

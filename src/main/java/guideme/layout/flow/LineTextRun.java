@@ -2,7 +2,6 @@ package guideme.layout.flow;
 
 import guideme.render.RenderContext;
 import guideme.style.ResolvedTextStyle;
-import net.minecraft.client.renderer.MultiBufferSource;
 
 public class LineTextRun extends LineElement {
     final String text;
@@ -16,10 +15,10 @@ public class LineTextRun extends LineElement {
     }
 
     @Override
-    public void renderBatch(RenderContext context, MultiBufferSource buffers) {
+    public void render(RenderContext context) {
         var style = containsMouse ? this.hoverStyle : this.style;
 
-        context.renderTextInBatch(text, style, (float) bounds.x(), (float) bounds.y(), buffers);
+        context.renderText(text, style, (float) bounds.x(), (float) bounds.y());
     }
 
     @Override

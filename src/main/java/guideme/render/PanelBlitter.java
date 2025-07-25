@@ -60,7 +60,7 @@ class PanelBlitter {
     }
 
     public void blit(GuiGraphics graphics, int xOffset, int yOffset, int zOffset, int color) {
-        SpriteLayer layer = new SpriteLayer();
+        SpriteLayer layer = new SpriteLayer(graphics);
         render(layer, 0, color);
         layer.render(graphics.pose(), xOffset, yOffset, zOffset);
     }

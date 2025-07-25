@@ -12,9 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.renderer.MultiBufferSource;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 
 /**
  * A {@link GuideTooltip} that renders a {@link LytBlock} as the tooltip content.
@@ -46,17 +44,17 @@ public class ContentTooltip implements GuideTooltip {
                     }
 
                     @Override
-                    public void renderText(Font font, int x, int y, Matrix4f matrix,
-                            MultiBufferSource.BufferSource bufferSource) {
+                    public void renderText(GuiGraphics guiGraphics, Font font, int x, int y) {
                         getLayoutBox(); // Updates layout
 
-                        var guiGraphics = new GuiGraphics(Minecraft.getInstance(), bufferSource);
-                        var poseStack = guiGraphics.pose();
-                        poseStack.mulPose(matrix);
-                        poseStack.translate(x, y, 0);
+                        var pose = guiGraphics.pose();
+                        pose.pushMatrix();
+                        pose.translate(x, y);
 
                         var ctx = new SimpleRenderContext(layoutViewport, guiGraphics);
-                        content.renderBatch(ctx, bufferSource);
+                        content.render(ctx);
+
+                        pose.popMatrix();
                     }
 
                     @Override
@@ -64,11 +62,11 @@ public class ContentTooltip implements GuideTooltip {
                         getLayoutBox(); // Updates layout
 
                         var pose = guiGraphics.pose();
-                        pose.pushPose();
-                        pose.translate(x, y, 0);
+                        pose.pushMatrix();
+                        pose.translate(x, y);
                         var ctx = new SimpleRenderContext(layoutViewport, guiGraphics);
                         content.render(ctx);
-                        pose.popPose();
+                        pose.popMatrix();
                     }
                 });
     }

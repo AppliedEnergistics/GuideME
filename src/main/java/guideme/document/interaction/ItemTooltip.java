@@ -10,14 +10,24 @@ import net.minecraft.world.item.ItemStack;
 
 public class ItemTooltip implements GuideTooltip {
     private final ItemStack stack;
+    private final ItemStack icon;
 
     public ItemTooltip(ItemStack stack) {
+        this(stack, stack);
+    }
+
+    public ItemTooltip(ItemStack stack, ItemStack icon) {
         this.stack = stack;
+        this.icon = icon;
+    }
+
+    public ItemStack getItem() {
+        return stack;
     }
 
     @Override
     public ItemStack getIcon() {
-        return stack;
+        return icon;
     }
 
     @Override

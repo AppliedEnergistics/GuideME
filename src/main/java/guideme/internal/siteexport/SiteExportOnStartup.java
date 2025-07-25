@@ -8,9 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.client.event.ClientResourceLoadFinishedEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,29 +26,29 @@ public final class SiteExportOnStartup {
         var guidesToExport = getGuidesToExport();
 
         if (!guidesToExport.isEmpty()) {
-            var guideExportRan = new MutableBoolean(false);
-            NeoForge.EVENT_BUS.addListener((ScreenEvent.Opening e) -> {
-                if (!guideExportRan.booleanValue()) {
-                    guideExportRan.setTrue();
-                    GuideOnStartup.runDatapackReload();
-
-                    for (var entry : guidesToExport.entrySet()) {
-                        var guide = GuideRegistry.getById(entry.getKey());
-                        if (guide == null) {
-                            LOG.error("Cannot validate guide '{}' since it does not exist.", entry.getKey());
-                            System.exit(1);
-                        }
-
-                        Path outputFolder = entry.getValue();
-                        try {
-                            new SiteExporter(Minecraft.getInstance(), outputFolder, guide).export();
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            System.exit(1);
-                        }
-                    }
-                    Minecraft.getInstance().stop();
+            NeoForge.EVENT_BUS.addListener((ClientResourceLoadFinishedEvent e) -> {
+                if (!e.isInitial()) {
+                    return;
                 }
+
+                GuideOnStartup.runDatapackReload();
+
+                for (var entry : guidesToExport.entrySet()) {
+                    var guide = GuideRegistry.getById(entry.getKey());
+                    if (guide == null) {
+                        LOG.error("Cannot export guide '{}' since it does not exist.", entry.getKey());
+                        System.exit(1);
+                    }
+
+                    Path outputFolder = entry.getValue();
+                    try {
+                        new SiteExporter(Minecraft.getInstance(), outputFolder, guide).export();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        System.exit(1);
+                    }
+                }
+                Minecraft.getInstance().stop();
             });
         }
     }
