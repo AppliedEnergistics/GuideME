@@ -38,6 +38,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.ConfigureGpuDeviceEvent;
 import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
@@ -85,6 +86,7 @@ public class GuideMEClient {
         modBus.addListener(this::registerItemModel);
         modBus.addListener(this::registerRenderPipelines);
         modBus.addListener(this::registerPipRenderers);
+        modBus.addListener(this::configureGpuDevice);
 
         NeoForge.EVENT_BUS.addListener(this::registerClientCommands);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
@@ -117,6 +119,12 @@ public class GuideMEClient {
     private void onPlayerDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
         recipeMap = RecipeMap.EMPTY;
         availableRecipeTypes = Set.of();
+    }
+
+    private void configureGpuDevice(ConfigureGpuDeviceEvent event) {
+        if (event.getAvailableFeatures().logicOp()) {
+            event.enableLogicOp();
+        }
     }
 
     private void registerRenderPipelines(RegisterRenderPipelinesEvent event) {

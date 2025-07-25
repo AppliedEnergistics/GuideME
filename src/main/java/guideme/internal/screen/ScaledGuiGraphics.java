@@ -31,17 +31,4 @@ public final class ScaledGuiGraphics extends GuiGraphics {
     public int guiHeight() {
         return (int) (super.guiHeight() / scale);
     }
-
-    // TODO 1.21.6 @Override
-    // TODO 1.21.6 protected void applyScissor(@Nullable ScreenRectangle rectangle) {
-    // TODO 1.21.6 // Transform rectangle if additional scale is applied
-    // TODO 1.21.6 if (rectangle != null) {
-    // TODO 1.21.6 rectangle = new ScreenRectangle(
-    // TODO 1.21.6 (int) Math.floor(rectangle.left() * scale),
-    // TODO 1.21.6 (int) Math.floor(rectangle.top() * scale),
-    // TODO 1.21.6 (int) Math.ceil(rectangle.width() * scale),
-    // TODO 1.21.6 (int) Math.ceil(rectangle.height() * scale));
-    // TODO 1.21.6 }
-    // TODO 1.21.6 super.applyScissor(rectangle);
-    // TODO 1.21.6 }
 }

@@ -1,5 +1,6 @@
 package guideme.render;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.color.LightDarkMode;
@@ -48,7 +49,8 @@ public interface RenderContext {
 
     int resolveColor(ColorValue ref);
 
-    void fillRect(LytRect rect, ColorValue topLeft, ColorValue topRight, ColorValue bottomRight, ColorValue bottomLeft);
+    void fillRect(RenderPipeline pipeline, LytRect rect, ColorValue topLeft, ColorValue topRight,
+            ColorValue bottomRight, ColorValue bottomLeft);
 
     default void drawIcon(int x, int y, GuiSprite guiSprite) {
         drawIcon(x, y, guiSprite, ConstantColor.WHITE);
@@ -189,6 +191,15 @@ public interface RenderContext {
 
     default void fillRect(LytRect rect, ColorValue color) {
         fillRect(rect, color, color, color, color);
+    }
+
+    default void fillRect(RenderPipeline pipeline, LytRect rect, ColorValue color) {
+        fillRect(pipeline, rect, color, color, color, color);
+    }
+
+    default void fillRect(LytRect rect, ColorValue topLeft, ColorValue topRight, ColorValue bottomRight,
+            ColorValue bottomLeft) {
+        fillRect(RenderPipelines.GUI, rect, topLeft, topRight, bottomRight, bottomLeft);
     }
 
     default void fillGradientVertical(LytRect rect, ColorValue top, ColorValue bottom) {

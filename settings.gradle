@@ -20,14 +20,6 @@ dependencyResolutionManagement {
     rulesMode = RulesMode.FAIL_ON_PROJECT_RULES
     repositories {
         mavenCentral()
-        maven {
-            name = "Maven for PR #2517" // https://github.com/neoforged/NeoForge/pull/2517
-            url = uri("https://prmaven.neoforged.net/NeoForge/pr2517")
-            content {
-                includeModule("net.neoforged", "neoforge")
-                includeModule("net.neoforged", "testframework")
-            }
-        }
     }
 }
 

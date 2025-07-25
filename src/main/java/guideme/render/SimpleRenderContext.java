@@ -1,5 +1,6 @@
 package guideme.render;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import guideme.color.ColorValue;
 import guideme.color.LightDarkMode;
 import guideme.document.LytRect;
@@ -49,11 +50,12 @@ public final class SimpleRenderContext implements RenderContext {
     }
 
     @Override
-    public void fillRect(LytRect rect, ColorValue topLeft, ColorValue topRight, ColorValue bottomRight,
+    public void fillRect(RenderPipeline pipeline, LytRect rect, ColorValue topLeft, ColorValue topRight,
+            ColorValue bottomRight,
             ColorValue bottomLeft) {
 
         guiGraphics.submitGuiElementRenderState(new GradientColoredRectangleRenderState(
-                RenderPipelines.GUI,
+                pipeline,
                 TextureSetup.noTexture(),
                 new Matrix3x2f(poseStack()),
                 rect.x(),

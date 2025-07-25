@@ -102,7 +102,8 @@ public class LytSlot extends LytBlock implements InteractiveElement {
         if (stack.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(new ItemTooltip(stack));
+        // For slots that already show the item, we don't show it in the tooltip
+        return Optional.of(new ItemTooltip(stack, ItemStack.EMPTY));
     }
 
     private ItemStack getDisplayedStack() {

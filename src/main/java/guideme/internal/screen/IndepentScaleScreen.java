@@ -53,12 +53,7 @@ public abstract class IndepentScaleScreen extends Screen {
         scaledGraphics.pose().scale((float) effectiveScale, (float) effectiveScale);
         scaledRender(scaledGraphics, renderContext, toVirtual(mouseX), toVirtual(mouseY), partialTick);
 
-        // Move this here to render the tooltip with scaling applied
-        // TODO 1.21.6 if (this.deferredTooltipRendering != null) {
-        // TODO 1.21.6 scaledGraphics.renderTooltip(this.font, this.deferredTooltipRendering.tooltip(),
-        // TODO 1.21.6 this.deferredTooltipRendering.positioner(), toVirtual(mouseX), toVirtual(mouseY));
-        // TODO 1.21.6 this.deferredTooltipRendering = null;
-        // TODO 1.21.6 }
+        scaledGraphics.renderDeferredTooltip();
 
         scaledGraphics.pose().popMatrix();
     }

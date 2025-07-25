@@ -27,10 +27,10 @@ import java.util.function.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL20;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -215,53 +215,49 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
             return;
         }
 
-        // TODO Custom render state needed for this
         context.poseStack().pushMatrix();
-        // TODO 1.21.6 context.poseStack().translate(0, 0, 1000);
-
-        GL20.glLogicOp(GL20.GL_XOR);
-        GL20.glEnable(GL20.GL_COLOR_LOGIC_OP);
 
         // Fill a rectangle highlighting margins
         if (hoveredElement.node() instanceof LytBlock block) {
             var bounds = block.getBounds();
             if (block.getMarginTop() > 0) {
                 context.fillRect(
+                        RenderPipelines.GUI_INVERT,
                         bounds.withHeight(block.getMarginTop()).move(0, -block.getMarginTop()),
                         DEBUG_HOVER_OUTLINE_COLOR);
             }
             if (block.getMarginBottom() > 0) {
                 context.fillRect(
+                        RenderPipelines.GUI_INVERT,
                         bounds.withHeight(block.getMarginBottom()).move(0, bounds.height()),
                         DEBUG_HOVER_OUTLINE_COLOR);
             }
             if (block.getMarginLeft() > 0) {
                 context.fillRect(
+                        RenderPipelines.GUI_INVERT,
                         bounds.withWidth(block.getMarginLeft()).move(-block.getMarginLeft(), 0),
                         DEBUG_HOVER_OUTLINE_COLOR);
             }
             if (block.getMarginRight() > 0) {
                 context.fillRect(
+                        RenderPipelines.GUI_INVERT,
                         bounds.withWidth(block.getMarginRight()).move(bounds.width(), 0),
                         DEBUG_HOVER_OUTLINE_COLOR);
             }
         }
 
         // Fill the content rectangle
-        DashedRectangle.render(context.poseStack(), hoveredElement.node().getBounds(), DEBUG_NODE_OUTLINE, 0);
+        DashedRectangle.render(context, hoveredElement.node().getBounds(), DEBUG_NODE_OUTLINE);
 
         // Also outline any inline-elements in the block
         if (hoveredElement.content() != null) {
             if (hoveredElement.node() instanceof LytFlowContainer flowContainer) {
                 flowContainer.enumerateContentBounds(hoveredElement.content())
                         .forEach(bound -> {
-                            DashedRectangle.render(context.poseStack(), bound, DEBUG_CONTENT_OUTLINE, 0);
+                            DashedRectangle.render(context, bound, DEBUG_CONTENT_OUTLINE);
                         });
             }
         }
-
-        GL20.glLogicOp(GL20.GL_COPY);
-        GL20.glDisable(GL20.GL_COLOR_LOGIC_OP);
 
         // Render the class-name of the hovered node to make it easier to identify
         var bounds = hoveredElement.node().getBounds();
@@ -492,6 +488,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         var document = getDocumentWithLayout();
         // Render tooltip
         if (document != null && document.getHoveredElement() != null) {
+            guiGraphics.renderDeferredTooltip();
             renderTooltip(guiGraphics, mouseX, mouseY);
         }
     }
@@ -531,7 +528,9 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
             frameHeight += clientTooltipComponent.getHeight(font);
         }
 
-        if (!tooltip.getIcon().isEmpty()) {
+        var icon = tooltip.getIcon();
+
+        if (!icon.isEmpty()) {
             frameWidth += 18;
             frameHeight = Math.max(frameHeight, 18);
         }
@@ -548,14 +547,11 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
 
         TooltipRenderUtil.renderTooltipBackground(guiGraphics, x, y, frameWidth, frameHeight, sprite);
 
-        if (!tooltip.getIcon().isEmpty()) {
+        if (!icon.isEmpty()) {
             x += 18;
         }
 
-        var poseStack = guiGraphics.pose();
         var bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-        // TODO 1.21.6 poseStack.pushMatrix();
-        // TODO 1.21.6 poseStack.translate(0.0, 0.0, zOffset);
         int currentY = y;
 
         // Batch-render tooltip text first
@@ -569,11 +565,8 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
 
         // Then render tooltip decorations, items, etc.
         currentY = y;
-        if (!tooltip.getIcon().isEmpty()) {
-            // TODO 1.21.6 poseStack.pushMatrix();
-            // TODO 1.21.6 poseStack.translate(0, 0, zOffset);
-            guiGraphics.renderItem(tooltip.getIcon(), x - 18, y);
-            // TODO 1.21.6 poseStack.popMatrix();
+        if (!icon.isEmpty()) {
+            guiGraphics.renderItem(icon, x - 18, y);
         }
 
         for (int i = 0; i < clientLines.size(); ++i) {
@@ -581,7 +574,6 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
             line.renderImage(minecraft.font, x, currentY, frameWidth, frameHeight, guiGraphics);
             currentY += line.getHeight(font) + (i == 0 ? 2 : 0);
         }
-        // TODO 1.21.6 poseStack.popMatrix();
     }
 
     @Override
