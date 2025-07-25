@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "minVersion": "0.8.3",
+  "package": "guideme.internal.hooks.mixins",
+  "compatibilityLevel": "JAVA_11",
+  "client": [
+    "LuceneVectorizationMixin"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}
