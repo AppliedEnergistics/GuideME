@@ -9,6 +9,8 @@ import Video from '@site/src/components/Video';
 - The `/guidemec export` command to export guide data for web use now works
 - Fixed rendering of in-world annotations in game scenes that was slightly broken since 1.21.5
 - Fixed several export related problems present since 1.21.5
+- Fixed error on startup complaining about an incubating JDK feature (vector), and the subsequent crash
+  when that feature was actually enabled.
 
 ## 21.5.9-beta (Minecraft 1.21.5)
 

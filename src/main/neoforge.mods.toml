@@ -7,6 +7,9 @@ license = "See GitHub repository for details"
 [[mixins]]
 config="guideme.mixins.json"
 
+[[mixins]]
+config="guideme.optional.mixins.json"
+
 [[mods]]
 modId = "guideme"
 version = "${version}"
