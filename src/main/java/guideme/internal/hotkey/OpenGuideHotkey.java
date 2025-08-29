@@ -61,6 +61,11 @@ public final class OpenGuideHotkey {
                     if (evt.getEntity() != Minecraft.getInstance().player) {
                         return;
                     }
+                    // Also ignore any events not on the render thread, since EMI for example might
+                    // try to index tooltips off-thread
+                    if (!Minecraft.getInstance().isSameThread()) {
+                        return;
+                    }
                     handleTooltip(evt.getItemStack(), evt.getFlags(), evt.getToolTip());
                 });
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent evt) -> {
