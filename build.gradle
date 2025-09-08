@@ -240,10 +240,10 @@ shadowJar {
     relocate "org.tartarus.snowball", "guideme.internal.shaded.snowball"
 
     configurations = [project.configurations.shaded]
-    archiveClassifier = ''
+    archiveClassifier = 'all'
 }
 
-File proguardFile = file("build/libs/${jar.archiveBaseName.get()}-proguard-${version}.jar")
+File proguardFile = file("build/libs/${jar.archiveBaseName.get()}-${version}-proguard.jar")
 
 final proguardConfig = tasks.register('generateProguardConfig', GenerateProGuardConfig) {
     template = file('proguard.conf')
@@ -266,7 +266,13 @@ final proguardJar = tasks.register('proguardJar', proguard.gradle.ProGuardTask) 
     outjars proguardFile
     configuration proguardConfig
 }
-assemble.dependsOn proguardJar
+
+File postprocessedFile = file("build/libs/${jar.archiveBaseName.get()}-${version}.jar")
+final postProcessJar = tasks.register('postProcessJar', PostProcessProGuardFile) {
+    input.from(proguardJar.map { it.getOutJarFileCollection() })
+    output = postprocessedFile
+}
+assemble.dependsOn postProcessJar
 
 def publicApiIncludePatterns = {
     exclude "**/*Internal.*"
@@ -343,8 +349,8 @@ publishing {
                 }
             }
 
-            artifact(proguardFile) {
-                builtBy(proguardJar)
+            artifact(postprocessedFile) {
+                builtBy(postProcessJar)
             }
             artifact sourcesJar
             artifact javadocJar

@@ -3,6 +3,11 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.8.2 (Minecraft 1.21.8)
+
+- Make the stripped down version of GuideME the default to be published to CurseForge/Modrinth (Reduces mod size by 5MB)
+- Strip removed Lucene components from service files to fix startup crashes since NeoForge become stricter about service files
+
 ## 21.8.1 (Minecraft 1.21.8)
 
 - First port to Minecraft 1.21.8
