@@ -28,7 +28,8 @@ public class LiquidVertexConsumer implements VertexConsumer {
         y += sectionPos.getY() * SectionPos.SECTION_SIZE;
         z += sectionPos.getZ() * SectionPos.SECTION_SIZE;
 
-        return delegate.addVertex(x, y, z);
+        // add missing UV1 for entity format which is used to replace TRANSLUCENT in non-chunk-section render
+        return delegate.addVertex(x, y, z).setUv1(0, 0);
     }
 
     @Override

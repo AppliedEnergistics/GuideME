@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.8.3 (Minecraft 1.21.8)
+
+- Fix fluid rendering in game scenes
+
 ## 21.8.2 (Minecraft 1.21.8)
 
 - Make the stripped down version of GuideME the default to be published to CurseForge/Modrinth (Reduces mod size by 5MB)
