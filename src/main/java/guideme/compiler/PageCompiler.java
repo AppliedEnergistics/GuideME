@@ -155,9 +155,13 @@ public final class PageCompiler {
         try {
             astRoot = MdAst.fromMarkdown(pageContent, options);
         } catch (ParseException e) {
+            var position = "";
+            if (e.getFrom() != null) {
+                position = " at line " + e.getFrom().line() + " column " + e.getFrom().column();
+            }
             var errorMessage = String.format(Locale.ROOT,
-                    "Failed to parse GuideME page %s (lang: %s) from resource pack %s",
-                    id, language, sourcePack);
+                    "Failed to parse GuideME page %s (lang: %s)%s from resource pack %s",
+                    id, language, position, sourcePack);
             LOG.error("{}", errorMessage, e);
             astRoot = buildErrorPage(errorMessage + ": \n" + e);
         }
