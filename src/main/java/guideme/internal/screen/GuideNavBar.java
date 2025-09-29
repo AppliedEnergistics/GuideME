@@ -19,6 +19,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
@@ -62,12 +63,12 @@ public class GuideNavBar extends AbstractWidget {
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY, int button) {
+    public void onClick(MouseButtonEvent event, boolean doubleClick) {
         if (state != State.OPENING && state != State.OPEN) {
             return;
         }
 
-        var row = pickRow(mouseX, mouseY);
+        var row = pickRow(event.x(), event.y());
         if (row != null) {
             row.expanded = !row.expanded;
             updateLayout();
@@ -86,7 +87,7 @@ public class GuideNavBar extends AbstractWidget {
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+    public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
         if (state != State.OPENING && state != State.OPEN) {
             return false;
         }

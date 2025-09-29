@@ -33,7 +33,7 @@ import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 public final class OpenGuideHotkey {
     private static final KeyMapping OPEN_GUIDE_MAPPING = new KeyMapping(
             "key.guideme.guide", KeyConflictContext.GUI, InputConstants.Type.KEYSYM, InputConstants.KEY_G,
-            "key.guideme.category");
+            GuideMEClient.KEYBIND_CATEGORY);
 
     private static final int TICKS_TO_OPEN = 10;
 
@@ -196,7 +196,7 @@ public final class OpenGuideHotkey {
      */
     private static boolean isKeyHeld() {
         int keyCode = getHotkey().getKey().getValue();
-        var window = Minecraft.getInstance().getWindow().getWindow();
+        var window = Minecraft.getInstance().getWindow();
 
         return InputConstants.isKeyDown(window, keyCode);
     }

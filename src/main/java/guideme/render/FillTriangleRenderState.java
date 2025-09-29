@@ -41,10 +41,10 @@ record FillTriangleRenderState(
     }
 
     @Override
-    public void buildVertices(VertexConsumer vertices, float z) {
-        vertices.addVertexWith2DPose(pose, p1.x, p1.y, z).setColor(color);
-        vertices.addVertexWith2DPose(pose, p2.x, p2.y, z).setColor(color);
-        vertices.addVertexWith2DPose(pose, p3.x, p3.y, z).setColor(color);
+    public void buildVertices(VertexConsumer vertices) {
+        vertices.addVertexWith2DPose(pose, p1.x, p1.y).setColor(color);
+        vertices.addVertexWith2DPose(pose, p2.x, p2.y).setColor(color);
+        vertices.addVertexWith2DPose(pose, p3.x, p3.y).setColor(color);
     }
 
     @Nullable

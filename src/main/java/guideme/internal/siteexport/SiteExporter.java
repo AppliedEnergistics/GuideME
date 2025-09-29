@@ -41,9 +41,9 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -581,8 +581,9 @@ public class SiteExporter implements ResourceExporter {
                 var props = IClientFluidTypeExtensions.of(fluidVariant.getFluid());
 
                 var sprite = Minecraft.getInstance()
-                        .getTextureAtlas(TextureAtlas.LOCATION_BLOCKS)
-                        .apply(props.getStillTexture(fluidVariant));
+                        .getAtlasManager()
+                        .getAtlasOrThrow(AtlasIds.BLOCKS)
+                        .getSprite(props.getStillTexture(fluidVariant));
                 var color = props.getTintColor(fluidVariant);
 
                 var baseName = "!fluids/" + fluidId.replace(':', '/');

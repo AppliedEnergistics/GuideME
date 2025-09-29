@@ -31,12 +31,14 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforgespi.language.IModInfo;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,11 +161,11 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     }
 
     @Override
-    protected boolean documentClicked(UiPoint documentPoint, int button) {
-        if (button == 3) {
+    protected boolean documentClicked(UiPoint documentPoint, MouseButtonInfo button) {
+        if (button.button() == GLFW.GLFW_MOUSE_BUTTON_4) {
             GuideNavigation.navigateBack(guide);
             return true;
-        } else if (button == 4) {
+        } else if (button.button() == GLFW.GLFW_MOUSE_BUTTON_5) {
             GuideNavigation.navigateForward(guide);
             return true;
         }

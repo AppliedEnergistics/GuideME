@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 public abstract class IndepentScaleScreen extends Screen {
@@ -53,7 +54,7 @@ public abstract class IndepentScaleScreen extends Screen {
         scaledGraphics.pose().scale((float) effectiveScale, (float) effectiveScale);
         scaledRender(scaledGraphics, renderContext, toVirtual(mouseX), toVirtual(mouseY), partialTick);
 
-        scaledGraphics.renderDeferredTooltip();
+        scaledGraphics.renderDeferredElements();
 
         scaledGraphics.pose().popMatrix();
     }
@@ -73,30 +74,32 @@ public abstract class IndepentScaleScreen extends Screen {
     }
 
     @Override
-    public final boolean mouseClicked(double mouseX, double mouseY, int button) {
-        return scaledMouseClicked(toVirtual(mouseX), toVirtual(mouseY), button);
+    public final boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        event = toVirtual(event);
+        return scaledMouseClicked(event, doubleClick);
     }
 
-    protected boolean scaledMouseClicked(double mouseX, double mouseY, int button) {
-        return super.mouseClicked(mouseX, mouseY, button);
-    }
-
-    @Override
-    public final boolean mouseReleased(double mouseX, double mouseY, int button) {
-        return scaledMouseReleased(toVirtual(mouseX), toVirtual(mouseY), button);
-    }
-
-    protected boolean scaledMouseReleased(double mouseX, double mouseY, int button) {
-        return super.mouseReleased(mouseX, mouseY, button);
+    protected boolean scaledMouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override
-    public final boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        return scaledMouseDragged(toVirtual(mouseX), toVirtual(mouseY), button, dragX, dragY);
+    public final boolean mouseReleased(MouseButtonEvent event) {
+        event = toVirtual(event);
+        return scaledMouseReleased(event);
     }
 
-    protected boolean scaledMouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    protected boolean scaledMouseReleased(MouseButtonEvent event) {
+        return super.mouseReleased(event);
+    }
+
+    @Override
+    public final boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        return scaledMouseDragged(toVirtual(event), toVirtual(dragX), toVirtual(dragY));
+    }
+
+    protected boolean scaledMouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        return super.mouseDragged(event, dragX, dragY);
     }
 
     @Override
@@ -118,6 +121,13 @@ public abstract class IndepentScaleScreen extends Screen {
 
     protected final int toVirtual(int value) {
         return (int) Math.round(value / effectiveScale);
+    }
+
+    protected final MouseButtonEvent toVirtual(MouseButtonEvent event) {
+        return new MouseButtonEvent(
+                toVirtual(event.x()),
+                toVirtual(event.y()),
+                event.buttonInfo());
     }
 
     protected final double toVirtual(double value) {

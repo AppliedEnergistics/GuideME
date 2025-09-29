@@ -56,11 +56,11 @@ record GradientColoredRectangleRenderState(
     }
 
     @Override
-    public void buildVertices(VertexConsumer vertices, float z) {
-        vertices.addVertexWith2DPose(pose, x0, y0, z).setColor(colTL);
-        vertices.addVertexWith2DPose(pose, x0, y1, z).setColor(colBL);
-        vertices.addVertexWith2DPose(pose, x1, y1, z).setColor(colBR);
-        vertices.addVertexWith2DPose(pose, x1, y0, z).setColor(colTR);
+    public void buildVertices(VertexConsumer vertices) {
+        vertices.addVertexWith2DPose(pose, x0, y0).setColor(colTL);
+        vertices.addVertexWith2DPose(pose, x0, y1).setColor(colBL);
+        vertices.addVertexWith2DPose(pose, x1, y1).setColor(colBR);
+        vertices.addVertexWith2DPose(pose, x1, y0).setColor(colTR);
     }
 
     @Nullable

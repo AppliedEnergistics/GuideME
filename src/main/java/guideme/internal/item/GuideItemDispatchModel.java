@@ -7,7 +7,7 @@ import net.minecraft.client.renderer.item.BlockModelWrapper;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -28,7 +28,7 @@ public class GuideItemDispatchModel implements ItemModel {
             ItemModelResolver itemModelResolver,
             ItemDisplayContext displayContext,
             @Nullable ClientLevel level,
-            @Nullable LivingEntity entity,
+            @Nullable ItemOwner owner,
             int seed) {
 
         ItemModel itemModel = baseModel;
@@ -42,6 +42,6 @@ public class GuideItemDispatchModel implements ItemModel {
             }
         }
 
-        itemModel.update(renderState, stack, itemModelResolver, displayContext, level, entity, seed);
+        itemModel.update(renderState, stack, itemModelResolver, displayContext, level, owner, seed);
     }
 }

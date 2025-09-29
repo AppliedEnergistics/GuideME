@@ -23,6 +23,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 @Mod(value = GuideME.MOD_ID)
 public class GuideME {
+
     static GuideMEProxy PROXY = new GuideMEServerProxy();
 
     public static final String MOD_ID = "guideme";

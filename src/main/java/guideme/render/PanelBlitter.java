@@ -56,16 +56,16 @@ class PanelBlitter {
     }
 
     public void blit(GuiGraphics graphics, int xOffset, int yOffset) {
-        blit(graphics, xOffset, yOffset, 0, 0xFFFFFFFF);
+        blit(graphics, xOffset, yOffset, 0xFFFFFFFF);
     }
 
-    public void blit(GuiGraphics graphics, int xOffset, int yOffset, int zOffset, int color) {
+    public void blit(GuiGraphics graphics, int xOffset, int yOffset, int color) {
         SpriteLayer layer = new SpriteLayer(graphics);
-        render(layer, 0, color);
-        layer.render(graphics.pose(), xOffset, yOffset, zOffset);
+        render(layer, color);
+        layer.render(graphics.pose(), xOffset, yOffset);
     }
 
-    public void render(SpriteLayer layer, int z, int color) {
+    public void render(SpriteLayer layer, int color) {
         // Update processed rectangles lazily
         if (processedRects.size() != rects.size()) {
             processedRects.clear();
@@ -132,7 +132,7 @@ class PanelBlitter {
                         default -> throw new IndexOutOfBoundsException("side");
                     }
 
-                    renderEdge(layer, edge.style, side, el, et, er, eb, z, color);
+                    renderEdge(layer, edge.style, side, el, et, er, eb, color);
                 }
             }
 
@@ -167,10 +167,10 @@ class PanelBlitter {
                     case 2, 3 -> rect.outerBottom() - height;
                 };
 
-                cornerStyle.addQuad(layer, x, y, z, width, height, color);
+                cornerStyle.addQuad(layer, x, y, width, height, color);
             }
 
-            CENTER.addQuad(layer, innerLeft, innerTop, z,
+            CENTER.addQuad(layer, innerLeft, innerTop,
                     innerRight - innerLeft, innerBottom - innerTop,
                     color);
         }
@@ -187,7 +187,6 @@ class PanelBlitter {
             int top,
             int right,
             int bottom,
-            int z,
             int color) {
         if (right <= left || bottom <= top) {
             return;
@@ -200,7 +199,7 @@ class PanelBlitter {
                 case 2 -> BOTTOM_BORDER;
                 case 3 -> LEFT_BORDER;
             };
-            edgeStyle.addQuad(layer, left, top, z, right - left, bottom - top, color);
+            edgeStyle.addQuad(layer, left, top, right - left, bottom - top, color);
         } else {
             SpriteSlice innerStartCorner;
             SpriteSlice innerEndCorner;
@@ -233,24 +232,24 @@ class PanelBlitter {
             if (side == 1 || side == 3) {
                 // Vertical
                 if (innerStartCorner != null) {
-                    innerStartCorner.addQuad(layer, left, top, z, innerStartCorner.width(),
+                    innerStartCorner.addQuad(layer, left, top, innerStartCorner.width(),
                             innerStartCorner.height(), color);
                     top += innerStartCorner.height();
                 }
                 if (innerEndCorner != null) {
-                    innerEndCorner.addQuad(layer, left, bottom - innerEndCorner.height(), z,
+                    innerEndCorner.addQuad(layer, left, bottom - innerEndCorner.height(),
                             innerEndCorner.width(), innerEndCorner.height(), color);
                     bottom -= innerEndCorner.height();
                 }
             } else {
                 // Horizontal
                 if (innerStartCorner != null) {
-                    innerStartCorner.addQuad(layer, left, top, z, innerStartCorner.width(),
+                    innerStartCorner.addQuad(layer, left, top, innerStartCorner.width(),
                             innerStartCorner.height(), color);
                     left += innerStartCorner.width();
                 }
                 if (innerEndCorner != null) {
-                    innerEndCorner.addQuad(layer, right - innerEndCorner.width(), top, z,
+                    innerEndCorner.addQuad(layer, right - innerEndCorner.width(), top,
                             innerEndCorner.width(), innerEndCorner.height(), color);
                     right -= innerEndCorner.width();
                 }
@@ -258,7 +257,7 @@ class PanelBlitter {
             if (right - left > 0 && bottom - top > 0) {
                 CENTER.addQuad(
                         layer,
-                        left, top, z,
+                        left, top,
                         right - left, bottom - top,
                         color);
             }
@@ -468,7 +467,7 @@ class PanelBlitter {
             return slice % 3 == 2 ? nineSlice.padding().right() : nineSlice.padding().left();
         }
 
-        public void addQuad(SpriteLayer layer, float x, float y, float z, float width, float height, int color) {
+        public void addQuad(SpriteLayer layer, float x, float y, float width, float height, int color) {
             int row = slice / 3;
             int col = slice % 3;
 
@@ -478,7 +477,7 @@ class PanelBlitter {
             var minV = uv[4 + row];
             var maxV = uv[4 + row + 1];
 
-            layer.addQuad(x, y, z, width, height, color, minU, maxU, minV, maxV);
+            layer.addQuad(x, y, width, height, color, minU, maxU, minV, maxV);
         }
     }
 }

@@ -19,8 +19,8 @@
 package guideme.internal.util;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
@@ -43,8 +43,8 @@ public final class FluidBlitter {
 
         var attributes = IClientFluidTypeExtensions.of(fluid);
         TextureAtlasSprite sprite = Minecraft.getInstance()
-                .getTextureAtlas(TextureAtlas.LOCATION_BLOCKS)
-                .apply(attributes.getStillTexture(stack));
+                .getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)
+                .getSprite(attributes.getStillTexture(stack));
 
         return Blitter.sprite(sprite)
                 .colorRgb(attributes.getTintColor(stack))

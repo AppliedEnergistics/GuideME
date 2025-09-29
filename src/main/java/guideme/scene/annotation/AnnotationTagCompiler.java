@@ -50,6 +50,7 @@ public abstract class AnnotationTagCompiler implements SceneElementTagCompiler {
      *             instead.
      */
     @Nullable
+    @Deprecated
     protected abstract SceneAnnotation createAnnotation(PageCompiler compiler,
             LytErrorSink errorSink,
             MdxJsxElementFields el);

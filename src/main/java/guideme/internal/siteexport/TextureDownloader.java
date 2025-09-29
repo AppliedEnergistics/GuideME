@@ -82,7 +82,6 @@ public final class TextureDownloader {
             if ((texture.usage() & GpuBuffer.USAGE_COPY_SRC) == 0) {
                 var indicesStorage = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
                 var indicesBuffer = indicesStorage.getBuffer(6);
-                var quadBuffer = RenderSystem.getQuadVertexBuffer();
 
                 // We blit it to a temporary framebuffer and then copy that
                 try (var tempFramebuffer = device.createTexture(() -> "GuideME temp color copy",
@@ -96,10 +95,9 @@ public final class TextureDownloader {
                             var view = device.createTextureView(texture)) {
                         pass.setPipeline(COPY_BLIT);
                         RenderSystem.bindDefaultUniforms(pass);
-                        pass.setVertexBuffer(0, quadBuffer);
                         pass.setIndexBuffer(indicesBuffer, indicesStorage.type());
                         pass.bindSampler("InSampler", view);
-                        pass.drawIndexed(0, 0, 6, 1);
+                        pass.draw(0, 3);
                     }
 
                     commandencoder.copyTextureToBuffer(tempFramebuffer, downloadBuffer, 0, saveImage, mipLevel);

@@ -123,7 +123,9 @@ public interface RenderContext {
     }
 
     default float getAdvance(int codePoint, ResolvedTextStyle style) {
-        return font().getFontSet(style.font()).getGlyphInfo(codePoint, false)
+        return font().getGlyphSource(style.font())
+                .getGlyph(codePoint)
+                .info()
                 .getAdvance(style.bold());
     }
 

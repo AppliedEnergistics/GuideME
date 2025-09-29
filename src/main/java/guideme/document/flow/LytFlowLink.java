@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import org.jetbrains.annotations.Nullable;
@@ -30,8 +31,8 @@ public class LytFlowLink extends LytTooltipSpan {
     }
 
     @Override
-    public boolean mouseClicked(GuideUiHost screen, int x, int y, int button) {
-        if (button == 0 && clickCallback != null) {
+    public boolean mouseClicked(GuideUiHost screen, int x, int y, MouseButtonInfo button, boolean doubleClick) {
+        if (button.button() == 0 && clickCallback != null) {
             if (clickSound != null) {
                 var handler = Minecraft.getInstance().getSoundManager();
                 handler.play(SimpleSoundInstance.forUI(clickSound, 1.0F));

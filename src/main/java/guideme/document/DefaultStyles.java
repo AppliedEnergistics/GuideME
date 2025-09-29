@@ -7,10 +7,13 @@ import guideme.style.TextAlignment;
 import guideme.style.TextStyle;
 import guideme.style.WhiteSpaceMode;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.FontDescription;
 
 public final class DefaultStyles {
     private DefaultStyles() {
     }
+
+    private static final FontDescription UNIFORM_FONT = new FontDescription.Resource(Minecraft.UNIFORM_FONT);
 
     /**
      * The base style everything else is based on.
@@ -22,14 +25,14 @@ public final class DefaultStyles {
             false,
             false,
             false,
-            Minecraft.UNIFORM_FONT,
+            UNIFORM_FONT,
             SymbolicColor.BODY_TEXT,
             WhiteSpaceMode.NORMAL,
             TextAlignment.LEFT,
             false);
 
     public static final TextStyle BODY_TEXT = TextStyle.builder()
-            .font(Minecraft.UNIFORM_FONT)
+            .font(UNIFORM_FONT)
             .color(SymbolicColor.BODY_TEXT)
             .build();
 
@@ -38,36 +41,36 @@ public final class DefaultStyles {
             .build();
 
     public static final TextStyle CRAFTING_RECIPE_TYPE = TextStyle.builder()
-            .font(Minecraft.UNIFORM_FONT)
+            .font(UNIFORM_FONT)
             .color(SymbolicColor.CRAFTING_RECIPE_TYPE)
             .build();
 
     public static final TextStyle HEADING1 = TextStyle.builder()
             .fontScale(1.3f)
-            .bold(true).font(Minecraft.DEFAULT_FONT)
+            .bold(true).font(FontDescription.DEFAULT)
             .color(ConstantColor.WHITE)
             .build();
     public static final TextStyle HEADING2 = TextStyle.builder()
             .fontScale(1.1f)
-            .font(Minecraft.DEFAULT_FONT)
+            .font(FontDescription.DEFAULT)
             .build();
     public static final TextStyle HEADING3 = TextStyle.builder()
             .fontScale(1f)
-            .font(Minecraft.DEFAULT_FONT)
+            .font(FontDescription.DEFAULT)
             .build();
     public static final TextStyle HEADING4 = TextStyle.builder()
             .fontScale(1.1f)
             .bold(true)
-            .font(Minecraft.UNIFORM_FONT)
+            .font(UNIFORM_FONT)
             .build();
     public static final TextStyle HEADING5 = TextStyle.builder()
             .fontScale(1f)
             .bold(true)
-            .font(Minecraft.UNIFORM_FONT)
+            .font(UNIFORM_FONT)
             .build();
     public static final TextStyle HEADING6 = TextStyle.builder()
             .fontScale(1f)
-            .font(Minecraft.UNIFORM_FONT)
+            .font(UNIFORM_FONT)
             .build();
 
     public static final TextStyle SEARCH_RESULT_HIGHLIGHT = TextStyle.builder()

@@ -9,6 +9,7 @@ import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
 import guideme.ui.GuideUiHost;
 import java.util.Optional;
+import net.minecraft.client.input.MouseButtonInfo;
 
 public class LytFlowInlineBlock extends LytFlowContent implements InteractiveElement {
 
@@ -44,15 +45,15 @@ public class LytFlowInlineBlock extends LytFlowContent implements InteractiveEle
     }
 
     @Override
-    public boolean mouseClicked(GuideUiHost screen, int x, int y, int button) {
+    public boolean mouseClicked(GuideUiHost screen, int x, int y, MouseButtonInfo button, boolean doubleClick) {
         if (block instanceof InteractiveElement interactiveElement) {
-            return interactiveElement.mouseClicked(screen, x, y, button);
+            return interactiveElement.mouseClicked(screen, x, y, button, doubleClick);
         }
         return false;
     }
 
     @Override
-    public boolean mouseReleased(GuideUiHost screen, int x, int y, int button) {
+    public boolean mouseReleased(GuideUiHost screen, int x, int y, MouseButtonInfo button) {
         if (block instanceof InteractiveElement interactiveElement) {
             return interactiveElement.mouseReleased(screen, x, y, button);
         }

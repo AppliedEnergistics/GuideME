@@ -19,14 +19,17 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.particles.ExplosionParticleInfo;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageSource;
@@ -49,6 +52,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
@@ -59,6 +63,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.BlackholeTickAccess;
@@ -431,8 +436,8 @@ public class GuidebookLevel extends Level {
     @Override
     public void explode(@Nullable Entity source, @Nullable DamageSource damageSource,
             @Nullable ExplosionDamageCalculator damageCalculator, double x, double y, double z, float radius,
-            boolean fire, ExplosionInteraction explosionInteraction, ParticleOptions smallExplosionParticles,
-            ParticleOptions largeExplosionParticles, Holder<SoundEvent> explosionSound) {
+            boolean fire, ExplosionInteraction explosionInteraction, ParticleOptions p_364907_,
+            ParticleOptions p_360946_, WeightedList<ExplosionParticleInfo> p_437262_, Holder<SoundEvent> p_363757_) {
     }
 
     @Override
@@ -443,6 +448,20 @@ public class GuidebookLevel extends Level {
     @Override
     public int getSeaLevel() {
         return 0;
+    }
+
+    @Override
+    public void setRespawnData(LevelData.RespawnData p_451027_) {
+    }
+
+    @Override
+    public LevelData.RespawnData getRespawnData() {
+        return new LevelData.RespawnData(GlobalPos.of(dimension(), BlockPos.ZERO), 0, 0);
+    }
+
+    @Override
+    public WorldBorder getWorldBorder() {
+        return WorldBorder.Settings.DEFAULT.toWorldBorder();
     }
 
     private static class EntityCallbacks implements LevelCallback<Entity> {

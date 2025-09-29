@@ -75,11 +75,6 @@ public class LiquidVertexConsumer implements VertexConsumer {
     }
 
     @Override
-    public VertexConsumer setWhiteAlpha(int p_350979_) {
-        return delegate.setWhiteAlpha(p_350979_);
-    }
-
-    @Override
     public VertexConsumer setLight(int p_350855_) {
         return delegate.setLight(p_350855_);
     }

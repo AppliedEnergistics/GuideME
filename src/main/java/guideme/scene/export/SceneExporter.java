@@ -31,6 +31,7 @@ import guideme.internal.util.Platform;
 import guideme.scene.CameraSettings;
 import guideme.scene.GuidebookLevelRenderer;
 import guideme.scene.GuidebookScene;
+import guideme.scene.level.GuidebookLevel;
 import guideme.siteexport.ResourceExporter;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.io.ByteArrayOutputStream;
@@ -47,8 +48,11 @@ import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.GZIPOutputStream;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
@@ -76,12 +80,29 @@ public class SceneExporter {
 
     private static Set<TextureAtlasSprite> getSprites(GuidebookScene scene) {
         var level = scene.getLevel();
-        var bufferSource = new MeshBuildingBufferSource();
-        GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource, new PoseStack());
+        var meshes = renderToMeshes(level);
 
-        return bufferSource.getMeshes().stream()
+        return meshes.stream()
                 .flatMap(Mesh::getSprites)
                 .collect(Collectors.toSet());
+    }
+
+    private static List<Mesh> renderToMeshes(GuidebookLevel level) {
+        try (var bufferSource = new MeshBuildingBufferSource()) {
+            var submitStorage = new SubmitNodeStorage();
+            var featureRenderDispatcher = new FeatureRenderDispatcher(
+                    submitStorage,
+                    Minecraft.getInstance().getBlockRenderer(),
+                    bufferSource,
+                    Minecraft.getInstance().getAtlasManager(),
+                    Minecraft.getInstance().renderBuffers().outlineBufferSource(),
+                    Minecraft.getInstance().renderBuffers().crumblingBufferSource(),
+                    Minecraft.getInstance().font);
+            GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource, featureRenderDispatcher,
+                    new PoseStack());
+            featureRenderDispatcher.renderAllFeatures();
+            return bufferSource.getMeshes();
+        }
     }
 
     public byte[] export(GuidebookScene scene) {
@@ -90,9 +111,8 @@ public class SceneExporter {
         var device = RenderSystem.getDevice();
 
         List<Mesh> meshes;
-        try (var bufferSource = new MeshBuildingBufferSource();
-                var projectionMatrixBuffer = device.createBuffer(() -> "Projection matrix UBO",
-                        GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, RenderSystem.PROJECTION_MATRIX_UBO_SIZE)) {
+        try (var projectionMatrixBuffer = device.createBuffer(() -> "Projection matrix UBO",
+                GpuBuffer.USAGE_UNIFORM | GpuBuffer.USAGE_COPY_DST, RenderSystem.PROJECTION_MATRIX_UBO_SIZE)) {
 
             // To avoid baking in the projection and camera, we need to reset these here
             // Write an identity matrix to the projection matrix buffer
@@ -109,11 +129,10 @@ public class SceneExporter {
             RenderSystem.backupProjectionMatrix();
             RenderSystem.setProjectionMatrix(bufferSlice, ProjectionType.ORTHOGRAPHIC);
 
-            GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource, new PoseStack());
+            meshes = renderToMeshes(level);
 
             modelViewStack.popMatrix();
             RenderSystem.restoreProjectionMatrix();
-            meshes = bufferSource.getMeshes();
         }
 
         // Concat all vertex buffers

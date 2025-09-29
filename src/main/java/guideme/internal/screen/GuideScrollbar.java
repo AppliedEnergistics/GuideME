@@ -4,6 +4,7 @@ import guideme.color.Colors;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -71,20 +72,20 @@ public class GuideScrollbar extends AbstractWidget {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!this.visible || button != 0) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (!this.visible || event.button() != 0) {
             return false;
         }
 
         var thumbTop = getY() + getThumbTop();
         var thumbBottom = thumbTop + getThumbHeight();
 
-        boolean thumbHit = mouseX >= getX()
-                && mouseX <= getX() + WIDTH
-                && mouseY >= thumbTop
-                && mouseY < thumbBottom;
+        boolean thumbHit = event.x() >= getX()
+                && event.x() <= getX() + WIDTH
+                && event.y() >= thumbTop
+                && event.y() < thumbBottom;
         if (thumbHit) {
-            this.thumbHeldAt = mouseY - thumbTop;
+            this.thumbHeldAt = event.y() - thumbTop;
             return true;
         } else {
             this.thumbHeldAt = null;
@@ -93,20 +94,20 @@ public class GuideScrollbar extends AbstractWidget {
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button != 0) {
-            return super.mouseReleased(mouseX, mouseY, button);
+    public boolean mouseReleased(MouseButtonEvent event) {
+        if (event.button() != 0) {
+            return super.mouseReleased(event);
         }
 
         this.thumbHeldAt = null;
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(event);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+    public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
         if (this.visible && this.thumbHeldAt != null) {
 
-            var thumbY = (int) Math.round(mouseY - getY() - thumbHeldAt);
+            var thumbY = (int) Math.round(event.y() - getY() - thumbHeldAt);
             var maxThumbY = height - getThumbHeight();
             var scrollAmount = (int) Math.round(thumbY / (double) maxThumbY * getMaxScrollAmount());
             setScrollAmount(scrollAmount);

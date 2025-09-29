@@ -4,7 +4,9 @@ import guideme.color.LightDarkMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,10 +44,10 @@ public final class GuiSprite {
         }
 
         synchronized (this) {
-            var guiSprites = Minecraft.getInstance().getGuiSprites();
+            var guiSprites = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.GUI);
 
             var sprite = guiSprites.getSprite(id);
-            var spriteScaling = guiSprites.getSpriteScaling(sprite);
+            var spriteScaling = getScaling(sprite);
             var darkId = id.withSuffix("_darkmode");
             var darkSprite = guiSprites.getSprite(darkId);
 
@@ -55,7 +57,7 @@ public final class GuiSprite {
                 darkSprite = sprite;
             } else {
                 // Ensure people avoid the foot-gun of using different scaling
-                var darkScaling = guiSprites.getSpriteScaling(darkSprite);
+                var darkScaling = getScaling(darkSprite);
                 if (!darkScaling.equals(spriteScaling)) {
                     LOG.warn(
                             "Dark-mode sprite {} uses different sprite-scaling from the light-mode version. Please ensure the same .mcmeta file content is used.",
@@ -70,6 +72,11 @@ public final class GuiSprite {
                     spriteScaling);
             return cachedState;
         }
+    }
+
+    private static GuiSpriteScaling getScaling(TextureAtlasSprite sprite) {
+        return sprite.contents().getAdditionalMetadata(GuiMetadataSection.TYPE).orElse(GuiMetadataSection.DEFAULT)
+                .scaling();
     }
 
     private record CachedState(

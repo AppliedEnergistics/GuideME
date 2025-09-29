@@ -27,6 +27,8 @@ import java.util.function.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -297,36 +299,37 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     }
 
     @Override
-    public boolean scaledMouseClicked(double mouseX, double mouseY, int button) {
-        if (super.scaledMouseClicked(mouseX, mouseY, button)) {
+    public boolean scaledMouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (super.scaledMouseClicked(event, doubleClick)) {
             return true;
         }
 
-        var docPoint = getDocumentPoint(mouseX, mouseY);
+        var docPoint = getDocumentPoint(event.x(), event.y());
         if (docPoint != null) {
-            if (documentClicked(docPoint, button)) {
+            if (documentClicked(docPoint, event.buttonInfo())) {
                 return true;
             }
 
             return dispatchEvent(docPoint.x(), docPoint.y(), el -> {
-                return el.mouseClicked(this, docPoint.x(), docPoint.y(), button);
+                return el.mouseClicked(this, docPoint.x(), docPoint.y(), event.buttonInfo(), doubleClick);
             });
         } else {
             return false;
         }
     }
 
-    protected boolean documentClicked(UiPoint documentPoint, int button) {
+    protected boolean documentClicked(UiPoint documentPoint, MouseButtonInfo button) {
         return false;
     }
 
     @Override
-    public boolean scaledMouseReleased(double mouseX, double mouseY, int button) {
+    public boolean scaledMouseReleased(MouseButtonEvent event) {
         if (mouseCaptureTarget != null) {
             var currentTarget = mouseCaptureTarget;
 
-            var docPointUnclamped = getDocumentPointUnclamped(mouseX, mouseY);
-            boolean handled = currentTarget.mouseReleased(this, docPointUnclamped.x(), docPointUnclamped.y(), button);
+            var docPointUnclamped = getDocumentPointUnclamped(event.x(), event.y());
+            boolean handled = currentTarget.mouseReleased(this, docPointUnclamped.x(), docPointUnclamped.y(),
+                    event.buttonInfo());
 
             releaseMouseCapture(currentTarget);
             if (handled) {
@@ -334,14 +337,14 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
             }
         }
 
-        if (super.scaledMouseReleased(mouseX, mouseY, button)) {
+        if (super.scaledMouseReleased(event)) {
             return true;
         }
 
-        var docPoint = getDocumentPoint(mouseX, mouseY);
+        var docPoint = getDocumentPoint(event.x(), event.y());
         if (docPoint != null) {
             return dispatchEvent(docPoint.x(), docPoint.y(), el -> {
-                return el.mouseReleased(this, docPoint.x(), docPoint.y(), button);
+                return el.mouseReleased(this, docPoint.x(), docPoint.y(), event.buttonInfo());
             });
         } else {
             return false;
@@ -488,7 +491,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         var document = getDocumentWithLayout();
         // Render tooltip
         if (document != null && document.getHoveredElement() != null) {
-            guiGraphics.renderDeferredTooltip();
+            guiGraphics.renderDeferredElements();
             renderTooltip(guiGraphics, mouseX, mouseY);
         }
     }

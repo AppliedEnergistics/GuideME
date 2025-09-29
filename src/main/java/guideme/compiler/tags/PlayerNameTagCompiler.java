@@ -17,7 +17,7 @@ public class PlayerNameTagCompiler extends FlowTagCompiler {
 
     @Override
     protected void compile(PageCompiler compiler, LytFlowParent parent, MdxJsxElementFields el) {
-        var playerName = Minecraft.getInstance().getGameProfile().getName();
+        var playerName = Minecraft.getInstance().getGameProfile().name();
         parent.appendText(playerName);
     }
 }

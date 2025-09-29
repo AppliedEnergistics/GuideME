@@ -1,7 +1,7 @@
 package guideme.style;
 
 import guideme.color.ColorValue;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.FontDescription;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -14,7 +14,7 @@ public record TextStyle(
         @Nullable Boolean underlined,
         @Nullable Boolean strikethrough,
         @Nullable Boolean obfuscated,
-        @Nullable ResourceLocation font,
+        @Nullable FontDescription font,
         @Nullable ColorValue color,
         @Nullable WhiteSpaceMode whiteSpace,
         @Nullable TextAlignment alignment,
@@ -76,7 +76,7 @@ public record TextStyle(
         private Boolean underlined;
         private Boolean strikethrough;
         private Boolean obfuscated;
-        private ResourceLocation font;
+        private FontDescription font;
         private ColorValue color;
         private WhiteSpaceMode whiteSpace;
         private TextAlignment alignment;
@@ -149,7 +149,7 @@ public record TextStyle(
             return this;
         }
 
-        public Builder font(ResourceLocation font) {
+        public Builder font(FontDescription font) {
             this.font = font;
             return this;
         }

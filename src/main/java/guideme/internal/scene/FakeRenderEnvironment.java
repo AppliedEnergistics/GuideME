@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.CommonListenerCookie;
+import net.minecraft.client.multiplayer.LevelLoadTracker;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
 import net.minecraft.core.registries.Registries;
@@ -36,9 +37,10 @@ public class FakeRenderEnvironment implements AutoCloseable {
         Minecraft minecraft = Minecraft.getInstance();
 
         var camera = new Camera();
-        minecraft.getEntityRenderDispatcher().prepare(level, camera, null);
+        minecraft.getEntityRenderDispatcher().prepare(camera, null);
         var connection = new Connection(PacketFlow.CLIENTBOUND);
         var packetListener = new ClientPacketListener(minecraft, connection, new CommonListenerCookie(
+                new LevelLoadTracker(),
                 new GameProfile(UUID.randomUUID(), "Site Exporter"),
                 new WorldSessionTelemetryManager((eventType, propertyAdder) -> {
                 }, false, null, null),
@@ -51,6 +53,8 @@ public class FakeRenderEnvironment implements AutoCloseable {
                 null,
                 Map.of(),
                 new ServerLinks(List.of()),
+                Map.of(),
+                false,
                 ConnectionType.NEOFORGE));
         var levelData = new ClientLevel.ClientLevelData(
                 Difficulty.NORMAL,

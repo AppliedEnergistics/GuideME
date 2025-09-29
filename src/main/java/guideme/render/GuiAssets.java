@@ -4,7 +4,6 @@ import guideme.color.LightDarkMode;
 import guideme.internal.GuideME;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import net.minecraft.client.gui.GuiSpriteManager;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.resources.ResourceLocation;
@@ -18,12 +17,6 @@ public final class GuiAssets {
     private static final Logger LOG = LoggerFactory.getLogger(GuiAssets.class);
 
     private static final Map<ResourceLocation, GuiSprite> sprites = new ConcurrentHashMap<>();
-
-    /**
-     * @see GuiSpriteManager
-     */
-    public static final ResourceLocation GUI_SPRITE_ATLAS = ResourceLocation
-            .withDefaultNamespace("textures/atlas/gui.png");
 
     public static final GuiSprite MISSING_TEXTURE = sprite(MissingTextureAtlasSprite.getLocation());
     public static final GuiSprite GUIDE_BACKGROUND = sprite("background");

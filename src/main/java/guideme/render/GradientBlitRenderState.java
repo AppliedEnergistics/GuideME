@@ -68,11 +68,11 @@ record GradientBlitRenderState(
     }
 
     @Override
-    public void buildVertices(VertexConsumer vertices, float z) {
-        vertices.addVertexWith2DPose(pose, x0, y0, z).setUv(u0, v0).setColor(colTL);
-        vertices.addVertexWith2DPose(pose, x0, y1, z).setUv(u0, v1).setColor(colBL);
-        vertices.addVertexWith2DPose(pose, x1, y1, z).setUv(u1, v1).setColor(colBR);
-        vertices.addVertexWith2DPose(pose, x1, y0, z).setUv(u1, v0).setColor(colTR);
+    public void buildVertices(VertexConsumer vertices) {
+        vertices.addVertexWith2DPose(pose, x0, y0).setUv(u0, v0).setColor(colTL);
+        vertices.addVertexWith2DPose(pose, x0, y1).setUv(u0, v1).setColor(colBL);
+        vertices.addVertexWith2DPose(pose, x1, y1).setUv(u1, v1).setColor(colBR);
+        vertices.addVertexWith2DPose(pose, x1, y0).setUv(u1, v0).setColor(colTR);
     }
 
     @Nullable

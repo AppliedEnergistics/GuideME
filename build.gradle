@@ -44,6 +44,7 @@ configurations {
     runtimeClasspath.extendsFrom localImplementation
     testCompileClasspath.extendsFrom localImplementation
     testRuntimeClasspath.extendsFrom localImplementation
+    testmodRuntimeClasspath.extendsFrom shaded
 }
 
 dependencies {
@@ -152,9 +153,6 @@ neoForge {
             loadedMods = [mods.guideme, mods.testmod]
             sourceSet = sourceSets.testmod
 
-            additionalRuntimeClasspathConfiguration.extendsFrom configurations.shaded
-            additionalRuntimeClasspathConfiguration.extendsFrom configurations.guideExportOnly
-
             systemProperty("guideme.testmod.guide.sources", testModGuidePath)
         }
         client {
@@ -192,6 +190,7 @@ neoForge {
     unitTest {
         enable()
         testedMod = mods.guidemetest
+        loadedMods = [mods.guidemetest, mods.testmod]
     }
 }
 

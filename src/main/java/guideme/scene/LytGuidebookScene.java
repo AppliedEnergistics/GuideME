@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -411,11 +412,11 @@ public class LytGuidebookScene extends LytBox {
         }
 
         @Override
-        public boolean mouseClicked(GuideUiHost screen, int x, int y, int button) {
+        public boolean mouseClicked(GuideUiHost screen, int x, int y, MouseButtonInfo button, boolean doubleClick) {
             if (interactive) {
-                if (button == 0 || button == 1) {
+                if (button.button() == 0 || button.button() == 1) {
                     var cameraSettings = scene.getCameraSettings();
-                    buttonDown = button;
+                    buttonDown = button.button();
                     pointDown = new Vector2i(x, y);
                     initialRotX = cameraSettings.getRotationX();
                     initialRotY = cameraSettings.getRotationY();
@@ -428,7 +429,7 @@ public class LytGuidebookScene extends LytBox {
         }
 
         @Override
-        public boolean mouseReleased(GuideUiHost screen, int x, int y, int button) {
+        public boolean mouseReleased(GuideUiHost screen, int x, int y, MouseButtonInfo button) {
             pointDown = null;
             return true;
         }

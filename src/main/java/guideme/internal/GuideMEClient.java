@@ -20,10 +20,12 @@ import guideme.render.GuiAssets;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import java.util.Objects;
 import java.util.Set;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -59,6 +61,8 @@ import org.slf4j.LoggerFactory;
 @Mod(value = GuideME.MOD_ID, dist = Dist.CLIENT)
 public class GuideMEClient {
     private static final Logger LOG = LoggerFactory.getLogger(GuideMEClient.class);
+
+    public static final KeyMapping.Category KEYBIND_CATEGORY = new KeyMapping.Category(GuideME.makeId("category"));
 
     private static GuideMEClient INSTANCE;
 
@@ -152,12 +156,13 @@ public class GuideMEClient {
     }
 
     private void resetSprites(TextureAtlasStitchedEvent event) {
-        if (event.getAtlas().location().equals(GuiAssets.GUI_SPRITE_ATLAS)) {
+        if (event.getAtlas().location().equals(AtlasIds.GUI)) {
             GuiAssets.resetSprites();
         }
     }
 
     private void registerHotkeys(RegisterKeyMappingsEvent e) {
+        e.registerCategory(KEYBIND_CATEGORY);
         e.register(OpenGuideHotkey.getHotkey());
     }
 

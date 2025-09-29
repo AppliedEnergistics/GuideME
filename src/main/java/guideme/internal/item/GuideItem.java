@@ -64,7 +64,7 @@ public class GuideItem extends Item {
             return InteractionResult.FAIL;
         }
 
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             if (GuideMEProxy.instance().openGuide(player, guideId)) {
                 return InteractionResult.CONSUME;
             }

@@ -11,6 +11,8 @@ import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 
 /**
  * Wraps an {@link AbstractWidget} for use within the guidebook layout tree.
@@ -80,13 +82,15 @@ public class LytWidget extends LytBlock implements InteractiveElement {
     }
 
     @Override
-    public boolean mouseClicked(GuideUiHost screen, int x, int y, int button) {
-        return widget.mouseClicked(x, y, button);
+    public boolean mouseClicked(GuideUiHost screen, int x, int y, MouseButtonInfo button, boolean doubleClick) {
+        var event = new MouseButtonEvent(x, y, button);
+        return widget.mouseClicked(event, false);
     }
 
     @Override
-    public boolean mouseReleased(GuideUiHost screen, int x, int y, int button) {
-        return widget.mouseReleased(x, y, button);
+    public boolean mouseReleased(GuideUiHost screen, int x, int y, MouseButtonInfo button) {
+        var event = new MouseButtonEvent(x, y, button);
+        return widget.mouseReleased(event);
     }
 
     @Override

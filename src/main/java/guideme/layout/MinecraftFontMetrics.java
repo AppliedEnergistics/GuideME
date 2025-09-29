@@ -16,8 +16,8 @@ public class MinecraftFontMetrics implements FontMetrics {
     }
 
     public float getAdvance(int codePoint, ResolvedTextStyle style) {
-        return font.getFontSet(style.font()).getGlyphInfo(codePoint, false)
-                .getAdvance(Boolean.TRUE.equals(style.bold()));
+        return font.getGlyphSource(style.font()).getGlyph(codePoint)
+                .info().getAdvance(style.bold());
     }
 
     public int getLineHeight(ResolvedTextStyle style) {

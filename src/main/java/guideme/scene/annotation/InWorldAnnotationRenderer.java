@@ -18,9 +18,9 @@ import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.util.ARGB;
 import net.neoforged.neoforge.client.RenderTypeHelper;
 import org.jetbrains.annotations.ApiStatus;
@@ -51,8 +51,8 @@ public final class InWorldAnnotationRenderer {
 
     public static void render(MultiBufferSource.BufferSource buffers, Iterable<InWorldAnnotation> annotations,
             LightDarkMode lightDarkMode) {
-        var sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS)
-                .apply(GuideME.makeId("block/noise"));
+        var sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)
+                .getSprite(GuideME.makeId("block/noise"));
 
         var occludedConsumer = buffers.getBuffer(OCCLUDED);
         for (var annotation : annotations) {

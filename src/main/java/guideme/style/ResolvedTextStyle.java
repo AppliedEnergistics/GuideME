@@ -1,7 +1,7 @@
 package guideme.style;
 
 import guideme.color.ColorValue;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.FontDescription;
 
 /**
  * Represents the styling of text for rendering.
@@ -13,7 +13,7 @@ public record ResolvedTextStyle(
         boolean underlined,
         boolean strikethrough,
         boolean obfuscated,
-        ResourceLocation font,
+        FontDescription font,
         ColorValue color,
         WhiteSpaceMode whiteSpace,
         TextAlignment alignment,
