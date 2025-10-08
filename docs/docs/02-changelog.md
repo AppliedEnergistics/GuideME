@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.10.1-beta (Minecraft 1.21.10)
+
+- First update to 1.21.10
+
 ## 21.8.4 (Minecraft 1.21.8)
 
 - Markdown parse errors now log the line and column where the error occurred.
