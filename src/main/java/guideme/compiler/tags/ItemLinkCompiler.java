@@ -17,12 +17,12 @@ public class ItemLinkCompiler extends FlowTagCompiler {
 
     @Override
     public void compile(PageCompiler compiler, LytFlowParent parent, MdxJsxElementFields el) {
-        var itemAndId = MdxAttrs.getRequiredItemAndId(compiler, parent, el, "id");
+        var itemAndId = MdxAttrs.getRequiredItemStackAndId(compiler, parent, el);
         if (itemAndId == null) {
             return;
         }
         var id = itemAndId.getLeft();
-        var item = itemAndId.getRight();
+        var stack = itemAndId.getRight();
 
         var linksTo = compiler.getIndex(ItemIndex.class).get(id);
         // We'll error out for item-links to our own mod because we expect them to have a page
@@ -31,8 +31,6 @@ public class ItemLinkCompiler extends FlowTagCompiler {
             parent.append(compiler.createErrorFlowContent("No page found for item " + id, el));
             return;
         }
-
-        var stack = item.getDefaultInstance();
 
         // If the item link is already on the page we're linking to, replace it with an underlined
         // text that has a tooltip.
