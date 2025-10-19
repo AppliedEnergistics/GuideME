@@ -19,6 +19,8 @@ You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">do
 
 <CommandLink command="/tp @s 0 90 0" title="Tooltip" close={true}>Teleport!</CommandLink>
 
+<ItemLink id="minecraft:stick" components="rarity=epic" />
+
 <GameScene zoom={4} interactive={true}>
     <Entity id="minecraft:sheep" data="{Color: 2}" />
 </GameScene>

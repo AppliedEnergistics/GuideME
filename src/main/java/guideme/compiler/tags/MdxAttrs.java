@@ -154,6 +154,14 @@ public final class MdxAttrs {
     @Nullable
     public static ItemStack getRequiredItemStack(PageCompiler compiler, LytErrorSink errorSink,
             MdxJsxElementFields el) {
+        var result = getRequiredItemStackAndId(compiler, errorSink, el);
+        return result != null ? result.getValue() : null;
+    }
+
+    @Nullable
+    public static Pair<ResourceLocation, ItemStack> getRequiredItemStackAndId(PageCompiler compiler,
+            LytErrorSink errorSink,
+            MdxJsxElementFields el) {
         var itemAndId = getRequiredItemAndId(compiler, errorSink, el, "id");
         if (itemAndId == null) {
             return null;
@@ -180,7 +188,7 @@ public final class MdxAttrs {
             }
         }
 
-        return stack;
+        return Pair.of(itemAndId.getKey(), stack);
     }
 
     public static float getFloat(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el, String name,

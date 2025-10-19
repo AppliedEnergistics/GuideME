@@ -3,9 +3,40 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.10.2-beta (Minecraft 1.21.10)
+
+- Added support for data components to `<ItemLink />`
+
+## 21.10.1-beta (Minecraft 1.21.10)
+
+- First update to 1.21.10
+
+## 21.8.4 (Minecraft 1.21.8)
+
+- Markdown parse errors now log the line and column where the error occurred.
+
+## 21.8.3 (Minecraft 1.21.8)
+
+- Fix fluid rendering in game scenes
+
+## 21.8.2 (Minecraft 1.21.8)
+
+- Make the stripped down version of GuideME the default to be published to CurseForge/Modrinth (Reduces mod size by 5MB)
+- Strip removed Lucene components from service files to fix startup crashes since NeoForge become stricter about service files
+
+## 21.8.1 (Minecraft 1.21.8)
+
+- First port to Minecraft 1.21.8
+- The `/guidemec export` command to export guide data for web use now works
+- Fixed rendering of in-world annotations in game scenes that was slightly broken since 1.21.5
+- Fixed several export related problems present since 1.21.5
+- Fixed error on startup complaining about an incubating JDK feature (vector), and the subsequent crash
+  when that feature was actually enabled.
+
 ## 21.5.9-beta (Minecraft 1.21.5)
 
 - Fix text in floating elements disappearing while scrolling.
+- Fix layout of game scenes still including the vertical toolbar even if it was hidden.
 
 ## 21.5.8-beta (Minecraft 1.21.5)
 
@@ -14,18 +45,27 @@ import Video from '@site/src/components/Video';
   This change allows the same structure to be added multiple times to a scene at different positions.
 - Add a new `<RemoveBlock id="..." />` tag to game scenes to clear out tags of a given type. This is useful for clearing out support blocks
   from structures after they have been imported into a scene. See the [game scene documentation](./30-authoring/game-scenes.md#remove-blocks) for details.
+- Fix rendering of diamond overlay annotations in game scenes.
 
 ## 21.5.7-beta (Minecraft 1.21.5)
 
 - Fix rendering of text in floated elements.
+- Fix hover-status for widgets embedded in the document when the screen is scaled independently of the GUI (on odd GUI scales).
+- Add `fallbackText` attribute to `<Recipe />`, `<RecipeFor />` and `<RecipesFor />` to allow the guide author to explicitly handle when recipes are missing due to datapacks removing them.
+  See [authoring pages](./30-authoring/index.md#recipes) for details.
+- Add a new configuration option to always hide recipe errors that result from recipes being removed or hidden by datapacks and guide authors not explicitly handling those cases with the `fallbackText` attribute.
+  This is primarily intended to be used by modpacks.
+- Adds the ability to color text both with a color specified in the page (`<Color color="#ff0000">text</Color>`), and by
+  adding guide-specific custom color constants, both in [data-driven guides](./20-data-driven-guides.md#custom-colors)
+  and for mods using an [extension point](./20-integration/symbolic-colors.md).
 
-## 21.5.5-beta (Minecraft 1.21.5)
+## 21.5.6-beta (Minecraft 1.21.5)
 
 - Fix a crash when Minecraft uses an unusual language code with uppercase components (i.e. `en_US` instead of the default `en_us`).
 - Added a `<PlayerName />` tag to address the player by their current name.
 - Added a `<KeyBind id="..." />` tag to show what a keybind is currently bound to. See [authoring pages](./30-authoring/index.md#key-bindings) for details. 
   
-## 21.5.4-beta (Minecraft 1.21.5)
+## 21.5.5-beta (Minecraft 1.21.5)
 
 - Adds the ability to specify data components on `ItemImage` and `ItemIcon` using the same format used by the `/give` command.
   For example: `<ItemImage id="minecraft:stone" components="enchantment_glint_override=true" />` shows a piece of stone with enchantment glint applied.
@@ -39,9 +79,32 @@ import Video from '@site/src/components/Video';
 
 - Remove a misplaced black pixel in the border of recipe panels.
 
+## 21.5.4-beta (Minecraft 1.21.5)
+
+- Fix item images being shown on top of the navigation bar.
+- Use same random-source as normal level rendering to avoid constantly changing block appearance in game scenes.
+
 ## 21.1.7 (Minecraft 1.21.1)
 
 - Guard against crashes when mods return null results from their custom recipes.
+
+## 21.5.3-beta (Minecraft 1.21.5)
+
+- Java API: Fix Off-Screen-Renderer for Website export.
+- Java API: Fix various website export issues.
+- Java API: Introduce new extension points for the site export,
+  and make it usable via new system properties.
+
+## 21.5.2-beta (Minecraft 1.21.5)
+
+- Java API: Add back the semantics of `RecipeTypeMappings.add`, which supports mapping RecipeHolders to a nullable LytBlock for custom recipes.
+- Java API: The registration method for factories that return a `Stream<LytBlock>` has been renamed to `addMulti`.
+- Java API: Added convenience constructors to `LytSlot` for aiding with new idioms used by Vanilla, such as `Optional<Ingredient>` being used instead of empty ingredients (which no longer exist).
+- Java API: Made the row/column factory methods for `LytSlotGrid` accept null-entries in the ingredient lists to better interface with Ingredients no longer being able to be empty.
+
+## 21.5.1-beta (Minecraft 1.21.5)
+
+- First port to Minecraft 1.21.5
 
 ## 21.1.6 (Minecraft 1.21.1)
 
