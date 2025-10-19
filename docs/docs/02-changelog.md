@@ -3,6 +3,41 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 21.10.2-beta (Minecraft 1.21.10)
+
+- Added support for data components to `<ItemLink />`
+
+## 21.10.1-beta (Minecraft 1.21.10)
+
+- First update to 1.21.10
+
+## 21.8.4 (Minecraft 1.21.8)
+
+- Markdown parse errors now log the line and column where the error occurred.
+
+## 21.8.3 (Minecraft 1.21.8)
+
+- Fix fluid rendering in game scenes
+
+## 21.8.2 (Minecraft 1.21.8)
+
+- Make the stripped down version of GuideME the default to be published to CurseForge/Modrinth (Reduces mod size by 5MB)
+- Strip removed Lucene components from service files to fix startup crashes since NeoForge become stricter about service files
+
+## 21.8.1 (Minecraft 1.21.8)
+
+- First port to Minecraft 1.21.8
+- The `/guidemec export` command to export guide data for web use now works
+- Fixed rendering of in-world annotations in game scenes that was slightly broken since 1.21.5
+- Fixed several export related problems present since 1.21.5
+- Fixed error on startup complaining about an incubating JDK feature (vector), and the subsequent crash
+  when that feature was actually enabled.
+
+## 21.5.9-beta (Minecraft 1.21.5)
+
+- Fix text in floating elements disappearing while scrolling.
+- Fix layout of game scenes still including the vertical toolbar even if it was hidden.
+
 ## 21.5.8-beta (Minecraft 1.21.5)
 
 - Add support for [templating annotations in game scenes](./30-authoring/game-scenes.md#block-annotation-templates). This allows you to apply annotations to specific blocks in the scene by type rather than position.
@@ -10,6 +45,7 @@ import Video from '@site/src/components/Video';
   This change allows the same structure to be added multiple times to a scene at different positions.
 - Add a new `<RemoveBlock id="..." />` tag to game scenes to clear out tags of a given type. This is useful for clearing out support blocks
   from structures after they have been imported into a scene. See the [game scene documentation](./30-authoring/game-scenes.md#remove-blocks) for details.
+- Fix rendering of diamond overlay annotations in game scenes.
 
 ## 21.5.7-beta (Minecraft 1.21.5)
 

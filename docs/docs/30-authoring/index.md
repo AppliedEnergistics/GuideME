@@ -126,9 +126,14 @@ Example for horizontally centering an image on the page:
 
 To automatically show the translated item name, including an appropriate tooltip, and have the item name link to the
 primary guidebook page for that item, use the  `<ItemLink id="item_id" />` tag. The id can omit the guides default
-namespace.
+namespace. 
 
 [Pages need to be set as the primary target for certain item ids manually](#declaring-pages-as-itemlink-targets).
+
+Similar to `ItemImage` tags, the `ItemLink` tag also accepts additional data components in the `components` attribute,
+same as the [Minecraft give command](https://minecraft.wiki/w/Commands/give). The data components are used for creating the ItemStack that the tooltip and
+shown item name are retrieved from. `<ItemLink id="minecraft:stick" tag="{display:{Name:'{&quot;text&quot;:&quot;Custom name&quot;}'}}" />` 
+will show 'Custom name' instead of 'Stick', for example.
 
 ### Command Links
 
