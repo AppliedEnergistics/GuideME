@@ -23,6 +23,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -88,8 +89,8 @@ class FakeForwardingServerLevel implements ServerLevelAccessor {
     }
 
     @Override
-    public long dayTime() {
-        return delegate.dayTime();
+    public EnvironmentAttributeReader environmentAttributes() {
+        return delegate.environmentAttributes();
     }
 
     @Override
@@ -134,7 +135,7 @@ class FakeForwardingServerLevel implements ServerLevelAccessor {
 
     @Override
     public DifficultyInstance getCurrentDifficultyAt(BlockPos pos) {
-        return delegate.getCurrentDifficultyAt(pos);
+        return new DifficultyInstance(delegate.getDifficulty(), 0L, 0L, 0);
     }
 
     @Override
@@ -681,21 +682,6 @@ class FakeForwardingServerLevel implements ServerLevelAccessor {
     @Override
     public boolean addFreshEntity(Entity entity) {
         return delegate.addFreshEntity(entity);
-    }
-
-    @Override
-    public float getMoonBrightness() {
-        return delegate.getMoonBrightness();
-    }
-
-    @Override
-    public float getTimeOfDay(float partialTick) {
-        return delegate.getTimeOfDay(partialTick);
-    }
-
-    @Override
-    public int getMoonPhase() {
-        return delegate.getMoonPhase();
     }
 
     @Override

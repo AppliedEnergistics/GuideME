@@ -6,12 +6,12 @@ import guideme.internal.GuideMEClient;
 import guideme.ui.GuideUiHost;
 import java.net.URI;
 import java.util.function.Consumer;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 
 public class LytFlowLink extends LytTooltipSpan {

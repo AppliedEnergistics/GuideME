@@ -7,7 +7,7 @@ import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.SourceFactor;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -88,7 +88,6 @@ public final class TextureDownloader {
                         GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, width,
                         height, 1, 1);
                         var tempFramebufferView = device.createTextureView(tempFramebuffer)) {
-                    tempFramebuffer.setAddressMode(AddressMode.CLAMP_TO_EDGE);
 
                     try (var pass = commandencoder.createRenderPass(() -> "Blit texture", tempFramebufferView,
                             OptionalInt.empty());
@@ -96,7 +95,8 @@ public final class TextureDownloader {
                         pass.setPipeline(COPY_BLIT);
                         RenderSystem.bindDefaultUniforms(pass);
                         pass.setIndexBuffer(indicesBuffer, indicesStorage.type());
-                        pass.bindSampler("InSampler", view);
+                        pass.bindTexture("InSampler", view,
+                                RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
                         pass.draw(0, 3);
                     }
 

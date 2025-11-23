@@ -17,8 +17,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -40,7 +40,7 @@ public final class OpenGuideHotkey {
     private static boolean newTick = true;
 
     // The previous item the tooltip was being shown for
-    private static ResourceLocation previousItemId;
+    private static Identifier previousItemId;
     private static final List<FoundPage> guidebookPages = new ArrayList<>();
     // Full ticks since the button was held (reduces slowly when not held)
     private static int ticksKeyHeld;
@@ -140,7 +140,7 @@ public final class OpenGuideHotkey {
     private static void update(ItemStack itemStack) {
         var itemId = itemStack.getItemHolder()
                 .unwrapKey()
-                .map(ResourceKey::location)
+                .map(ResourceKey::identifier)
                 .orElse(null);
 
         if (!Objects.equals(itemId, previousItemId)) {

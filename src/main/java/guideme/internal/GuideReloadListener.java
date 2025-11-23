@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import net.minecraft.client.resources.metadata.language.LanguageMetadataSection;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -25,14 +25,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadListener.Result> {
-    public static final ResourceLocation ID = GuideME.makeId("guides");
+    public static final Identifier ID = GuideME.makeId("guides");
 
     private static final Logger LOG = LoggerFactory.getLogger(GuideReloadListener.class);
 
     @Override
     protected Result prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
         profiler.startTick();
-        var guidePages = new IdentityHashMap<ResourceLocation, Map<ResourceLocation, ParsedGuidePage>>();
+        var guidePages = new IdentityHashMap<Identifier, Map<Identifier, ParsedGuidePage>>();
 
         String language = LangUtil.getCurrentLanguage();
         if (GuideMEClient.instance().isIgnoreTranslatedGuides()) {
@@ -102,14 +102,14 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
         return "GuideME Reload Listener";
     }
 
-    private static Map<ResourceLocation, MutableGuide> loadDataDrivenGuides(ResourceManager resourceManager) {
-        var dataDrivenGuideJsons = new HashMap<ResourceLocation, DataDrivenGuide>();
+    private static Map<Identifier, MutableGuide> loadDataDrivenGuides(ResourceManager resourceManager) {
+        var dataDrivenGuideJsons = new HashMap<Identifier, DataDrivenGuide>();
         var guideJsonIds = new FileToIdConverter("guideme_guides", ".json");
         SimpleJsonResourceReloadListener.scanDirectory(resourceManager, guideJsonIds, JsonOps.INSTANCE,
                 DataDrivenGuide.CODEC, dataDrivenGuideJsons);
 
         // Load the data driven guides
-        Map<ResourceLocation, MutableGuide> dataDrivenGuides = new HashMap<>();
+        Map<Identifier, MutableGuide> dataDrivenGuides = new HashMap<>();
         for (var entry : dataDrivenGuideJsons.entrySet()) {
             var guideId = entry.getKey();
             var guideSpec = entry.getValue();
@@ -130,17 +130,17 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
         return dataDrivenGuides;
     }
 
-    private static Map<ResourceLocation, ParsedGuidePage> loadPages(ResourceManager resourceManager,
+    private static Map<Identifier, ParsedGuidePage> loadPages(ResourceManager resourceManager,
             String contentRoot,
             String defaultLanguage,
             @Nullable String currentLanguage,
             Set<String> languages) {
-        var pagesForGuide = new HashMap<ResourceLocation, ParsedGuidePage>();
+        var pagesForGuide = new HashMap<Identifier, ParsedGuidePage>();
 
         var resources = resourceManager.listResources(contentRoot, location -> location.getPath().endsWith(".md"));
 
         for (var entry : resources.entrySet()) {
-            var pageId = ResourceLocation.fromNamespaceAndPath(
+            var pageId = Identifier.fromNamespaceAndPath(
                     entry.getKey().getNamespace(),
                     entry.getKey().getPath().substring((contentRoot + "/").length()));
             var resource = entry.getValue();
@@ -173,7 +173,7 @@ class GuideReloadListener extends SimplePreparableReloadListener<GuideReloadList
     }
 
     protected record Result(
-            Map<ResourceLocation, MutableGuide> dataDrivenGuides,
-            Map<ResourceLocation, Map<ResourceLocation, ParsedGuidePage>> guidePages, Set<String> languages) {
+            Map<Identifier, MutableGuide> dataDrivenGuides,
+            Map<Identifier, Map<Identifier, ParsedGuidePage>> guidePages, Set<String> languages) {
     }
 }

@@ -11,7 +11,7 @@ import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -38,10 +38,10 @@ public class GuideME {
     /**
      * Attaches the guide ID to a generic guide item.
      */
-    public static final DataComponentType<ResourceLocation> GUIDE_ID_COMPONENT = DataComponentType
-            .<ResourceLocation>builder()
-            .networkSynchronized(ResourceLocation.STREAM_CODEC)
-            .persistent(ResourceLocation.CODEC)
+    public static final DataComponentType<Identifier> GUIDE_ID_COMPONENT = DataComponentType
+            .<Identifier>builder()
+            .networkSynchronized(Identifier.STREAM_CODEC)
+            .persistent(Identifier.CODEC)
             .build();
 
     public GuideME(IEventBus modBus) {
@@ -80,8 +80,8 @@ public class GuideME {
         });
     }
 
-    public static ResourceLocation makeId(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+    public static Identifier makeId(String path) {
+        return Identifier.fromNamespaceAndPath(MOD_ID, path);
     }
 
     // We send the recipe types for which we have default handlers

@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * An argument for commands that identifies a registered GuideME guide.
@@ -31,7 +31,7 @@ public class PageAnchorArgument implements ArgumentType<PageAnchor> {
 
     public PageAnchor parse(StringReader reader) throws CommandSyntaxException {
         var i = reader.getCursor();
-        var pageId = ResourceLocation.read(reader);
+        var pageId = Identifier.read(reader);
         if (hasConsumedWholeArg(reader)) {
             return PageAnchor.page(pageId);
         } else if (reader.peek() == '#') {

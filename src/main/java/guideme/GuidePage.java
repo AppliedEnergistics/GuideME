@@ -1,7 +1,7 @@
 package guideme;
 
 import guideme.document.block.LytDocument;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record GuidePage(String sourcePack, ResourceLocation id, LytDocument document) {
+public record GuidePage(String sourcePack, Identifier id, LytDocument document) {
 }

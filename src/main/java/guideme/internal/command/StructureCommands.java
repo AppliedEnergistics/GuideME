@@ -93,7 +93,7 @@ public final class StructureCommands {
     private static void registerPlaceAllStructures(LiteralArgumentBuilder<CommandSourceStack> rootCommand) {
         LiteralArgumentBuilder<CommandSourceStack> subcommand = literal("placeallstructures");
         // Only usable on singleplayer worlds and only by the local player (in case it is opened to LAN)
-        subcommand = subcommand.requires(c -> c.hasPermission(2));
+        subcommand = subcommand.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
 
         subcommand.then(Commands.argument("origin", BlockPosArgument.blockPos())
                 .executes(context -> {
@@ -134,7 +134,7 @@ public final class StructureCommands {
         LiteralArgumentBuilder<CommandSourceStack> importSubcommand = literal("importstructure");
         // Only usable on singleplayer worlds and only by the local player (in case it is opened to LAN)
         importSubcommand
-                .requires(c -> c.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.argument("origin", BlockPosArgument.blockPos())
                         .executes(context -> {
                             var level = getIntegratedServerLevel(context);
@@ -304,7 +304,7 @@ public final class StructureCommands {
         LiteralArgumentBuilder<CommandSourceStack> exportSubcommand = literal("exportstructure");
         // Only usable on singleplayer worlds and only by the local player (in case it is opened to LAN)
         exportSubcommand
-                .requires(c -> c.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.argument("origin", BlockPosArgument.blockPos())
                         .then(Commands.argument("sizeX", IntegerArgumentType.integer(1))
                                 .then(Commands.argument("sizeY", IntegerArgumentType.integer(1))

@@ -2,7 +2,7 @@ package guideme;
 
 import guideme.internal.GuideMEProxy;
 import java.util.Objects;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 
 /**
@@ -15,14 +15,14 @@ public final class GuidesCommon {
     /**
      * Opens the last opened page (or start page) of the guide for the player.
      */
-    public static void openGuide(Player player, ResourceLocation guideId) {
+    public static void openGuide(Player player, Identifier guideId) {
         GuideMEProxy.instance().openGuide(player, guideId, null);
     }
 
     /**
      * Opens the given guide for the player and navigates to the given page position.
      */
-    public static void openGuide(Player player, ResourceLocation guideId, PageAnchor anchor) {
+    public static void openGuide(Player player, Identifier guideId, PageAnchor anchor) {
         GuideMEProxy.instance().openGuide(player, guideId, Objects.requireNonNull(anchor, "anchor"));
     }
 }

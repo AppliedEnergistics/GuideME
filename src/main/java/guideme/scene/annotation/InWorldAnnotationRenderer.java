@@ -14,10 +14,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.data.AtlasIds;
@@ -29,7 +30,7 @@ import org.joml.Vector3f;
 @ApiStatus.Internal
 public final class InWorldAnnotationRenderer {
 
-    public static final RenderPipeline OCCLUDED_PIPELINE = RenderPipelines.TRANSLUCENT.toBuilder()
+    public static final RenderPipeline OCCLUDED_PIPELINE = RenderPipelines.ITEM_ENTITY_TRANSLUCENT_CULL.toBuilder()
             .withLocation(GuideME.makeId("pipeline/annotation_occluded"))
             .withBlend(BlendFunction.TRANSLUCENT)
             .withDepthTestFunction(DepthTestFunction.GREATER_DEPTH_TEST)
@@ -39,12 +40,12 @@ public final class InWorldAnnotationRenderer {
 
     private static final RenderType OCCLUDED = RenderType.create(
             "guideme_annotation_occluded",
-            0x1000,
-            OCCLUDED_PIPELINE,
-            RenderType.CompositeState.builder()
-                    .setLightmapState(RenderType.LIGHTMAP)
-                    .setTextureState(RenderStateShard.BLOCK_SHEET_MIPPED)
-                    .createCompositeState(false));
+            RenderSetup.builder(OCCLUDED_PIPELINE)
+                    .useLightmap()
+                    .withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
+                    .useLightmap()
+                    .useOverlay()
+                    .createRenderSetup());
 
     private InWorldAnnotationRenderer() {
     }

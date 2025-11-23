@@ -17,22 +17,22 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Constructs new guides.
  * <p/>
- * Use {@link Guide#builder(ResourceLocation)} to obtain a new builder.
+ * Use {@link Guide#builder(Identifier)} to obtain a new builder.
  */
 public class GuideBuilder {
-    private final ResourceLocation id;
+    private final Identifier id;
     private final Map<Class<?>, PageIndex> indices = new IdentityHashMap<>();
     private final ExtensionCollection.Builder extensionsBuilder = ExtensionCollection.builder();
     private String defaultNamespace;
     private String defaultLanguage = "en_us";
     private String folder;
-    private ResourceLocation startPage;
+    private Identifier startPage;
     private Path developmentSourceFolder;
     private String developmentSourceNamespace;
     private boolean watchDevelopmentSources = true;
@@ -43,11 +43,11 @@ public class GuideBuilder {
     private boolean register = true;
     private GuideItemSettings itemSettings = GuideItemSettings.DEFAULT;
 
-    GuideBuilder(ResourceLocation id) {
+    GuideBuilder(Identifier id) {
         this.id = Objects.requireNonNull(id, "id");
         this.defaultNamespace = id.getNamespace();
         this.folder = "guides/" + id.getNamespace() + "/" + id.getPath();
-        this.startPage = ResourceLocation.fromNamespaceAndPath(defaultNamespace, "index.md");
+        this.startPage = Identifier.fromNamespaceAndPath(defaultNamespace, "index.md");
 
         // Development sources folder
         var devSourcesFolderProperty = getSystemPropertyName(id, "sources");
@@ -86,7 +86,7 @@ public class GuideBuilder {
      */
     public GuideBuilder defaultNamespace(String defaultNamespace) {
         // Both folder and default namespace need to be valid resource paths
-        if (!ResourceLocation.isValidNamespace(defaultNamespace)) {
+        if (!Identifier.isValidNamespace(defaultNamespace)) {
             throw new IllegalArgumentException("The default namespace for a guide needs to be a valid namespace");
         }
         this.defaultNamespace = defaultNamespace;
@@ -102,8 +102,8 @@ public class GuideBuilder {
      * implicitly make it unique.
      */
     public GuideBuilder folder(String folder) {
-        if (!ResourceLocation.isValidPath(folder)) {
-            throw new IllegalArgumentException("The folder for a guide needs to be a valid resource location");
+        if (!Identifier.isValidPath(folder)) {
+            throw new IllegalArgumentException("The folder for a guide needs to be a valid identifier");
         }
         this.folder = folder;
         return this;
@@ -154,7 +154,7 @@ public class GuideBuilder {
      * Set the page to show when this guide is being opened without any previous page or target page. Defaults to
      * {@code index.md} in the {@link #defaultNamespace(String) default namespace}.
      */
-    public GuideBuilder startPage(ResourceLocation pageId) {
+    public GuideBuilder startPage(Identifier pageId) {
         this.startPage = pageId;
         return this;
     }
@@ -271,7 +271,7 @@ public class GuideBuilder {
         return builder.build();
     }
 
-    private static String getSystemPropertyName(ResourceLocation guideId, String property) {
+    private static String getSystemPropertyName(Identifier guideId, String property) {
         return String.format(Locale.ROOT, "guideme.%s.%s.%s", guideId.getNamespace(), guideId.getPath(), property);
     }
 

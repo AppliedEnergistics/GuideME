@@ -4,7 +4,7 @@ import guideme.compiler.ParsedGuidePage;
 import guideme.indices.PageIndex;
 import guideme.navigation.NavigationTree;
 import java.util.Collection;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 public interface PageCollection {
@@ -13,14 +13,14 @@ public interface PageCollection {
     Collection<ParsedGuidePage> getPages();
 
     @Nullable
-    ParsedGuidePage getParsedPage(ResourceLocation id);
+    ParsedGuidePage getParsedPage(Identifier id);
 
     @Nullable
-    GuidePage getPage(ResourceLocation id);
+    GuidePage getPage(Identifier id);
 
-    byte @Nullable [] loadAsset(ResourceLocation id);
+    byte @Nullable [] loadAsset(Identifier id);
 
     NavigationTree getNavigationTree();
 
-    boolean pageExists(ResourceLocation pageId);
+    boolean pageExists(Identifier pageId);
 }

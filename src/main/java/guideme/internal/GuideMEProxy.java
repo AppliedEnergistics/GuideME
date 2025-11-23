@@ -4,7 +4,7 @@ import guideme.PageAnchor;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
@@ -16,21 +16,21 @@ public interface GuideMEProxy {
         return GuideME.PROXY;
     }
 
-    default void addGuideTooltip(ResourceLocation guideId, Item.TooltipContext context, TooltipDisplay tooltipDisplay,
+    default void addGuideTooltip(Identifier guideId, Item.TooltipContext context, TooltipDisplay tooltipDisplay,
             Consumer<Component> lineConsumer,
             TooltipFlag tooltipFlag) {
     }
 
     @Nullable
-    default Component getGuideDisplayName(ResourceLocation guideId) {
+    default Component getGuideDisplayName(Identifier guideId) {
         return null;
     }
 
-    boolean openGuide(Player player, ResourceLocation guideId);
+    boolean openGuide(Player player, Identifier guideId);
 
-    boolean openGuide(Player player, ResourceLocation guideId, PageAnchor anchor);
+    boolean openGuide(Player player, Identifier guideId, PageAnchor anchor);
 
-    Stream<ResourceLocation> getAvailableGuides();
+    Stream<Identifier> getAvailableGuides();
 
-    Stream<ResourceLocation> getAvailablePages(ResourceLocation guideId);
+    Stream<Identifier> getAvailablePages(Identifier guideId);
 }

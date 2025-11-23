@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class SubPagesCompiler extends BlockTagCompiler {
     private static final Comparator<NavigationNode> ALPHABETICAL_COMPARATOR = Comparator
@@ -41,7 +41,7 @@ public class SubPagesCompiler extends BlockTagCompiler {
         if ("".equals(pageIdStr)) {
             subNodes = navigationTree.getRootNodes();
         } else {
-            ResourceLocation pageId;
+            Identifier pageId;
             try {
                 pageId = pageIdStr == null ? compiler.getPageId() : compiler.resolveId(pageIdStr);
             } catch (Exception e) {

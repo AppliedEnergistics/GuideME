@@ -4,7 +4,7 @@ import guideme.compiler.PageCompiler;
 import guideme.extensions.Extension;
 import guideme.extensions.ExtensionPoint;
 import java.util.Locale;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -20,7 +20,7 @@ public interface SymbolicColorResolver extends Extension {
      * @return Null if the color is unknown to this resolver.
      */
     @Nullable
-    ColorValue resolve(ResourceLocation id);
+    ColorValue resolve(Identifier id);
 
     /**
      * Helper to resolve a symbolic color from both the pre-defined colors in {@link SymbolicColor}, as well as
@@ -35,19 +35,19 @@ public interface SymbolicColorResolver extends Extension {
         } catch (IllegalArgumentException ignored) {
         }
 
-        // See if it's a resource location
-        ResourceLocation resourceLocation;
+        // See if it's an identifier
+        Identifier identifier;
         try {
-            resourceLocation = compiler.resolveId(id);
+            identifier = compiler.resolveId(id);
         } catch (Exception e) {
-            return null; // Invalid resource location
+            return null; // Invalid identifier
         }
-        if (resourceLocation == null) {
+        if (identifier == null) {
             return null;
         }
 
         for (var resolver : compiler.getExtensions(EXTENSION_POINT)) {
-            var color = resolver.resolve(resourceLocation);
+            var color = resolver.resolve(identifier);
             if (color != null) {
                 return color;
             }

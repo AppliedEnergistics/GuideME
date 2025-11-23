@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.event.ClientResourceLoadFinishedEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.slf4j.Logger;
@@ -53,16 +53,16 @@ public final class SiteExportOnStartup {
         }
     }
 
-    private static Map<ResourceLocation, Path> getGuidesToExport() {
+    private static Map<Identifier, Path> getGuidesToExport() {
         var guideIdsString = System.getProperty("guideme.exportOnStartupAndExit");
 
         if (guideIdsString == null) {
             return Map.of();
         }
 
-        var guidesToExport = new HashMap<ResourceLocation, Path>();
+        var guidesToExport = new HashMap<Identifier, Path>();
         for (String unparsedResourceId : guideIdsString.split(",")) {
-            var guideId = ResourceLocation.parse(unparsedResourceId);
+            var guideId = Identifier.parse(unparsedResourceId);
             String destinationPropertyName = "guideme.exportDestination." + guideId.getNamespace() + "."
                     + guideId.getPath();
             var destinationDirectory = System.getProperty(destinationPropertyName);

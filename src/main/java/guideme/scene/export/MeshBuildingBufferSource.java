@@ -7,7 +7,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 
 /**
  * A buffer source we pass into the standard renderer to capture all rendered 3D data in buffers suitable for export.

@@ -9,10 +9,10 @@ the [symbolic color resolver extension point](https://guideme.appliedenergistics
 A convenient way to add colors is to use the following approach:
 
 ```java
-static final Map<ResourceLocation, ColorValue> CUSTOM_COLORS = Map.of(
+static final Map<Identifier, ColorValue> CUSTOM_COLORS = Map.of(
         // The first argument for ConstantColor is the light-mode color, the second the dark-mode color.
-        ResourceLocation.parse("yourmod:color1"), new ConstantColor(0xFFFF0000, 0xFFFF0000),
-        ResourceLocation.parse("yourmod:color2"), new ConstantColor(0xFF0FF000, 0xFF0000FF)
+        Identifier.parse("yourmod:color1"), new ConstantColor(0xFFFF0000, 0xFFFF0000),
+        Identifier.parse("yourmod:color2"), new ConstantColor(0xFF0FF000, 0xFF0000FF)
 );
 
 var guide = Guide.builder(guideId)

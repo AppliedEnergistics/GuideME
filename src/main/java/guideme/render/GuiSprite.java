@@ -7,21 +7,21 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.data.AtlasIds;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class GuiSprite {
     private static final Logger LOG = LoggerFactory.getLogger(GuiSprite.class);
 
-    private final ResourceLocation id;
+    private final Identifier id;
     private volatile CachedState cachedState;
 
-    public GuiSprite(ResourceLocation id) {
+    public GuiSprite(Identifier id) {
         this.id = id;
     }
 
-    public ResourceLocation get(LightDarkMode mode) {
+    public Identifier get(LightDarkMode mode) {
         var state = getOrCreateCachedState();
         return mode == LightDarkMode.DARK_MODE ? state.darkId : id;
     }
@@ -81,7 +81,7 @@ public final class GuiSprite {
 
     private record CachedState(
             TextureAtlasSprite sprite,
-            ResourceLocation darkId,
+            Identifier darkId,
             TextureAtlasSprite darkSprite,
             // We always use the same sprite scaling for light and dark mode
             GuiSpriteScaling spriteScaling) {

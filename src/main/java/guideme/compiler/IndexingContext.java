@@ -7,7 +7,7 @@ import guideme.extensions.ExtensionPoint;
 import guideme.indices.PageIndex;
 import guideme.libs.mdast.model.MdAstAnyContent;
 import java.util.List;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +25,7 @@ public interface IndexingContext {
     /**
      * Get the current page id.
      */
-    ResourceLocation getPageId();
+    Identifier getPageId();
 
     PageCollection getPageCollection();
 
@@ -37,7 +37,7 @@ public interface IndexingContext {
 
     void indexContent(MdAstAnyContent content, IndexingSink sink);
 
-    default byte @Nullable [] loadAsset(ResourceLocation imageId) {
+    default byte @Nullable [] loadAsset(Identifier imageId) {
         return getPageCollection().loadAsset(imageId);
     }
 

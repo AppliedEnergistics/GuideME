@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,13 +15,13 @@ public class GlobalInMemoryHistory implements GuideScreenHistory {
     private static final int HISTORY_SIZE = 100;
     private static final Logger LOG = LoggerFactory.getLogger(GlobalInMemoryHistory.class);
 
-    private static final Map<ResourceLocation, GuideScreenHistory> PER_GUIDE_HISTORY = new HashMap<>();
+    private static final Map<Identifier, GuideScreenHistory> PER_GUIDE_HISTORY = new HashMap<>();
 
-    private final ResourceLocation guideId;
+    private final Identifier guideId;
     private final List<PageAnchor> history = new ArrayList<>();
     private int historyPosition;
 
-    private GlobalInMemoryHistory(ResourceLocation guideId) {
+    private GlobalInMemoryHistory(Identifier guideId) {
         this.guideId = guideId;
     }
 

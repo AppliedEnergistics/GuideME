@@ -5,7 +5,7 @@ import guideme.internal.GuideMEProxy;
 import guideme.internal.GuidebookText;
 import java.util.function.Consumer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -18,8 +18,8 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 public class GuideItem extends Item {
-    public static final ResourceLocation ID = GuideME.makeId("guide");
-    public static final ResourceLocation BASE_MODEL_ID = ID.withPrefix("item/").withSuffix("_base");
+    public static final Identifier ID = GuideME.makeId("guide");
+    public static final Identifier BASE_MODEL_ID = ID.withPrefix("item/").withSuffix("_base");
 
     public static final Properties PROPERTIES = new Properties();
 
@@ -74,7 +74,7 @@ public class GuideItem extends Item {
     }
 
     @Nullable
-    public static ResourceLocation getGuideId(ItemStack stack) {
+    public static Identifier getGuideId(ItemStack stack) {
         return stack.get(GuideME.GUIDE_ID_COMPONENT);
     }
 }

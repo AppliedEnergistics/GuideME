@@ -28,7 +28,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -66,7 +66,7 @@ public class GuideMEClient {
 
     private static GuideMEClient INSTANCE;
 
-    public static final ResourceLocation GUIDE_CLICK_ID = GuideME.makeId("guide.click");
+    public static final Identifier GUIDE_CLICK_ID = GuideME.makeId("guide.click");
     public static SoundEvent GUIDE_CLICK_EVENT = SoundEvent.createVariableRangeEvent(GUIDE_CLICK_ID);
 
     private final GuideSearch search = new GuideSearch();
@@ -217,12 +217,12 @@ public class GuideMEClient {
             var screen = minecraft.screen;
             if (screen != null) {
                 var window = minecraft.getWindow();
-                screen.resize(minecraft, window.getGuiScaledWidth(), window.getGuiScaledHeight());
+                screen.resize(window.getGuiScaledWidth(), window.getGuiScaledHeight());
             }
         }
     }
 
-    public static boolean openGuideAtPreviousPage(Guide guide, ResourceLocation initialPage) {
+    public static boolean openGuideAtPreviousPage(Guide guide, Identifier initialPage) {
         try {
             var history = GlobalInMemoryHistory.get(guide);
             var historyPage = history.current();

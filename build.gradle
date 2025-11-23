@@ -35,16 +35,12 @@ configurations {
     shaded {
         transitive = false
     }
-    // Dependencies only used for the guide export, but not shipped
-    guideExportOnly
-    configurations.compileClasspath.extendsFrom(guideExportOnly)
-    configurations.runtimeClasspath.extendsFrom(guideExportOnly)
-
     compileClasspath.extendsFrom localImplementation
     runtimeClasspath.extendsFrom localImplementation
     testCompileClasspath.extendsFrom localImplementation
     testRuntimeClasspath.extendsFrom localImplementation
     testmodRuntimeClasspath.extendsFrom shaded
+    testmodRuntimeClasspath.extendsFrom runtimeClasspath
 }
 
 dependencies {
@@ -77,7 +73,7 @@ dependencies {
     shaded(localImplementation("org.apache.lucene:lucene-memory:${lucene_version}"))
 
     // Used for the guide export
-    guideExportOnly("org.bytedeco:ffmpeg-platform:${ffmpeg_version}")
+    localImplementation("org.bytedeco:ffmpeg-platform:${ffmpeg_version}")
 
     // unit test dependencies
     testImplementation(platform("org.junit:junit-bom:${junit_version}"))

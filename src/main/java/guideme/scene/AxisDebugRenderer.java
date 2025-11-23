@@ -48,7 +48,7 @@ final public class AxisDebugRenderer implements AutoCloseable {
 
             try (MeshData meshdata = bufferbuilder.buildOrThrow()) {
                 this.crosshairBuffer = RenderSystem.getDevice().createBuffer(() -> "GuideME crosshair vertex buffer",
-                        32, meshdata.vertexBuffer());
+                        GpuBuffer.USAGE_VERTEX, meshdata.vertexBuffer());
             }
         }
 
@@ -72,9 +72,8 @@ final public class AxisDebugRenderer implements AutoCloseable {
                 rendertarget.getDepthTextureView());
         GpuBuffer gpubuffer = this.crosshairIndicies.getBuffer(18);
         GpuBufferSlice[] slices = RenderSystem.getDynamicUniforms()
-                .writeTransforms(
-                        new DynamicUniforms.Transform(new Matrix4f(modelViewStack),
-                                new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 2.0F));
+                .writeTransforms(new DynamicUniforms.Transform(new Matrix4f(modelViewStack),
+                        new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f()));
 
         try (RenderPass renderpass = RenderSystem.getDevice()
                 .createCommandEncoder()

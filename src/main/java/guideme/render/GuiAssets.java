@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 public final class GuiAssets {
     private static final Logger LOG = LoggerFactory.getLogger(GuiAssets.class);
 
-    private static final Map<ResourceLocation, GuiSprite> sprites = new ConcurrentHashMap<>();
+    private static final Map<Identifier, GuiSprite> sprites = new ConcurrentHashMap<>();
 
     public static final GuiSprite MISSING_TEXTURE = sprite(MissingTextureAtlasSprite.getLocation());
     public static final GuiSprite GUIDE_BACKGROUND = sprite("background");
@@ -36,7 +36,7 @@ public final class GuiAssets {
         return sprite(GuideME.makeId(id));
     }
 
-    public static GuiSprite sprite(ResourceLocation id) {
+    public static GuiSprite sprite(Identifier id) {
         return sprites.computeIfAbsent(id, GuiSprite::new);
     }
 
@@ -83,7 +83,7 @@ public final class GuiAssets {
      * @param uv First 4 U values delimiting the horizontal slices, then 4 V values delimiting the vertical slices.
      *           These values refer to the atlas.
      */
-    public record NineSliceSprite(ResourceLocation atlasLocation,
+    public record NineSliceSprite(Identifier atlasLocation,
             SpritePadding padding,
             float[] uv) {
     }

@@ -78,7 +78,8 @@ enum ExpPrimitiveType : ubyte {
     DEBUG_LINE_STRIP,
     TRIANGLES,
     TRIANGLE_STRIP,
-    TRIANGLE_FAN
+    TRIANGLE_FAN,
+    POINTS
 }
 
 enum ExpVertexElementType : ubyte {

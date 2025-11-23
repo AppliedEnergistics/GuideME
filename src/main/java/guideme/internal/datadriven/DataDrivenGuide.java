@@ -8,14 +8,14 @@ import guideme.color.Colors;
 import guideme.color.ConstantColor;
 import java.util.Locale;
 import java.util.Map;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 
 /**
  * Format for data driven guide definition files.
  */
 public record DataDrivenGuide(GuideItemSettings itemSettings, String defaultLanguage,
-        Map<ResourceLocation, ConstantColor> customColors) {
+        Map<Identifier, ConstantColor> customColors) {
 
     private static final Codec<Integer> COLOR_VALUE_CODEC = Codec.STRING
             .comapFlatMap(value -> DataResult.success(Colors.hexToRgb(value)),
@@ -37,7 +37,7 @@ public record DataDrivenGuide(GuideItemSettings itemSettings, String defaultLang
                             .forGetter(DataDrivenGuide::itemSettings),
                     Codec.STRING.optionalFieldOf("default_language", "en_us")
                             .forGetter(DataDrivenGuide::defaultLanguage),
-                    ExtraCodecs.strictUnboundedMap(ResourceLocation.CODEC, CONSTANT_COLOR_CODEC)
+                    ExtraCodecs.strictUnboundedMap(Identifier.CODEC, CONSTANT_COLOR_CODEC)
                             .optionalFieldOf("custom_colors", Map.of()).forGetter(DataDrivenGuide::customColors))
                     .apply(builder, DataDrivenGuide::new));
 }

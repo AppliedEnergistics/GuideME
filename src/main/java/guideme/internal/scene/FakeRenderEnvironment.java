@@ -62,7 +62,7 @@ public class FakeRenderEnvironment implements AutoCloseable {
                 false);
         var overworldType = Platform.getClientRegistryAccess()
                 .lookupOrThrow(Registries.DIMENSION_TYPE)
-                .get(Level.OVERWORLD.location())
+                .get(Level.OVERWORLD.identifier())
                 .orElseThrow();
         var originalPlayer = minecraft.player;
         minecraft.player = new LocalPlayer(

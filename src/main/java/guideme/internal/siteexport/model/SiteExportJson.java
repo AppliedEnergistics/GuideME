@@ -5,14 +5,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class SiteExportJson {
     public int version = 2;
 
     public String defaultNamespace;
 
-    public Map<ResourceLocation, ExportedPageJson> pages = new HashMap<>();
+    public Map<Identifier, ExportedPageJson> pages = new HashMap<>();
 
     public Map<String, JsonElement> pageIndices = new HashMap<>();
 

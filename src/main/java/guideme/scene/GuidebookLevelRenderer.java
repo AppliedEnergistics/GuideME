@@ -11,12 +11,13 @@ import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
 import java.util.ArrayList;
 import java.util.Collection;
+import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.TextureFilteringMethod;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.PerspectiveProjectionMatrixBuffer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
@@ -28,6 +29,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.fog.FogRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -35,6 +37,7 @@ import net.minecraft.data.AtlasIds;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
@@ -86,6 +89,7 @@ public class GuidebookLevelRenderer {
                 throw new UnsupportedOperationException();
             }
         };
+
         var globalSettingsUniform = gameRenderer.getGlobalSettingsUniform();
         globalSettingsUniform
                 .update(
@@ -94,7 +98,9 @@ public class GuidebookLevelRenderer {
                         minecraft.options.glintStrength().get(),
                         level.getGameTime(),
                         deltaTracker,
-                        minecraft.options.getMenuBackgroundBlurriness());
+                        minecraft.options.getMenuBackgroundBlurriness(),
+                        new Camera(),
+                        minecraft.options.textureFiltering().get() == TextureFilteringMethod.RGSS);
 
         lightmap.update(level);
 
@@ -121,7 +127,7 @@ public class GuidebookLevelRenderer {
         lightTransform.invert();
         lightTransform.transform(lightDirection);
 
-        gameRenderer.getLighting().updateLevel(false);
+        gameRenderer.getLighting().updateLevel(DimensionType.CardinalLightType.DEFAULT);
         gameRenderer.getLighting().setupFor(Lighting.Entry.LEVEL);
 
         var previousLightmap = gameRenderer.lightTexture().textureView;
@@ -151,19 +157,19 @@ public class GuidebookLevelRenderer {
             renderEntities(level, level.getPartialTick(), poseStack, featureRenderDispatcher);
 
             // The order comes from LevelRenderer#renderLevel
-            buffers.endBatch(RenderType.entitySolid(AtlasIds.BLOCKS));
-            buffers.endBatch(RenderType.entityCutout(AtlasIds.BLOCKS));
-            buffers.endBatch(RenderType.entityCutoutNoCull(AtlasIds.BLOCKS));
-            buffers.endBatch(RenderType.entitySmoothCutout(AtlasIds.BLOCKS));
+            buffers.endBatch(RenderTypes.entitySolid(AtlasIds.BLOCKS));
+            buffers.endBatch(RenderTypes.entityCutout(AtlasIds.BLOCKS));
+            buffers.endBatch(RenderTypes.entityCutoutNoCull(AtlasIds.BLOCKS));
+            buffers.endBatch(RenderTypes.entitySmoothCutout(AtlasIds.BLOCKS));
 
             // These would normally be pre-baked, but they are not for us
             for (var layer : ChunkSectionLayerGroup.OPAQUE.layers()) {
                 buffers.endBatch(RenderTypeHelper.getEntityRenderType(layer));
             }
 
-            buffers.endBatch(RenderType.solid());
-            buffers.endBatch(RenderType.endPortal());
-            buffers.endBatch(RenderType.endGateway());
+            buffers.endBatch(RenderTypes.solidMovingBlock());
+            buffers.endBatch(RenderTypes.endPortal());
+            buffers.endBatch(RenderTypes.endGateway());
             buffers.endBatch(Sheets.solidBlockSheet());
             buffers.endBatch(Sheets.cutoutBlockSheet());
             buffers.endBatch(Sheets.bedSheet());

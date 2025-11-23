@@ -12,7 +12,7 @@ import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import net.minecraft.ResourceLocationException;
+import net.minecraft.IdentifierException;
 import net.minecraft.commands.arguments.item.ItemParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
@@ -20,8 +20,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EntityType;
@@ -85,7 +85,7 @@ public final class MdxAttrs {
     }
 
     @Nullable
-    public static ResourceLocation getRequiredId(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el,
+    public static Identifier getRequiredId(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el,
             String attribute) {
         var id = getString(compiler, errorSink, el, attribute, null);
         if (id == null) {
@@ -97,14 +97,14 @@ public final class MdxAttrs {
 
         try {
             return compiler.resolveId(id);
-        } catch (ResourceLocationException e) {
+        } catch (IdentifierException e) {
             errorSink.appendError(compiler, "Malformed id " + id + ": " + e.getMessage(), el);
             return null;
         }
     }
 
     @Nullable
-    public static Pair<ResourceLocation, Block> getRequiredBlockAndId(PageCompiler compiler, LytErrorSink errorSink,
+    public static Pair<Identifier, Block> getRequiredBlockAndId(PageCompiler compiler, LytErrorSink errorSink,
             MdxJsxElementFields el, String attribute) {
         var itemId = getRequiredId(compiler, errorSink, el, attribute);
 
@@ -117,7 +117,7 @@ public final class MdxAttrs {
     }
 
     @Nullable
-    public static Pair<ResourceLocation, Item> getRequiredItemAndId(PageCompiler compiler, LytErrorSink errorSink,
+    public static Pair<Identifier, Item> getRequiredItemAndId(PageCompiler compiler, LytErrorSink errorSink,
             MdxJsxElementFields el, String attribute) {
         var itemId = getRequiredId(compiler, errorSink, el, attribute);
 
@@ -130,7 +130,7 @@ public final class MdxAttrs {
     }
 
     @Nullable
-    public static Pair<ResourceLocation, EntityType<?>> getRequiredEntityTypeAndId(PageCompiler compiler,
+    public static Pair<Identifier, EntityType<?>> getRequiredEntityTypeAndId(PageCompiler compiler,
             LytErrorSink errorSink,
             MdxJsxElementFields el,
             String attribute) {
@@ -162,7 +162,7 @@ public final class MdxAttrs {
     }
 
     @Nullable
-    public static Pair<ResourceLocation, ItemStack> getRequiredItemStackAndId(PageCompiler compiler,
+    public static Pair<Identifier, ItemStack> getRequiredItemStackAndId(PageCompiler compiler,
             LytErrorSink errorSink,
             MdxJsxElementFields el) {
         var itemAndId = getRequiredItemAndId(compiler, errorSink, el, "id");

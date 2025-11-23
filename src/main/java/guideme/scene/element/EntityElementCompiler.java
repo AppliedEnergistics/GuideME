@@ -6,8 +6,8 @@ import guideme.document.LytErrorSink;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.scene.GuidebookScene;
 import java.util.Set;
-import java.util.function.Function;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.EntityProcessor;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import org.joml.Vector3f;
@@ -37,7 +37,7 @@ public class EntityElementCompiler implements SceneElementTagCompiler {
         data.putString("id", entityId);
 
         var entity = EntityType.loadEntityRecursive(data, scene.getLevel(), EntitySpawnReason.LOAD,
-                Function.identity());
+                EntityProcessor.NOP);
         if (entity == null) {
             errorSink.appendError(compiler, "Failed to load entity '" + entityId, el);
             return;

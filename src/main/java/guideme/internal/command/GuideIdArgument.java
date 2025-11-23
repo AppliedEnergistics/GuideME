@@ -11,24 +11,24 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * An argument for commands that identifies a registered GuideME guide.
  */
-public class GuideIdArgument implements ArgumentType<ResourceLocation> {
+public class GuideIdArgument implements ArgumentType<Identifier> {
     private static final List<String> EXAMPLES = List.of("ae2:guide");
 
     public static GuideIdArgument argument() {
         return new GuideIdArgument();
     }
 
-    public ResourceLocation parse(StringReader reader) throws CommandSyntaxException {
-        return ResourceLocation.read(reader);
+    public Identifier parse(StringReader reader) throws CommandSyntaxException {
+        return Identifier.read(reader);
     }
 
-    public static ResourceLocation getGuide(CommandContext<?> context, String name) {
-        return context.getArgument(name, ResourceLocation.class);
+    public static Identifier getGuide(CommandContext<?> context, String name) {
+        return context.getArgument(name, Identifier.class);
     }
 
     @Override

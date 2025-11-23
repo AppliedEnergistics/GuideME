@@ -8,7 +8,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 
@@ -19,7 +19,7 @@ public final class GuideCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         var rootCommand = Commands.literal("guideme");
         rootCommand
-                .requires(p -> p.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("open")
                         .then(
                                 Commands.argument("targets", EntityArgument.players())
@@ -50,7 +50,7 @@ public final class GuideCommand {
                                         )));
 
         rootCommand
-                .requires(p -> p.hasPermission(2))
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("give")
                         .then(
                                 Commands.argument("targets", EntityArgument.players())
@@ -64,7 +64,7 @@ public final class GuideCommand {
     }
 
     private static int giveGuide(CommandSourceStack source, Collection<ServerPlayer> targets,
-            ResourceLocation guideId) {
+            Identifier guideId) {
         var guideItem = Guides.createGuideItem(guideId);
         for (var target : targets) {
             ItemHandlerHelper.giveItemToPlayer(target, guideItem.copy());

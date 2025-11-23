@@ -42,8 +42,8 @@ import java.util.Optional;
 import java.util.zip.GZIPOutputStream;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.Item;
@@ -75,10 +75,10 @@ public class SiteExportWriter {
             .setPrettyPrinting()
             .disableHtmlEscaping()
             .registerTypeHierarchyAdapter(MdAstNode.class, new MdAstNodeAdapter())
-            // Serialize ResourceLocation as strings
-            .registerTypeAdapter(ResourceLocation.class, new WriteOnlyTypeAdapter<ResourceLocation>() {
+            // Serialize Identifier as strings
+            .registerTypeAdapter(Identifier.class, new WriteOnlyTypeAdapter<Identifier>() {
                 @Override
-                public void write(JsonWriter out, ResourceLocation value) throws IOException {
+                public void write(JsonWriter out, Identifier value) throws IOException {
                     out.value(value.toString());
                 }
             })
@@ -286,7 +286,7 @@ public class SiteExportWriter {
     }
 
     public String addItem(ItemStack stack) {
-        var itemId = stack.getItem().builtInRegistryHolder().key().location().toString().replace(':', '-');
+        var itemId = stack.getItem().builtInRegistryHolder().key().identifier().toString().replace(':', '-');
         if (stack.getComponentsPatch().isEmpty()) {
             return itemId;
         }

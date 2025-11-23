@@ -17,7 +17,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec2;
@@ -86,20 +86,20 @@ public interface RenderContext {
                 resolveColor(color));
     }
 
-    default void fillTexturedRect(LytRect rect, ResourceLocation texture, ColorValue topLeft, ColorValue topRight,
+    default void fillTexturedRect(LytRect rect, Identifier texture, ColorValue topLeft, ColorValue topRight,
             ColorValue bottomRight, ColorValue bottomLeft) {
         // Just use the entire texture by default
         fillTexturedRect(rect, texture, topLeft, topRight, bottomRight, bottomLeft, 0, 0, 1, 1);
     }
 
-    void fillTexturedRect(LytRect rect, ResourceLocation textureId, ColorValue topLeft, ColorValue topRight,
+    void fillTexturedRect(LytRect rect, Identifier textureId, ColorValue topLeft, ColorValue topRight,
             ColorValue bottomRight, ColorValue bottomLeft, float u0, float v0, float u1, float v1);
 
-    default void fillTexturedRect(LytRect rect, ResourceLocation textureId) {
+    default void fillTexturedRect(LytRect rect, Identifier textureId) {
         fillTexturedRect(rect, textureId, ConstantColor.WHITE);
     }
 
-    default void fillTexturedRect(LytRect rect, ResourceLocation textureId, ColorValue color) {
+    default void fillTexturedRect(LytRect rect, Identifier textureId, ColorValue color) {
         fillTexturedRect(rect, textureId, color, color, color, color);
     }
 

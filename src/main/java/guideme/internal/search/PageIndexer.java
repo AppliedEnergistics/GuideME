@@ -31,7 +31,7 @@ import guideme.libs.mdast.model.MdAstThematicBreak;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,11 +40,11 @@ public final class PageIndexer implements IndexingContext {
 
     private final PageCollection pages;
     private final ExtensionCollection extensions;
-    private final ResourceLocation pageId;
+    private final Identifier pageId;
 
     private final Map<String, TagCompiler> tagCompilers = new HashMap<>();
 
-    public PageIndexer(PageCollection pages, ExtensionCollection extensions, ResourceLocation pageId) {
+    public PageIndexer(PageCollection pages, ExtensionCollection extensions, Identifier pageId) {
         this.pages = pages;
         this.extensions = extensions;
         this.pageId = pageId;
@@ -157,7 +157,7 @@ public final class PageIndexer implements IndexingContext {
      * Get the current page id.
      */
     @Override
-    public ResourceLocation getPageId() {
+    public Identifier getPageId() {
         return pageId;
     }
 
