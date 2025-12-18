@@ -7,6 +7,8 @@ import guideme.internal.util.Platform;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -165,7 +167,8 @@ public final class GuideOnStartup {
                     resourceManager,
                     TagLoader.buildUpdatedLookups(layeredAccess.getAccessForLoading(RegistryLayer.WORLDGEN),
                             postponedTags),
-                    RegistryDataLoader.WORLDGEN_REGISTRIES);
+                    RegistryDataLoader.WORLDGEN_REGISTRIES,
+                    ForkJoinPool.commonPool()).join();
             layeredAccess = layeredAccess.replaceFrom(RegistryLayer.WORLDGEN, worldgenLayer);
 
             var stuff = ReloadableServerResources.loadResources(

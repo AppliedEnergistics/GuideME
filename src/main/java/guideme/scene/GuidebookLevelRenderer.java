@@ -50,8 +50,6 @@ public class GuidebookLevelRenderer {
 
     private static GuidebookLevelRenderer instance;
 
-    private final GuidebookLightmap lightmap = new GuidebookLightmap();
-
     private final PerspectiveProjectionMatrixBuffer projMatBuffer = new PerspectiveProjectionMatrixBuffer(
             "GuideME level renderer proj mat UBO");
 
@@ -102,8 +100,6 @@ public class GuidebookLevelRenderer {
                         new Camera(),
                         minecraft.options.textureFiltering().get() == TextureFilteringMethod.RGSS);
 
-        lightmap.update(level);
-
         var lightEngine = level.getLightEngine();
         while (lightEngine.hasLightWork()) {
             lightEngine.runLightUpdates();
@@ -130,8 +126,8 @@ public class GuidebookLevelRenderer {
         gameRenderer.getLighting().updateLevel(DimensionType.CardinalLightType.DEFAULT);
         gameRenderer.getLighting().setupFor(Lighting.Entry.LEVEL);
 
-        var previousLightmap = gameRenderer.lightTexture().textureView;
-        gameRenderer.lightTexture().textureView = lightmap.getTextureView();
+        var previousUseUiLightmap = gameRenderer.useUiLightmap;
+        gameRenderer.useUiLightmap = true;
         try {
             renderContent(level, buffers, gameRenderer.getFeatureRenderDispatcher(), new PoseStack());
 
@@ -139,7 +135,7 @@ public class GuidebookLevelRenderer {
 
             buffers.endBatch();
         } finally {
-            gameRenderer.lightTexture().textureView = previousLightmap;
+            gameRenderer.useUiLightmap = previousUseUiLightmap;
         }
 
         modelViewStack.popMatrix();
