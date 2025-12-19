@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.1.0.1-alpha (Minecraft 26.1-snapshot-1)
+
+- First port to 26.1-snapshot-1
+
 ## 21.10.2-beta (Minecraft 1.21.10)
 
 - Added support for data components to `<ItemLink />`

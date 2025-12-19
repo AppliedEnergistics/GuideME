@@ -11,7 +11,6 @@ import guideme.color.LightDarkMode;
 import guideme.color.MutableColor;
 import guideme.internal.GuideME;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
@@ -23,6 +22,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.LightCoordsUtil;
 import net.neoforged.neoforge.client.RenderTypeHelper;
 import org.jetbrains.annotations.ApiStatus;
 import org.joml.Vector3f;
@@ -295,7 +295,7 @@ public final class InWorldAnnotationRenderer {
                 .setColor(color)
                 .setUv(u, v)
                 .setOverlay(OverlayTexture.NO_OVERLAY)
-                .setLight(LightTexture.FULL_BRIGHT)
+                .setLight(LightCoordsUtil.FULL_BRIGHT)
                 .setNormal(faceNormal.x(), faceNormal.y(), faceNormal.z());
     }
 }

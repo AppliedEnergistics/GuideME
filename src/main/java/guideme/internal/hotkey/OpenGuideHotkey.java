@@ -138,7 +138,7 @@ public final class OpenGuideHotkey {
     }
 
     private static void update(ItemStack itemStack) {
-        var itemId = itemStack.getItemHolder()
+        var itemId = itemStack.typeHolder()
                 .unwrapKey()
                 .map(ResourceKey::identifier)
                 .orElse(null);

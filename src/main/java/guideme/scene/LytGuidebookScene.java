@@ -312,7 +312,7 @@ public class LytGuidebookScene extends LytBox {
                         LytGuidebookScene.this,
                         screenBounds,
                         scissorArea,
-                        (lightDarkMode, buffers, buffers2) -> renderViewport(lightDarkMode, buffers2)));
+                        (lightDarkMode, _, buffers) -> renderViewport(lightDarkMode, buffers)));
             }
 
             if (!hideAnnotations) {

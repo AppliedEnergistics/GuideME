@@ -31,6 +31,7 @@ import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.LightmapRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.data.AtlasIds;
@@ -49,8 +50,6 @@ import org.joml.Vector4f;
 public class GuidebookLevelRenderer {
 
     private static GuidebookLevelRenderer instance;
-
-    private final GuidebookLightmap lightmap = new GuidebookLightmap();
 
     private final PerspectiveProjectionMatrixBuffer projMatBuffer = new PerspectiveProjectionMatrixBuffer(
             "GuideME level renderer proj mat UBO");
@@ -102,8 +101,6 @@ public class GuidebookLevelRenderer {
                         new Camera(),
                         minecraft.options.textureFiltering().get() == TextureFilteringMethod.RGSS);
 
-        lightmap.update(level);
-
         var lightEngine = level.getLightEngine();
         while (lightEngine.hasLightWork()) {
             lightEngine.runLightUpdates();
@@ -130,8 +127,11 @@ public class GuidebookLevelRenderer {
         gameRenderer.getLighting().updateLevel(DimensionType.CardinalLightType.DEFAULT);
         gameRenderer.getLighting().setupFor(Lighting.Entry.LEVEL);
 
-        var previousLightmap = gameRenderer.lightTexture().textureView;
-        gameRenderer.lightTexture().textureView = lightmap.getTextureView();
+        var previousUseUiLightmap = gameRenderer.useUiLightmap;
+        gameRenderer.useUiLightmap = false;
+        var renderState = new LightmapRenderState();
+        renderState.needsUpdate = true;
+        gameRenderer.lightmap.update(renderState);
         try {
             renderContent(level, buffers, gameRenderer.getFeatureRenderDispatcher(), new PoseStack());
 
@@ -139,7 +139,9 @@ public class GuidebookLevelRenderer {
 
             buffers.endBatch();
         } finally {
-            gameRenderer.lightTexture().textureView = previousLightmap;
+            gameRenderer.useUiLightmap = previousUseUiLightmap;
+            gameRenderer.lightmapRenderState.needsUpdate = true;
+            gameRenderer.lightmap.update(gameRenderer.lightmapRenderState);
         }
 
         modelViewStack.popMatrix();
@@ -157,6 +159,8 @@ public class GuidebookLevelRenderer {
             renderEntities(level, level.getPartialTick(), poseStack, featureRenderDispatcher);
 
             // The order comes from LevelRenderer#renderLevel
+            buffers.endLastBatch();
+
             buffers.endBatch(RenderTypes.entitySolid(AtlasIds.BLOCKS));
             buffers.endBatch(RenderTypes.entityCutout(AtlasIds.BLOCKS));
             buffers.endBatch(RenderTypes.entityCutoutNoCull(AtlasIds.BLOCKS));
@@ -230,14 +234,22 @@ public class GuidebookLevelRenderer {
                     var layer = part.getRenderType(blockState);
                     return layer == ChunkSectionLayer.TRANSLUCENT || layer == ChunkSectionLayer.TRIPWIRE;
                 });
+            } else {
+                modelParts.removeIf(part -> {
+                    var layer = part.getRenderType(blockState);
+                    return layer != ChunkSectionLayer.TRANSLUCENT && layer != ChunkSectionLayer.TRIPWIRE;
+                });
+            }
+
+            if (modelParts.isEmpty()) {
+                continue;
             }
 
             poseStack.pushPose();
             poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
             blockRenderDispatcher.renderBatched(blockState, pos, level, poseStack, layer -> {
                 return buffers.getBuffer(RenderTypeHelper.getEntityRenderType(layer));
-            }, true,
-                    modelParts);
+            }, true, modelParts);
             poseStack.popPose();
         }
     }
