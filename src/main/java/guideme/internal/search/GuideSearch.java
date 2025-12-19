@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -217,8 +217,8 @@ public class GuideSearch implements AutoCloseable {
 
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                 var document = storedFields.document(scoreDoc.doc);
-                var guideId = ResourceLocation.parse(document.get(IndexSchema.FIELD_GUIDE_ID));
-                var pageId = ResourceLocation.parse(document.get(IndexSchema.FIELD_PAGE_ID));
+                var guideId = Identifier.parse(document.get(IndexSchema.FIELD_GUIDE_ID));
+                var pageId = Identifier.parse(document.get(IndexSchema.FIELD_PAGE_ID));
 
                 var guide = Guides.getById(guideId);
                 if (guide == null) {
@@ -402,7 +402,7 @@ public class GuideSearch implements AutoCloseable {
     record GuideIndexingTask(Guide guide, List<ParsedGuidePage> pendingPages) {
     }
 
-    public record SearchResult(ResourceLocation guideId, ResourceLocation pageId, String pageTitle,
+    public record SearchResult(Identifier guideId, Identifier pageId, String pageTitle,
             LytFlowContent text) {
         public SearchResult {
             Objects.requireNonNull(guideId, "guideId");

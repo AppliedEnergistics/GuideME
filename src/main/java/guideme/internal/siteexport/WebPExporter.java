@@ -122,7 +122,7 @@ public class WebPExporter implements AutoCloseable {
             if (rgbFrame.isNull()) {
                 throw new RuntimeException("Failed to allocate frame");
             }
-            rgbFrame.format(format.alpha ? avutil.AV_PIX_FMT_RGBA : avutil.AV_PIX_FMT_RGB0);
+            rgbFrame.format(format.alpha ? avutil.AV_PIX_FMT_BGRA : avutil.AV_PIX_FMT_BGR0);
             rgbFrame.width(codecContext.width());
             rgbFrame.height(codecContext.height());
             check(avutil.av_frame_get_buffer(rgbFrame, 0));

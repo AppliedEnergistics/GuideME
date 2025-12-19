@@ -2,7 +2,7 @@ package guideme.compiler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -23,7 +23,7 @@ class IdUtilsTest {
     })
     @ParameterizedTest
     void testResolveLink(String input, String anchor, String expected) {
-        assertEquals(expected, IdUtils.resolveLink(input, ResourceLocation.parse(anchor)).toString());
+        assertEquals(expected, IdUtils.resolveLink(input, Identifier.parse(anchor)).toString());
     }
 
 }

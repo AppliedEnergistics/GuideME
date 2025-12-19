@@ -60,8 +60,11 @@ public class LytWidget extends LytBlock implements InteractiveElement {
         // we pass the scaled gui graphics to the widget to fix calls to containsPointInScissor
         GuiGraphics guiGraphics = context.guiGraphics();
         if (minecraft.screen instanceof IndepentScaleScreen indepentScaleScreen) {
-            guiGraphics = new ScaledGuiGraphics(minecraft, context.guiGraphics().pose(),
-                    context.guiGraphics().guiRenderState, (float) indepentScaleScreen.getEffectiveScale());
+            guiGraphics = new ScaledGuiGraphics(minecraft, guiGraphics.pose(),
+                    guiGraphics.guiRenderState,
+                    guiGraphics.mouseX,
+                    guiGraphics.mouseY,
+                    (float) indepentScaleScreen.getEffectiveScale());
         }
         widget.render(
                 guiGraphics,

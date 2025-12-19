@@ -6,11 +6,11 @@ import guideme.document.LytPoint;
 import guideme.document.LytRect;
 import guideme.document.interaction.InteractiveElement;
 import guideme.internal.screen.GuideNavigation;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 public interface GuideUiHost {
-    void navigateTo(ResourceLocation pageId);
+    void navigateTo(Identifier pageId);
 
     void navigateTo(PageAnchor anchor);
 

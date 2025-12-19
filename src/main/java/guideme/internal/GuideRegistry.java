@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +18,12 @@ import org.slf4j.LoggerFactory;
 public class GuideRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(GuideRegistry.class);
 
-    private static final ConcurrentHashMap<ResourceLocation, MutableGuide> guides = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Identifier, MutableGuide> guides = new ConcurrentHashMap<>();
 
-    private static final Map<ResourceLocation, MutableGuide> dataDrivenGuides = new HashMap<>();
+    private static final Map<Identifier, MutableGuide> dataDrivenGuides = new HashMap<>();
 
     // Merged between data-driven and in-code guides
-    private static volatile Map<ResourceLocation, MutableGuide> mergedGuides = Map.of();
+    private static volatile Map<Identifier, MutableGuide> mergedGuides = Map.of();
 
     public static Collection<MutableGuide> getAll() {
         return mergedGuides.values();
@@ -36,7 +36,7 @@ public class GuideRegistry {
         return List.copyOf(guides.values());
     }
 
-    public static @Nullable MutableGuide getById(ResourceLocation id) {
+    public static @Nullable MutableGuide getById(Identifier id) {
         return mergedGuides.get(id);
     }
 
@@ -63,7 +63,7 @@ public class GuideRegistry {
     /**
      * Register all dynamic guides (defined in resource packs), which replaces all previously available dynamic guides.
      */
-    public static void setDataDriven(Map<ResourceLocation, MutableGuide> guides) {
+    public static void setDataDriven(Map<Identifier, MutableGuide> guides) {
         dataDrivenGuides.clear();
         dataDrivenGuides.putAll(guides);
 
@@ -72,7 +72,7 @@ public class GuideRegistry {
 
     private static void rebuildGuides() {
         var merged = new HashMap<>(guides);
-        var overridden = new ArrayList<ResourceLocation>();
+        var overridden = new ArrayList<Identifier>();
         for (var entry : dataDrivenGuides.entrySet()) {
             if (merged.put(entry.getKey(), entry.getValue()) != null) {
                 overridden.add(entry.getKey());

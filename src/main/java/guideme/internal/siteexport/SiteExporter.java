@@ -47,8 +47,8 @@ import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -94,7 +94,7 @@ public class SiteExporter implements ResourceExporter {
     private static final int ICON_DIMENSION = ICON_SCALE * NATIVE_ICON_DIMENSION;
 
     private final Minecraft client;
-    private final Map<ResourceLocation, String> exportedTextures = new HashMap<>();
+    private final Map<Identifier, String> exportedTextures = new HashMap<>();
 
     private final Path outputFolder;
 
@@ -108,7 +108,7 @@ public class SiteExporter implements ResourceExporter {
 
     private final Set<Fluid> fluids = new HashSet<>();
 
-    private final Map<ResourceLocation, Object> extraData = new HashMap<>();
+    private final Map<Identifier, Object> extraData = new HashMap<>();
 
     private final List<Runnable> cleanupCallbacks = new ArrayList<>();
 
@@ -222,7 +222,7 @@ public class SiteExporter implements ResourceExporter {
     }
 
     @Override
-    public void addExtraData(ResourceLocation key, Object value) {
+    public void addExtraData(Identifier key, Object value) {
         if (extraData.put(key, value) != null) {
             throw new IllegalStateException("Duplicate key: " + key);
         }
@@ -313,7 +313,7 @@ public class SiteExporter implements ResourceExporter {
     }
 
     @Override
-    public Path copyResource(ResourceLocation id) {
+    public Path copyResource(Identifier id) {
         try {
             var pagePath = getPathForWriting(id);
             byte[] bytes = guide.loadAsset(id);
@@ -327,7 +327,7 @@ public class SiteExporter implements ResourceExporter {
     }
 
     @Override
-    public Path getPathForWriting(ResourceLocation assetId) {
+    public Path getPathForWriting(Identifier assetId) {
         try {
             var path = resolvePath(assetId);
             Files.createDirectories(path.getParent());
@@ -343,13 +343,13 @@ public class SiteExporter implements ResourceExporter {
     }
 
     @Override
-    public ResourceLocation getPageSpecificResourceLocation(String suffix) {
+    public Identifier getPageSpecificResourceLocation(String suffix) {
         var path = currentPage.getId().getPath();
         var idx = path.lastIndexOf('.');
         if (idx != -1) {
             path = path.substring(0, idx);
         }
-        return ResourceLocation.fromNamespaceAndPath(currentPage.getId().getNamespace(), path + "_" + suffix);
+        return Identifier.fromNamespaceAndPath(currentPage.getId().getNamespace(), path + "_" + suffix);
     }
 
     @Override
@@ -371,7 +371,7 @@ public class SiteExporter implements ResourceExporter {
     }
 
     @Override
-    public @Nullable ResourceLocation getCurrentPageId() {
+    public @Nullable Identifier getCurrentPageId() {
         return currentPage != null ? currentPage.getId() : null;
     }
 
@@ -478,7 +478,7 @@ public class SiteExporter implements ResourceExporter {
         return ModList.get().getModContainerById(GuideME.MOD_ID).get().getModInfo().getVersion().toString();
     }
 
-    private Path resolvePath(ResourceLocation id) {
+    private Path resolvePath(Identifier id) {
         return outputFolder.resolve(id.getNamespace() + "/" + id.getPath());
     }
 
@@ -501,7 +501,7 @@ public class SiteExporter implements ResourceExporter {
         window.setGuiScale(ICON_SCALE);
 
         try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
-            var guiGraphics = new GuiGraphics(client, client.gameRenderer.guiRenderState);
+            var guiGraphics = new GuiGraphics(client, client.gameRenderer.guiRenderState, 0, 0);
 
             LOG.info("Exporting items...");
             for (var item : items) {
@@ -526,6 +526,8 @@ public class SiteExporter implements ResourceExporter {
                     client.gameRenderer.guiRenderState.reset();
                     guiGraphics.renderItem(stack, 0, 0);
                     guiGraphics.renderItemDecorations(client.font, stack, 0, 0, "");
+                    client.gameRenderer.guiRenderer.incrementFrameNumber(); // If we don't, animations are cached and
+                                                                            // don't animate
                     client.gameRenderer.guiRenderer
                             .render(client.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
                 }, sprites, true);
@@ -571,7 +573,7 @@ public class SiteExporter implements ResourceExporter {
         window.setGuiScale(ICON_SCALE);
 
         try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
-            var guiGraphics = new GuiGraphics(client, client.gameRenderer.guiRenderState);
+            var guiGraphics = new GuiGraphics(client, client.gameRenderer.guiRenderState, 0, 0);
 
             LOG.info("Exporting fluids...");
             for (var fluid : fluids) {
@@ -640,15 +642,15 @@ public class SiteExporter implements ResourceExporter {
     }
 
     @Override
-    public String exportTexture(ResourceLocation textureId) {
+    public String exportTexture(Identifier textureId) {
         var exportedPath = exportedTextures.get(textureId);
         if (exportedPath != null) {
             return exportedPath;
         }
 
-        ResourceLocation id = textureId;
+        Identifier id = textureId;
         if (!id.getPath().endsWith(".png")) {
-            id = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + ".png");
+            id = Identifier.fromNamespaceAndPath(id.getNamespace(), id.getPath() + ".png");
         }
 
         var outputPath = getPathForWriting(id);
@@ -673,11 +675,11 @@ public class SiteExporter implements ResourceExporter {
         return exportedPath;
     }
 
-    private static ResourceLocation getItemId(Item item) {
+    private static Identifier getItemId(Item item) {
         return BuiltInRegistries.ITEM.getKey(item);
     }
 
-    private static ResourceLocation getFluidId(Fluid fluid) {
+    private static Identifier getFluidId(Fluid fluid) {
         return BuiltInRegistries.FLUID.getKey(fluid);
     }
 

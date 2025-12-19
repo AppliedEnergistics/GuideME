@@ -19,6 +19,8 @@ You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">do
 
 <CommandLink command="/tp @s 0 90 0" title="Tooltip" close={true}>Teleport!</CommandLink>
 
+<BlockImage id="minecraft:stonecutter" />
+
 <ItemLink id="minecraft:stick" components="rarity=epic" />
 
 <GameScene zoom={4} interactive={true}>
@@ -70,3 +72,5 @@ You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">do
   <BlockImage id="minecraft:jungle_log" scale="4" />
   <BlockImage id="minecraft:mangrove_log" scale="4" />
 </Row>
+
+<ItemImage id="minecraft:recovery_compass" />

@@ -33,7 +33,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforgespi.language.IModInfo;
@@ -300,7 +300,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     }
 
     @Override
-    public void navigateTo(ResourceLocation pageId) {
+    public void navigateTo(Identifier pageId) {
         navigateTo(PageAnchor.page(pageId));
     }
 
@@ -324,7 +324,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         updateDocumentLayout();
     }
 
-    private void loadPage(ResourceLocation pageId) {
+    private void loadPage(Identifier pageId) {
         GuidePageTexture.releaseUsedTextures();
         var page = guide.getParsedPage(pageId);
 
@@ -358,7 +358,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         return List.of();
     }
 
-    private ParsedGuidePage buildNotFoundPage(ResourceLocation pageId) {
+    private ParsedGuidePage buildNotFoundPage(Identifier pageId) {
         String pageSource = "# Page not Found\n" +
                 "\n" +
                 "Page \"" + pageId + "\" could not be found.";
@@ -419,7 +419,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         return guide;
     }
 
-    public ResourceLocation getCurrentPageId() {
+    public Identifier getCurrentPageId() {
         return currentPage.id();
     }
 

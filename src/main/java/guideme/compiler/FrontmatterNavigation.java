@@ -1,7 +1,7 @@
 package guideme.compiler;
 
 import java.util.Map;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -9,8 +9,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public record FrontmatterNavigation(
         String title,
-        @Nullable ResourceLocation parent,
+        @Nullable Identifier parent,
         int position,
-        @Nullable ResourceLocation iconItemId,
+        @Nullable Identifier iconItemId,
         @Nullable Map<?, ?> iconComponents) {
 }

@@ -36,7 +36,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -44,7 +44,7 @@ public class GuideSearchScreen extends DocumentScreen {
     /**
      * This ID refers to this screen as a built-in page.
      */
-    public static final ResourceLocation PAGE_ID = GuideME.makeId("search");
+    public static final Identifier PAGE_ID = GuideME.makeId("search");
 
     private static final int MIN_TITLE_HEIGHT = 16;
 
@@ -101,7 +101,7 @@ public class GuideSearchScreen extends DocumentScreen {
     }
 
     @Override
-    public void navigateTo(ResourceLocation pageId) {
+    public void navigateTo(Identifier pageId) {
     }
 
     @Override

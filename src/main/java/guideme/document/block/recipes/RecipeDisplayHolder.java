@@ -1,7 +1,7 @@
 package guideme.document.block.recipes;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 
-public record RecipeDisplayHolder<T extends RecipeDisplay>(ResourceLocation id, T value) {
+public record RecipeDisplayHolder<T extends RecipeDisplay>(Identifier id, T value) {
 }

@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 class GuideMEClientProxy extends GuideMEServerProxy {
     @Override
-    public void addGuideTooltip(ResourceLocation guideId, Item.TooltipContext context, TooltipDisplay tooltipDisplay,
+    public void addGuideTooltip(Identifier guideId, Item.TooltipContext context, TooltipDisplay tooltipDisplay,
             Consumer<Component> lineConsumer,
             TooltipFlag tooltipFlag) {
         var guide = GuideRegistry.getById(guideId);
@@ -31,7 +31,7 @@ class GuideMEClientProxy extends GuideMEServerProxy {
     }
 
     @Override
-    public @Nullable Component getGuideDisplayName(ResourceLocation guideId) {
+    public @Nullable Component getGuideDisplayName(Identifier guideId) {
         var guide = GuideRegistry.getById(guideId);
         if (guide != null) {
             return guide.getItemSettings().displayName().orElse(null);
@@ -41,7 +41,7 @@ class GuideMEClientProxy extends GuideMEServerProxy {
     }
 
     @Override
-    public boolean openGuide(Player player, ResourceLocation id) {
+    public boolean openGuide(Player player, Identifier id) {
         if (player == Minecraft.getInstance().player) {
             var guide = Guides.getById(id);
             if (guide == null) {
@@ -57,7 +57,7 @@ class GuideMEClientProxy extends GuideMEServerProxy {
     }
 
     @Override
-    public boolean openGuide(Player player, ResourceLocation id, PageAnchor anchor) {
+    public boolean openGuide(Player player, Identifier id, PageAnchor anchor) {
         if (player == Minecraft.getInstance().player) {
             var guide = Guides.getById(id);
             if (guide == null) {
@@ -76,12 +76,12 @@ class GuideMEClientProxy extends GuideMEServerProxy {
     }
 
     @Override
-    public Stream<ResourceLocation> getAvailableGuides() {
+    public Stream<Identifier> getAvailableGuides() {
         return Guides.getAll().stream().map(Guide::getId);
     }
 
     @Override
-    public Stream<ResourceLocation> getAvailablePages(ResourceLocation guideId) {
+    public Stream<Identifier> getAvailablePages(Identifier guideId) {
         var guide = Guides.getById(guideId);
         if (guide == null) {
             return Stream.empty();

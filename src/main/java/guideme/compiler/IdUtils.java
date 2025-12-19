@@ -1,8 +1,8 @@
 package guideme.compiler;
 
 import java.net.URI;
-import net.minecraft.ResourceLocationException;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.IdentifierException;
+import net.minecraft.resources.Identifier;
 
 /**
  * Helper to resolve shorthand and relative IDs found in markdown pages.
@@ -12,11 +12,11 @@ public final class IdUtils {
     private IdUtils() {
     }
 
-    public static ResourceLocation resolveId(String idText, String defaultNamespace) {
+    public static Identifier resolveId(String idText, String defaultNamespace) {
         if (!idText.contains(":")) {
-            return ResourceLocation.fromNamespaceAndPath(defaultNamespace, idText);
+            return Identifier.fromNamespaceAndPath(defaultNamespace, idText);
         }
-        return ResourceLocation.parse(idText);
+        return Identifier.parse(idText);
     }
 
     /**
@@ -24,22 +24,22 @@ public final class IdUtils {
      * location. Relative locations must not be namespaced since we would otherwise run into the problem if namespaced
      * locations potentially having a different namespace than the anchor.
      */
-    public static ResourceLocation resolveLink(String idText, ResourceLocation anchor)
-            throws ResourceLocationException {
+    public static Identifier resolveLink(String idText, Identifier anchor)
+            throws IdentifierException {
         if (idText.startsWith("/")) {
             // Absolute path, but relative to namespace
-            return ResourceLocation.fromNamespaceAndPath(anchor.getNamespace(), idText.substring(1));
+            return Identifier.fromNamespaceAndPath(anchor.getNamespace(), idText.substring(1));
         } else if (!idText.contains(":")) {
             URI uri = URI.create(anchor.getPath());
             uri = uri.resolve(idText);
 
             var relativeId = uri.toString();
 
-            return ResourceLocation.fromNamespaceAndPath(anchor.getNamespace(), relativeId);
+            return Identifier.fromNamespaceAndPath(anchor.getNamespace(), relativeId);
         }
 
         // if it contains a ":" it's assumed to be absolute
-        return ResourceLocation.parse(idText);
+        return Identifier.parse(idText);
     }
 
 }

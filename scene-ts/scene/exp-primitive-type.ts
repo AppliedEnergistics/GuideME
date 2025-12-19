@@ -7,5 +7,6 @@ export enum ExpPrimitiveType {
   DEBUG_LINE_STRIP = 3,
   TRIANGLES = 4,
   TRIANGLE_STRIP = 5,
-  TRIANGLE_FAN = 6
+  TRIANGLE_FAN = 6,
+  POINTS = 7
 }

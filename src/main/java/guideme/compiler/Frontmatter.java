@@ -1,7 +1,7 @@
 package guideme.compiler;
 
 import java.util.Map;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -10,7 +10,7 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 public record Frontmatter(
         @Nullable FrontmatterNavigation navigationEntry,
         Map<String, Object> additionalProperties) {
-    public static Frontmatter parse(ResourceLocation pageId, String yamlText) {
+    public static Frontmatter parse(Identifier pageId, String yamlText) {
         var yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
 
         FrontmatterNavigation navigation = null;
@@ -33,12 +33,12 @@ public record Frontmatter(
             var iconIdStr = getString(navigationMap, "icon");
             Map<?, ?> iconComponents = getCompound(navigationMap, "icon_components");
 
-            ResourceLocation parentId = null;
+            Identifier parentId = null;
             if (parentIdStr != null) {
                 parentId = IdUtils.resolveId(parentIdStr, pageId.getNamespace());
             }
 
-            ResourceLocation iconId = null;
+            Identifier iconId = null;
             if (iconIdStr != null) {
                 iconId = IdUtils.resolveId(iconIdStr, pageId.getNamespace());
             }

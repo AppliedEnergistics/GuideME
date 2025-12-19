@@ -5,9 +5,9 @@ import guideme.compiler.IdUtils;
 import guideme.compiler.ParsedGuidePage;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.ResourceLocationException;
+import net.minecraft.IdentifierException;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  * <p/>
  * This index is installed by default on all {@linkplain guideme.Guide guides}.
  */
-public class ItemIndex extends UniqueIndex<ResourceLocation, PageAnchor> {
+public class ItemIndex extends UniqueIndex<Identifier, PageAnchor> {
     private static final Logger LOG = LoggerFactory.getLogger(ItemIndex.class);
 
     public ItemIndex() {
@@ -28,7 +28,7 @@ public class ItemIndex extends UniqueIndex<ResourceLocation, PageAnchor> {
                 (writer, value) -> writer.value(value.toString()));
     }
 
-    private static List<Pair<ResourceLocation, PageAnchor>> getItemAnchors(ParsedGuidePage page) {
+    private static List<Pair<Identifier, PageAnchor>> getItemAnchors(ParsedGuidePage page) {
         var itemIdsNode = page.getFrontmatter().additionalProperties().get("item_ids");
         if (itemIdsNode == null) {
             return List.of();
@@ -39,14 +39,14 @@ public class ItemIndex extends UniqueIndex<ResourceLocation, PageAnchor> {
             return List.of();
         }
 
-        var itemAnchors = new ArrayList<Pair<ResourceLocation, PageAnchor>>();
+        var itemAnchors = new ArrayList<Pair<Identifier, PageAnchor>>();
 
         for (var listEntry : itemIdList) {
             if (listEntry instanceof String itemIdStr) {
-                ResourceLocation itemId;
+                Identifier itemId;
                 try {
                     itemId = IdUtils.resolveId(itemIdStr, page.getId().getNamespace());
-                } catch (ResourceLocationException e) {
+                } catch (IdentifierException e) {
                     LOG.warn("Page {} contains a malformed item_ids frontmatter entry: {}", page.getId(),
                             listEntry);
                     continue;

@@ -49,7 +49,7 @@ public class GuideIconButton extends Button {
     }
 
     @Override
-    public void renderWidget(GuiGraphics guiGraphics, int i, int j, float f) {
+    public void renderContents(GuiGraphics guiGraphics, int i, int j, float f) {
         var color = SymbolicColor.ICON_BUTTON_NORMAL;
 
         if (!isActive()) {

@@ -3,7 +3,7 @@ package guideme.internal.util;
 import java.util.Locale;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 public final class LangUtil {
@@ -29,11 +29,11 @@ public final class LangUtil {
         return "en_us";
     }
 
-    public static ResourceLocation getTranslatedAsset(ResourceLocation assetId, String language) {
+    public static Identifier getTranslatedAsset(Identifier assetId, String language) {
         return assetId.withPrefix("_" + language + "/");
     }
 
-    public static ResourceLocation stripLangFromPageId(ResourceLocation pageId, Set<String> supportedLanguages) {
+    public static Identifier stripLangFromPageId(Identifier pageId, Set<String> supportedLanguages) {
         String path = pageId.getPath();
 
         int firstSep = path.indexOf("/");
@@ -59,7 +59,7 @@ public final class LangUtil {
     }
 
     @Nullable
-    public static String getLangFromPageId(ResourceLocation pageId, Set<String> supportedLanguages) {
+    public static String getLangFromPageId(Identifier pageId, Set<String> supportedLanguages) {
         String path = pageId.getPath();
 
         int firstSep = path.indexOf("/");

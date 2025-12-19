@@ -17,8 +17,10 @@ public final class ScaledGuiGraphics extends GuiGraphics {
     public ScaledGuiGraphics(Minecraft minecraft,
             Matrix3x2fStack pose,
             GuiRenderState renderState,
+            int mouseX,
+            int mouseY,
             float scale) {
-        super(minecraft, pose, renderState);
+        super(minecraft, pose, renderState, mouseX, mouseY);
         this.scale = scale;
     }
 

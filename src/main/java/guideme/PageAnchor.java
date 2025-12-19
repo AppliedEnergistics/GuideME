@@ -1,6 +1,6 @@
 package guideme;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -9,20 +9,20 @@ import org.jetbrains.annotations.Nullable;
  * @param pageId
  * @param anchor ID of an anchor in the page.
  */
-public record PageAnchor(ResourceLocation pageId, @Nullable String anchor) {
-    public static PageAnchor page(ResourceLocation pageId) {
+public record PageAnchor(Identifier pageId, @Nullable String anchor) {
+    public static PageAnchor page(Identifier pageId) {
         return new PageAnchor(pageId, null);
     }
 
     public static PageAnchor parse(String anchor) {
         int sep = anchor.indexOf('#');
-        ResourceLocation pageId = null;
+        Identifier pageId = null;
         String fragment = null;
         if (sep != -1) {
-            pageId = ResourceLocation.parse(anchor.substring(0, sep));
+            pageId = Identifier.parse(anchor.substring(0, sep));
             fragment = anchor.substring(sep + 1);
         } else {
-            pageId = ResourceLocation.parse(anchor);
+            pageId = Identifier.parse(anchor);
         }
         return new PageAnchor(pageId, fragment);
     }

@@ -97,7 +97,7 @@ final class InterpolatedSpriteBuilder {
             for (var x = 0; x < frameWidth; x++) {
                 var srcColor = source.getPixel(srcX + x, srcY + y);
                 var destColor = dest.getPixel(destX + x, destY + y);
-                dest.setPixel(destX + x, destY + y, ARGB.lerp(alpha, destColor, srcColor));
+                dest.setPixel(destX + x, destY + y, ARGB.srgbLerp(alpha, destColor, srcColor));
             }
         }
     }

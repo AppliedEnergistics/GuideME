@@ -1,18 +1,18 @@
 package guideme;
 
 import guideme.extensions.ExtensionCollection;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.NonExtendable
 public interface Guide extends PageCollection {
-    static GuideBuilder builder(ResourceLocation id) {
+    static GuideBuilder builder(Identifier id) {
         return new GuideBuilder(id);
     }
 
-    ResourceLocation getId();
+    Identifier getId();
 
-    ResourceLocation getStartPage();
+    Identifier getStartPage();
 
     String getDefaultNamespace();
 

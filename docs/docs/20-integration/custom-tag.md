@@ -43,7 +43,7 @@ public class ConfigValueTagExtension extends FlowTagCompiler {
 To register this extension in your guide, you pass it to the `extension` method of the Guide builder:
 
 ```java
-var guide = Guide.builder(ResourceLocation.parse("ae2:guide"))
+var guide = Guide.builder(Identifier.parse("ae2:guide"))
         .extension(TagCompiler.EXTENSION_POINT, new ConfigValueTagExtension())
         .build();
 ```

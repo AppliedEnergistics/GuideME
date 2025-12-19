@@ -5,10 +5,10 @@ import guideme.internal.GuideME;
 import java.util.List;
 import net.minecraft.client.renderer.item.BlockModelWrapper;
 import net.minecraft.client.renderer.item.ItemModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class GuideItemDispatchUnbaked implements ItemModel.Unbaked {
-    public static final ResourceLocation ID = GuideME.makeId("guide");
+    public static final Identifier ID = GuideME.makeId("guide");
 
     public static final MapCodec<GuideItemDispatchUnbaked> CODEC = MapCodec.unit(new GuideItemDispatchUnbaked());
 

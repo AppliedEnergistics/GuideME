@@ -11,7 +11,7 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.data.AtlasIds;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
@@ -22,7 +22,7 @@ import org.joml.Matrix3x2fStack;
 final class SpriteLayer {
     private final GuiGraphics graphics;
     private final List<Vertex> vertices = new ArrayList<>();
-    private final ResourceLocation atlasLocation = AtlasIds.GUI;
+    private final Identifier atlasLocation = AtlasIds.GUI;
 
     public SpriteLayer(GuiGraphics graphics) {
         this.graphics = graphics;
@@ -45,9 +45,11 @@ final class SpriteLayer {
         poseStack.translate(x, y);
         var scissor = graphics.peekScissorStack();
         var bounds = RenderState.getBounds(vertices, poseStack, scissor);
-        var texture = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(atlasLocation).getTextureView();
+        var texture = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(atlasLocation);
         graphics.submitGuiElementRenderState(new RenderState(
-                RenderPipelines.GUI_TEXTURED, TextureSetup.singleTexture(texture), new Matrix3x2f(poseStack), vertices,
+                RenderPipelines.GUI_TEXTURED,
+                TextureSetup.singleTexture(texture.getTextureView(), texture.getSampler()), new Matrix3x2f(poseStack),
+                vertices,
                 scissor, bounds));
         poseStack.popMatrix();
     }

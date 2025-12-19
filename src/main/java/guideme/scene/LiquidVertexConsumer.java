@@ -4,8 +4,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.SectionPos;
-import org.joml.Matrix4f;
+import org.joml.Matrix3x2fc;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 /**
  * The only purpose of this vertex consumer proxy is to transform vertex positions emitted by the
@@ -91,15 +93,30 @@ public class LiquidVertexConsumer implements VertexConsumer {
     }
 
     @Override
-    public void putBulkData(PoseStack.Pose pPose, BakedQuad pQuad, float[] pBrightness, float pRed, float pGreen,
-            float pBlue, float pAlpha, int[] pLightmap, int pPackedOverlay, boolean p_331268_) {
-        delegate.putBulkData(pPose, pQuad, pBrightness, pRed, pGreen, pBlue, pAlpha, pLightmap, pPackedOverlay,
-                p_331268_);
+    public void putBulkData(PoseStack.Pose p_85988_, BakedQuad p_85989_, float[] p_331397_, float p_85990_,
+            float p_85991_, float p_85992_, float p_331416_, int[] p_331378_, int p_85993_) {
+        delegate.putBulkData(p_85988_, p_85989_, p_331397_, p_85990_, p_85991_, p_85992_, p_331416_, p_331378_,
+                p_85993_);
     }
 
     @Override
-    public VertexConsumer addVertex(Vector3f p_350685_) {
-        return delegate.addVertex(p_350685_);
+    public VertexConsumer addVertex(Vector3fc p_458106_) {
+        return delegate.addVertex(p_458106_);
+    }
+
+    @Override
+    public VertexConsumer addVertex(Matrix4fc p_458205_, float p_457830_, float p_457564_, float p_457823_) {
+        return delegate.addVertex(p_458205_, p_457830_, p_457564_, p_457823_);
+    }
+
+    @Override
+    public VertexConsumer addVertexWith2DPose(Matrix3x2fc p_457647_, float p_415815_, float p_416074_) {
+        return delegate.addVertexWith2DPose(p_457647_, p_415815_, p_416074_);
+    }
+
+    @Override
+    public VertexConsumer setNormal(PoseStack.Pose pose, Vector3f normalVector) {
+        return delegate.setNormal(pose, normalVector);
     }
 
     @Override
@@ -113,12 +130,12 @@ public class LiquidVertexConsumer implements VertexConsumer {
     }
 
     @Override
-    public VertexConsumer addVertex(Matrix4f p_350929_, float p_350884_, float p_350885_, float p_350942_) {
-        return delegate.addVertex(p_350929_, p_350884_, p_350885_, p_350942_);
+    public VertexConsumer setNormal(PoseStack.Pose p_350592_, float p_350534_, float p_350411_, float p_350441_) {
+        return delegate.setNormal(p_350592_, p_350534_, p_350411_, p_350441_);
     }
 
     @Override
-    public VertexConsumer setNormal(PoseStack.Pose p_350592_, float p_350534_, float p_350411_, float p_350441_) {
-        return delegate.setNormal(p_350592_, p_350534_, p_350411_, p_350441_);
+    public VertexConsumer setLineWidth(float p_456188_) {
+        return delegate.setLineWidth(p_456188_);
     }
 }

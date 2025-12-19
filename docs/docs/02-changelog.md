@@ -239,8 +239,8 @@ import Video from '@site/src/components/Video';
 ## 2.1.0 (Minecraft 1.21.1)
 
 - Adds API to open guides for players from both server- and client-side
-  - `GuidesCommon.openGuide(Player player, ResourceLocation guideId)` to open the last opened (or start-page if none) page of a guide for the given player.
-  - `GuidesCommon.openGuide(Player player, ResourceLocation guideId, PageAnchor anchor)` to open a specific page of a guide for the given player.
+  - `GuidesCommon.openGuide(Player player, Identifier guideId)` to open the last opened (or start-page if none) page of a guide for the given player.
+  - `GuidesCommon.openGuide(Player player, Identifier guideId, PageAnchor anchor)` to open a specific page of a guide for the given player.
 - Moves the existing client-only command to `/guidemec`
 - Adds a new server-side `/guideme` [command](./40-commands.md) that allows opening guides for target entities similar to `/tellraw`.
   This can be used to open guides using command blocks and other mechanisms.

@@ -11,7 +11,7 @@ import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.stb.STBImage;
 import org.slf4j.Logger;
@@ -30,15 +30,15 @@ public class GuidePageTexture {
     private static final Logger LOG = LoggerFactory.getLogger(GuidePageTexture.class);
 
     // Textures in use by the current page
-    private static final Map<GuidePageTexture, ResourceLocation> usedTextures = new IdentityHashMap<>();
+    private static final Map<GuidePageTexture, Identifier> usedTextures = new IdentityHashMap<>();
 
-    private final ResourceLocation id;
+    private final Identifier id;
 
     private final ByteBuffer imageContent;
 
     private final LytSize size;
 
-    private GuidePageTexture(ResourceLocation id, byte @Nullable [] imageContent) {
+    private GuidePageTexture(Identifier id, byte @Nullable [] imageContent) {
         this.id = Objects.requireNonNull(id, "id");
         if (imageContent == null) {
             this.imageContent = null;
@@ -60,7 +60,7 @@ public class GuidePageTexture {
         }
     }
 
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 
@@ -68,7 +68,7 @@ public class GuidePageTexture {
         return size;
     }
 
-    public static GuidePageTexture load(ResourceLocation id, byte[] imageContent) {
+    public static GuidePageTexture load(Identifier id, byte[] imageContent) {
         try {
             return new GuidePageTexture(id, imageContent);
         } catch (Exception e) {
@@ -77,7 +77,7 @@ public class GuidePageTexture {
         }
     }
 
-    public ResourceLocation use() {
+    public Identifier use() {
         return usedTextures.computeIfAbsent(this, guidePageTexture -> {
             if (guidePageTexture.imageContent == null) {
                 return MissingTextureAtlasSprite.getLocation();

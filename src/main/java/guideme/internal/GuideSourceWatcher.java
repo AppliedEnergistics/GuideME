@@ -24,7 +24,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ class GuideSourceWatcher implements AutoCloseable {
     private final String defaultLanguage;
 
     /**
-     * The {@link ResourceLocation} namespace to use for files in the watched folder.
+     * The {@link Identifier} namespace to use for files in the watched folder.
      */
     private final String namespace;
     /**
@@ -51,7 +51,7 @@ class GuideSourceWatcher implements AutoCloseable {
     private final DirectoryWatcher sourceWatcher;
 
     // Queued changes that come in from a separate thread
-    private record PageLangKey(String sourceLang, ResourceLocation pageId) {
+    private record PageLangKey(String sourceLang, Identifier pageId) {
     }
 
     private final Map<PageLangKey, ParsedGuidePage> changedPages = new HashMap<>();
@@ -106,7 +106,7 @@ class GuideSourceWatcher implements AutoCloseable {
         var validLanguages = LangUtil.getValidLanguages();
 
         // Find all potential pages
-        var pagesToLoad = new HashMap<ResourceLocation, Path>();
+        var pagesToLoad = new HashMap<Identifier, Path>();
         try {
             Files.walkFileTree(sourceFolder, new FileVisitor<>() {
                 @Override
@@ -288,16 +288,16 @@ class GuideSourceWatcher implements AutoCloseable {
     }
 
     @Nullable
-    private ResourceLocation getPageId(Path path) {
+    private Identifier getPageId(Path path) {
         var relativePath = sourceFolder.relativize(path);
         var relativePathStr = relativePath.toString().replace('\\', '/');
         if (!relativePathStr.endsWith(".md")) {
             return null;
         }
-        if (!ResourceLocation.isValidPath(relativePathStr)) {
+        if (!Identifier.isValidPath(relativePathStr)) {
             return null;
         }
-        return ResourceLocation.fromNamespaceAndPath(namespace, relativePathStr);
+        return Identifier.fromNamespaceAndPath(namespace, relativePathStr);
     }
 
     @Nullable

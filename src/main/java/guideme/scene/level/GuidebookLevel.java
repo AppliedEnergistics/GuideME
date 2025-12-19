@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -29,9 +28,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Util;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
+import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -96,6 +97,7 @@ public class GuidebookLevel extends Level {
     private final DeltaTracker.Timer tracker = new DeltaTracker.Timer(20.0F, 0L, def -> def);
     private float partialTick;
     private final ModelDataManager modelDataManager = new ModelDataManager(this);
+    private final EnvironmentAttributeSystem environmentAttributes = EnvironmentAttributeSystem.builder().build();;
 
     public GuidebookLevel() {
         this(Platform.getClientRegistryAccess());
@@ -404,6 +406,11 @@ public class GuidebookLevel extends Level {
     }
 
     @Override
+    public EnvironmentAttributeSystem environmentAttributes() {
+        return environmentAttributes;
+    }
+
+    @Override
     public PotionBrewing potionBrewing() {
         throw new UnsupportedOperationException();
     }
@@ -461,7 +468,7 @@ public class GuidebookLevel extends Level {
 
     @Override
     public WorldBorder getWorldBorder() {
-        return WorldBorder.Settings.DEFAULT.toWorldBorder();
+        return new WorldBorder(WorldBorder.Settings.DEFAULT);
     }
 
     private static class EntityCallbacks implements LevelCallback<Entity> {

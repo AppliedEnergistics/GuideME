@@ -11,14 +11,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.commands.Commands;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryDataLoader;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.validation.DirectoryValidator;
@@ -84,7 +85,7 @@ public final class GuideOnStartup {
         }
     }
 
-    private record ShowOnStartup(ResourceLocation guideId, @Nullable PageAnchor anchor) {
+    private record ShowOnStartup(Identifier guideId, @Nullable PageAnchor anchor) {
     }
 
     private static ShowOnStartup getShowOnStartup() {
@@ -94,7 +95,7 @@ public final class GuideOnStartup {
         }
 
         var parts = showOnStartup.split("!", 2);
-        var guideId = ResourceLocation.parse(parts[0]);
+        var guideId = Identifier.parse(parts[0]);
         PageAnchor page = null;
         if (parts.length > 1) {
             page = PageAnchor.parse(parts[1]);
@@ -102,13 +103,13 @@ public final class GuideOnStartup {
         return new ShowOnStartup(guideId, page);
     }
 
-    private static Set<ResourceLocation> getGuideIdsToValidate() {
-        Set<ResourceLocation> guidesToValidate = new LinkedHashSet<>();
+    private static Set<Identifier> getGuideIdsToValidate() {
+        Set<Identifier> guidesToValidate = new LinkedHashSet<>();
         var validateGuideIds = System.getProperty("guideme.validateAtStartup");
         if (validateGuideIds != null) {
             var guideIds = validateGuideIds.split(",");
             for (String guideId : guideIds) {
-                guidesToValidate.add(ResourceLocation.parse(guideId));
+                guidesToValidate.add(Identifier.parse(guideId));
             }
         }
         return guidesToValidate;
@@ -173,7 +174,7 @@ public final class GuideOnStartup {
                     postponedTags,
                     FeatureFlagSet.of(),
                     Commands.CommandSelection.ALL,
-                    0,
+                    PermissionSet.ALL_PERMISSIONS,
                     command -> {
                         try {
                             command.run();

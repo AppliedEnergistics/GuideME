@@ -1,7 +1,7 @@
 package guideme.siteexport;
 
 import java.nio.file.Path;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -43,22 +43,22 @@ public interface ResourceExporter {
     /**
      * Exports a texture by id and returns the relative path to refer to it from other content that is being exported.
      */
-    String exportTexture(ResourceLocation texture);
+    String exportTexture(Identifier texture);
 
     /**
      * @return The new resource id after applying cache busting.
      */
-    Path copyResource(ResourceLocation id);
+    Path copyResource(Identifier id);
 
-    Path getPathForWriting(ResourceLocation assetId);
+    Path getPathForWriting(Identifier assetId);
 
     /**
-     * Generates a resource location for a page specific resource.
+     * Generates an identifier for a page specific resource.
      */
     Path getPageSpecificPathForWriting(String suffix);
 
     @Nullable
-    ResourceLocation getCurrentPageId();
+    Identifier getCurrentPageId();
 
     Path getOutputFolder();
 
@@ -67,9 +67,9 @@ public interface ResourceExporter {
     }
 
     /**
-     * Generates a resource location for a page specific resource.
+     * Generates an identifier for a page specific resource.
      */
-    ResourceLocation getPageSpecificResourceLocation(String suffix);
+    Identifier getPageSpecificResourceLocation(String suffix);
 
     /**
      * Ensures that the data needed to show the given recipe, its ingredients and its output is exported.
@@ -84,7 +84,7 @@ public interface ResourceExporter {
      * @param key   The key under which the data will be retrievable.
      * @param value The value to be serialized to JSON using GSON.
      */
-    void addExtraData(ResourceLocation key, Object value);
+    void addExtraData(Identifier key, Object value);
 
     /**
      * Add a runnable to run when the export concludes to perform cleanup.

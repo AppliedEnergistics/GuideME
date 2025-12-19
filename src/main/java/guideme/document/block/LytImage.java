@@ -10,17 +10,17 @@ import guideme.render.GuidePageTexture;
 import guideme.render.RenderContext;
 import java.util.Optional;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 public class LytImage extends LytBlock implements InteractiveElement {
 
-    private ResourceLocation imageId;
+    private Identifier imageId;
     private GuidePageTexture texture = GuidePageTexture.missing();
     private String title;
     private String alt;
 
-    public ResourceLocation getImageId() {
+    public Identifier getImageId() {
         return imageId;
     }
 
@@ -40,7 +40,7 @@ public class LytImage extends LytBlock implements InteractiveElement {
         this.alt = alt;
     }
 
-    public void setImage(ResourceLocation id, byte @Nullable [] imageData) {
+    public void setImage(Identifier id, byte @Nullable [] imageData) {
         this.imageId = id;
         if (imageData != null) {
             this.texture = GuidePageTexture.load(id, imageData);

@@ -11,15 +11,14 @@ import guideme.internal.util.Platform;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.IntUnaryOperator;
-import java.util.stream.Collectors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.PerspectiveProjectionMatrixBuffer;
 import net.minecraft.client.renderer.texture.SpriteContents;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 public class OffScreenRenderer implements AutoCloseable {
@@ -97,28 +96,19 @@ public class OffScreenRenderer implements AutoCloseable {
 
         var textureManager = Minecraft.getInstance().getTextureManager();
 
-        var tickers = animatedSprites.stream()
-                .collect(Collectors.groupingBy(TextureAtlasSprite::atlasLocation))
-                .entrySet().stream().collect(
-                        Collectors.toMap(
-                                Map.Entry::getKey,
-                                e -> e.getValue().stream().map(TextureAtlasSprite::createTicker).toList()));
-        for (var sprite : animatedSprites) {
-            var atlas = textureManager.getTexture(sprite.atlasLocation());
-            sprite.uploadFirstFrame(atlas.getTexture());
-        }
-
+        var atlases = animatedSprites.stream()
+                .map(TextureAtlasSprite::atlasLocation)
+                .distinct()
+                .map(id -> (TextureAtlas) textureManager.getTexture(id))
+                .toList();
         int width = nativeImage.getWidth();
         int height = nativeImage.getHeight();
 
         try (var webpWriter = new WebPExporter(width, height, format)) {
             for (var i = 0; i < maxTime; i++) {
-                // Bind all animated textures to their corresponding frames
-                for (var entry : tickers.entrySet()) {
-                    var texture = textureManager.getTexture(entry.getKey());
-                    for (var ticker : entry.getValue()) {
-                        ticker.tickAndUpload(texture.getTexture());
-                    }
+                // Advance frames for all used atlases
+                for (var atlas : atlases) {
+                    atlas.cycleAnimationFrames();
                 }
 
                 renderToBuffer(r);

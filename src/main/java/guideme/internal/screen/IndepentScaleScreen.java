@@ -33,9 +33,9 @@ public abstract class IndepentScaleScreen extends Screen {
     }
 
     @Override
-    public final void resize(Minecraft minecraft, int width, int height) {
+    public final void resize(int width, int height) {
         this.effectiveScale = calculateEffectiveScale();
-        super.resize(minecraft, toVirtual(width), toVirtual(height));
+        super.resize(toVirtual(width), toVirtual(height));
     }
 
     @Override
@@ -44,6 +44,8 @@ public abstract class IndepentScaleScreen extends Screen {
                 Minecraft.getInstance(),
                 guiGraphics.pose(),
                 guiGraphics.guiRenderState,
+                mouseX,
+                mouseY,
                 (float) this.effectiveScale);
 
         var renderContext = new SimpleRenderContext(guiGraphics);

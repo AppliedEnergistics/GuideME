@@ -29,7 +29,7 @@ import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3x2f;
@@ -50,7 +50,7 @@ public final class Blitter {
     public static final int DEFAULT_TEXTURE_WIDTH = 256;
     public static final int DEFAULT_TEXTURE_HEIGHT = 256;
 
-    private final ResourceLocation texture;
+    private final Identifier texture;
     // This texture size is only used to convert the source rectangle into uv coordinates (which are [0,1] and work
     // with textures of any size at runtime).
     private final int referenceWidth;
@@ -64,7 +64,7 @@ public final class Blitter {
     private boolean blending = true;
     private TextureTransform transform = TextureTransform.NONE;
 
-    Blitter(ResourceLocation texture, int referenceWidth, int referenceHeight) {
+    Blitter(Identifier texture, int referenceWidth, int referenceHeight) {
         this.texture = texture;
         this.referenceWidth = referenceWidth;
         this.referenceHeight = referenceHeight;
@@ -73,7 +73,7 @@ public final class Blitter {
     /**
      * Creates a blitter where the source rectangle is in relation to a 256x256 pixel texture.
      */
-    public static Blitter texture(ResourceLocation file) {
+    public static Blitter texture(Identifier file) {
         return texture(file, DEFAULT_TEXTURE_WIDTH, DEFAULT_TEXTURE_HEIGHT);
     }
 
@@ -87,7 +87,7 @@ public final class Blitter {
     /**
      * Creates a blitter where the source rectangle is in relation to a texture of the given size.
      */
-    public static Blitter texture(ResourceLocation file, int referenceWidth, int referenceHeight) {
+    public static Blitter texture(Identifier file, int referenceWidth, int referenceHeight) {
         return new Blitter(file, referenceWidth, referenceHeight);
     }
 
@@ -280,10 +280,10 @@ public final class Blitter {
             pipeline = GUI_TEXTURED_OPAQUE;
         }
 
-        var textureView = Minecraft.getInstance().getTextureManager().getTexture(this.texture).getTextureView();
+        var texture = Minecraft.getInstance().getTextureManager().getTexture(this.texture);
         guiGraphics.submitGuiElementRenderState(new BlitRenderState(
                 pipeline,
-                TextureSetup.singleTexture(textureView),
+                TextureSetup.singleTexture(texture.getTextureView(), texture.getSampler()),
                 new Matrix3x2f(guiGraphics.pose()),
                 (int) x1, (int) y1,
                 (int) x2, (int) y2,

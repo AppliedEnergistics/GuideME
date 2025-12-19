@@ -14,9 +14,10 @@ public final class ExpPrimitiveType {
     public static final int TRIANGLES = 4;
     public static final int TRIANGLE_STRIP = 5;
     public static final int TRIANGLE_FAN = 6;
+    public static final int POINTS = 7;
 
     public static final String[] names = { "LINES", "LINE_STRIP", "DEBUG_LINES", "DEBUG_LINE_STRIP", "TRIANGLES",
-            "TRIANGLE_STRIP", "TRIANGLE_FAN", };
+            "TRIANGLE_STRIP", "TRIANGLE_FAN", "POINTS", };
 
     public static String name(int e) {
         return names[e];

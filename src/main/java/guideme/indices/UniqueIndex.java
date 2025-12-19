@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -117,6 +117,6 @@ public class UniqueIndex<K, V> implements PageIndex {
         Iterable<Pair<K, V>> getEntry(ParsedGuidePage page);
     }
 
-    private record Record<V>(ResourceLocation pageId, V value) {
+    private record Record<V>(Identifier pageId, V value) {
     }
 }

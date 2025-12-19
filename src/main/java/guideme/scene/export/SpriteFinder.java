@@ -5,13 +5,13 @@ import java.util.function.Consumer;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 class SpriteFinder {
     private final Node root;
     private final TextureAtlas spriteAtlasTexture;
 
-    public SpriteFinder(Map<ResourceLocation, TextureAtlasSprite> sprites, TextureAtlas spriteAtlasTexture) {
+    public SpriteFinder(Map<Identifier, TextureAtlasSprite> sprites, TextureAtlas spriteAtlasTexture) {
         root = new Node(0.5f, 0.5f, 0.25f);
         this.spriteAtlasTexture = spriteAtlasTexture;
         sprites.values().forEach(root::add);

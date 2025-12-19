@@ -50,9 +50,9 @@ import java.util.stream.IntStream;
 import java.util.zip.GZIPOutputStream;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
@@ -326,9 +326,9 @@ public class SceneExporter {
 
     private int writeMaterial(RenderType type, FlatBufferBuilder builder) {
 
-        var compositeType = (RenderType.CompositeRenderType) type;
+        var renderSetup = type.state;
 
-        var pipeline = compositeType.renderPipeline;
+        var pipeline = renderSetup.pipeline;
 
         var shaderNameOffset = builder.createSharedString(pipeline.getLocation().toString());
 
@@ -400,9 +400,9 @@ public class SceneExporter {
     private static int mapMode(VertexFormat.Mode mode) {
         return switch (mode) {
             case LINES -> ExpPrimitiveType.LINES;
-            case LINE_STRIP -> ExpPrimitiveType.LINE_STRIP;
             case DEBUG_LINES -> ExpPrimitiveType.DEBUG_LINES;
             case DEBUG_LINE_STRIP -> ExpPrimitiveType.DEBUG_LINE_STRIP;
+            case POINTS -> ExpPrimitiveType.POINTS;
             case QUADS, TRIANGLES -> ExpPrimitiveType.TRIANGLES;
             case TRIANGLE_STRIP -> ExpPrimitiveType.TRIANGLE_STRIP;
             case TRIANGLE_FAN -> ExpPrimitiveType.TRIANGLE_FAN;

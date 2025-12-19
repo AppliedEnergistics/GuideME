@@ -11,7 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix3x2f;
@@ -70,13 +70,13 @@ public final class SimpleRenderContext implements RenderContext {
     }
 
     @Override
-    public void fillTexturedRect(LytRect rect, ResourceLocation textureId, ColorValue topLeft, ColorValue topRight,
+    public void fillTexturedRect(LytRect rect, Identifier textureId, ColorValue topLeft, ColorValue topRight,
             ColorValue bottomRight, ColorValue bottomLeft, float u0, float v0, float u1, float v1) {
 
-        var textureView = Minecraft.getInstance().getTextureManager().getTexture(textureId).getTextureView();
+        var texture = Minecraft.getInstance().getTextureManager().getTexture(textureId);
         guiGraphics.submitGuiElementRenderState(new GradientBlitRenderState(
                 RenderPipelines.GUI_TEXTURED,
-                TextureSetup.singleTexture(textureView),
+                TextureSetup.singleTexture(texture.getTextureView(), texture.getSampler()),
                 new Matrix3x2f(poseStack()),
                 rect.x(),
                 rect.y(),

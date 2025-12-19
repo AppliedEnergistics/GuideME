@@ -31,7 +31,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -515,7 +515,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
     }
 
     private void renderTooltip(GuiGraphics guiGraphics, GuideTooltip tooltip, int mouseX, int mouseY,
-            @Nullable ResourceLocation sprite) {
+            @Nullable Identifier sprite) {
         var minecraft = Minecraft.getInstance();
         var clientLines = tooltip.getLines();
 

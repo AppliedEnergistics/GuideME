@@ -3,7 +3,7 @@ package guideme.internal.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Set;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -31,7 +31,7 @@ class LangUtilTest {
             "ns:_de_de, ", // filename only
     })
     void testGetLangFromPageId(String path, String expectedLang) {
-        assertEquals(expectedLang, LangUtil.getLangFromPageId(ResourceLocation.parse(path), supportedLanguages));
+        assertEquals(expectedLang, LangUtil.getLangFromPageId(Identifier.parse(path), supportedLanguages));
     }
 
     @ParameterizedTest
@@ -52,7 +52,7 @@ class LangUtilTest {
             "ns:_de_de/e.md, ns:e.md" // language code is the first folder
     })
     void testStripLangFolderFromPath(String path, String expectedPath) {
-        assertEquals(ResourceLocation.parse(expectedPath),
-                LangUtil.stripLangFromPageId(ResourceLocation.parse(path), supportedLanguages));
+        assertEquals(Identifier.parse(expectedPath),
+                LangUtil.stripLangFromPageId(Identifier.parse(path), supportedLanguages));
     }
 }

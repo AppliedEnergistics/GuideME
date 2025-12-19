@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -21,11 +21,11 @@ public class NavigationTree {
 
     private static final Logger LOG = LoggerFactory.getLogger(NavigationTree.class);
 
-    private final Map<ResourceLocation, NavigationNode> nodeIndex;
+    private final Map<Identifier, NavigationNode> nodeIndex;
 
     private final List<NavigationNode> rootNodes;
 
-    public NavigationTree(Map<ResourceLocation, NavigationNode> nodeIndex, List<NavigationNode> rootNodes) {
+    public NavigationTree(Map<Identifier, NavigationNode> nodeIndex, List<NavigationNode> rootNodes) {
         this.nodeIndex = nodeIndex;
         this.rootNodes = rootNodes;
     }
@@ -40,12 +40,12 @@ public class NavigationTree {
     }
 
     @Nullable
-    public NavigationNode getNodeById(ResourceLocation pageId) {
+    public NavigationNode getNodeById(Identifier pageId) {
         return nodeIndex.get(pageId);
     }
 
     public static NavigationTree build(Collection<ParsedGuidePage> pages) {
-        var pagesWithChildren = new HashMap<ResourceLocation, Pair<ParsedGuidePage, List<ParsedGuidePage>>>();
+        var pagesWithChildren = new HashMap<Identifier, Pair<ParsedGuidePage, List<ParsedGuidePage>>>();
 
         // First pass, build a map of pages and their children
         for (var page : pages) {
@@ -57,7 +57,7 @@ public class NavigationTree {
             // Create an entry for this page to collect any children it might have
             pagesWithChildren.compute(
                     page.getId(),
-                    (resourceLocation, previousPair) -> {
+                    (identifier, previousPair) -> {
                         return previousPair != null ? Pair.of(page, previousPair.getRight())
                                 : Pair.of(page, new ArrayList<>());
                     });
@@ -66,7 +66,7 @@ public class NavigationTree {
             var parentId = navigationEntry.parent();
             if (parentId != null) {
                 pagesWithChildren.compute(
-                        parentId, (resourceLocation, prevPage) -> {
+                        parentId, (identifier, prevPage) -> {
                             if (prevPage != null) {
                                 prevPage.getRight().add(page);
                                 return prevPage;
@@ -79,7 +79,7 @@ public class NavigationTree {
             }
         }
 
-        var nodeIndex = new HashMap<ResourceLocation, NavigationNode>(pages.size());
+        var nodeIndex = new HashMap<Identifier, NavigationNode>(pages.size());
         var rootNodes = new ArrayList<NavigationNode>();
 
         for (var entry : pagesWithChildren.entrySet()) {
@@ -93,12 +93,12 @@ public class NavigationTree {
     }
 
     @Nullable
-    private static NavigationNode createNode(Map<ResourceLocation, NavigationNode> nodeIndex,
+    private static NavigationNode createNode(Map<Identifier, NavigationNode> nodeIndex,
             List<NavigationNode> rootNodes,
-            Map<ResourceLocation, Pair<ParsedGuidePage, List<ParsedGuidePage>>> pagesWithChildren,
-            ResourceLocation pageId,
+            Map<Identifier, Pair<ParsedGuidePage, List<ParsedGuidePage>>> pagesWithChildren,
+            Identifier pageId,
             Pair<ParsedGuidePage, List<ParsedGuidePage>> entry,
-            Set<ResourceLocation> parents) {
+            Set<Identifier> parents) {
         if (!parents.add(pageId)) {
             LOG.error("Detected a cycle in the navigation tree parent-child relationship for page {}", pageId);
             return null;

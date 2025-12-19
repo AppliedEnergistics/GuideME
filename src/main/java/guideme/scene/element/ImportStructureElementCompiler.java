@@ -10,14 +10,14 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Set;
-import net.minecraft.ResourceLocationException;
+import net.minecraft.IdentifierException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -44,10 +44,10 @@ public class ImportStructureElementCompiler implements SceneElementTagCompiler {
 
         var pos = MdxAttrs.getBlockPos(compiler, errorSink, el, "pos", BlockPos.ZERO);
 
-        ResourceLocation absStructureSrc;
+        Identifier absStructureSrc;
         try {
             absStructureSrc = IdUtils.resolveLink(structureSrc, compiler.getPageId());
-        } catch (ResourceLocationException e) {
+        } catch (IdentifierException e) {
             errorSink.appendError(compiler, "Invalid structure path: " + structureSrc, el);
             return;
         }

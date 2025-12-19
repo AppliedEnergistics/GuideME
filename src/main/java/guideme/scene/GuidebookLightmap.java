@@ -26,11 +26,11 @@ public class GuidebookLightmap implements AutoCloseable {
         lightmapPixels = Objects.requireNonNull(lightmapTexture.getPixels());
         lightmapPixels.fillRect(0, 0, 16, 16, -1);
         lightmapTexture.upload();
-        lightmapTexture.setFilter(true, false);
+        // TODO 1.21.11: lightmapTexture.setFilter(true, false);
     }
 
-    public float getSkyDarken(Level level, float partialTick) {
-        var f = level.getTimeOfDay(partialTick);
+    public float getSkyDarken(Level level) {
+        var f = level.getDayTime();
         var g = 1.0F - (Mth.cos(f * (float) (Math.PI * 2)) * 2.0F + 0.2F);
         g = Mth.clamp(g, 0.0F, 1.0F);
         g = 1.0F - g;
@@ -38,7 +38,7 @@ public class GuidebookLightmap implements AutoCloseable {
     }
 
     public void update(Level level) {
-        float f = getSkyDarken(level, 1.0f);
+        float f = getSkyDarken(level);
 
         if (f == lastSkyDarken && level.dimensionType() == lastDimensionType) {
             return;

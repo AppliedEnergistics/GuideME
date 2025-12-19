@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -36,18 +36,18 @@ import org.slf4j.LoggerFactory;
 public final class MutableGuide implements Guide {
     private static final Logger LOG = LoggerFactory.getLogger(MutableGuide.class);
 
-    private final ResourceLocation id;
+    private final Identifier id;
     private final String defaultNamespace;
     private final String folder;
     private final String defaultLanguage;
-    private final ResourceLocation startPage;
-    private final Map<ResourceLocation, ParsedGuidePage> developmentPages = new HashMap<>();
+    private final Identifier startPage;
+    private final Map<Identifier, ParsedGuidePage> developmentPages = new HashMap<>();
     private final Map<Class<?>, PageIndex> indices;
     private NavigationTree navigationTree = new NavigationTree();
     /**
      * These are only loaded for the current language and backfilled by default language pages.
      */
-    private Map<ResourceLocation, ParsedGuidePage> pages;
+    private Map<Identifier, ParsedGuidePage> pages;
     private final ExtensionCollection extensions;
     private final boolean availableToOpenHotkey;
     private final GuideItemSettings itemSettings;
@@ -60,11 +60,11 @@ public final class MutableGuide implements Guide {
     @Nullable
     private GuideSourceWatcher watcher;
 
-    public MutableGuide(ResourceLocation id,
+    public MutableGuide(Identifier id,
             String defaultNamespace,
             String folder,
             String defaultLanguage,
-            ResourceLocation startPage,
+            Identifier startPage,
             @Nullable Path developmentSourceFolder,
             @Nullable String developmentSourceNamespace,
             Map<Class<?>, PageIndex> indices,
@@ -85,12 +85,12 @@ public final class MutableGuide implements Guide {
     }
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return id;
     }
 
     @Override
-    public ResourceLocation getStartPage() {
+    public Identifier getStartPage() {
         return startPage;
     }
 
@@ -118,7 +118,7 @@ public final class MutableGuide implements Guide {
 
     @Override
     @Nullable
-    public ParsedGuidePage getParsedPage(ResourceLocation id) {
+    public ParsedGuidePage getParsedPage(Identifier id) {
         if (pages == null) {
             LOG.warn("Can't get page {}. Pages not loaded yet.", id);
             return null;
@@ -129,7 +129,7 @@ public final class MutableGuide implements Guide {
 
     @Override
     @Nullable
-    public GuidePage getPage(ResourceLocation id) {
+    public GuidePage getPage(Identifier id) {
         var page = getParsedPage(id);
 
         return page != null ? PageCompiler.compile(this, extensions, page) : null;
@@ -151,7 +151,7 @@ public final class MutableGuide implements Guide {
     }
 
     @Override
-    public byte[] loadAsset(ResourceLocation id) {
+    public byte[] loadAsset(Identifier id) {
         // Try loading the language specific version first
         var language = LangUtil.getCurrentLanguage();
         if (!GuideMEClient.instance().isIgnoreTranslatedGuides() && !Objects.equals(language, defaultLanguage)) {
@@ -163,7 +163,7 @@ public final class MutableGuide implements Guide {
         return loadAssetInternal(id);
     }
 
-    private byte @Nullable [] loadAssetInternal(ResourceLocation id) {
+    private byte @Nullable [] loadAssetInternal(Identifier id) {
         // Also load images from the development sources folder, if it exists and contains the asset namespace
         if (developmentSourceFolder != null && id.getNamespace().equals(developmentSourceNamespace)) {
             var path = developmentSourceFolder.resolve(id.getPath());
@@ -177,7 +177,7 @@ public final class MutableGuide implements Guide {
         }
 
         // Transform id such that the path is prefixed with "ae2assets", the source folder for the guidebook assets
-        id = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), folder + "/" + id.getPath());
+        id = Identifier.fromNamespaceAndPath(id.getNamespace(), folder + "/" + id.getPath());
 
         var resource = Minecraft.getInstance().getResourceManager().getResource(id).orElse(null);
         if (resource == null) {
@@ -197,7 +197,7 @@ public final class MutableGuide implements Guide {
     }
 
     @Override
-    public boolean pageExists(ResourceLocation pageId) {
+    public boolean pageExists(Identifier pageId) {
         return developmentPages.containsKey(pageId) || pages != null && pages.containsKey(pageId);
     }
 
@@ -208,7 +208,7 @@ public final class MutableGuide implements Guide {
      * @return null if development mode is not enabled or the resource doesn't exist in the development sources.
      */
     @Nullable
-    public Path getDevelopmentSourcePath(ResourceLocation id) {
+    public Path getDevelopmentSourcePath(Identifier id) {
         if (developmentSourceFolder != null && id.getNamespace().equals(developmentSourceNamespace)) {
             var path = developmentSourceFolder.resolve(id.getPath());
             if (Files.exists(path)) {
@@ -358,7 +358,7 @@ public final class MutableGuide implements Guide {
         }
     }
 
-    public void setPages(Map<ResourceLocation, ParsedGuidePage> pages) {
+    public void setPages(Map<Identifier, ParsedGuidePage> pages) {
         this.pages = Map.copyOf(pages);
 
         if (watcher != null) {

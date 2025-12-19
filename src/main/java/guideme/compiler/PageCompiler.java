@@ -78,8 +78,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import net.minecraft.ResourceLocationException;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.IdentifierException;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +95,7 @@ public final class PageCompiler {
     private final PageCollection pages;
     private final ExtensionCollection extensions;
     private final String sourcePack;
-    private final ResourceLocation pageId;
+    private final Identifier pageId;
     private final String pageContent;
 
     private final Map<String, TagCompiler> tagCompilers = new HashMap<>();
@@ -105,7 +105,7 @@ public final class PageCompiler {
     private final Map<State<?>, Object> compilerState = new IdentityHashMap<>();
 
     public PageCompiler(PageCollection pages, ExtensionCollection extensions, String sourcePack,
-            ResourceLocation pageId,
+            Identifier pageId,
             String pageContent) {
         this.pages = pages;
         this.extensions = extensions;
@@ -122,22 +122,22 @@ public final class PageCompiler {
     }
 
     @Deprecated(forRemoval = true)
-    public static ParsedGuidePage parse(String sourcePack, ResourceLocation id, InputStream in) throws IOException {
+    public static ParsedGuidePage parse(String sourcePack, Identifier id, InputStream in) throws IOException {
         return parse(sourcePack, "en_us", id, in);
     }
 
-    public static ParsedGuidePage parse(String sourcePack, String language, ResourceLocation id, InputStream in)
+    public static ParsedGuidePage parse(String sourcePack, String language, Identifier id, InputStream in)
             throws IOException {
         String pageContent = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         return parse(sourcePack, language, id, pageContent);
     }
 
     @Deprecated(forRemoval = true)
-    public static ParsedGuidePage parse(String sourcePack, ResourceLocation id, String pageContent) {
+    public static ParsedGuidePage parse(String sourcePack, Identifier id, String pageContent) {
         return parse(sourcePack, "en_us", id, pageContent);
     }
 
-    public static ParsedGuidePage parse(String sourcePack, String language, ResourceLocation id, String pageContent) {
+    public static ParsedGuidePage parse(String sourcePack, String language, Identifier id, String pageContent) {
         // Normalize line ending
         pageContent = pageContent.replaceAll("\\r\\n?", "\n");
 
@@ -216,7 +216,7 @@ public final class PageCompiler {
         return document;
     }
 
-    private static Frontmatter parseFrontmatter(ResourceLocation pageId, MdAstRoot root) {
+    private static Frontmatter parseFrontmatter(Identifier pageId, MdAstRoot root) {
         Frontmatter result = null;
 
         for (var child : root.children()) {
@@ -477,7 +477,7 @@ public final class PageCompiler {
                 image.setTitle("Missing image: " + astImage.url);
             }
             image.setImage(imageId, imageContent);
-        } catch (ResourceLocationException e) {
+        } catch (IdentifierException e) {
             LOG.error("Invalid image id: {}", astImage.url);
             image.setTitle("Invalid image URL: " + astImage.url);
         }
@@ -526,14 +526,14 @@ public final class PageCompiler {
         return span;
     }
 
-    public ResourceLocation resolveId(String idText) {
+    public Identifier resolveId(String idText) {
         return IdUtils.resolveId(idText, pageId.getNamespace());
     }
 
     /**
      * Get the current page id.
      */
-    public ResourceLocation getPageId() {
+    public Identifier getPageId() {
         return pageId;
     }
 
@@ -541,7 +541,7 @@ public final class PageCompiler {
         return pages;
     }
 
-    public byte @Nullable [] loadAsset(ResourceLocation imageId) {
+    public byte @Nullable [] loadAsset(Identifier imageId) {
         return pages.loadAsset(imageId);
     }
 

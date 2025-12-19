@@ -19,8 +19,8 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -221,7 +221,7 @@ public class RecipeCompiler extends BlockTagCompiler {
             return sharedMappings;
         }
 
-        Set<ResourceLocation> recipeTypes = new HashSet<>();
+        Set<Identifier> recipeTypes = new HashSet<>();
         List<RecipeTypeMapping<?, ?>> result = new ArrayList<>();
         var mappings = new RecipeTypeMappingSupplier.RecipeTypeMappings() {
             @Override
