@@ -3,7 +3,7 @@ import org.gradle.api.initialization.resolve.RulesMode
 
 pluginManagement {
     plugins {
-        id 'com.gradleup.shadow' version '8.3.5'
+        id 'com.gradleup.shadow' version '9.3.0'
         // https://projects.neoforged.net/neoforged/ModDevGradle
         id 'net.neoforged.moddev' version '2.0.145-pr-298-universal-jar'
         id 'net.neoforged.moddev.repositories' version '2.0.145-pr-298-universal-jar'
