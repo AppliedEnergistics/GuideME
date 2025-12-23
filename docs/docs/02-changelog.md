@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.1.0.2-alpha (Minecraft 26.1-snapshot-1)
+
+- Fix rendering of navigation bar indicators
+
 ## 26.1.0.1-alpha (Minecraft 26.1-snapshot-1)
 
 - First port to 26.1-snapshot-1

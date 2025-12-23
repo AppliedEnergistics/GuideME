@@ -1,6 +1,8 @@
 ---
 item_ids:
   - minecraft:carrot
+navigation:
+  title: Root
 ---
 
 # Start Page

@@ -1,3 +1,8 @@
+---
+navigation:
+  title: Markdown Test
+---
+
 # Markdown Test
 
 ## Inline Formatting
