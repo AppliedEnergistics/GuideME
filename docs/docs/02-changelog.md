@@ -6,6 +6,7 @@ import Video from '@site/src/components/Video';
 ## 26.1.0.2-alpha (Minecraft 26.1-snapshot-1)
 
 - Fix rendering of navigation bar indicators
+- Web Export now uses correct Minecraft version
 
 ## 26.1.0.1-alpha (Minecraft 26.1-snapshot-1)
 

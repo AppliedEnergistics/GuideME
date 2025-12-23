@@ -445,7 +445,7 @@ public class SiteExporter implements ResourceExporter {
         var modVersion = getModVersion();
         var guideMeVersion = getGuideMeVersion();
         var generated = Instant.now().toEpochMilli();
-        var gameVersion = DetectedVersion.tryDetectVersion().name();
+        var gameVersion = DetectedVersion.tryDetectVersion();
 
         // This file is not accessed via the CDN and thus doesn't need a cache-busting name
         try (var writer = Files.newBufferedWriter(outputFolder.resolve("index.json"), StandardCharsets.UTF_8)) {
@@ -453,7 +453,11 @@ public class SiteExporter implements ResourceExporter {
             jsonWriter.beginObject();
             jsonWriter.name("format").value(1);
             jsonWriter.name("generated").value(generated);
-            jsonWriter.name("gameVersion").value(gameVersion);
+            jsonWriter.name("gameVersion").value(gameVersion.id());
+            jsonWriter.name("gameVersionName").value(gameVersion.name());
+            if (!gameVersion.stable()) {
+                jsonWriter.name("gameVersionStable").value(gameVersion.stable());
+            }
             jsonWriter.name("modVersion").value(modVersion);
             jsonWriter.name("guideMeVersion").value(guideMeVersion);
             jsonWriter.name("guideDataPath").value(guideDataFilename);
