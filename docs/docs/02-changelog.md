@@ -3,12 +3,9 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
-## 26.1.0.3-alpha (Minecraft 26.1-snapshot-1)
-
-- Update to NeoForge 26.1.0.0-alpha.3
-
 ## 26.1.0.2-alpha (Minecraft 26.1-snapshot-1)
 
+- Update to NeoForge 26.1.0.0-alpha.3
 - Fix rendering of navigation bar indicators
 - Web Export now uses correct Minecraft version
 
