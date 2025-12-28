@@ -125,6 +125,8 @@ neoForge {
     enable {
         version = project.neoforge_version
         enabledSourceSets = [sourceSets.main, sourceSets.testmod]
+        // Disable recompilation if the "CI" environment variable is set to true. It is automatically set by GitHub Actions.
+        disableRecompilation = System.getenv("CI") == "true"
     }
 
     validateAccessTransformers = true
