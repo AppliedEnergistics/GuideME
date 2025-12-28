@@ -1,7 +1,6 @@
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.RegularFileProperty;
-import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.PathSensitive;
@@ -17,6 +16,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
+/**
+ * Post-Processes service files and removes entries that refer to classes ProGuard may already have removed.
+ */
 public abstract class PostProcessProGuardFile extends DefaultTask {
 
     @InputFiles

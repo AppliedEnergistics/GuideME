@@ -10,7 +10,6 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 public final class GuideCommand {
     private GuideCommand() {
@@ -67,7 +66,7 @@ public final class GuideCommand {
             Identifier guideId) {
         var guideItem = Guides.createGuideItem(guideId);
         for (var target : targets) {
-            ItemHandlerHelper.giveItemToPlayer(target, guideItem.copy());
+            target.getInventory().placeItemBackInInventory(guideItem.copy());
         }
 
         if (targets.size() == 1) {

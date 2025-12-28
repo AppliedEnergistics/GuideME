@@ -32,8 +32,7 @@ public class GuideME {
     private static final DeferredRegister<ArgumentTypeInfo<?, ?>> DR_ARGUMENT_TYPE_INFOS = DeferredRegister
             .create(Registries.COMMAND_ARGUMENT_TYPE, MOD_ID);
 
-    public static final Supplier<GuideItem> GUIDE_ITEM = DR_ITEMS.registerItem("guide", GuideItem::new,
-            GuideItem.PROPERTIES);
+    public static final Supplier<GuideItem> GUIDE_ITEM = DR_ITEMS.registerItem("guide", GuideItem::new);
 
     /**
      * Attaches the guide ID to a generic guide item.

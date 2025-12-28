@@ -21,8 +21,6 @@ public class GuideItem extends Item {
     public static final Identifier ID = GuideME.makeId("guide");
     public static final Identifier BASE_MODEL_ID = ID.withPrefix("item/").withSuffix("_base");
 
-    public static final Properties PROPERTIES = new Properties();
-
     public GuideItem(Properties properties) {
         super(properties);
     }

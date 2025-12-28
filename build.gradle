@@ -45,12 +45,12 @@ configurations {
 
 dependencies {
     // To be copied into the jar file
-    shaded project(path: ':markdown', configuration: "archives")
+    shaded project(path: ':markdown', configuration: "runtimeElements")
     shaded "io.methvin:directory-watcher:${directory_watcher_version}"
     shaded "org.yaml:snakeyaml:${snakeyaml_version}"
     shaded "com.google.flatbuffers:flatbuffers-java:${flatbuffers_version}"
 
-    api(project(':markdown')) {
+    localImplementation(project(':markdown')) {
         transitive = false
     }
     // Do not inherit any transitive dependencies here since we rely on those transitive dependencies being
@@ -219,9 +219,14 @@ jar {
     }
 }
 
+shadow {
+    addShadowVariantIntoJavaComponent = false
+}
+
 shadowJar {
     from sourceSets.main.output.classesDirs
     from sourceSets.main.output.resourcesDir
+    exclude '.cache/**'
 
     dependencies {
         exclude 'META-INF/maven/**'
@@ -246,6 +251,7 @@ final proguardConfig = tasks.register('generateProguardConfig', GenerateProGuard
     output = layout.buildDirectory.file('generated/proguard.conf')
 }
 
+
 final proguardJar = tasks.register('proguardJar', proguard.gradle.ProGuardTask) {
     dependsOn shadowJar
     outputs.upToDateWhen { false }
@@ -269,10 +275,31 @@ final postProcessJar = tasks.register('postProcessJar', PostProcessProGuardFile)
 }
 assemble.dependsOn postProcessJar
 
+// This is required to remove the plain "jar" from the published artifacts
+configurations {
+    apiElements {
+        outgoing {
+            artifacts.clear()
+            artifact postProcessJar
+        }
+    }
+    runtimeElements {
+        outgoing {
+            artifacts.clear()
+            artifact postProcessJar
+        }
+    }
+}
+
 def publicApiIncludePatterns = {
     exclude "**/*Internal.*"
     exclude "**/*Internal\$*.*"
     exclude "**/internal/**"
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 javadoc {
@@ -285,17 +312,6 @@ javadoc {
 }
 javadoc publicApiIncludePatterns
 
-tasks.register('javadocJar', Jar) {
-    dependsOn javadoc
-    archiveClassifier = "javadoc"
-    from javadoc.destinationDir
-}
-
-tasks.register('sourcesJar', Jar) {
-    archiveClassifier = "sources"
-    from sourceSets.main.allJava
-}
-
 tasks.register('apiJar', Jar) {
     archiveClassifier = "api"
     // api jar ist just a development aid and serves as both a binary and source jar simultaneously
@@ -305,12 +321,6 @@ tasks.register('apiJar', Jar) {
     include "**/*.class"
 }
 apiJar publicApiIncludePatterns
-
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-    archives apiJar
-}
 
 //////////////////
 // Maven publish
@@ -344,11 +354,7 @@ publishing {
                 }
             }
 
-            artifact(postprocessedFile) {
-                builtBy(postProcessJar)
-            }
-            artifact sourcesJar
-            artifact javadocJar
+            from(components.java)
             artifact apiJar
         }
     }

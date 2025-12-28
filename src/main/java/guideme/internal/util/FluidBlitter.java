@@ -36,7 +36,7 @@ public final class FluidBlitter {
 
     public static Blitter create(FluidStack stack) {
         if (stack.isEmpty() && stack.getFluid() != Fluids.EMPTY) {
-            stack = new FluidStack(stack.getFluidHolder(), 1, stack.getComponentsPatch());
+            stack = new FluidStack(stack.typeHolder(), 1, stack.getComponentsPatch());
         }
 
         Fluid fluid = stack.getFluid();
