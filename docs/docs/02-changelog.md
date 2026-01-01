@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.1.0.4-alpha (Minecraft 26.1-snapshot-1)
+
+- Add the "major" game version to the index.json exported for the web guide (i.e. 26.1 for 26.1-snapshot-1).
+
 ## 26.1.0.3-alpha (Minecraft 26.1-snapshot-1)
 
 - Fix rendering of navigation bar indicators (even more)

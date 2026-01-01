@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -453,6 +454,14 @@ public class SiteExporter implements ResourceExporter {
             jsonWriter.beginObject();
             jsonWriter.name("format").value(1);
             jsonWriter.name("generated").value(generated);
+
+            // Since 26.1, it's possible to get a better idea of which major version a target MC version belongs to
+            String gameMajorVersion = gameVersion.id();
+            if (gameMajorVersion.contains("-")) {
+                gameMajorVersion = gameMajorVersion.split("-")[0];
+            }
+            gameMajorVersion = String.join(".", Arrays.asList(gameMajorVersion.split("\\.")).subList(0, 2));
+            jsonWriter.name("gameMajorVersion").value(gameMajorVersion);
             jsonWriter.name("gameVersion").value(gameVersion.id());
             jsonWriter.name("gameVersionName").value(gameVersion.name());
             if (!gameVersion.stable()) {
@@ -466,7 +475,7 @@ public class SiteExporter implements ResourceExporter {
     }
 
     private String getModVersion() {
-        // Prefer the use of a version set via system propert
+        // Prefer the use of a version set via system property
         var modVersion = System.getProperty(
                 "guideme.exportModVersion." + guide.getId().getNamespace() + "." + guide.getId().getPath());
         if (modVersion != null) {
