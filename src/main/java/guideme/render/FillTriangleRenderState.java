@@ -5,17 +5,17 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
-import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
+import org.joml.Vector2f;
 
 record FillTriangleRenderState(
         RenderPipeline pipeline,
         TextureSetup textureSetup,
         Matrix3x2f pose,
-        Vec2 p1,
-        Vec2 p2,
-        Vec2 p3,
+        Vector2f p1,
+        Vector2f p2,
+        Vector2f p3,
         int color,
         @Nullable ScreenRectangle scissorArea,
         @Nullable ScreenRectangle bounds) implements GuiElementRenderState {
@@ -23,9 +23,9 @@ record FillTriangleRenderState(
             RenderPipeline pipeline,
             TextureSetup textureSetup,
             Matrix3x2f pose,
-            Vec2 p1,
-            Vec2 p2,
-            Vec2 p3,
+            Vector2f p1,
+            Vector2f p2,
+            Vector2f p3,
             int color,
             @Nullable ScreenRectangle scissorArea) {
         this(
@@ -45,11 +45,14 @@ record FillTriangleRenderState(
         vertices.addVertexWith2DPose(pose, p1.x, p1.y).setColor(color);
         vertices.addVertexWith2DPose(pose, p2.x, p2.y).setColor(color);
         vertices.addVertexWith2DPose(pose, p3.x, p3.y).setColor(color);
+        // NOTE: GuiElementRenderState can only render quads, and as such we're building a degenerate quad here to get a
+        // triangle
+        vertices.addVertexWith2DPose(pose, p3.x, p3.y).setColor(color);
     }
 
     @Nullable
     private static ScreenRectangle getBounds(
-            Vec2 p1, Vec2 p2, Vec2 p3, Matrix3x2f pose, @Nullable ScreenRectangle scissorArea) {
+            Vector2f p1, Vector2f p2, Vector2f p3, Matrix3x2f pose, @Nullable ScreenRectangle scissorArea) {
         var x0 = (int) Math.min(Math.min(p1.x, p2.x), p3.x);
         var x1 = (int) Math.ceil(Math.max(Math.max(p1.x, p2.x), p3.x));
         var y0 = (int) Math.min(Math.min(p1.y, p2.y), p3.y);

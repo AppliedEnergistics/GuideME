@@ -17,7 +17,6 @@ import guideme.internal.siteexport.SiteExportOnStartup;
 import guideme.internal.siteexport.TextureDownloader;
 import guideme.internal.util.Blitter;
 import guideme.render.GuiAssets;
-import guideme.render.SimpleRenderContext;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import java.util.Objects;
 import java.util.Set;
@@ -136,7 +135,6 @@ public class GuideMEClient {
         event.registerPipeline(Blitter.GUI_TEXTURED_OPAQUE);
         event.registerPipeline(TextureDownloader.COPY_BLIT);
         event.registerPipeline(InWorldAnnotationRenderer.OCCLUDED_PIPELINE);
-        event.registerPipeline(SimpleRenderContext.GUI_TRIANGLES);
     }
 
     private void registerPipRenderers(RegisterPictureInPictureRenderersEvent event) {

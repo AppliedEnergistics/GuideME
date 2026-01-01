@@ -1,12 +1,9 @@
 package guideme.render;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import guideme.color.ColorValue;
 import guideme.color.LightDarkMode;
 import guideme.document.LytRect;
-import guideme.internal.GuideME;
 import guideme.internal.GuideMEClient;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,18 +13,13 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix3x2f;
+import org.joml.Vector2f;
 
 public final class SimpleRenderContext implements RenderContext {
     private final List<LytRect> viewportStack = new ArrayList<>();
     private final GuiGraphics guiGraphics;
     private final LightDarkMode lightDarkMode;
-
-    public static final RenderPipeline GUI_TRIANGLES = RenderPipelines.GUI.toBuilder()
-            .withLocation(GuideME.makeId("pipeline/gui_triangles"))
-            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLES)
-            .build();
 
     public SimpleRenderContext(
             LytRect viewport,
@@ -102,9 +94,9 @@ public final class SimpleRenderContext implements RenderContext {
     }
 
     @Override
-    public void fillTriangle(Vec2 p1, Vec2 p2, Vec2 p3, ColorValue color) {
+    public void fillTriangle(Vector2f p1, Vector2f p2, Vector2f p3, ColorValue color) {
         guiGraphics.submitGuiElementRenderState(new FillTriangleRenderState(
-                GUI_TRIANGLES,
+                RenderPipelines.GUI,
                 TextureSetup.noTexture(),
                 new Matrix3x2f(poseStack()),
                 p1,

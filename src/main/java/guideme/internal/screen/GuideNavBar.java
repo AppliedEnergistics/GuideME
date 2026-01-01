@@ -24,8 +24,8 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
 public class GuideNavBar extends AbstractWidget {
@@ -195,9 +195,9 @@ public class GuideNavBar extends AbstractWidget {
             renderContext.fillGradientHorizontal(getX(), getY(), width, height, SymbolicColor.NAVBAR_BG_TOP,
                     SymbolicColor.NAVBAR_BG_BOTTOM);
 
-            var p1 = new Vec2(width - WIDTH_CLOSED + WIDTH_CLOSED - 4, height / 2f);
-            var p2 = new Vec2(width - WIDTH_CLOSED + 4, height / 2f - 5);
-            var p3 = new Vec2(width - WIDTH_CLOSED + 4, height / 2f + 5);
+            var p1 = new Vector2f(width - WIDTH_CLOSED + WIDTH_CLOSED - 4, height / 2f);
+            var p2 = new Vector2f(width - WIDTH_CLOSED + 4, height / 2f - 5);
+            var p3 = new Vector2f(width - WIDTH_CLOSED + 4, height / 2f + 5);
 
             renderContext.fillTriangle(p1, p2, p3, SymbolicColor.NAVBAR_EXPAND_ARROW);
         } else if (!isPinned()) {
@@ -233,17 +233,17 @@ public class GuideNavBar extends AbstractWidget {
                     x += 5;
                     float y = row.getBounds().y();
                     y += 2f;
-                    Vec2 p1, p2, p3;
+                    Vector2f p1, p2, p3;
                     if (row.expanded) {
                         // Triangle points down
-                        p1 = new Vec2(x + 5, y);
-                        p2 = new Vec2(x, y);
-                        p3 = new Vec2(x + 2.5f, y + 5);
+                        p1 = new Vector2f(x + 5, y);
+                        p2 = new Vector2f(x, y);
+                        p3 = new Vector2f(x + 2.5f, y + 5);
                     } else {
                         // Triangle points right
-                        p1 = new Vec2(x + 5, y + 2.5f);
-                        p2 = new Vec2(x, y);
-                        p3 = new Vec2(x, y + 5);
+                        p1 = new Vector2f(x + 5, y + 2.5f);
+                        p2 = new Vector2f(x, y);
+                        p3 = new Vector2f(x, y + 5);
                     }
 
                     var color = row == hoveredRow ? SymbolicColor.LINK : SymbolicColor.BODY_TEXT;

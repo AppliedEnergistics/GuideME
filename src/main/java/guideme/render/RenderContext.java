@@ -20,9 +20,9 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.phys.Vec2;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.joml.Matrix3x2fStack;
+import org.joml.Vector2f;
 
 public interface RenderContext {
 
@@ -116,7 +116,7 @@ public interface RenderContext {
                 sprite.getU0(), sprite.getV0(), sprite.getU1(), sprite.getV1());
     }
 
-    void fillTriangle(Vec2 p1, Vec2 p2, Vec2 p3, ColorValue color);
+    void fillTriangle(Vector2f p1, Vector2f p2, Vector2f p3, ColorValue color);
 
     default Font font() {
         return Minecraft.getInstance().font;
