@@ -17,7 +17,9 @@ package guideme.libs.mdast.model;
  * {type: 'inlineCode', value: 'foo()'}
  */
 public class MdAstInlineCode extends MdAstLiteral implements MdAstStaticPhrasingContent {
+    public static final String TYPE = "inlineCode";
+
     public MdAstInlineCode() {
-        super("inlineCode");
+        super(TYPE);
     }
 }

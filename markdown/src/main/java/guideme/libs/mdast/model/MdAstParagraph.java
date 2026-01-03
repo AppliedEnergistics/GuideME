@@ -14,8 +14,10 @@ package guideme.libs.mdast.model;
  * { type: 'paragraph', children: [{type: 'text', value: 'Alpha bravo charlie.'}] }
  */
 public class MdAstParagraph extends MdAstParent<MdAstPhrasingContent> implements MdAstContent {
+    public static final String TYPE = "paragraph";
+
     public MdAstParagraph() {
-        super("paragraph");
+        super(TYPE);
     }
 
     @Override

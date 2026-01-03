@@ -1,5 +1,6 @@
 package guideme.libs.mdast.model;
 
+import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import org.jetbrains.annotations.Nullable;
@@ -24,12 +25,13 @@ import org.jetbrains.annotations.Nullable;
  */
 public class MdAstLinkReference extends MdAstParent<MdAstStaticPhrasingContent>
         implements MdAstReference, MdAstPhrasingContent {
+    public static final String TYPE = "linkReference";
     public String identifier;
     public String label;
     public MdAstReferenceType referenceType;
 
     public MdAstLinkReference() {
-        super("linkReference");
+        super(TYPE);
     }
 
     @Override
@@ -59,5 +61,14 @@ public class MdAstLinkReference extends MdAstParent<MdAstStaticPhrasingContent>
         writer.name("referenceType").value(referenceType.getSerializedName());
 
         super.writeJson(writer);
+    }
+
+    @Override
+    protected void readJson(JsonObject jsonObject) throws IOException {
+        super.readJson(jsonObject);
+
+        this.identifier = readJsonString(jsonObject, "identifier");
+        this.label = readJsonString(jsonObject, "label");
+        this.referenceType = MdAstReferenceType.fromSerializedName(readJsonString(jsonObject, "referenceType"));
     }
 }

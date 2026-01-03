@@ -2,7 +2,6 @@ package guideme.internal.siteexport;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.TypeAdapter;
 import com.google.gson.internal.bind.JsonTreeWriter;
@@ -58,6 +57,7 @@ import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -216,17 +216,17 @@ public class SiteExportWriter {
     public void addRecipe(ResourceKey<Recipe<?>> id, Recipe<?> recipe, Map<String, Object> element) {
         // Auto-transform ingredients
 
-        JsonElement jsonElement;
+        JsonObject jsonObject;
         try {
-            jsonElement = GSON.toJsonTree(element);
+            jsonObject = GSON.toJsonTree(element).getAsJsonObject();
         } catch (Exception e) {
             throw new RuntimeException("Failed to convert recipe " + id + " to json", e);
         }
 
         var type = BuiltInRegistries.RECIPE_TYPE.getKey(recipe.getType()).toString();
-        jsonElement.getAsJsonObject().addProperty("type", type);
+        jsonObject.addProperty("type", type);
 
-        if (siteExport.recipes.put(id.toString(), jsonElement) != null) {
+        if (siteExport.recipes.put(id.identifier().toString(), jsonObject) != null) {
             throw new RuntimeException("Duplicate recipe id " + id);
         }
     }
@@ -265,7 +265,7 @@ public class SiteExportWriter {
         exportedPage.astRoot = page.getAstRoot();
         exportedPage.frontmatter.putAll(page.getFrontmatter().additionalProperties());
 
-        siteExport.pages.put(page.getId(), exportedPage);
+        siteExport.pages.put(page.getId().toString(), exportedPage);
     }
 
     private String extractPageTitle(ParsedGuidePage page) {
@@ -320,5 +320,9 @@ public class SiteExportWriter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String serializeItemStack(@Nullable ItemStack stack) {
+        return stack != null && !stack.isEmpty() ? BuiltInRegistries.ITEM.getKey(stack.getItem()).toString() : null;
     }
 }

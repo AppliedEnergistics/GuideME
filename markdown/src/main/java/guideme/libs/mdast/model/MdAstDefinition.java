@@ -1,5 +1,6 @@
 package guideme.libs.mdast.model;
 
+import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import org.jetbrains.annotations.Nullable;
@@ -20,13 +21,14 @@ import org.jetbrains.annotations.Nullable;
  * { type: 'definition', identifier: 'alpha', label: 'Alpha', url: 'https://example.com', title: null }
  */
 public class MdAstDefinition extends MdAstNode implements MdAstAssociation, MdAstResource, MdAstContent {
+    public static final String TYPE = "definition";
     public String identifier = "";
     public String label;
     public String url = "";
     public String title;
 
     public MdAstDefinition() {
-        super("definition");
+        super(TYPE);
     }
 
     @Override
@@ -70,5 +72,14 @@ public class MdAstDefinition extends MdAstNode implements MdAstAssociation, MdAs
         }
 
         super.writeJson(writer);
+    }
+
+    @Override
+    protected void readJson(JsonObject jsonObject) throws IOException {
+        super.readJson(jsonObject);
+        this.identifier = readJsonString(jsonObject, "identifier", null);
+        this.label = readJsonString(jsonObject, "label", null);
+        this.title = readJsonString(jsonObject, "title", null);
+        this.url = readJsonString(jsonObject, "url", null);
     }
 }

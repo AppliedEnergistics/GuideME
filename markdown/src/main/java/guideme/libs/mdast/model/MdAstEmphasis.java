@@ -9,8 +9,10 @@ package guideme.libs.mdast.model;
  * </pre>
  */
 public class MdAstEmphasis extends MdAstParent<MdAstPhrasingContent> implements MdAstStaticPhrasingContent {
+    public static final String TYPE = "emphasis";
+
     public MdAstEmphasis() {
-        super("emphasis");
+        super(TYPE);
     }
 
     @Override

@@ -14,7 +14,9 @@ package guideme.libs.mdast.model;
  * {type: 'text', value: 'Alpha bravo charlie.'}
  */
 public class MdAstText extends MdAstLiteral implements MdAstStaticPhrasingContent {
+    public static final String TYPE = "text";
+
     public MdAstText() {
-        super("text");
+        super(TYPE);
     }
 }

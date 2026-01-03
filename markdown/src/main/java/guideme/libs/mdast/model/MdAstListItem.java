@@ -1,5 +1,6 @@
 package guideme.libs.mdast.model;
 
+import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 
@@ -17,8 +18,10 @@ import java.io.IOException;
  * { type: 'listItem', spread: false, children: [{ type: 'paragraph', children: [{type: 'text', value: 'bar'}] }] }
  */
 public class MdAstListItem extends MdAstParent<MdAstFlowContent> implements MdAstListContent {
+    public static final String TYPE = "listItem";
+
     public MdAstListItem() {
-        super("listItem");
+        super(TYPE);
     }
 
     /**
@@ -36,5 +39,11 @@ public class MdAstListItem extends MdAstParent<MdAstFlowContent> implements MdAs
     protected void writeJson(JsonWriter writer) throws IOException {
         writer.name("spread").value(spread);
         super.writeJson(writer);
+    }
+
+    @Override
+    protected void readJson(JsonObject jsonObject) throws IOException {
+        super.readJson(jsonObject);
+        this.spread = readJsonBoolean(jsonObject, "spread");
     }
 }

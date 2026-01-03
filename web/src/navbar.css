@@ -1,0 +1,65 @@
+.navbar {
+  svg {
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+    path {
+      d: path("M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z");
+    }
+  }
+
+  details[open] svg path {
+    d: path("M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z");
+  }
+
+  img {
+    width: auto;
+    height: 1em;
+  }
+
+  /* Used when there's a header but no link */
+  summary > * {
+    user-select: none;
+    cursor: pointer;
+  }
+
+  a,
+  .expandableHeader {
+    display: flex;
+    color: var(--color-body-text);
+    align-items: center;
+    gap: 4px;
+    box-sizing: border-box;
+    padding-left: 4px;
+  }
+
+  a:hover,
+  .expandableHeader:hover {
+    color: var(--color-link);
+    background-color: var(--color--navbar-row-hover);
+    text-decoration: none;
+  }
+
+  a.active {
+    background-color: var(--color--navbar-row-hover);
+  }
+
+  details > .sublevel {
+    margin-left: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .item-icon,
+  .fluid-icon {
+    width: auto;
+    height: 1em;
+  }
+
+  summary::-webkit-details-marker,
+  summary::marker {
+    display: none;
+    content: none;
+  }
+}

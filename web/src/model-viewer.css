@@ -1,0 +1,72 @@
+/*
+ This is the placeholder image that is shown before the actual scene is loaded.
+ */
+img.game-scene {
+  padding: 16px;
+}
+
+.game-scene-wrapper {
+  display: inline-flex;
+  flex-direction: row;
+
+  --modelviewer-width: auto;
+  --modelviewer-height: auto;
+  --modelviewer-aspect-ratio: auto;
+
+  background-color: var(--color--scene-background);
+  border-radius: 16px;
+
+  .loading .controls {
+    display: none;
+  }
+
+  .controls {
+    flex: 0 1 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .controls button {
+    appearance: none;
+    border: none;
+    background: none;
+  }
+
+  .controls button img {
+    width: 32px;
+    height: 32px;
+    opacity: 0.8;
+  }
+
+  .controls button:hover img {
+    opacity: 1;
+  }
+
+  .controls button:active img {
+    opacity: 0.6;
+  }
+
+  .controls button:disabled img {
+    opacity: 0.2;
+  }
+
+  .root {
+    position: relative;
+  }
+
+  .root > img {
+    position: absolute;
+  }
+
+  .viewport {
+    display: inline-block;
+  }
+
+  .root,
+  .root > .viewport {
+    width: var(--modelviewer-width);
+    height: auto !important;
+    aspect-ratio: var(--modelviewer-aspect-ratio);
+    overflow: hidden;
+  }
+}

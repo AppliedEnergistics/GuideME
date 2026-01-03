@@ -1,13 +1,13 @@
 package guideme.internal.siteexport.model;
 
+import guideme.internal.siteexport.SiteExportWriter;
 import guideme.navigation.NavigationNode;
 import java.util.List;
-import net.minecraft.world.item.ItemStack;
 
 public class NavigationNodeJson {
     public String pageId;
     public String title;
-    public ItemStack icon;
+    public String icon;
     public List<NavigationNodeJson> children;
     public int position;
     public boolean hasPage;
@@ -19,7 +19,7 @@ public class NavigationNodeJson {
         }
         jsonNode.title = node.title();
         if (!node.icon().isEmpty()) {
-            jsonNode.icon = node.icon();
+            jsonNode.icon = SiteExportWriter.serializeItemStack(node.icon());
         }
         jsonNode.children = node.children().stream().map(NavigationNodeJson::of).toList();
         jsonNode.position = node.position();

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{PAGE_TITLE_TEXT}}</title>
+    <link rel="stylesheet" href="{{RELATIVE_PATH_TO_ROOT}}{{CSS_BUNDLE}}">
+</head>
+<body>
+
+<main>
+<div class="topLogoBar">
+    <a href="/" class="logo">
+        <img src="{{RELATIVE_PATH_TO_ROOT}}{{asset:assets/logo.png}}" alt="" />
+        {{GUIDE_TITLE}}
+    </a>
+    <!-- burger menu used on mobile devices when the actual navigation bar is hidden -->
+    <a
+            role="button"
+            class="navbar-burger"
+            aria-label="menu"
+    >
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    </a>
+</div>
+<div class="page-title">{{PAGE_TITLE}}</div>
+<aside>
+    <span class="search-slot"></span>
+    {{GUIDE_NAVBAR}}
+</aside>
+<article>
+    <GuidePageTitleProvider value={setPageTitle}>
+        <div id="page-content">
+            {{PAGE_CONTENT}}
+        </div>
+    </GuidePageTitleProvider>
+</article>
+{{FOOTER}}
+</main>
+<script src="{{RELATIVE_PATH_TO_ROOT}}{{JS_BUNDLE}}" defer type="module"></script>
+</body>
+</html>

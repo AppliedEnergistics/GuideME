@@ -5,8 +5,10 @@ import guideme.libs.mdast.model.MdAstParent;
 import guideme.libs.mdast.model.MdAstPhrasingContent;
 
 public class GfmTableCell extends MdAstParent<MdAstPhrasingContent> implements MdAstAnyContent {
+    public static final String TYPE = "tableCell";
+
     public GfmTableCell() {
-        super("tableCell");
+        super(TYPE);
     }
 
     @Override

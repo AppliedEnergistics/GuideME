@@ -1,5 +1,6 @@
 package guideme.libs.mdast.model;
 
+import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import org.jetbrains.annotations.Nullable;
@@ -28,8 +29,10 @@ import org.jetbrains.annotations.Nullable;
  * { type: 'code', lang: 'javascript', meta: 'highlight-line="2"', value: 'foo()\nbar()\nbaz()' }
  */
 public class MdAstCode extends MdAstLiteral implements MdAstFlowContent {
+    public static final String TYPE = "code";
+
     public MdAstCode() {
-        super("code");
+        super(TYPE);
     }
 
     /**
@@ -53,5 +56,12 @@ public class MdAstCode extends MdAstLiteral implements MdAstFlowContent {
             writer.name("meta").value(meta);
         }
         super.writeJson(writer);
+    }
+
+    @Override
+    protected void readJson(JsonObject jsonObject) throws IOException {
+        super.readJson(jsonObject);
+        this.lang = readJsonString(jsonObject, "lang", null);
+        this.meta = readJsonString(jsonObject, "meta", null);
     }
 }

@@ -1,5 +1,6 @@
 package guideme.libs.mdast.model;
 
+import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import org.jetbrains.annotations.Nullable;
@@ -20,12 +21,13 @@ import org.jetbrains.annotations.Nullable;
  * { type: 'image', url: 'https://example.com/favicon.ico', title: 'bravo', alt: 'alpha' }
  */
 public class MdAstImage extends MdAstNode implements MdAstResource, MdAstAlternative, MdAstStaticPhrasingContent {
+    public static final String TYPE = "image";
     public String alt;
     public String url = "";
     public String title;
 
     public MdAstImage() {
-        super("image");
+        super(TYPE);
     }
 
     @Override
@@ -69,5 +71,13 @@ public class MdAstImage extends MdAstNode implements MdAstResource, MdAstAlterna
             writer.name("alt").value(alt);
         }
         super.writeJson(writer);
+    }
+
+    @Override
+    protected void readJson(JsonObject jsonObject) throws IOException {
+        super.readJson(jsonObject);
+        this.title = readJsonString(jsonObject, "title", null);
+        this.url = readJsonString(jsonObject, "url");
+        this.alt = readJsonString(jsonObject, "alt", null);
     }
 }

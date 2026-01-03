@@ -1,5 +1,6 @@
 package guideme.libs.mdast.model;
 
+import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import org.jetbrains.annotations.Nullable;
@@ -31,13 +32,14 @@ import org.jetbrains.annotations.Nullable;
  */
 public class MdAstImageReference extends MdAstNode
         implements MdAstReference, MdAstAlternative, MdAstStaticPhrasingContent {
+    public static final String TYPE = "imageReference";
     public String alt;
     public String identifier;
     public String label;
     public MdAstReferenceType referenceType;
 
     public MdAstImageReference() {
-        super("imageReference");
+        super(TYPE);
     }
 
     @Override
@@ -74,5 +76,15 @@ public class MdAstImageReference extends MdAstNode
         writer.name("referenceType").value(referenceType.getSerializedName());
 
         super.writeJson(writer);
+    }
+
+    @Override
+    protected void readJson(JsonObject jsonObject) throws IOException {
+        super.readJson(jsonObject);
+
+        this.alt = readJsonString(jsonObject, "alt", null);
+        this.identifier = readJsonString(jsonObject, "identifier");
+        this.label = readJsonString(jsonObject, "label");
+        this.referenceType = MdAstReferenceType.fromSerializedName(readJsonString(jsonObject, "referenceType"));
     }
 }

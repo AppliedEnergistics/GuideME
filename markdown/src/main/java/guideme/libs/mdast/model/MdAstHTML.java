@@ -16,7 +16,9 @@ package guideme.libs.mdast.model;
  * {type: 'html', value: '&lt;div>'}
  */
 public class MdAstHTML extends MdAstLiteral implements MdAstFlowContent, MdAstStaticPhrasingContent {
+    public static final String TYPE = "html";
+
     public MdAstHTML() {
-        super("html");
+        super(TYPE);
     }
 }

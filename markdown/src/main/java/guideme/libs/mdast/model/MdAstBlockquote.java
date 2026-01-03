@@ -14,8 +14,10 @@ package guideme.libs.mdast.model;
  * { type: 'blockquote', children: [{ type: 'paragraph', children: [{type: 'text', value: 'Alpha bravo charlie.'}] }] }
  */
 public class MdAstBlockquote extends MdAstParent<MdAstFlowContent> implements MdAstFlowContent {
+    public static final String TYPE = "blockquote";
+
     public MdAstBlockquote() {
-        super("blockquote");
+        super(TYPE);
     }
 
     @Override

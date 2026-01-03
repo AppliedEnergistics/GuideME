@@ -17,8 +17,10 @@ package guideme.libs.mdast.model;
  * </pre>
  */
 public class MdAstStrong extends MdAstParent<MdAstPhrasingContent> implements MdAstStaticPhrasingContent {
+    public static final String TYPE = "strong";
+
     public MdAstStrong() {
-        super("strong");
+        super(TYPE);
     }
 
     @Override

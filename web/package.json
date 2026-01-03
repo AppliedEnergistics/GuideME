@@ -1,0 +1,21 @@
+{
+  "private": true,
+  "dependencies": {
+    "@types/pako": "^2.0.4",
+    "@types/three": "^0.152.1",
+    "@types/tippy.js": "^6.3.0",
+    "esbuild": "^0.27.2",
+    "flatbuffers": "^23.5.26",
+    "pako": "^2.1.0",
+    "three": "^0.151.3",
+    "tippy.js": "^6.3.7",
+    "typescript": "^5.9.3",
+    "prettier": "^3.7.4"
+  },
+  "scripts": {
+    "build": "tsc && npm run bundle",
+    "bundle": "node build.mjs",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src"
+  }
+}

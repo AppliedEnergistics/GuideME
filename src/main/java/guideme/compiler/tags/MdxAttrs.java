@@ -52,6 +52,16 @@ public final class MdxAttrs {
     @Contract("_, _, _, _, !null -> !null")
     public static String getString(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el,
             String attribute, String defaultValue) {
+        try {
+            return getString(el, attribute, defaultValue);
+        } catch (Exception e) {
+            errorSink.appendError(compiler, e.getMessage(), el);
+            return defaultValue;
+        }
+    }
+
+    @Contract("_, _, !null -> !null")
+    public static String getString(MdxJsxElementFields el, String attribute, String defaultValue) {
         var id = el.getAttribute(attribute);
         if (id == null) {
             return defaultValue;
@@ -60,8 +70,7 @@ public final class MdxAttrs {
         if (id.hasStringValue()) {
             return id.getStringValue();
         } else if (id.hasExpressionValue()) {
-            errorSink.appendError(compiler, "Expected string for '" + attribute + "' but got an expression.", el);
-            return defaultValue;
+            throw new AttributeException(attribute, "Expected string for '" + attribute + "' but got an expression.");
         } else {
             return defaultValue;
         }
@@ -196,6 +205,15 @@ public final class MdxAttrs {
 
     public static float getFloat(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el, String name,
             float defaultValue) {
+        try {
+            return getFloat(el, name, defaultValue);
+        } catch (AttributeException e) {
+            errorSink.appendError(compiler, e.getMessage(), el);
+            return defaultValue;
+        }
+    }
+
+    public static float getFloat(MdxJsxElementFields el, String name, float defaultValue) {
         // Float attributes support expression syntax of bare style numbers too
         var attr = el.getAttribute(name);
         if (attr == null) {
@@ -214,8 +232,7 @@ public final class MdxAttrs {
         try {
             return Float.parseFloat(attrValue);
         } catch (NumberFormatException e) {
-            errorSink.appendError(compiler, "Malformed floating point value: '" + attrValue + "'", el);
-            return defaultValue;
+            throw new AttributeException(name, "Malformed floating point value: '" + attrValue + "'");
         }
     }
 
@@ -315,12 +332,21 @@ public final class MdxAttrs {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Nullable
     public static <T extends Enum<T> & StringRepresentable> T getEnum(PageCompiler compiler, LytErrorSink errorSink,
             MdxJsxElementFields el, String name, T defaultValue) {
+        try {
+            return getEnum(el, name, defaultValue);
+        } catch (AttributeException e) {
+            errorSink.appendError(compiler, e.getMessage(), el);
+            return defaultValue;
+        }
+    }
 
-        var stringValue = getString(compiler, errorSink, el, name, defaultValue.getSerializedName());
+    @SuppressWarnings("unchecked")
+    public static <T extends Enum<T> & StringRepresentable> T getEnum(MdxJsxElementFields el, String name,
+            T defaultValue) {
+        var stringValue = getString(el, name, defaultValue.getSerializedName());
 
         var clazz = (Class<T>) defaultValue.getClass();
         for (var constant : clazz.getEnumConstants()) {
@@ -329,8 +355,7 @@ public final class MdxAttrs {
             }
         }
 
-        errorSink.appendError(compiler, "Unrecognized option for attribute " + name + ": " + stringValue, el);
-        return null;
+        throw new AttributeException(name, "Unrecognized option for attribute " + name + ": " + stringValue);
     }
 
     public static BlockState applyBlockStateProperties(PageCompiler compiler, LytErrorSink errorSink,
@@ -418,6 +443,15 @@ public final class MdxAttrs {
 
     public static boolean getBoolean(PageCompiler compiler, LytErrorSink errorSink, MdxJsxElementFields el, String name,
             boolean defaultValue) {
+        try {
+            return getBoolean(el, name, defaultValue);
+        } catch (AttributeException e) {
+            errorSink.appendError(compiler, e.getMessage(), el);
+            return defaultValue;
+        }
+    }
+
+    public static boolean getBoolean(MdxJsxElementFields el, String name, boolean defaultValue) {
         var attribute = el.getAttribute(name);
         if (attribute == null) {
             return defaultValue;
@@ -433,8 +467,7 @@ public final class MdxAttrs {
             }
         }
 
-        errorSink.appendError(compiler, name + " should be {true} or {false}", el);
-        return defaultValue;
+        throw new AttributeException(name, name + " should be {true} or {false}");
     }
 
     /**
@@ -481,5 +514,18 @@ public final class MdxAttrs {
         }
 
         return predicate;
+    }
+
+    private static class AttributeException extends RuntimeException {
+        private final String attribute;
+
+        public AttributeException(String attribute, String message) {
+            super(message);
+            this.attribute = attribute;
+        }
+
+        public String getAttribute() {
+            return attribute;
+        }
     }
 }

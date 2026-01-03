@@ -42,7 +42,7 @@ public class FlatBuffersPlugin implements Plugin<Project> {
         tasks.register("updateFlatbufferTypescriptSources", GenerateFlatBufferCode.class, task -> {
             task.setGroup("build");
             task.getCompiler().set(downloadFlatc.flatMap(DownloadFlatBufferCompilerTask::getExecutableFile));
-            task.getOutputDirectory().set(project.getLayout().getProjectDirectory().dir("scene-ts"));
+            task.getOutputDirectory().set(project.getLayout().getProjectDirectory().dir("web/scene-ts"));
             task.getSchemaFiles().from("src/main/flatbuffers/scene.fbs");
             task.getOptions().addAll(
                     "--ts-flat-files",

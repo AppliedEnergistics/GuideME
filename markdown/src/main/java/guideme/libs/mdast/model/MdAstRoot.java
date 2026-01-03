@@ -7,8 +7,10 @@ package guideme.libs.mdast.model;
  * instead can contain any mdast content with the restriction that all content must be of the same category.
  */
 public class MdAstRoot extends MdAstParent<MdAstAnyContent> {
+    public static final String TYPE = "root";
+
     public MdAstRoot() {
-        super("root");
+        super(TYPE);
     }
 
     @Override

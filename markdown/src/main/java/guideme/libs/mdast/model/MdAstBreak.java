@@ -14,8 +14,10 @@ package guideme.libs.mdast.model;
  * { type: 'paragraph', children: [ {type: 'text', value: 'foo'}, {type: 'break'}, {type: 'text', value: 'bar'} ] }
  */
 public class MdAstBreak extends MdAstNode implements MdAstStaticPhrasingContent {
+    public static final String TYPE = "break";
+
     public MdAstBreak() {
-        super("break");
+        super(TYPE);
     }
 
     @Override

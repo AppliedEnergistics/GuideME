@@ -1,7 +1,10 @@
 package guideme.libs.mdast.mdx.model;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonWriter;
 import guideme.libs.mdast.model.MdAstFlowContent;
+import guideme.libs.mdast.model.MdAstNode;
 import guideme.libs.mdast.model.MdAstParent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,6 +12,7 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 public class MdxJsxFlowElement extends MdAstParent<MdAstFlowContent> implements MdxJsxElementFields, MdAstFlowContent {
+    public static final String TYPE = "mdxJsxFlowElement";
     public String name;
     public List<MdxJsxAttributeNode> attributes;
 
@@ -17,7 +21,7 @@ public class MdxJsxFlowElement extends MdAstParent<MdAstFlowContent> implements 
     }
 
     public MdxJsxFlowElement(String name, List<MdxJsxAttributeNode> attributes) {
-        super("mdxJsxFlowElement");
+        super(TYPE);
         this.name = name;
         this.attributes = attributes;
     }
@@ -52,5 +56,20 @@ public class MdxJsxFlowElement extends MdAstParent<MdAstFlowContent> implements 
             attribute.toJson(writer);
         }
         writer.endArray();
+    }
+
+    @Override
+    protected void readJson(JsonObject jsonObject) throws IOException {
+        super.readJson(jsonObject);
+        this.name = readJsonString(jsonObject, "name");
+        this.attributes.clear();
+        for (var attributeEl : jsonObject.getAsJsonArray("attributes")) {
+            var mdxNode = MdAstNode.fromJson(attributeEl.getAsJsonObject());
+            if (mdxNode instanceof MdxJsxAttributeNode attributeNode) {
+                this.attributes.add(attributeNode);
+            } else {
+                throw new JsonSyntaxException("Unexpected attribute node " + mdxNode.type());
+            }
+        }
     }
 }

@@ -15,8 +15,10 @@ package guideme.libs.mdast.model;
  * {type: 'thematicBreak'}
  */
 public class MdAstThematicBreak extends MdAstNode implements MdAstFlowContent {
+    public static final String TYPE = "thematicBreak";
+
     public MdAstThematicBreak() {
-        super("thematicBreak");
+        super(TYPE);
     }
 
     @Override

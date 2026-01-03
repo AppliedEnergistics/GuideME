@@ -1,5 +1,6 @@
 package guideme.libs.mdast.model;
 
+import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 
@@ -19,6 +20,8 @@ import java.io.IOException;
  * type: 'paragraph', children: [{type: 'text', value: 'foo'}] }] }] }
  */
 public class MdAstList extends MdAstParent<MdAstListContent> implements MdAstFlowContent {
+    public static final String TYPE = "list";
+
     /**
      * Represents that the items have been intentionally ordered (when true), or that the order of items is not
      * important (when false).
@@ -40,7 +43,7 @@ public class MdAstList extends MdAstParent<MdAstListContent> implements MdAstFlo
     }
 
     public MdAstList() {
-        super("list");
+        super(TYPE);
     }
 
     @Override
@@ -52,5 +55,18 @@ public class MdAstList extends MdAstParent<MdAstListContent> implements MdAstFlo
         writer.name("spread").value(spread);
 
         super.writeJson(writer);
+    }
+
+    @Override
+    protected void readJson(JsonObject jsonObject) throws IOException {
+        super.readJson(jsonObject);
+
+        this.ordered = readJsonBoolean(jsonObject, "ordered");
+        if (ordered) {
+            this.start = readJsonInt(jsonObject, "start");
+        } else {
+            this.start = 1;
+        }
+        this.spread = readJsonBoolean(jsonObject, "spread");
     }
 }

@@ -1,6 +1,8 @@
 package guideme.internal.siteexport.model;
 
-public class ItemInfoJson {
+import guideme.siteexport.ExportedItemInfo;
+
+public class ItemInfoJson implements ExportedItemInfo {
     public String id;
     public String displayName;
     public String rarity;

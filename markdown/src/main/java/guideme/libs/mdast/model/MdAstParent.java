@@ -1,5 +1,6 @@
 package guideme.libs.mdast.model;
 
+import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import guideme.libs.mdast.MdAstVisitor;
 import guideme.libs.unist.UnistParent;
@@ -48,6 +49,14 @@ public abstract class MdAstParent<T extends MdAstAnyContent> extends MdAstNode i
             ((MdAstNode) child).toJson(writer);
         }
         writer.endArray();
+    }
+
+    @Override
+    protected void readJson(JsonObject jsonObject) throws IOException {
+        this.children.clear();
+        for (var childEl : jsonObject.getAsJsonArray("children")) {
+            addChild(MdAstNode.fromJson(childEl.getAsJsonObject()));
+        }
     }
 
     @Override

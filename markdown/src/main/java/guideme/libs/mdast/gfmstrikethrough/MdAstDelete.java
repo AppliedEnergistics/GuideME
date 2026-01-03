@@ -13,8 +13,10 @@ import guideme.libs.mdast.model.MdAstStaticPhrasingContent;
  * </pre>
  */
 public class MdAstDelete extends MdAstParent<MdAstPhrasingContent> implements MdAstStaticPhrasingContent {
+    public static final String TYPE = "delete";
+
     public MdAstDelete() {
-        super("delete");
+        super(TYPE);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package guideme.libs.mdast.model;
 
+import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import org.jetbrains.annotations.Nullable;
@@ -22,11 +23,12 @@ import org.jetbrains.annotations.Nullable;
  * { type: 'link', url: 'https://example.com', title: 'bravo', children: [{type: 'text', value: 'alpha'}] }
  */
 public class MdAstLink extends MdAstParent<MdAstStaticPhrasingContent> implements MdAstPhrasingContent, MdAstResource {
+    public static final String TYPE = "link";
     public String url = "";
     public String title;
 
     public MdAstLink() {
-        super("link");
+        super(TYPE);
     }
 
     @Override
@@ -51,5 +53,12 @@ public class MdAstLink extends MdAstParent<MdAstStaticPhrasingContent> implement
         }
         writer.name("url").value(url);
         super.writeJson(writer);
+    }
+
+    @Override
+    protected void readJson(JsonObject jsonObject) throws IOException {
+        super.readJson(jsonObject);
+        this.title = readJsonString(jsonObject, "title", null);
+        this.url = readJsonString(jsonObject, "url");
     }
 }

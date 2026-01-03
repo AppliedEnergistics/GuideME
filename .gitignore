@@ -6,3 +6,4 @@ out
 /src/generated/resources/.cache
 /run
 *-autosave.kra
+/web/node_modules

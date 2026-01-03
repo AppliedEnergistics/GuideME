@@ -1,17 +1,20 @@
 package guideme.libs.mdast.mdx.model;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonWriter;
 import guideme.libs.mdast.model.MdAstNode;
 import java.io.IOException;
 import org.jetbrains.annotations.Nullable;
 
 public class MdxJsxAttribute extends MdAstNode implements MdxJsxAttributeNode {
+    public static final String TYPE = "mdxJsxAttribute";
     public String name = "";
     @Nullable
     private Object value;
 
     public MdxJsxAttribute() {
-        super("mdxJsxAttribute");
+        super(TYPE);
     }
 
     public MdxJsxAttribute(String name, @Nullable Object value) {
@@ -63,6 +66,22 @@ public class MdxJsxAttribute extends MdAstNode implements MdxJsxAttributeNode {
             expression.toJson(writer);
         } else {
             throw new IllegalStateException("Invalid attribute value type: " + value);
+        }
+    }
+
+    @Override
+    protected void readJson(JsonObject jsonObject) throws IOException {
+        super.readJson(jsonObject);
+        name = readJsonString(jsonObject, "name");
+        var value = jsonObject.get("value");
+        if (value.isJsonNull()) {
+            this.value = null;
+        } else if (value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()) {
+            this.value = value.getAsString();
+        } else if (value.isJsonObject()) {
+            this.value = MdxJsxAttributeValueExpression.fromJson(value.getAsJsonObject());
+        } else {
+            throw new JsonSyntaxException("Unexpected value for expression value");
         }
     }
 }
