@@ -1,0 +1,41 @@
+name: 'Test Web Export'
+
+on:
+  push:
+    # Only on branches, not tags/releases
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '*'
+
+# Cancel outdated builds for the same branch
+concurrency:
+  group: ci-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # Only run the pull-request build if the pull-request was opened from another repository,
+    # since we already run this workflow for the branch push to our repo.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
+      - run: git fetch origin --tags
+        shell: bash
+      - uses: ./.github/actions/gradle-setup
+      - name: Generate assets
+        run: ./gradlew runData
+
+      - name: Generate Static HTML Site
+        run: ./gradlew printProjectVersion createStaticSite --max-workers 1
+
+      - name: Upload Generated Site
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: build/website/

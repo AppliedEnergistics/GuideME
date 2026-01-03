@@ -141,7 +141,7 @@ class StaticSiteGenerator {
         return new ExportedGuide(index, model);
     }
 
-    static void main(String[] args) {
+    public static void main(String[] args) {
         if (args.length == 0) {
             System.err.println("Usage: --data <export-folder> --output <destination-folder>");
             System.exit(1);

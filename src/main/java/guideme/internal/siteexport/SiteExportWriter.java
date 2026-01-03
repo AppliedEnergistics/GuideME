@@ -44,7 +44,6 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ProblemReporter;
-import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -54,6 +53,7 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
 import net.minecraft.world.item.crafting.SmithingRecipe;
+import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -200,13 +200,16 @@ public class SiteExportWriter {
     }
 
     public void addRecipe(ResourceKey<Recipe<?>> id, SmithingRecipe recipe) {
-        var resultItem = recipe.display().getFirst().result().resolveForFirstStack(ContextMap.EMPTY);
-
-        addRecipe(id, recipe, Map.of(
-                "resultItem", resultItem,
-                "base", recipe.baseIngredient(),
-                "addition", unwrapIngredient(recipe.additionIngredient()),
-                "template", unwrapIngredient(recipe.templateIngredient())));
+        if (recipe instanceof SmithingTransformRecipe transformRecipe) {
+            addRecipe(id, recipe, Map.of(
+                    "resultItem",
+                    transformRecipe.result.apply(transformRecipe.result.item().value().getDefaultInstance()),
+                    "base", recipe.baseIngredient(),
+                    "addition", unwrapIngredient(recipe.additionIngredient()),
+                    "template", unwrapIngredient(recipe.templateIngredient())));
+        } else {
+            LOG.warn("Currently can't handle smithing trim recipe {}", id.identifier());
+        }
     }
 
     private Object unwrapIngredient(Optional<Ingredient> ingredient) {

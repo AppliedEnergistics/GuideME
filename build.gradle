@@ -228,6 +228,9 @@ shadow {
 shadowJar {
     from sourceSets.main.output.classesDirs
     from sourceSets.main.output.resourcesDir
+    from('web/dist') {
+        into 'guideme/internal/web/default-assets'
+    }
     exclude '.cache/**'
 
     dependencies {
@@ -374,6 +377,21 @@ signing {
     required = signingKey != null && signingPassword != null
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign publishing.publications.maven
+}
+
+tasks.named('runExportTestGuide').configure {
+    outputs.dir('build/exportedGuide')
+}
+
+tasks.register('createStaticSite', JavaExec) {
+    inputs.dir('build/exportedGuide')
+    outputs.dir('build/website')
+    group = 'mod development'
+    dependsOn runExportTestGuide, proguardJar
+    classpath.from(configurations.runtimeClasspath)
+    classpath.from(proguardFile)
+    mainClass = 'guideme.internal.web.StaticSiteGenerator'
+    args '--data', 'build/exportedGuide', '--output', 'build/website'
 }
 
 afterEvaluate {
