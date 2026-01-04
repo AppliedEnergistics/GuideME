@@ -28,11 +28,9 @@ jobs:
       - run: git fetch origin --tags
         shell: bash
       - uses: ./.github/actions/gradle-setup
-      - name: Generate assets
-        run: ./gradlew runData
 
       - name: Generate Static HTML Site
-        run: ./gradlew printProjectVersion createStaticSite --max-workers 1
+        run: xvfb-run ./gradlew printProjectVersion createStaticSite --max-workers 1
 
       - name: Upload Generated Site
         uses: actions/upload-artifact@v4
