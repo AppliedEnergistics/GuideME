@@ -3,6 +3,7 @@ package guideme.siteexport;
 import java.util.List;
 import java.util.function.Consumer;
 
+import guideme.siteexport.web.HTMLNode;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Experimental
@@ -13,21 +14,18 @@ public interface RecipeWebRenderingContext extends WebRenderingContext {
      * Add a standard recipe box, which has a Minecraft-style frame, and shows an item-icon for the crafting station in
      * its header alongside a title. The name of an item will be shown as the tooltip.
      */
-    default RecipeBoxBuilder recipeBox(String craftingStationItemId, String header, String tooltipItemId) {
-
-    }
+    RecipeBoxBuilder recipeBox(String craftingStationItemId, String title, String tooltipItemId);
 
     /**
-     * Add a standard recipe box, which has a Minecraft-style frame, and shows an item-icon for the crafting station in
-     * its header alongside a title. The name of an item will be shown as the tooltip.
+     * Add a standard recipe box, which has a Minecraft-style frame, and shows the given HTML in its header.
      */
-    RecipeBoxBuilder recipeBox(String headerHtml, String tooltipItemId);
+    RecipeBoxBuilder recipeBox(HTMLNode header);
 
-    String slotHtml(String itemId);
+    HTMLNode slotHtml(String itemId);
 
-    String slotHtml(List<String> itemIds);
+    HTMLNode slotHtml(List<String> itemIds);
 
-    String arrowHtml();
+    HTMLNode arrowHtml();
 
     interface RecipeBoxBuilder {
         /**
@@ -54,9 +52,9 @@ public interface RecipeWebRenderingContext extends WebRenderingContext {
         RecipeBoxBuilder slot(List<String> itemIds);
 
         /**
-         * Appends raw HTML.
+         * Appends a HTML node.
          */
-        RecipeBoxBuilder rawHtml(String html);
+        RecipeBoxBuilder append(HTMLNode node);
 
         /**
          * Creates a flexible grid where each cell can be filled individually.
@@ -77,6 +75,6 @@ public interface RecipeWebRenderingContext extends WebRenderingContext {
 
         GridBuilder slot(int column, int row, List<String> itemId);
 
-        GridBuilder rawHtml(int column, int row, String html);
+        GridBuilder set(int column, int row, HTMLNode node);
     }
 }

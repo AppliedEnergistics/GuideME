@@ -2,6 +2,8 @@ package guideme.siteexport;
 
 import guideme.libs.mdast.model.MdAstNode;
 import guideme.libs.mdast.model.MdAstParent;
+import guideme.siteexport.web.HTMLFragment;
+import guideme.siteexport.web.HTMLTag;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Experimental
@@ -20,15 +22,15 @@ public interface WebRenderingContext {
     /**
      * Compile an error message to HTML.
      */
-    String compileError(String message);
+    HTMLTag compileError(String message);
 
     /**
      * {@return the children of this node compiled to HTML}
      */
-    String compileChildren(MdAstParent<?> parentNode);
+    HTMLFragment compileChildren(MdAstParent<?> parentNode);
 
     /**
      * {@return the given node compiled to HTML}
      */
-    String compile(MdAstNode node, MdAstParent<?> parentNode);
+    HTMLFragment compile(MdAstNode node, MdAstParent<?> parentNode);
 }

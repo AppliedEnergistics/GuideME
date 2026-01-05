@@ -1,77 +1,81 @@
 package guideme.internal.web;
 
-import static guideme.internal.web.HtmlUtils.createHtmlElement;
-
 import guideme.internal.siteexport.model.NavigationNodeJson;
-import java.util.HashMap;
+import guideme.siteexport.web.HTMLFragment;
+import guideme.siteexport.web.HTMLNode;
+import guideme.siteexport.web.HTMLTag;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 class WebGuideNavBar {
-    private final WebPageCompileContext context;
+  private final WebPageCompileContext context;
 
-    private WebGuideNavBar(WebPageCompileContext context) {
-        this.context = context;
+  private WebGuideNavBar(WebPageCompileContext context) {
+    this.context = context;
+  }
+
+  private boolean isSelfOrChildCurrentPage(NavigationNodeJson node) {
+    if (context.pageId().equals(node.pageId)) {
+      return true;
+    }
+    return node.children.stream().anyMatch(this::isSelfOrChildCurrentPage);
+  }
+
+  private HTMLNode generateLink(NavigationNodeJson node) {
+    if (!node.hasPage) {
+      return HTMLNode.text(node.title);
     }
 
-    private boolean isSelfOrChildCurrentPage(NavigationNodeJson node) {
-        if (context.pageId().equals(node.pageId)) {
-            return true;
-        }
-        return node.children.stream().anyMatch(this::isSelfOrChildCurrentPage);
+    var link = HTMLNode.tag("a");
+    if (node.pageId.equals(context.pageId())) {
+      link.setClassName("active");
+    }
+    link.setAttribute("href", context.getRelativePagePath(node.pageId));
+
+    if (node.icon != null) {
+      var itemInfo = context.guide().getItemInfo(node.icon);
+      link.append(HTMLNode.tag("img")
+          .setClassName("item-icon")
+          .setAttribute("src", context.resolveAssetPath(itemInfo.icon))
+          .setAttribute("alt", ""));
     }
 
-    private String generateLink(NavigationNodeJson node) {
-        var text = HtmlUtils.escapeHtml(node.title);
-
-        if (!node.hasPage) {
-            return text;
-        }
-
-        var linkContent = new StringBuilder();
-        if (node.icon != null) {
-            var itemInfo = context.guide().getItemInfo(node.icon);
-            linkContent.append(createHtmlElement("img",
-                    Map.of("src", context.resolveAssetPath(itemInfo.icon), "alt", "", "class", "item-icon")));
-        }
-
-        if (!node.children.isEmpty()) {
-            linkContent.append(createHtmlElement("svg", Map.of(), createHtmlElement("path", Map.of())));
-        }
-        linkContent.append(text);
-
-        var href = context.getRelativePagePath(node.pageId);
-        var attrs = new HashMap<String, Object>(Map.of("href", href));
-        if (node.pageId.equals(context.pageId())) {
-            attrs.put("class", "active");
-        }
-
-        return createHtmlElement("a", attrs, linkContent.toString());
+    if (!node.children.isEmpty()) {
+      link.append(HTMLNode.tag("svg").append(HTMLNode.tag("path")));
     }
+    link.append(node.title);
 
-    private String generateLevel(List<NavigationNodeJson> nodes) {
-        if (nodes.isEmpty()) {
-            return "";
+    return link;
+  }
+
+  private HTMLFragment generateLevel(List<NavigationNodeJson> nodes) {
+    var fragment = new HTMLFragment();
+
+    for (var node : nodes) {
+      if (!node.children.isEmpty()) {
+        // Expanded by default if any of the current nodes descendents is the current page
+        boolean expanded = isSelfOrChildCurrentPage(node);
+        var details = HTMLNode.tag("details");
+        if (expanded) {
+          details.setAttribute("open", null);
         }
-
-        return nodes.stream().map(node -> {
-            if (!node.children.isEmpty()) {
-                // Expanded by default if any of the current nodes descendents is the current page
-                boolean expanded = isSelfOrChildCurrentPage(node);
-                var childrenHtml = createHtmlElement("div", Map.of("class", "sublevel"), generateLevel(node.children));
-                return createHtmlElement("details", expanded ? Map.of("open", "") : Map.of(),
-                        createHtmlElement("summary", Map.of(), generateLink(node)) + "\n" + childrenHtml);
-            } else {
-                return generateLink(node);
-            }
-        }).collect(Collectors.joining("\n"));
+        details.append(HTMLNode.tag("summary", generateLink(node)))
+            .append(HTMLNode.tag("div", generateLevel(node.children)).setClassName("sublevel"));
+        fragment.append(details);
+      } else {
+        fragment.append(generateLink(node));
+      }
     }
+    return fragment;
+  }
 
-    public static String generate(WebPageCompileContext context) {
-        var navbar = new WebGuideNavBar(context);
-        return createHtmlElement("div", Map.of("class", "navbar"),
-                navbar.generateLevel(context.guide().getRootNavigationNodes()));
-    }
+  public static HTMLTag generate(WebPageCompileContext context) {
+    var navbar = new WebGuideNavBar(context);
+    return HTMLNode.tag("div")
+        .setClassName("navbar")
+        .append(navbar.generateLevel(context.guide().getRootNavigationNodes()));
+  }
 
 }

@@ -5,6 +5,8 @@ import guideme.libs.mdast.model.MdAstParent;
 import guideme.siteexport.ExportedFluidInfo;
 import guideme.siteexport.ExportedItemInfo;
 import guideme.siteexport.WebRenderingContext;
+import guideme.siteexport.web.HTMLFragment;
+import guideme.siteexport.web.HTMLTag;
 
 import java.util.List;
 
@@ -35,17 +37,17 @@ class WebRenderingContextImpl implements WebRenderingContext {
     }
 
     @Override
-    public String compileError(String message) {
+    public HTMLTag compileError(String message) {
         return compiler.compileError(node, message);
     }
 
     @Override
-    public String compileChildren(MdAstParent<?> parentNode) {
+    public HTMLFragment compileChildren(MdAstParent<?> parentNode) {
         return compiler.compileChildren(context, parentNode);
     }
 
     @Override
-    public String compile(MdAstNode node, MdAstParent<?> parentNode) {
+    public HTMLFragment compile(MdAstNode node, MdAstParent<?> parentNode) {
         return compiler.compileChildren(context, List.of(node), parentNode);
     }
 }
