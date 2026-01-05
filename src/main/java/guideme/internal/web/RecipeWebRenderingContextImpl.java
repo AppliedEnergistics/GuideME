@@ -1,63 +1,65 @@
 package guideme.internal.web;
 
-import static guideme.internal.web.HtmlUtils.createHtmlElement;
-
 import guideme.internal.siteexport.model.ItemInfoJson;
 import guideme.libs.mdast.model.MdAstParent;
-import guideme.siteexport.ExportedItemInfo;
-import guideme.siteexport.RecipeWebRenderingContext;
+import guideme.siteexport.web.HtmlFragment;
+import guideme.siteexport.web.HtmlNode;
+import guideme.siteexport.web.HtmlTag;
+import guideme.siteexport.web.RecipeWebRenderingContext;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
 import org.jspecify.annotations.Nullable;
 
-class RecipeWebRenderingContextImpl implements RecipeWebRenderingContext {
+class RecipeWebRenderingContextImpl extends WebRenderingContextImpl implements RecipeWebRenderingContext {
     private final WebPageCompiler webPageCompiler;
     private final WebPageCompileContext context;
     private final MdAstParent<?> node;
     private final ExportedRecipe recipe;
-    private final StringBuilder result = new StringBuilder();
+    private final Consumer<HtmlNode> output;
 
     public RecipeWebRenderingContextImpl(WebPageCompiler webPageCompiler,
             WebPageCompileContext context,
             MdAstParent<?> node,
-            ExportedRecipe recipe) {
+            ExportedRecipe recipe,
+            Consumer<HtmlNode> output) {
+        super(context, webPageCompiler, node);
         this.webPageCompiler = webPageCompiler;
         this.context = context;
         this.node = node;
         this.recipe = recipe;
-    }
-
-    public String getResult() {
-        return result.toString();
+        this.output = output;
     }
 
     @Override
-    public ExportedItemInfo getExportedItem(String itemId) {
-        return context.guide().getItemInfo(itemId);
-    }
-
-    @Override
-    public String slotHtml(String itemId) {
+    public HtmlNode slotHtml(String itemId) {
         return slotHtml(List.of(itemId));
     }
 
     @Override
-    public String slotHtml(List<String> itemIds) {
+    public HtmlNode slotHtml(List<String> itemIds) {
         return createRecipeIngredient(context, node, itemIds);
     }
 
     @Override
-    public String arrowHtml() {
+    public HtmlNode arrowHtml() {
         return createRecipeArrow();
     }
 
     @Override
-    public RecipeBoxBuilder recipeBox(String craftingStationItemId, String header, String tooltipItemId) {
+    public RecipeBoxBuilder recipeBox(String craftingStationItemId, String title, String tooltipItemId) {
         var tooltipItem = context.guide().getItemInfo(tooltipItemId);
+        return recipeBox(
+                createRecipeDisplayName(context, node, craftingStationItemId, title, tooltipItem));
+    }
 
-        var recipeBoxContent = new StringBuilder();
-        recipeBoxContent.append(createRecipeDisplayName(context, node, craftingStationItemId, header, tooltipItem));
+    @Override
+    public RecipeBoxBuilder recipeBox(HtmlNode header) {
+
+        var recipeBoxContent = new HtmlFragment();
+        recipeBoxContent.append(header);
 
         return new RecipeBoxBuilder() {
             @Override
@@ -84,27 +86,75 @@ class RecipeWebRenderingContextImpl implements RecipeWebRenderingContext {
             }
 
             @Override
-            public RecipeBoxBuilder slot(String itemId) {
-                recipeBoxContent.append(createRecipeIngredient(context, node, List.of(itemId)));
+            public RecipeBoxBuilder slot(List<String> itemId) {
+                recipeBoxContent.append(createRecipeIngredient(context, node, itemId));
                 return this;
             }
 
             @Override
-            public RecipeBoxBuilder rawHtml(String html) {
-                recipeBoxContent.append(html);
+            public RecipeBoxBuilder append(HtmlNode node) {
+                recipeBoxContent.append(node);
+                return this;
+            }
+
+            @Override
+            public RecipeBoxBuilder grid(int columns, int rows, Consumer<GridBuilder> customizer) {
+                var gridContent = new HashMap<Integer, HtmlNode>();
+
+                var gridBuilder = new GridBuilder() {
+                    @Override
+                    public GridBuilder image(int column, int row, String assetName) {
+                        Objects.checkIndex(column, columns);
+                        Objects.checkIndex(row, rows);
+                        return set(column, row, HtmlNode.tag("img")
+                                .setAttribute("alt", "")
+                                .setAttribute("src", context.resolveAssetPath(assetName)));
+                    }
+
+                    @Override
+                    public GridBuilder slot(int column, int row, List<String> itemId) {
+                        Objects.checkIndex(column, columns);
+                        Objects.checkIndex(row, rows);
+                        return set(column, row, slotHtml(itemId));
+                    }
+
+                    @Override
+                    public GridBuilder set(int column, int row, HtmlNode node) {
+                        Objects.checkIndex(column, columns);
+                        Objects.checkIndex(row, rows);
+                        gridContent.put(row * columns + column, node);
+                        return this;
+                    }
+                };
+                customizer.accept(gridBuilder);
+
+                var gridContainer = HtmlNode.tag("div")
+                        .setClassName("grid")
+                        .setAttribute("style", "grid-template-columns: repeat(" + columns + ", auto);");
+                for (int i = 0; i < (columns * rows); i++) {
+                    var content = gridContent.get(i);
+                    if (content == null) {
+                        gridContainer.append(HtmlNode.tag("span"));
+                    } else {
+                        gridContainer.append(content);
+                    }
+                }
+
+                recipeBoxContent.append(gridContainer);
                 return this;
             }
 
             @Override
             public void build() {
-                result.append(createHtmlElement("div", Map.of("class", "recipe-container"), createMinecraftFrame(
-                        createRecipeBoxLayout(recipeBoxContent.toString()))));
+                output.accept(HtmlNode.tag("div")
+                        .setClassName("recipe-container")
+                        .append(createMinecraftFrame().append(createRecipeBoxLayout().append(recipeBoxContent))));
             }
         };
     }
 
-    private String createRecipeIngredientGrid(WebPageCompileContext context, MdAstParent<?> node,
-            ExportedRecipe recipe) {
+    private HtmlTag createRecipeIngredientGrid(WebPageCompileContext context, MdAstParent<?> node,
+                                               ExportedRecipe recipe) {
         var shapeless = recipe.recipe().getAsJsonPrimitive("shapeless").getAsBoolean();
         var ingredientsJson = recipe.recipe().getAsJsonArray("ingredients");
 
@@ -124,7 +174,7 @@ class RecipeWebRenderingContextImpl implements RecipeWebRenderingContext {
         return compileRecipeIngredientGrid(context, node, ingredients, shapeless, width);
     }
 
-    private String compileRecipeIngredientGrid(
+    private HtmlTag compileRecipeIngredientGrid(
             WebPageCompileContext context,
             MdAstParent<?> node,
             List<List<String>> ingredients,
@@ -175,50 +225,52 @@ class RecipeWebRenderingContextImpl implements RecipeWebRenderingContext {
             processedIngredients = sparseIngredients;
         }
 
-        StringBuilder slotsHtml = new StringBuilder();
+        HtmlTag gridContainer = HtmlNode.tag("div").setClassName(className);
         for (var ingredient : processedIngredients) {
-            slotsHtml.append(createRecipeIngredient(context, node, ingredient));
+            gridContainer.append(createRecipeIngredient(context, node, ingredient));
         }
-
-        return createHtmlElement("div", Map.of("class", className), slotsHtml.toString());
+        return gridContainer;
     }
 
-    private String createRecipeIngredient(WebPageCompileContext context, MdAstParent<?> node, List<String> itemIds) {
+    private HtmlNode createRecipeIngredient(WebPageCompileContext context, MdAstParent<?> node, List<String> itemIds) {
         if (itemIds.isEmpty()) {
-            return createHtmlElement("div", Map.of("class", "empty-ingredient-box"));
+            return HtmlNode.tag("div").setClassName("empty-ingredient-box");
         } else if (itemIds.size() == 1) {
-            return createHtmlElement("div", Map.of("class", "ingredient-box"),
-                    webPageCompiler.createItemIcon(context, node, itemIds.getFirst(), false));
+            return HtmlNode.tag("div")
+                    .setClassName("ingredient-box")
+                    .append(webPageCompiler.createItemIcon(context, node, itemIds.getFirst(), false));
         } else {
-            var ingredientList = new StringBuilder();
+            var cyclingIngredientBox = HtmlNode.tag("div").setClassName("ingredient-box cycling");
             for (var itemId : itemIds) {
-                ingredientList.append(webPageCompiler.createItemIcon(context, node, itemId, false)).append('\n');
+                cyclingIngredientBox.append(webPageCompiler.createItemIcon(context, node, itemId, false));
             }
-            return createHtmlElement("div", Map.of("class", "ingredient-box cycling"), ingredientList.toString());
+            return cyclingIngredientBox;
         }
     }
 
-    private String createRecipeArrow() {
-        return createHtmlElement("svg", Map.of("class", "recipe-arrow", "viewBox", "0 0 85 50"),
-                createHtmlElement("path",
-                        Map.of("d", "M 0 20 H 60 V 0 L 85 25 L 60 50 L 60 30 L 0 30 Z", "fill", "#8b8b8b")));
+    private HtmlNode createRecipeArrow() {
+        return HtmlNode.tag("svg")
+                .setClassName("recipe-arrow")
+                .setAttribute("viewBox", "0 0 85 50")
+                .append(HtmlNode.tag("path")
+                        .setAttribute("d", "M 0 20 H 60 V 0 L 85 25 L 60 50 L 60 30 L 0 30 Z")
+                        .setAttribute("fill", "#8b8b8b"));
     }
 
-    private String createRecipeDisplayName(WebPageCompileContext context, MdAstParent<?> node, String iconId,
-            String title, ItemInfoJson resultItem) {
-        return createHtmlElement(
-                "div",
-                Map.of("title", resultItem.displayName),
-                webPageCompiler.createItemIcon(context, node, iconId, true) + "\n" +
-                        title + "\n");
+    private HtmlTag createRecipeDisplayName(WebPageCompileContext context, MdAstParent<?> node, String iconId,
+                                            String title, ItemInfoJson resultItem) {
+        return HtmlNode.tag("div")
+                .setAttribute("title", resultItem.displayName)
+                .append(webPageCompiler.createItemIcon(context, node, iconId, true))
+                .append(title);
     }
 
-    private String createMinecraftFrame(String content) {
-        return createHtmlElement("div", Map.of("class", "minecraft-frame"), content);
+    private HtmlTag createMinecraftFrame() {
+        return HtmlNode.tag("div").setClassName("minecraft-frame");
     }
 
-    private String createRecipeBoxLayout(String content) {
-        return createHtmlElement("div", Map.of("class", "recipeBoxLayout"), content);
+    private HtmlTag createRecipeBoxLayout() {
+        return HtmlNode.tag("div").setClassName("recipeBoxLayout");
     }
 
 }

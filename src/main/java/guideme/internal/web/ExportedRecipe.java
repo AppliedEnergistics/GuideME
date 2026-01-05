@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import java.util.Map;
 
-record ExportedRecipe(String id, JsonObject recipe) implements guideme.siteexport.ExportedRecipe {
+record ExportedRecipe(String id, JsonObject recipe) implements guideme.siteexport.web.ExportedRecipe {
     public String type() {
         return recipe.getAsJsonPrimitive("type").getAsString();
     }

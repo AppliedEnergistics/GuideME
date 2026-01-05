@@ -272,6 +272,8 @@ final proguardJar = tasks.register('proguardJar', proguard.gradle.ProGuardTask) 
     dependsOn shadowJar
     outputs.upToDateWhen { false }
 
+    addconfigurationdebugging
+
     if (JavaLanguageVersion.current().asInt() <= 8) {
         libraryjars "${javaHome}/lib/rt.jar"
     } else if (hasJmods) {

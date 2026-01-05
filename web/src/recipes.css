@@ -51,6 +51,12 @@
   height: calc(8px * var(--gui-scale));
 }
 
+/* Custom grid */
+.recipeBoxLayout > .grid {
+  display: grid;
+  align-items: center;
+}
+
 .fluidIcon {
   width: calc(8px * var(--gui-scale));
   height: calc(8px * var(--gui-scale));

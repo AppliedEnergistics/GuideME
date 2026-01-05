@@ -89,6 +89,8 @@ public interface ResourceExporter {
      *
      * @param key   The key under which the data will be retrievable.
      * @param value The value to be serialized to JSON using GSON.
+     *
+     * @see guideme.siteexport.web.ExportedGuide#getExtraData(String);
      */
     void addExtraData(Identifier key, Object value);
 
