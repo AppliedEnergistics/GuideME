@@ -1,18 +1,27 @@
 package guideme.siteexport;
 
 import java.util.List;
+import java.util.function.Consumer;
+
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Experimental
 @ApiStatus.NonExtendable
-public interface RecipeWebRenderingContext {
-    ExportedItemInfo getExportedItem(String itemId);
+public interface RecipeWebRenderingContext extends WebRenderingContext {
 
     /**
      * Add a standard recipe box, which has a Minecraft-style frame, and shows an item-icon for the crafting station in
      * its header alongside a title. The name of an item will be shown as the tooltip.
      */
-    RecipeBoxBuilder recipeBox(String craftingStationItemId, String header, String tooltipItemId);
+    default RecipeBoxBuilder recipeBox(String craftingStationItemId, String header, String tooltipItemId) {
+
+    }
+
+    /**
+     * Add a standard recipe box, which has a Minecraft-style frame, and shows an item-icon for the crafting station in
+     * its header alongside a title. The name of an item will be shown as the tooltip.
+     */
+    RecipeBoxBuilder recipeBox(String headerHtml, String tooltipItemId);
 
     String slotHtml(String itemId);
 
@@ -38,13 +47,36 @@ public interface RecipeWebRenderingContext {
          */
         RecipeBoxBuilder resultSlot();
 
-        RecipeBoxBuilder slot(String itemId);
+        default RecipeBoxBuilder slot(String itemId) {
+            return slot(List.of(itemId));
+        }
+
+        RecipeBoxBuilder slot(List<String> itemIds);
 
         /**
          * Appends raw HTML.
          */
         RecipeBoxBuilder rawHtml(String html);
 
+        /**
+         * Creates a flexible grid where each cell can be filled individually.
+         * @param columns The number of columns in the grid.
+         * @param rows The number of rows in the grid.
+         */
+        RecipeBoxBuilder grid(int columns, int rows, Consumer<GridBuilder> customizer);
+
         void build();
+    }
+
+    interface GridBuilder {
+        GridBuilder image(int column, int row, String assetName);
+
+        default GridBuilder slot(int column, int row, String itemId) {
+            return slot(column, row, List.of(itemId));
+        }
+
+        GridBuilder slot(int column, int row, List<String> itemId);
+
+        GridBuilder rawHtml(int column, int row, String html);
     }
 }

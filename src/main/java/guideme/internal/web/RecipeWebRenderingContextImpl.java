@@ -1,17 +1,20 @@
 package guideme.internal.web;
 
-import static guideme.internal.web.HtmlUtils.createHtmlElement;
-
 import guideme.internal.siteexport.model.ItemInfoJson;
 import guideme.libs.mdast.model.MdAstParent;
-import guideme.siteexport.ExportedItemInfo;
 import guideme.siteexport.RecipeWebRenderingContext;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
-class RecipeWebRenderingContextImpl implements RecipeWebRenderingContext {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
+
+import static guideme.internal.web.HtmlUtils.createHtmlElement;
+
+class RecipeWebRenderingContextImpl extends WebRenderingContextImpl implements RecipeWebRenderingContext {
     private final WebPageCompiler webPageCompiler;
     private final WebPageCompileContext context;
     private final MdAstParent<?> node;
@@ -19,9 +22,10 @@ class RecipeWebRenderingContextImpl implements RecipeWebRenderingContext {
     private final StringBuilder result = new StringBuilder();
 
     public RecipeWebRenderingContextImpl(WebPageCompiler webPageCompiler,
-            WebPageCompileContext context,
-            MdAstParent<?> node,
-            ExportedRecipe recipe) {
+                                         WebPageCompileContext context,
+                                         MdAstParent<?> node,
+                                         ExportedRecipe recipe) {
+        super(context, webPageCompiler, node);
         this.webPageCompiler = webPageCompiler;
         this.context = context;
         this.node = node;
@@ -30,11 +34,6 @@ class RecipeWebRenderingContextImpl implements RecipeWebRenderingContext {
 
     public String getResult() {
         return result.toString();
-    }
-
-    @Override
-    public ExportedItemInfo getExportedItem(String itemId) {
-        return context.guide().getItemInfo(itemId);
     }
 
     @Override
@@ -53,7 +52,7 @@ class RecipeWebRenderingContextImpl implements RecipeWebRenderingContext {
     }
 
     @Override
-    public RecipeBoxBuilder recipeBox(String craftingStationItemId, String header, String tooltipItemId) {
+    public RecipeBoxBuilder recipeBox(String headerHtml, String tooltipItemId) {
         var tooltipItem = context.guide().getItemInfo(tooltipItemId);
 
         var recipeBoxContent = new StringBuilder();
@@ -84,14 +83,63 @@ class RecipeWebRenderingContextImpl implements RecipeWebRenderingContext {
             }
 
             @Override
-            public RecipeBoxBuilder slot(String itemId) {
-                recipeBoxContent.append(createRecipeIngredient(context, node, List.of(itemId)));
+            public RecipeBoxBuilder slot(List<String> itemId) {
+                recipeBoxContent.append(createRecipeIngredient(context, node, itemId));
                 return this;
             }
 
             @Override
             public RecipeBoxBuilder rawHtml(String html) {
                 recipeBoxContent.append(html);
+                return this;
+            }
+
+            @Override
+            public RecipeBoxBuilder grid(int columns, int rows, Consumer<GridBuilder> customizer) {
+                var gridContent = new HashMap<Integer, String>();
+
+                var gridBuilder = new GridBuilder() {
+                    @Override
+                    public GridBuilder image(int column, int row, String assetName) {
+                        Objects.checkIndex(column, columns);
+                        Objects.checkIndex(row, rows);
+                        return rawHtml(column, row, createHtmlElement("img", Map.of(
+                                "alt", "",
+                                "src", context.resolveAssetPath(assetName)
+                        )));
+                    }
+
+                    @Override
+                    public GridBuilder slot(int column, int row, List<String> itemId) {
+                        Objects.checkIndex(column, columns);
+                        Objects.checkIndex(row, rows);
+                        return rawHtml(column, row, slotHtml(itemId));
+                    }
+
+                    @Override
+                    public GridBuilder rawHtml(int column, int row, String html) {
+                        Objects.checkIndex(column, columns);
+                        Objects.checkIndex(row, rows);
+                        gridContent.put(row * columns + column, html);
+                        return this;
+                    }
+                };
+                customizer.accept(gridBuilder);
+
+                var gridHtmlContent = new StringBuilder();
+                for (int i = 0; i < (columns * rows); i++) {
+                    var content = gridContent.get(i);
+                    if (content == null) {
+                        gridHtmlContent.append(createHtmlElement("span", Map.of()));
+                    } else {
+                        gridHtmlContent.append(content);
+                    }
+                }
+
+                recipeBoxContent.append(createHtmlElement("div",
+                        Map.of("class", "grid", "style", "grid-template-columns: repeat(" + columns + ", auto);"),
+                        gridHtmlContent.toString()
+                ));
                 return this;
             }
 
@@ -104,7 +152,7 @@ class RecipeWebRenderingContextImpl implements RecipeWebRenderingContext {
     }
 
     private String createRecipeIngredientGrid(WebPageCompileContext context, MdAstParent<?> node,
-            ExportedRecipe recipe) {
+                                              ExportedRecipe recipe) {
         var shapeless = recipe.recipe().getAsJsonPrimitive("shapeless").getAsBoolean();
         var ingredientsJson = recipe.recipe().getAsJsonArray("ingredients");
 
@@ -205,7 +253,7 @@ class RecipeWebRenderingContextImpl implements RecipeWebRenderingContext {
     }
 
     private String createRecipeDisplayName(WebPageCompileContext context, MdAstParent<?> node, String iconId,
-            String title, ItemInfoJson resultItem) {
+                                           String title, ItemInfoJson resultItem) {
         return createHtmlElement(
                 "div",
                 Map.of("title", resultItem.displayName),

@@ -2,6 +2,7 @@ package guideme.internal.web;
 
 import com.google.gson.JsonElement;
 import guideme.internal.siteexport.model.ExportedPageJson;
+import guideme.internal.siteexport.model.FluidInfoJson;
 import guideme.internal.siteexport.model.IndexModel;
 import guideme.internal.siteexport.model.ItemInfoJson;
 import guideme.internal.siteexport.model.NavigationNodeJson;
@@ -223,6 +224,20 @@ class ExportedGuide {
             throw new IllegalArgumentException("Couldn't find item '" + itemId + "'");
         }
         return item;
+    }
+
+    @Nullable
+    public FluidInfoJson tryGetFluidInfo(String fluidId) {
+        fluidId = this.resolveId(fluidId);
+        return json.fluids.get(fluidId);
+    }
+
+    public FluidInfoJson getFluidInfo(String fluidId) {
+        var fluid = tryGetFluidInfo(fluidId);
+        if (fluid == null) {
+            throw new IllegalArgumentException("Couldn't find fluid '" + fluidId + "'");
+        }
+        return fluid;
     }
 
     public String getGuideTitle() {

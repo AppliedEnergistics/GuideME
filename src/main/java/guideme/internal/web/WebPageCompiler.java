@@ -1,10 +1,5 @@
 package guideme.internal.web;
 
-import static guideme.internal.web.HtmlUtils.createHtmlElement;
-import static guideme.internal.web.HtmlUtils.escapeAttribute;
-import static guideme.internal.web.HtmlUtils.escapeHtml;
-import static guideme.internal.web.HtmlUtils.guiScaledDimension;
-
 import com.google.gson.Gson;
 import guideme.compiler.tags.MdxAttrs;
 import guideme.internal.siteexport.model.ItemInfoJson;
@@ -39,7 +34,16 @@ import guideme.libs.mdast.model.MdAstText;
 import guideme.libs.mdast.model.MdAstThematicBreak;
 import guideme.scene.annotation.InWorldBoxAnnotation;
 import guideme.scene.annotation.InWorldLineAnnotation;
+import guideme.siteexport.CustomElementWebRenderer;
+import guideme.siteexport.DefaultValue;
 import guideme.siteexport.RecipeWebRenderer;
+import net.minecraft.util.StringRepresentable;
+import org.apache.commons.lang3.tuple.Pair;
+import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -52,12 +56,11 @@ import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import net.minecraft.util.StringRepresentable;
-import org.apache.commons.lang3.tuple.Pair;
-import org.joml.Vector3f;
-import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static guideme.internal.web.HtmlUtils.createHtmlElement;
+import static guideme.internal.web.HtmlUtils.escapeAttribute;
+import static guideme.internal.web.HtmlUtils.escapeHtml;
+import static guideme.internal.web.HtmlUtils.guiScaledDimension;
 
 class WebPageCompiler {
     private static final Logger LOG = LoggerFactory.getLogger(WebPageCompiler.class);
@@ -66,6 +69,7 @@ class WebPageCompiler {
     private final WebAssetsBundle webAssetsBundle;
     private final StaticSiteGenerator.Options options;
     private final Map<String, RecipeWebRenderer> recipeRenderersByType = new HashMap<>();
+    private final Map<String, CustomElementWebRenderer> customRendererByName = new HashMap<>();
 
     public WebPageCompiler(ExportedGuide guide, WebAssetsBundle webAssetsBundle, StaticSiteGenerator.Options options) {
         this.guide = guide;
@@ -77,6 +81,12 @@ class WebPageCompiler {
                 new SmeltingRecipeRenderer(),
                 new SmithingRecipeRenderer()));
         registerRecipeRenderers(ServiceLoader.load(RecipeWebRenderer.class));
+
+        for (var renderer : ServiceLoader.load(CustomElementWebRenderer.class)) {
+            for (var tagName : renderer.getTagNames()) {
+                customRendererByName.put(tagName, renderer);
+            }
+        }
     }
 
     private void registerRecipeRenderers(Iterable<RecipeWebRenderer> renderers) {
@@ -123,11 +133,11 @@ class WebPageCompiler {
     public record CompiledPage(@Nullable String title, String content) {
     }
 
-    private String compileChildren(WebPageCompileContext context, MdAstParent<?> parent) {
+    String compileChildren(WebPageCompileContext context, MdAstParent<?> parent) {
         return compileChildren(context, parent.children(), parent);
     }
 
-    private String compileChildren(WebPageCompileContext context, List<?> children, MdAstParent<?> parent) {
+    String compileChildren(WebPageCompileContext context, List<?> children, MdAstParent<?> parent) {
         List<String> elements = new ArrayList<>();
         for (Object child : children) {
             if (child instanceof MdAstNode node) {
@@ -493,7 +503,12 @@ class WebPageCompiler {
     }
 
     private String compileCustomElement(WebPageCompileContext context, MdxJsxElementFields jsxElement,
-            MdAstParent<?> node) {
+                                        MdAstParent<?> node) {
+        var customRenderer = customRendererByName.get(jsxElement.name());
+        if (customRenderer != null) {
+            return customRenderer.render(new CustomElementWebRenderingContextImpl(this, context, jsxElement, node));
+        }
+
         return switch (jsxElement.name()) {
             case "BlockImage" -> compileBlockImage(context, jsxElement, node);
             case "CategoryIndex" -> compileCategoryIndex(context, jsxElement, node);
@@ -513,7 +528,7 @@ class WebPageCompiler {
     }
 
     private String compileBlockImage(WebPageCompileContext context, MdxJsxElementFields jsxElement,
-            MdAstParent<?> node) {
+                                     MdAstParent<?> node) {
         // These are compiled during export
         var src2x = MdxAttrs.getString(jsxElement, "src@2", null);
         var src4x = MdxAttrs.getString(jsxElement, "src@4", null);
@@ -555,7 +570,7 @@ class WebPageCompiler {
     }
 
     private String createItemLink(WebPageCompileContext context, MdAstParent<?> node, String id,
-            TooltipMode tooltipMode, @Nullable String innerContent) {
+                                  TooltipMode tooltipMode, @Nullable String innerContent) {
 
         id = guide.resolveId(id);
 
@@ -582,7 +597,7 @@ class WebPageCompiler {
     }
 
     private String compileItemImage(WebPageCompileContext context, MdxJsxElementFields jsxElement,
-            MdAstParent<?> node) {
+                                    MdAstParent<?> node) {
         var id = MdxAttrs.getString(jsxElement, "id", null);
         var scale = MdxAttrs.getFloat(jsxElement, "scale", 1.0f);
         var itemInfo = guide.getItemInfo(id);
@@ -640,7 +655,7 @@ class WebPageCompiler {
     }
 
     private String compileRecipeFor(WebPageCompileContext context, MdxJsxElementFields jsxElement,
-            MdAstParent<?> node) {
+                                    MdAstParent<?> node) {
         var id = MdxAttrs.getString(jsxElement, "id", null);
         if (id == null) {
             return compileError(node, "Missing id");
@@ -657,7 +672,7 @@ class WebPageCompiler {
     }
 
     private String compileRecipesFor(WebPageCompileContext context, MdxJsxElementFields jsxElement,
-            MdAstParent<?> node) {
+                                     MdAstParent<?> node) {
         var id = MdxAttrs.getString(jsxElement, "id", null);
         if (id == null) {
             return compileError(node, "Missing id");
@@ -686,7 +701,7 @@ class WebPageCompiler {
     }
 
     private String compileCategoryIndex(WebPageCompileContext context, MdxJsxElementFields jsxElement,
-            MdAstParent<?> node) {
+                                        MdAstParent<?> node) {
         var category = MdxAttrs.getString(jsxElement, "category", null);
         if (category == null) {
             return compileError(node, "Missing category attribute");
@@ -703,8 +718,8 @@ class WebPageCompiler {
                 .toList();
 
         return createHtmlElement("ul", Map.of(), pages.stream().map(
-                page -> createHtmlElement("li", Map.of(), createHtmlElement("a",
-                        Map.of("href", context.getRelativePagePath(page.getKey())), escapeHtml(page.getValue().title))))
+                        page -> createHtmlElement("li", Map.of(), createHtmlElement("a",
+                                Map.of("href", context.getRelativePagePath(page.getKey())), escapeHtml(page.getValue().title))))
                 .collect(Collectors.joining("\n")));
     }
 
@@ -763,12 +778,12 @@ class WebPageCompiler {
     }
 
     private String compileGameScene(WebPageCompileContext context, MdxJsxElementFields jsxElement,
-            MdAstParent<?> node) {
+                                    MdAstParent<?> node) {
         var errors = new StringBuilder();
         var attributes = JsxAttributeMapper.map(jsxElement, GameSceneAttributes.class);
 
         record ExportedInWorldAnnotation(String type, float[] minCorner, float[] maxCorner, String color,
-                float thickness, String contentTemplateId, boolean alwaysOnTop) {
+                                         float thickness, String contentTemplateId, boolean alwaysOnTop) {
         }
         record ExportedOverlayAnnotation(String type, float[] pos, String color, String contentTemplateId) {
         }
@@ -791,20 +806,22 @@ class WebPageCompiler {
                 // These tags are exported as part of the scene from the game
                 case "ImportStructure":
                 case "Block":
+                case "RemoveBlocks":
+                case "Entity":
                     break;
                 case "BoxAnnotation":
-                    record BoxAnnotationAttributes(
+                    record BoxAnnotation(
                             Vector3f min,
                             Vector3f max,
                             @DefaultValue("white") String color,
                             @DefaultValue(InWorldBoxAnnotation.DEFAULT_THICKNESS + "") float thickness,
                             @DefaultValue("false") boolean alwaysOnTop) {
                     }
-                    var boxAttributes = JsxAttributeMapper.map(flowElement, BoxAnnotationAttributes.class);
+                    var boxAttributes = JsxAttributeMapper.map(flowElement, BoxAnnotation.class);
                     inWorldAnnotations.add(new ExportedInWorldAnnotation(
                             "box",
-                            new float[] { boxAttributes.min.x, boxAttributes.min.y, boxAttributes.min.z },
-                            new float[] { boxAttributes.max.x, boxAttributes.max.y, boxAttributes.max.z },
+                            new float[]{boxAttributes.min.x, boxAttributes.min.y, boxAttributes.min.z},
+                            new float[]{boxAttributes.max.x, boxAttributes.max.y, boxAttributes.max.z},
                             boxAttributes.color,
                             boxAttributes.thickness,
                             context.templates().create(compileChildren(context, flowElement)),
@@ -821,8 +838,8 @@ class WebPageCompiler {
                     var lineAttributes = JsxAttributeMapper.map(flowElement, LineAnnotation.class);
                     inWorldAnnotations.add(new ExportedInWorldAnnotation(
                             "line",
-                            new float[] { lineAttributes.from.x, lineAttributes.from.y, lineAttributes.from.z },
-                            new float[] { lineAttributes.to.x, lineAttributes.to.y, lineAttributes.to.z },
+                            new float[]{lineAttributes.from.x, lineAttributes.from.y, lineAttributes.from.z},
+                            new float[]{lineAttributes.to.x, lineAttributes.to.y, lineAttributes.to.z},
                             lineAttributes.color,
                             lineAttributes.thickness,
                             context.templates().create(compileChildren(context, flowElement)),
@@ -834,7 +851,7 @@ class WebPageCompiler {
                     var diamondAttributes = JsxAttributeMapper.map(flowElement, DiamondAnnotation.class);
                     overlayAnnotations.add(new ExportedOverlayAnnotation(
                             "overlay",
-                            new float[] { diamondAttributes.pos.x, diamondAttributes.pos.y, diamondAttributes.pos.z },
+                            new float[]{diamondAttributes.pos.x, diamondAttributes.pos.y, diamondAttributes.pos.z},
                             diamondAttributes.color,
                             context.templates().create(compileChildren(context, flowElement))));
                     break;
@@ -901,7 +918,7 @@ class WebPageCompiler {
     }
 
     private String makeItemTooltip(WebPageCompileContext context, ItemInfoJson itemInfo, @Nullable TooltipMode mode,
-            String content) {
+                                   String content) {
         mode = Objects.requireNonNullElse(mode, TooltipMode.ICON);
 
         String tooltipContent;
