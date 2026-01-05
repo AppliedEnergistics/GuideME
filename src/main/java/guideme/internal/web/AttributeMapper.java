@@ -2,6 +2,7 @@ package guideme.internal.web;
 
 import guideme.libs.mdast.mdx.model.MdxJsxAttribute;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.siteexport.DefaultValue;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.RecordComponent;

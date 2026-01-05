@@ -125,7 +125,7 @@ class StaticSiteGenerator {
         }
     }
 
-    private ExportedGuide readGuide(IndexModel index) {
+    private ExportedGuideImpl readGuide(IndexModel index) {
         var path = options.dataFolder.resolve(index.guideDataPath());
         SiteExportJson model;
         try (var input = Files.newInputStream(path);
@@ -138,7 +138,7 @@ class StaticSiteGenerator {
         } catch (IOException e) {
             throw new RuntimeException("Failed to read the index file " + path, e);
         }
-        return new ExportedGuide(index, model);
+        return new ExportedGuideImpl(index, model);
     }
 
     public static void main(String[] args) {
