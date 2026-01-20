@@ -1,43 +1,47 @@
 package guideme.siteexport.web;
 
-import org.jspecify.annotations.Nullable;
-
 import java.util.List;
 import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 
 public final class HTMLText extends HTMLNode {
-  private String content;
+    private String content;
 
-  public HTMLText(String content) {
-    this.content = Objects.requireNonNull(content, "content");
-  }
+    public HTMLText(String content) {
+        this.content = Objects.requireNonNull(content, "content");
+    }
 
-  @Override
-  public String name() {
-    return "";
-  }
+    @Override
+    public String name() {
+        return "";
+    }
 
-  public String content() {
-    return content;
-  }
+    public String content() {
+        return content;
+    }
 
-  @Override
-  public String textContent() {
-    return content();
-  }
+    @Override
+    public String textContent() {
+        return content();
+    }
 
-  @Override
-  public @Nullable String attribute(String name) {
-    return null;
-  }
+    @Override
+    public String outerHtml() {
+        return escapeHtml(textContent());
+    }
 
-  @Override
-  public HTMLTag setAttribute(String name, @Nullable String value) {
-    throw new UnsupportedOperationException("Cannot set attributes on text nodes.");
-  }
+    @Override
+    public @Nullable String attribute(String name) {
+        return null;
+    }
 
-  @Override
-  public List<HTMLNode> children() {
-    return List.of();
-  }
+    @Override
+    public HTMLTag setAttribute(String name, @Nullable String value) {
+        throw new UnsupportedOperationException("Cannot set attributes on text nodes.");
+    }
+
+    @Override
+    public List<HTMLNode> children() {
+        return List.of();
+    }
 }

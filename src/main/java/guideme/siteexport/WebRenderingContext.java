@@ -2,6 +2,7 @@ package guideme.siteexport;
 
 import guideme.libs.mdast.model.MdAstNode;
 import guideme.libs.mdast.model.MdAstParent;
+import guideme.siteexport.web.ExportedGuide;
 import guideme.siteexport.web.HTMLFragment;
 import guideme.siteexport.web.HTMLTag;
 import org.jetbrains.annotations.ApiStatus;
@@ -9,13 +10,14 @@ import org.jetbrains.annotations.ApiStatus;
 @ApiStatus.Experimental
 @ApiStatus.NonExtendable
 public interface WebRenderingContext {
-    ExportedItemInfo getExportedItem(String itemId);
-
-    ExportedFluidInfo getExportedFluid(String fluidId);
+    /**
+     * Access to the exported guide data.
+     */
+    ExportedGuide guide();
 
     /**
-     * Resolves the path from the current page to the given asset, which is for example the path returned
-     * by an exported item icon.
+     * Resolves the path from the current page to the given asset, which is for example the path returned by an exported
+     * item icon.
      */
     String getAssetUrl(String assetPath);
 

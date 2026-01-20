@@ -1,12 +1,10 @@
 package guideme.internal.web;
 
-import guideme.siteexport.ExportedRecipe;
-import guideme.siteexport.RecipeWebRenderer;
-import guideme.siteexport.RecipeWebRenderingContext;
+import guideme.siteexport.web.ExportedRecipe;
 import guideme.siteexport.web.HTMLNode;
-
+import guideme.siteexport.web.RecipeWebRenderer;
+import guideme.siteexport.web.RecipeWebRenderingContext;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 final class CraftingRecipeRenderer implements RecipeWebRenderer {
@@ -49,9 +47,9 @@ final class SmeltingRecipeRenderer implements RecipeWebRenderer {
 
         builder.recipeBox(craftingStation, "Smelting", recipe.resultItem())
                 .append(HTMLNode.tag("div")
-                            .setClassName("smelting-input-box")
-                                .append(builder.slotHtml(ingredient))
-                                .append(HTMLNode.tag("div").setClassName("fire")))
+                        .setClassName("smelting-input-box")
+                        .append(builder.slotHtml(ingredient))
+                        .append(HTMLNode.tag("div").setClassName("fire")))
                 .arrow()
                 .slot(recipe.resultItem())
                 .build();

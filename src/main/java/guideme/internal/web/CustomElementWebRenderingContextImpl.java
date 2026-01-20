@@ -2,15 +2,15 @@ package guideme.internal.web;
 
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstParent;
-import guideme.siteexport.CustomElementWebRenderingContext;
+import guideme.siteexport.web.CustomElementWebRenderingContext;
 
 class CustomElementWebRenderingContextImpl extends WebRenderingContextImpl implements CustomElementWebRenderingContext {
     private final MdxJsxElementFields fields;
 
     public CustomElementWebRenderingContextImpl(WebPageCompiler webPageCompiler,
-                                                WebPageCompileContext context,
-                                                MdxJsxElementFields fields,
-                                                MdAstParent<?> node) {
+            WebPageCompileContext context,
+            MdxJsxElementFields fields,
+            MdAstParent<?> node) {
         super(context, webPageCompiler, node);
         this.fields = fields;
     }

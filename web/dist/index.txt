@@ -1,5 +1,5 @@
 assets/background-YRAQ3RNF.png
-assets/bundle-FVCODRC2.js
+assets/bundle-IEHLY4O6.js
 assets/bundle-WYJTABYV.css
 assets/chunk-ZM3PKBJN.js
 assets/decompressFallback-VGYIC7XH.js

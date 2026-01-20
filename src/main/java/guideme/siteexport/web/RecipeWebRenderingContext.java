@@ -1,9 +1,8 @@
-package guideme.siteexport;
+package guideme.siteexport.web;
 
+import guideme.siteexport.WebRenderingContext;
 import java.util.List;
 import java.util.function.Consumer;
-
-import guideme.siteexport.web.HTMLNode;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Experimental
@@ -58,8 +57,9 @@ public interface RecipeWebRenderingContext extends WebRenderingContext {
 
         /**
          * Creates a flexible grid where each cell can be filled individually.
+         * 
          * @param columns The number of columns in the grid.
-         * @param rows The number of rows in the grid.
+         * @param rows    The number of rows in the grid.
          */
         RecipeBoxBuilder grid(int columns, int rows, Consumer<GridBuilder> customizer);
 

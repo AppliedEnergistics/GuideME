@@ -1,4 +1,4 @@
-package guideme.siteexport;
+package guideme.siteexport.web;
 
 import org.jetbrains.annotations.ApiStatus;
 

@@ -1,12 +1,9 @@
-package guideme.siteexport;
+package guideme.siteexport.web;
 
 import guideme.compiler.TagCompiler;
-import guideme.siteexport.web.HTMLFragment;
-import guideme.siteexport.web.HTMLNode;
-import org.jetbrains.annotations.ApiStatus;
-
 import java.util.Set;
 import java.util.function.Consumer;
+import org.jetbrains.annotations.ApiStatus;
 
 /**
  * This interface is loaded via service-loader and used to compile custom elements in the website renderer.

@@ -7,6 +7,7 @@ import guideme.internal.siteexport.model.IndexModel;
 import guideme.internal.siteexport.model.ItemInfoJson;
 import guideme.internal.siteexport.model.NavigationNodeJson;
 import guideme.internal.siteexport.model.SiteExportJson;
+import guideme.siteexport.web.ExportedGuide;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import org.jspecify.annotations.Nullable;
 
-class ExportedGuide {
+class ExportedGuideImpl implements ExportedGuide {
     private final IndexModel index;
     private final SiteExportJson json;
     private final Map<String, String> pageByItemIndex = new HashMap<>();
@@ -31,7 +32,7 @@ class ExportedGuide {
 
     private final Map<String, List<ExportedRecipe>> recipesByResult = new HashMap<>();
 
-    public ExportedGuide(IndexModel index, SiteExportJson json) {
+    public ExportedGuideImpl(IndexModel index, SiteExportJson json) {
         this.index = index;
         this.json = json;
 
@@ -92,6 +93,7 @@ class ExportedGuide {
         }
     }
 
+    @Override
     public String getDefaultNamespace() {
         return json.defaultNamespace;
     }
@@ -212,12 +214,13 @@ class ExportedGuide {
         return this.pageByItemIndex.get(itemId);
     }
 
-    @Nullable
-    public ItemInfoJson tryGetItemInfo(String itemId) {
+    @Override
+    public @Nullable ItemInfoJson tryGetItemInfo(String itemId) {
         itemId = this.resolveId(itemId);
         return json.items.get(itemId);
     }
 
+    @Override
     public ItemInfoJson getItemInfo(String itemId) {
         var item = tryGetItemInfo(itemId);
         if (item == null) {
@@ -226,18 +229,24 @@ class ExportedGuide {
         return item;
     }
 
-    @Nullable
-    public FluidInfoJson tryGetFluidInfo(String fluidId) {
+    @Override
+    public @Nullable FluidInfoJson tryGetFluidInfo(String fluidId) {
         fluidId = this.resolveId(fluidId);
         return json.fluids.get(fluidId);
     }
 
+    @Override
     public FluidInfoJson getFluidInfo(String fluidId) {
         var fluid = tryGetFluidInfo(fluidId);
         if (fluid == null) {
             throw new IllegalArgumentException("Couldn't find fluid '" + fluidId + "'");
         }
         return fluid;
+    }
+
+    @Override
+    public Object getExtraData(String identifier) {
+        return json.modData.get(identifier);
     }
 
     public String getGuideTitle() {

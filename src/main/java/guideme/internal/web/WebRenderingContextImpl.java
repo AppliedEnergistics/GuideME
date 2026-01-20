@@ -2,12 +2,10 @@ package guideme.internal.web;
 
 import guideme.libs.mdast.model.MdAstNode;
 import guideme.libs.mdast.model.MdAstParent;
-import guideme.siteexport.ExportedFluidInfo;
-import guideme.siteexport.ExportedItemInfo;
 import guideme.siteexport.WebRenderingContext;
+import guideme.siteexport.web.ExportedGuide;
 import guideme.siteexport.web.HTMLFragment;
 import guideme.siteexport.web.HTMLTag;
-
 import java.util.List;
 
 class WebRenderingContextImpl implements WebRenderingContext {
@@ -22,18 +20,13 @@ class WebRenderingContextImpl implements WebRenderingContext {
     }
 
     @Override
+    public ExportedGuide guide() {
+        return context.guide();
+    }
+
+    @Override
     public String getAssetUrl(String assetPath) {
         return context.resolveAssetPath(assetPath);
-    }
-
-    @Override
-    public ExportedItemInfo getExportedItem(String itemId) {
-        return context.guide().getItemInfo(itemId);
-    }
-
-    @Override
-    public ExportedFluidInfo getExportedFluid(String itemId) {
-        return context.guide().getFluidInfo(itemId);
     }
 
     @Override

@@ -1,9 +1,5 @@
 package guideme.internal.web;
 
-import java.util.Map;
-import java.util.Set;
-import org.jspecify.annotations.Nullable;
-
 final class HtmlUtils {
     static String escapeHtml(String text) {
         if (text == null) {

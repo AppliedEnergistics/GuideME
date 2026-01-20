@@ -8,7 +8,7 @@ import java.nio.file.Path;
 
 record WebPageCompileContext(
         StaticSiteGenerator.Options options,
-        ExportedGuide guide,
+        ExportedGuideImpl guide,
         String pageId,
         ExportedPageJson page,
         WebPageCompiler.TemplateContainer templates) {
