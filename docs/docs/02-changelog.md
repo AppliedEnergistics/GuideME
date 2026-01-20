@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.1.0.5-alpha (Minecraft 26.1-snapshot-3)
+
+- First update to 26.1-snapshot-3
+
 ## 26.1.0.4-alpha (Minecraft 26.1-snapshot-1)
 
 - Add the "major" game version to the index.json exported for the web guide (i.e. 26.1 for 26.1-snapshot-1).

@@ -26,7 +26,7 @@ class GuidebookChunkSource extends ChunkSource {
     @Nullable
     @Override
     public ChunkAccess getChunk(int chunkX, int chunkZ, ChunkStatus requiredStatus, boolean load) {
-        var chunkKey = ChunkPos.asLong(chunkX, chunkZ);
+        var chunkKey = ChunkPos.pack(chunkX, chunkZ);
         var chunk = chunks.get(chunkKey);
         if (chunk == null) {
             chunk = new GuidebookChunk(level, new ChunkPos(chunkX, chunkZ));

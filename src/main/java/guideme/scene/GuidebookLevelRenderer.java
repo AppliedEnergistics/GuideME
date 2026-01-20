@@ -232,12 +232,12 @@ public class GuidebookLevelRenderer {
             if (!translucent) {
                 modelParts.removeIf(part -> {
                     var layer = part.getRenderType(blockState);
-                    return layer == ChunkSectionLayer.TRANSLUCENT || layer == ChunkSectionLayer.TRIPWIRE;
+                    return layer == ChunkSectionLayer.TRANSLUCENT;
                 });
             } else {
                 modelParts.removeIf(part -> {
                     var layer = part.getRenderType(blockState);
-                    return layer != ChunkSectionLayer.TRANSLUCENT && layer != ChunkSectionLayer.TRIPWIRE;
+                    return layer != ChunkSectionLayer.TRANSLUCENT;
                 });
             }
 

@@ -103,7 +103,7 @@ final class VanillaRecipes {
     public static LytStandardRecipeBox<SmithingRecipe> createSmithing(RecipeHolder<SmithingRecipe> holder) {
         return LytStandardRecipeBox.builder()
                 .icon(Blocks.SMITHING_TABLE)
-                .title(Items.SMITHING_TABLE.getName().getString())
+                .title(Items.SMITHING_TABLE.getName(Items.SMITHING_TABLE.getDefaultInstance()).getString())
                 .input(LytSlotGrid.rowFromIngredients(getSmithingIngredients(holder.value()), true))
                 .outputFromResultOf(holder)
                 .build(holder);

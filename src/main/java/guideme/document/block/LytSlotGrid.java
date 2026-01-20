@@ -6,7 +6,7 @@ import guideme.render.GuiAssets;
 import guideme.render.RenderContext;
 import java.util.List;
 import java.util.Optional;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import org.jetbrains.annotations.Nullable;
@@ -23,11 +23,11 @@ public class LytSlotGrid extends LytBox {
         this.slots = new LytSlot[width * height];
     }
 
-    public static LytSlotGrid columnFromStacks(List<ItemStack> items, boolean skipEmpty) {
+    public static LytSlotGrid columnFromStacks(List<ItemStackTemplate> items, boolean skipEmpty) {
         return columnFromDisplays(items.stream().map(SlotDisplay.ItemStackSlotDisplay::new).toList(), skipEmpty);
     }
 
-    public static LytSlotGrid rowFromStacks(List<ItemStack> items, boolean skipEmpty) {
+    public static LytSlotGrid rowFromStacks(List<ItemStackTemplate> items, boolean skipEmpty) {
         return rowFromDisplays(items.stream().map(SlotDisplay.ItemStackSlotDisplay::new).toList(), skipEmpty);
     }
 
@@ -141,7 +141,7 @@ public class LytSlotGrid extends LytBox {
         return new LytRect(x, y, LytSlot.OUTER_SIZE * width, LytSlot.OUTER_SIZE * height);
     }
 
-    public void setItem(int x, int y, ItemStack item) {
+    public void setItem(int x, int y, ItemStackTemplate item) {
         setDisplay(x, y, new SlotDisplay.ItemStackSlotDisplay(item));
     }
 

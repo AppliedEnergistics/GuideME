@@ -17,6 +17,7 @@ import guideme.siteexport.ResourceExporter;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -130,7 +131,7 @@ public class LytStandardRecipeBox<T extends Recipe<?>> extends LytVBox implement
             return this;
         }
 
-        public Builder output(ItemStack resultItem) {
+        public Builder output(ItemStackTemplate resultItem) {
             this.output = new LytSlotGrid(1, 1);
             this.output.setItem(0, 0, resultItem);
             return this;

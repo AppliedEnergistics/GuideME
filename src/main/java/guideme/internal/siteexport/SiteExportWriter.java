@@ -39,6 +39,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.zip.GZIPOutputStream;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.Identifier;
@@ -46,6 +47,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -126,6 +128,16 @@ public class SiteExportWriter {
                     }
                 }
             })
+            .registerTypeAdapter(ItemStackTemplate.class, new WriteOnlyTypeAdapter<ItemStackTemplate>() {
+                @Override
+                public void write(JsonWriter out, ItemStackTemplate value) throws IOException {
+                    if (value == null) {
+                        out.nullValue();
+                    } else {
+                        out.value(BuiltInRegistries.ITEM.getKey(value.item().value()).toString());
+                    }
+                }
+            })
             // Boolean
             .registerTypeAdapter(Boolean.class, new WriteOnlyTypeAdapter<Boolean>() {
                 @Override
@@ -177,14 +189,14 @@ public class SiteExportWriter {
 
             var resultItem = shapedRecipe.result;
             fields.put("resultItem", resultItem);
-            fields.put("resultCount", resultItem.getCount());
+            fields.put("resultCount", resultItem.count());
         } else if (recipe instanceof ShapelessRecipe shapelessRecipe) {
             fields.put("shapeless", true);
             fields.put("ingredients", shapelessRecipe.ingredients);
 
             var resultItem = shapelessRecipe.result;
             fields.put("resultItem", resultItem);
-            fields.put("resultCount", resultItem.getCount());
+            fields.put("resultCount", resultItem.count());
         } else {
             LOG.warn("Cannot handle crafting recipe of type {}", recipe);
             return;
@@ -203,7 +215,7 @@ public class SiteExportWriter {
         if (recipe instanceof SmithingTransformRecipe transformRecipe) {
             addRecipe(id, recipe, Map.of(
                     "resultItem",
-                    transformRecipe.result.apply(transformRecipe.result.item().value().getDefaultInstance()),
+                    transformRecipe.result.apply(DataComponentPatch.EMPTY),
                     "base", recipe.baseIngredient(),
                     "addition", unwrapIngredient(recipe.additionIngredient()),
                     "template", unwrapIngredient(recipe.templateIngredient())));

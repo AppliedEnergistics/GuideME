@@ -33,6 +33,7 @@ import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
+import net.minecraft.world.clock.ClockManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -97,7 +98,10 @@ public class GuidebookLevel extends Level {
     private final DeltaTracker.Timer tracker = new DeltaTracker.Timer(20.0F, 0L, def -> def);
     private float partialTick;
     private final ModelDataManager modelDataManager = new ModelDataManager(this);
-    private final EnvironmentAttributeSystem environmentAttributes = EnvironmentAttributeSystem.builder().build();;
+    private final EnvironmentAttributeSystem environmentAttributes = EnvironmentAttributeSystem.builder().build();
+
+    // set time of day to noon (from TimeCommand noon)
+    private final ClockManager clockManager = _ -> 6000;
 
     public GuidebookLevel() {
         this(Platform.getClientRegistryAccess());
@@ -180,10 +184,10 @@ public class GuidebookLevel extends Level {
      * changed in that chunk.
      */
     public void prepareLighting(BlockPos pos) {
-        var minChunk = new ChunkPos(pos.offset(-1, -1, -1));
-        var maxChunk = new ChunkPos(pos.offset(1, 1, 1));
+        var minChunk = ChunkPos.containing(pos.offset(-1, -1, -1));
+        var maxChunk = ChunkPos.containing(pos.offset(1, 1, 1));
         ChunkPos.rangeClosed(minChunk, maxChunk).forEach(chunkPos -> {
-            if (litSections.add(chunkPos.toLong())) {
+            if (litSections.add(chunkPos.pack())) {
                 var lightEngine = getLightEngine();
                 for (int i = 0; i < getSectionsCount(); ++i) {
                     int y = getSectionYFromSectionIndex(i);
@@ -204,12 +208,7 @@ public class GuidebookLevel extends Level {
     }
 
     private static ClientLevel.ClientLevelData createLevelData() {
-        var levelData = new ClientLevel.ClientLevelData(Difficulty.PEACEFUL, false /* hardcore */, false /* flat */);
-
-        // set time of day to noon (from TimeCommand noon)
-        levelData.setDayTime(6000);
-
-        return levelData;
+        return new ClientLevel.ClientLevelData(Difficulty.PEACEFUL, false /* hardcore */, false /* flat */);
     }
 
     public float getPartialTick() {
@@ -416,23 +415,8 @@ public class GuidebookLevel extends Level {
     }
 
     @Override
-    public void setDayTimeFraction(float v) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public float getDayTimeFraction() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public float getDayTimePerTick() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setDayTimePerTick(float v) {
-        throw new UnsupportedOperationException();
+    public ClockManager clockManager() {
+        return clockManager;
     }
 
     @Override

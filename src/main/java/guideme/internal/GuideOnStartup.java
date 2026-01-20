@@ -193,7 +193,7 @@ public final class GuideOnStartup {
                             throw e;
                         }
                     }).get();
-            stuff.updateStaticRegistryTags();
+            stuff.updateComponentsAndStaticRegistryTags();
             Platform.fallbackClientRecipeManager = stuff.getRecipeManager();
             Platform.fallbackClientRegistryAccess = layeredAccess.compositeAccess();
         } catch (Exception e) {
