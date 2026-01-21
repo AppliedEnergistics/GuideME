@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.1.0.6-alpha (Minecraft 26.1-snapshot-4)
+
+- First update to 26.1-snapshot-4
+
 ## 26.1.0.5-alpha (Minecraft 26.1-snapshot-3)
 
 - First update to 26.1-snapshot-3
