@@ -3,6 +3,7 @@ package guideme.siteexport;
 import java.nio.file.Path;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
@@ -24,6 +25,11 @@ public interface ResourceExporter {
      * Ensures the data needed to show tooltips or icons for this item is exported.
      */
     void referenceItem(ItemStack stack);
+
+    /**
+     * Ensures the data needed to show tooltips or icons for this item is exported.
+     */
+    void referenceItem(@org.jspecify.annotations.Nullable ItemStackTemplate stack);
 
     /**
      * Ensures the data needed to show tooltips or icons for this fluid is exported.

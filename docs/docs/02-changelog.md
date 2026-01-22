@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.1.0.7-alpha (Minecraft 26.1-snapshot-4)
+
+- Use ItemStackTemplate for navigation nodes to avoid crash on startup.
+
 ## 26.1.0.6-alpha (Minecraft 26.1-snapshot-4)
 
 - First update to 26.1-snapshot-4

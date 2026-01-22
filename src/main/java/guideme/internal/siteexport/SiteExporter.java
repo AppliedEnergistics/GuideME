@@ -53,6 +53,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -177,6 +178,16 @@ public class SiteExporter implements ResourceExporter {
         if (!stack.isEmpty()) {
             items.add(stack.getItem());
             if (!stack.getComponentsPatch().isEmpty()) {
+                LOG.error("Couldn't handle stack with NBT tag: {}", stack);
+            }
+        }
+    }
+
+    @Override
+    public void referenceItem(ItemStackTemplate stack) {
+        if (stack != null) {
+            items.add(stack.item().value());
+            if (!stack.components().isEmpty()) {
                 LOG.error("Couldn't handle stack with NBT tag: {}", stack);
             }
         }

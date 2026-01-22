@@ -18,8 +18,8 @@ public class NavigationNodeJson {
             jsonNode.pageId = node.pageId().toString();
         }
         jsonNode.title = node.title();
-        if (!node.icon().isEmpty()) {
-            jsonNode.icon = SiteExportWriter.serializeItemStack(node.icon());
+        if (node.icon() != null) {
+            jsonNode.icon = SiteExportWriter.serializeItemStack(node.icon().create());
         }
         jsonNode.children = node.children().stream().map(NavigationNodeJson::of).toList();
         jsonNode.position = node.position();
