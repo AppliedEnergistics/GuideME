@@ -22,11 +22,11 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import guideme.internal.GuideME;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.BlitRenderState;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.state.gui.BlitRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.Identifier;
@@ -233,7 +233,7 @@ public final class Blitter {
         return color(r, g, b);
     }
 
-    public void blit(GuiGraphics guiGraphics) {
+    public void blit(GuiGraphicsExtractor guiGraphics) {
         // With no source rectangle, we'll use the entirety of the texture. This happens rarely though.
         float minU, minV, maxU, maxV;
         if (srcRect == null) {

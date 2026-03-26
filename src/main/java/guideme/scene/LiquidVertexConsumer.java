@@ -1,12 +1,12 @@
 package guideme.scene;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.SectionPos;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4fc;
-import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 /**
@@ -87,16 +87,13 @@ public class LiquidVertexConsumer implements VertexConsumer {
     }
 
     @Override
-    public void putBulkData(PoseStack.Pose pPose, BakedQuad pQuad, float pRed, float pGreen, float pBlue, float pAlpha,
-            int pPackedLight, int pPackedOverlay) {
-        delegate.putBulkData(pPose, pQuad, pRed, pGreen, pBlue, pAlpha, pPackedLight, pPackedOverlay);
+    public void putBlockBakedQuad(float x, float y, float z, BakedQuad quad, QuadInstance instance) {
+        delegate.putBlockBakedQuad(x, y, z, quad, instance);
     }
 
     @Override
-    public void putBulkData(PoseStack.Pose p_85988_, BakedQuad p_85989_, float[] p_331397_, float p_85990_,
-            float p_85991_, float p_85992_, float p_331416_, int[] p_331378_, int p_85993_) {
-        delegate.putBulkData(p_85988_, p_85989_, p_331397_, p_85990_, p_85991_, p_85992_, p_331416_, p_331378_,
-                p_85993_);
+    public void putBakedQuad(PoseStack.Pose pose, BakedQuad quad, QuadInstance instance) {
+        delegate.putBakedQuad(pose, quad, instance);
     }
 
     @Override
@@ -112,16 +109,6 @@ public class LiquidVertexConsumer implements VertexConsumer {
     @Override
     public VertexConsumer addVertexWith2DPose(Matrix3x2fc p_457647_, float p_415815_, float p_416074_) {
         return delegate.addVertexWith2DPose(p_457647_, p_415815_, p_416074_);
-    }
-
-    @Override
-    public VertexConsumer setNormal(PoseStack.Pose pose, Vector3f normalVector) {
-        return delegate.setNormal(pose, normalVector);
-    }
-
-    @Override
-    public VertexConsumer addVertex(PoseStack.Pose p_352288_, Vector3f p_352298_) {
-        return delegate.addVertex(p_352288_, p_352298_);
     }
 
     @Override

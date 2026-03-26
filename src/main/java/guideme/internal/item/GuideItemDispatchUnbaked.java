@@ -3,9 +3,11 @@ package guideme.internal.item;
 import com.mojang.serialization.MapCodec;
 import guideme.internal.GuideME;
 import java.util.List;
-import net.minecraft.client.renderer.item.BlockModelWrapper;
+import java.util.Optional;
+import net.minecraft.client.renderer.item.CuboidItemModelWrapper;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.resources.Identifier;
+import org.joml.Matrix4fc;
 
 public class GuideItemDispatchUnbaked implements ItemModel.Unbaked {
     public static final Identifier ID = GuideME.makeId("guide");
@@ -18,8 +20,8 @@ public class GuideItemDispatchUnbaked implements ItemModel.Unbaked {
     }
 
     @Override
-    public ItemModel bake(ItemModel.BakingContext bakingContext) {
-        var baseModel = new BlockModelWrapper.Unbaked(GuideItem.BASE_MODEL_ID, List.of()).bake(bakingContext);
+    public ItemModel bake(ItemModel.BakingContext bakingContext, Matrix4fc transformation) {
+        var baseModel = new CuboidItemModelWrapper.Unbaked(GuideItem.BASE_MODEL_ID, Optional.empty(), List.of()).bake(bakingContext, transformation);
 
         return new GuideItemDispatchModel(baseModel, bakingContext);
     }

@@ -1,8 +1,8 @@
 package guideme.internal.screen;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.render.state.GuiRenderState;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import org.jetbrains.annotations.ApiStatus;
 import org.joml.Matrix3x2fStack;
 
@@ -11,7 +11,7 @@ import org.joml.Matrix3x2fStack;
  * coordinates.
  */
 @ApiStatus.Internal
-public final class ScaledGuiGraphics extends GuiGraphics {
+public final class ScaledGuiGraphics extends GuiGraphicsExtractor {
     private final float scale;
 
     public ScaledGuiGraphics(Minecraft minecraft,

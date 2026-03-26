@@ -5,11 +5,11 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -20,11 +20,11 @@ import org.joml.Matrix3x2fStack;
  * Helper to build and draw a layer of sprites in a single draw-call.
  */
 final class SpriteLayer {
-    private final GuiGraphics graphics;
+    private final GuiGraphicsExtractor graphics;
     private final List<Vertex> vertices = new ArrayList<>();
     private final Identifier atlasLocation = AtlasIds.GUI;
 
-    public SpriteLayer(GuiGraphics graphics) {
+    public SpriteLayer(GuiGraphicsExtractor graphics) {
         this.graphics = graphics;
     }
 

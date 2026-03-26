@@ -4,7 +4,7 @@ import guideme.render.RenderContext;
 import guideme.render.SimpleRenderContext;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -39,7 +39,7 @@ public abstract class IndepentScaleScreen extends Screen {
     }
 
     @Override
-    public final void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public final void render(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         var scaledGraphics = new ScaledGuiGraphics(
                 Minecraft.getInstance(),
                 guiGraphics.pose(),
@@ -61,7 +61,7 @@ public abstract class IndepentScaleScreen extends Screen {
         scaledGraphics.pose().popMatrix();
     }
 
-    protected void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
+    protected void scaledRender(GuiGraphicsExtractor guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
     }

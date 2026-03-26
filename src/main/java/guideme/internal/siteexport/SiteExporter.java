@@ -36,13 +36,13 @@ import java.util.function.IntUnaryOperator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DetectedVersion;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.ClickEvent;
@@ -514,7 +514,7 @@ public class SiteExporter implements ResourceExporter {
             MoreFiles.deleteRecursively(iconsFolder, RecursiveDeleteOption.ALLOW_INSECURE);
         }
 
-        // Set the GUI scale accordingly to get GuiGraphics to render out items full-screen, filling the scaled up
+        // Set the GUI scale accordingly to get GuiGraphicsExtractor to render out items full-screen, filling the scaled up
         // buffer
         var window = Minecraft.getInstance().getWindow();
         var previousWindowWidth = window.getWidth();
@@ -525,7 +525,7 @@ public class SiteExporter implements ResourceExporter {
         window.setGuiScale(ICON_SCALE);
 
         try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
-            var guiGraphics = new GuiGraphics(client, client.gameRenderer.guiRenderState, 0, 0);
+            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.guiRenderState, 0, 0);
 
             LOG.info("Exporting items...");
             for (var item : items) {
@@ -548,8 +548,8 @@ public class SiteExporter implements ResourceExporter {
 
                 var iconPath = renderAndWrite(renderer, baseName, () -> {
                     client.gameRenderer.guiRenderState.reset();
-                    guiGraphics.renderItem(stack, 0, 0);
-                    guiGraphics.renderItemDecorations(client.font, stack, 0, 0, "");
+                    guiGraphics.item(stack, 0, 0);
+                    guiGraphics.itemDecorations(client.font, stack, 0, 0, "");
                     client.gameRenderer.guiRenderer.incrementFrameNumber(); // If we don't, animations are cached and
                                                                             // don't animate
                     client.gameRenderer.guiRenderer
@@ -571,7 +571,7 @@ public class SiteExporter implements ResourceExporter {
 
         for (var quadList : quadLists) {
             for (var quad : quadList) {
-                result.add(quad.sprite());
+                result.add(quad.materialInfo().sprite());
             }
         }
 
@@ -586,7 +586,7 @@ public class SiteExporter implements ResourceExporter {
             MoreFiles.deleteRecursively(fluidsFolder, RecursiveDeleteOption.ALLOW_INSECURE);
         }
 
-        // Set the GUI scale accordingly to get GuiGraphics to render out items full-screen, filling the scaled up
+        // Set the GUI scale accordingly to get GuiGraphicsExtractor to render out items full-screen, filling the scaled up
         // buffer
         var window = Minecraft.getInstance().getWindow();
         var previousWindowWidth = window.getWidth();
@@ -597,7 +597,7 @@ public class SiteExporter implements ResourceExporter {
         window.setGuiScale(ICON_SCALE);
 
         try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
-            var guiGraphics = new GuiGraphics(client, client.gameRenderer.guiRenderState, 0, 0);
+            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.guiRenderState, 0, 0);
 
             LOG.info("Exporting fluids...");
             for (var fluid : fluids) {

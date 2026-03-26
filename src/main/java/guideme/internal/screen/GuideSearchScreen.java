@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonInfo;
@@ -212,7 +212,7 @@ public class GuideSearchScreen extends DocumentScreen {
     }
 
     @Override
-    protected void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
+    protected void scaledRender(GuiGraphicsExtractor guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
         renderBlurredBackground(guiGraphics);
 
@@ -251,7 +251,7 @@ public class GuideSearchScreen extends DocumentScreen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void renderBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         // Stub this out otherwise vanilla renders a background on top of our content
     }
 

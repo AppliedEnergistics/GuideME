@@ -4,12 +4,12 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.GuiElementRenderState;
+import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 
 /**
- * Just an extension of {@link net.minecraft.client.gui.render.state.BlitRenderState} that allows for all four corners
+ * Just an extension of {@link net.minecraft.client.renderer.state.gui.BlitRenderState} that allows for all four corners
  * of the rectangle to have a different color, not just the top/bottom.
  */
 record GradientBlitRenderState(

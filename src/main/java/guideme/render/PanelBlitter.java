@@ -4,7 +4,7 @@ import guideme.color.LightDarkMode;
 import guideme.document.LytRect;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.Rect2i;
 
 class PanelBlitter {
@@ -55,11 +55,11 @@ class PanelBlitter {
         processedRects.clear();
     }
 
-    public void blit(GuiGraphics graphics, int xOffset, int yOffset) {
+    public void blit(GuiGraphicsExtractor graphics, int xOffset, int yOffset) {
         blit(graphics, xOffset, yOffset, 0xFFFFFFFF);
     }
 
-    public void blit(GuiGraphics graphics, int xOffset, int yOffset, int color) {
+    public void blit(GuiGraphicsExtractor graphics, int xOffset, int yOffset, int color) {
         SpriteLayer layer = new SpriteLayer(graphics);
         render(layer, color);
         layer.render(graphics.pose(), xOffset, yOffset);

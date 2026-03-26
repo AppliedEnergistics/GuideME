@@ -12,7 +12,7 @@ import guideme.style.ResolvedTextStyle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
@@ -32,7 +32,7 @@ public interface RenderContext {
         return lightDarkMode() == LightDarkMode.DARK_MODE;
     }
 
-    GuiGraphics guiGraphics();
+    GuiGraphicsExtractor guiGraphics();
 
     default Matrix3x2fStack poseStack() {
         return guiGraphics().pose();
@@ -175,7 +175,7 @@ public interface RenderContext {
             popPose = true;
         }
 
-        guiGraphics().drawString(
+        guiGraphics().text(
                 font(),
                 Component.literal(text).withStyle(effectiveStyle),
                 (int) x, (int) y,

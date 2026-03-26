@@ -25,7 +25,7 @@ import guideme.ui.UiPoint;
 import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
@@ -487,16 +487,16 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         return true;
     }
 
-    protected final void renderDocumentTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected final void renderDocumentTooltip(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         var document = getDocumentWithLayout();
         // Render tooltip
         if (document != null && document.getHoveredElement() != null) {
-            guiGraphics.renderDeferredElements();
+            guiGraphics.extractDeferredElements(mouseX, mouseY, partialTick);
             renderTooltip(guiGraphics, mouseX, mouseY);
         }
     }
 
-    private void renderTooltip(GuiGraphics guiGraphics, int x, int y) {
+    private void renderTooltip(GuiGraphicsExtractor guiGraphics, int x, int y) {
         var docPos = getDocumentPoint(x, y);
         if (docPos == null) {
             return;
@@ -514,7 +514,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         }
     }
 
-    private void renderTooltip(GuiGraphics guiGraphics, GuideTooltip tooltip, int mouseX, int mouseY,
+    private void renderTooltip(GuiGraphicsExtractor guiGraphics, GuideTooltip tooltip, int mouseX, int mouseY,
             @Nullable Identifier sprite) {
         var minecraft = Minecraft.getInstance();
         var clientLines = tooltip.getLines();
@@ -548,7 +548,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
             y = this.height - frameHeight - 6;
         }
 
-        TooltipRenderUtil.renderTooltipBackground(guiGraphics, x, y, frameWidth, frameHeight, sprite);
+        TooltipRenderUtil.extractTooltipBackground(guiGraphics, x, y, frameWidth, frameHeight, sprite);
 
         if (!icon.isEmpty()) {
             x += 18;
@@ -560,7 +560,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         // Batch-render tooltip text first
         for (int i = 0; i < clientLines.size(); ++i) {
             var line = clientLines.get(i);
-            line.renderText(guiGraphics, minecraft.font, x, currentY);
+            line.extractText(guiGraphics, minecraft.font, x, currentY);
             currentY += line.getHeight(font) + (i == 0 ? 2 : 0);
         }
 
@@ -569,12 +569,12 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         // Then render tooltip decorations, items, etc.
         currentY = y;
         if (!icon.isEmpty()) {
-            guiGraphics.renderItem(icon, x - 18, y);
+            guiGraphics.item(icon, x - 18, y);
         }
 
         for (int i = 0; i < clientLines.size(); ++i) {
             var line = clientLines.get(i);
-            line.renderImage(minecraft.font, x, currentY, frameWidth, frameHeight, guiGraphics);
+            line.extractImage(minecraft.font, x, currentY, frameWidth, frameHeight, guiGraphics);
             currentY += line.getHeight(font) + (i == 0 ? 2 : 0);
         }
     }

@@ -29,7 +29,7 @@ import guideme.ui.GuideUiHost;
 import guideme.ui.UiPoint;
 import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.network.chat.Component;
@@ -201,7 +201,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     }
 
     @Override
-    public void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
+    public void scaledRender(GuiGraphicsExtractor guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
         renderBlurredBackground(guiGraphics);
 
@@ -284,7 +284,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     }
 
     @Override
-    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void renderBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         // Stub this out otherwise vanilla renders a background on top of our content
     }
 

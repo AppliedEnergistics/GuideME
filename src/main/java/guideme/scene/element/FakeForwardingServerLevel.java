@@ -324,11 +324,6 @@ class FakeForwardingServerLevel implements ServerLevelAccessor {
     }
 
     @Override
-    public int getBlockTint(BlockPos blockPos, ColorResolver colorResolver) {
-        return delegate.getBlockTint(blockPos, colorResolver);
-    }
-
-    @Override
     public Holder<Biome> getNoiseBiome(int i, int j, int k) {
         return delegate.getNoiseBiome(i, j, k);
     }
@@ -469,11 +464,6 @@ class FakeForwardingServerLevel implements ServerLevelAccessor {
     @Override
     public <T> HolderLookup<T> holderLookup(ResourceKey<? extends Registry<? extends T>> resourceKey) {
         return delegate.holderLookup(resourceKey);
-    }
-
-    @Override
-    public float getShade(Direction direction, boolean shade) {
-        return delegate.getShade(direction, shade);
     }
 
     @Override
@@ -708,11 +698,6 @@ class FakeForwardingServerLevel implements ServerLevelAccessor {
     @Override
     public ModelData getModelData(BlockPos pos) {
         return delegate.getModelData(pos);
-    }
-
-    @Override
-    public float getShade(float normalX, float normalY, float normalZ, boolean shade) {
-        return delegate.getShade(normalX, normalY, normalZ, shade);
     }
 
     @Override
