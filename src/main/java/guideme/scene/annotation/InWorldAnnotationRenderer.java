@@ -1,8 +1,10 @@
 package guideme.scene.annotation;
 
 import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -16,6 +18,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -23,18 +26,16 @@ import net.minecraft.core.Direction;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.LightCoordsUtil;
-import net.neoforged.neoforge.client.RenderTypeHelper;
 import org.jetbrains.annotations.ApiStatus;
 import org.joml.Vector3f;
 
 @ApiStatus.Internal
 public final class InWorldAnnotationRenderer {
 
-    public static final RenderPipeline OCCLUDED_PIPELINE = RenderPipelines.ITEM_ENTITY_TRANSLUCENT_CULL.toBuilder()
+    public static final RenderPipeline OCCLUDED_PIPELINE = RenderPipelines.ITEM_TRANSLUCENT.toBuilder()
             .withLocation(GuideME.makeId("pipeline/annotation_occluded"))
-            .withBlend(BlendFunction.TRANSLUCENT)
-            .withDepthTestFunction(DepthTestFunction.GREATER_DEPTH_TEST)
-            .withDepthWrite(false)
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN, false))
             .withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS)
             .build();
 
@@ -101,7 +102,7 @@ public final class InWorldAnnotationRenderer {
                         1.0);
             }
 
-            var renderType = RenderTypeHelper.getEntityRenderType(ChunkSectionLayer.TRANSLUCENT);
+            var renderType = RenderTypes.translucentMovingBlock();
             var consumer = buffers.getBuffer(renderType);
 
             for (var annotation : annotations) {

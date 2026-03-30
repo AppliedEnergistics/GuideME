@@ -5,7 +5,6 @@ import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -53,6 +52,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.state.GameRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
@@ -90,14 +90,16 @@ public class SceneExporter {
     private static List<Mesh> renderToMeshes(GuidebookLevel level) {
         try (var bufferSource = new MeshBuildingBufferSource()) {
             var submitStorage = new SubmitNodeStorage();
+            var gameRenderState = new GameRenderState();
             var featureRenderDispatcher = new FeatureRenderDispatcher(
                     submitStorage,
-                    Minecraft.getInstance().getBlockRenderer(),
+                    Minecraft.getInstance().getModelManager(),
                     bufferSource,
                     Minecraft.getInstance().getAtlasManager(),
                     Minecraft.getInstance().renderBuffers().outlineBufferSource(),
                     Minecraft.getInstance().renderBuffers().crumblingBufferSource(),
-                    Minecraft.getInstance().font);
+                    Minecraft.getInstance().font,
+                    gameRenderState);
             GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource, featureRenderDispatcher,
                     new PoseStack());
             featureRenderDispatcher.renderAllFeatures();
@@ -217,7 +219,7 @@ public class SceneExporter {
                 throw new RuntimeException(e);
             }
 
-            frameCount = animatedTexture.getUniqueFrames().count();
+            frameCount = animatedTexture.getUniqueFrames().size();
             frameRowSize = animatedTexture.frameRowSize;
 
             ExpAnimatedTexturePart.startFramesVector(builder, animatedTexture.frames.size());
