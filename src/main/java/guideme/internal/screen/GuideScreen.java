@@ -203,7 +203,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     @Override
     public void scaledRender(GuiGraphicsExtractor guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
-        renderBlurredBackground(guiGraphics);
+//        renderBlurredBackground(guiGraphics);
 
         context.fillIcon(screenRect, GuiAssets.GUIDE_BACKGROUND, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
 
@@ -283,10 +283,10 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         return null;
     }
 
-    @Override
-    public void renderBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        // Stub this out otherwise vanilla renders a background on top of our content
-    }
+//    @Override
+//    public void renderBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+//        // Stub this out otherwise vanilla renders a background on top of our content
+//    }
 
     private void renderTitle(LytRect documentRect, RenderContext context) {
         pageTitle.render(context);

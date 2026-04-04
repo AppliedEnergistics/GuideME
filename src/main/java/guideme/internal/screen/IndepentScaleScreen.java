@@ -39,7 +39,7 @@ public abstract class IndepentScaleScreen extends Screen {
     }
 
     @Override
-    public final void render(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public final void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         var scaledGraphics = new ScaledGuiGraphics(
                 Minecraft.getInstance(),
                 guiGraphics.pose(),
@@ -56,14 +56,14 @@ public abstract class IndepentScaleScreen extends Screen {
         scaledGraphics.pose().scale((float) effectiveScale, (float) effectiveScale);
         scaledRender(scaledGraphics, renderContext, toVirtual(mouseX), toVirtual(mouseY), partialTick);
 
-        scaledGraphics.renderDeferredElements();
+        scaledGraphics.extractDeferredElements(mouseX, mouseY, partialTick);
 
         scaledGraphics.pose().popMatrix();
     }
 
     protected void scaledRender(GuiGraphicsExtractor guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
     }
 
     @Override

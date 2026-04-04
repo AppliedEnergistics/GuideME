@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -44,7 +45,9 @@ import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.item.crafting.RecipePropertySet;
 import net.minecraft.world.item.crafting.SelectableRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
@@ -75,7 +78,7 @@ import net.neoforged.neoforge.model.data.ModelData;
 import net.neoforged.neoforge.model.data.ModelDataManager;
 import org.jetbrains.annotations.Nullable;
 
-public class GuidebookLevel extends Level {
+public class GuidebookLevel extends Level implements BlockAndTintGetter {
 
     private static final ResourceKey<Level> LEVEL_ID = ResourceKey.create(Registries.DIMENSION,
             GuideME.makeId("guidebook"));
@@ -204,6 +207,17 @@ public class GuidebookLevel extends Level {
         });
     }
 
+    @Override
+    public CardinalLighting cardinalLighting() {
+        return CardinalLighting.DEFAULT;
+    }
+
+    @Override
+    public int getBlockTint(BlockPos pos, ColorResolver color) {
+        // TODO
+        return 0;
+    }
+
     public record Bounds(BlockPos min, BlockPos max) {
     }
 
@@ -226,7 +240,7 @@ public class GuidebookLevel extends Level {
     }
 
     public void onRenderFrame() {
-        var ticksElapsed = tracker.advanceTime(Util.getMillis(), true);
+        var ticksElapsed = tracker.advanceGameTime(Util.getMillis());
         if (ticksElapsed > 0) {
             clientLevelData.setGameTime(clientLevelData.getGameTime() + ticksElapsed);
         }
@@ -375,19 +389,20 @@ public class GuidebookLevel extends Level {
     public void gameEvent(Holder<GameEvent> gameEvent, Vec3 vec3, GameEvent.Context context) {
     }
 
-    @Override
-    public float getShade(Direction direction, boolean shade) {
-        if (!shade) {
-            return 1.0F;
-        } else {
-            return switch (direction) {
-                case DOWN -> 0.5F;
-                case NORTH, SOUTH -> 0.8F;
-                case WEST, EAST -> 0.6F;
-                default -> 1.0F;
-            };
-        }
-    }
+    // TODO
+//    @Override
+//    public float getShade(Direction direction, boolean shade) {
+//        if (!shade) {
+//            return 1.0F;
+//        } else {
+//            return switch (direction) {
+//                case DOWN -> 0.5F;
+//                case NORTH, SOUTH -> 0.8F;
+//                case WEST, EAST -> 0.6F;
+//                default -> 1.0F;
+//            };
+//        }
+//    }
 
     @Override
     public List<? extends Player> players() {

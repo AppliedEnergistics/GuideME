@@ -18,9 +18,12 @@
 
 package guideme.internal.util;
 
+import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import guideme.internal.GuideME;
 import java.util.Objects;
+import java.util.Optional;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.render.TextureSetup;
@@ -40,7 +43,7 @@ import org.joml.Matrix3x2f;
 public final class Blitter {
     public static final RenderPipeline GUI_TEXTURED_OPAQUE = RenderPipelines.GUI_TEXTURED.toBuilder()
             .withLocation(GuideME.makeId("pipeline/gui_textured_opaque"))
-            .withoutBlend()
+            .withColorTargetState(new ColorTargetState(Optional.empty(), ColorTargetState.WRITE_COLOR))
             .build();
 
     // This assumption is obviously bogus, but currently all textures are this size,

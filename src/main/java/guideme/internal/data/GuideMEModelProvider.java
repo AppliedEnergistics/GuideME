@@ -8,6 +8,7 @@ import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.data.PackOutput;
 
 public class GuideMEModelProvider extends ModelProvider {
@@ -20,7 +21,7 @@ public class GuideMEModelProvider extends ModelProvider {
         // Generate the base item model
         ModelTemplates.FLAT_ITEM.create(
                 GuideItem.BASE_MODEL_ID,
-                TextureMapping.layer0(GuideItem.ID.withPrefix("item/")),
+                TextureMapping.layer0(new Material(GuideItem.ID.withPrefix("item/"))),
                 itemModels.modelOutput);
 
         // Generate the dispatch model

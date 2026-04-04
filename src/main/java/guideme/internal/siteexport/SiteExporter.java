@@ -525,7 +525,7 @@ public class SiteExporter implements ResourceExporter {
         window.setGuiScale(ICON_SCALE);
 
         try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
-            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.guiRenderState, 0, 0);
+            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.getGameRenderState().guiRenderState, 0, 0);
 
             LOG.info("Exporting items...");
             for (var item : items) {
@@ -547,11 +547,12 @@ public class SiteExporter implements ResourceExporter {
                 var sprites = guessSprites(quadLists);
 
                 var iconPath = renderAndWrite(renderer, baseName, () -> {
-                    client.gameRenderer.guiRenderState.reset();
+                    client.gameRenderer.getGameRenderState().guiRenderState.reset();
                     guiGraphics.item(stack, 0, 0);
                     guiGraphics.itemDecorations(client.font, stack, 0, 0, "");
-                    client.gameRenderer.guiRenderer.incrementFrameNumber(); // If we don't, animations are cached and
-                                                                            // don't animate
+                    // TODO
+//                    client.gameRenderer.guiRenderer.incrementFrameNumber(); // If we don't, animations are cached and
+//                                                                            // don't animate
                     client.gameRenderer.guiRenderer
                             .render(client.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
                 }, sprites, true);
@@ -597,34 +598,31 @@ public class SiteExporter implements ResourceExporter {
         window.setGuiScale(ICON_SCALE);
 
         try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
-            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.guiRenderState, 0, 0);
+            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.getGameRenderState().guiRenderState, 0, 0);
 
             LOG.info("Exporting fluids...");
             for (var fluid : fluids) {
-                var fluidVariant = new FluidStack(fluid, 1);
+                var model = Minecraft.getInstance()
+                        .getModelManager()
+                        .getFluidStateModelSet()
+                        .get(fluid.defaultFluidState());
                 String fluidId = BuiltInRegistries.FLUID.getKey(fluid).toString();
 
-                var props = IClientFluidTypeExtensions.of(fluidVariant.getFluid());
 
-                var sprite = Minecraft.getInstance()
-                        .getAtlasManager()
-                        .getAtlasOrThrow(AtlasIds.BLOCKS)
-                        .getSprite(props.getStillTexture(fluidVariant));
-                var color = props.getTintColor(fluidVariant);
+                var sprite = model.stillMaterial().sprite();
+                var color = model.fluidTintSource() != null ? model.fluidTintSource().color(fluid.defaultFluidState()) : -1;
 
                 var baseName = "!fluids/" + fluidId.replace(':', '/');
                 var iconPath = renderAndWrite(
                         renderer,
                         baseName,
                         () -> {
-                            if (sprite != null) {
-                                client.gameRenderer.guiRenderState.reset();
-                                guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, 0, 0, 16, 16, color);
-                                client.gameRenderer.guiRenderer
-                                        .render(client.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
-                            }
+                            client.gameRenderer.getGameRenderState().guiRenderState.reset();
+                            guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, 0, 0, 16, 16, color);
+                            client.gameRenderer.guiRenderer
+                                    .render(client.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
                         },
-                        sprite != null ? Set.of(sprite) : Set.of(),
+                        Set.of(sprite),
                         false /*
                                * no alpha for fluids since water is translucent but there's nothing behind it in our
                                * icons
@@ -632,7 +630,7 @@ public class SiteExporter implements ResourceExporter {
                 );
 
                 String absIconUrl = "/" + outputFolder.relativize(iconPath).toString().replace('\\', '/');
-                siteExport.addFluid(fluidId, fluidVariant, absIconUrl);
+                siteExport.addFluid(fluidId, new FluidStack(fluid, 1), absIconUrl);
             }
         } finally {
             window.setWidth(previousWindowWidth);
