@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.TextureFilteringMethod;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockQuadOutput;
 import net.minecraft.client.renderer.block.FluidRenderer;
@@ -45,6 +46,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
+import org.lwjgl.opengl.GL11;
 
 public class GuidebookLevelRenderer {
 
@@ -131,6 +133,8 @@ public class GuidebookLevelRenderer {
         var renderState = new LightmapRenderState();
         renderState.needsUpdate = true;
         gameRenderer.lightmap.render(renderState);
+        // TODO 26.1: Temporary(?) workaround to make sure that the fence that was just created is synced
+        GL11.glFlush();
         try {
             renderContent(level, buffers, gameRenderer.getFeatureRenderDispatcher(), new PoseStack());
 
@@ -141,6 +145,8 @@ public class GuidebookLevelRenderer {
             gameRenderer.useUiLightmap = previousUseUiLightmap;
             gameRenderer.getGameRenderState().lightmapRenderState.needsUpdate = true;
             gameRenderer.lightmap.render(gameRenderer.getGameRenderState().lightmapRenderState);
+            // TODO 26.1: Temporary(?) workaround to make sure that the fence that was just created is synced
+            GL11.glFlush();
         }
 
         modelViewStack.popMatrix();
@@ -197,9 +203,8 @@ public class GuidebookLevelRenderer {
 
     private static RenderType getEntityRenderType(ChunkSectionLayer layer) {
         return switch (layer) {
-            case SOLID -> RenderTypes.solidMovingBlock();
-            case CUTOUT -> RenderTypes.cutoutMovingBlock();
-            case TRANSLUCENT -> RenderTypes.translucentMovingBlock();
+            case SOLID, CUTOUT -> Sheets.cutoutBlockSheet();
+            case TRANSLUCENT -> Sheets.translucentBlockSheet();
         };
     }
 
@@ -211,8 +216,6 @@ public class GuidebookLevelRenderer {
         var modelManager = minecraft.getModelManager();
         var fluidModelSet = modelManager.getFluidStateModelSet();
         var fluidRenderer = new FluidRenderer(fluidModelSet);
-        // TODO: should we do anything about this: layer != ChunkSectionLayer.TRANSLUCENT || translucent?
-        FluidRenderer.Output fluidOutput = layer -> buffers.getBuffer(getEntityRenderType(layer));
 
         BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> {
             var builder = buffers.getBuffer(getEntityRenderType(quad.materialInfo().layer()));
@@ -225,6 +228,13 @@ public class GuidebookLevelRenderer {
             var blockState = level.getBlockState(pos);
             var fluidState = blockState.getFluidState();
             if (!fluidState.isEmpty()) {
+                // TODO: should we do anything about this: layer != ChunkSectionLayer.TRANSLUCENT || translucent?
+                var sectionPos = SectionPos.of(pos);
+                FluidRenderer.Output fluidOutput = layer -> {
+                    var baseBuffer = buffers.getBuffer(getEntityRenderType(layer));
+                    return new LiquidVertexConsumer(baseBuffer, sectionPos);
+                };
+
                 var customRenderer = fluidModelSet.get(fluidState).customRenderer();
                 if (customRenderer == null || !customRenderer.renderFluid(fluidRenderer, fluidState, level, pos, fluidOutput, blockState)) {
                     fluidRenderer.tesselate(level, pos, fluidOutput, blockState, fluidState);
