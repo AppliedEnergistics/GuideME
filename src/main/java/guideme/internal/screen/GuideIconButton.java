@@ -7,7 +7,7 @@ import guideme.internal.GuidebookText;
 import guideme.internal.util.Blitter;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
@@ -49,7 +49,7 @@ public class GuideIconButton extends Button {
     }
 
     @Override
-    public void renderContents(GuiGraphics guiGraphics, int i, int j, float f) {
+    public void extractContents(GuiGraphicsExtractor guiGraphics, int i, int j, float f) {
         var color = SymbolicColor.ICON_BUTTON_NORMAL;
 
         if (!isActive()) {

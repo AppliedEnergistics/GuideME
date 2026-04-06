@@ -52,7 +52,7 @@ record Mesh(MeshData.DrawState drawState,
         var offset = 0;
         VertexFormatElement uvElement = null;
         for (var element : renderType.format().getElements()) {
-            if (element.usage() == VertexFormatElement.Usage.UV && element.index() == 0
+            if (element == VertexFormatElement.UV && element.index() == 0
                     && element.count() == 2) {
                 uvElement = element;
                 break;

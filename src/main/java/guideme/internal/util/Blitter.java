@@ -18,15 +18,17 @@
 
 package guideme.internal.util;
 
+import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import guideme.internal.GuideME;
 import java.util.Objects;
+import java.util.Optional;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.BlitRenderState;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.state.gui.BlitRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.Identifier;
@@ -40,7 +42,7 @@ import org.joml.Matrix3x2f;
 public final class Blitter {
     public static final RenderPipeline GUI_TEXTURED_OPAQUE = RenderPipelines.GUI_TEXTURED.toBuilder()
             .withLocation(GuideME.makeId("pipeline/gui_textured_opaque"))
-            .withoutBlend()
+            .withColorTargetState(new ColorTargetState(Optional.empty(), ColorTargetState.WRITE_COLOR))
             .build();
 
     // This assumption is obviously bogus, but currently all textures are this size,
@@ -233,7 +235,7 @@ public final class Blitter {
         return color(r, g, b);
     }
 
-    public void blit(GuiGraphics guiGraphics) {
+    public void blit(GuiGraphicsExtractor guiGraphics) {
         // With no source rectangle, we'll use the entirety of the texture. This happens rarely though.
         float minU, minV, maxU, maxV;
         if (srcRect == null) {

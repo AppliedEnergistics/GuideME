@@ -8,7 +8,7 @@ import guideme.internal.GuideMEClient;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -18,23 +18,23 @@ import org.joml.Vector2f;
 
 public final class SimpleRenderContext implements RenderContext {
     private final List<LytRect> viewportStack = new ArrayList<>();
-    private final GuiGraphics guiGraphics;
+    private final GuiGraphicsExtractor guiGraphics;
     private final LightDarkMode lightDarkMode;
 
     public SimpleRenderContext(
             LytRect viewport,
-            GuiGraphics guiGraphics,
+            GuiGraphicsExtractor guiGraphics,
             LightDarkMode lightDarkMode) {
         this.viewportStack.add(viewport);
         this.guiGraphics = guiGraphics;
         this.lightDarkMode = lightDarkMode;
     }
 
-    public SimpleRenderContext(LytRect viewport, GuiGraphics guiGraphics) {
+    public SimpleRenderContext(LytRect viewport, GuiGraphicsExtractor guiGraphics) {
         this(viewport, guiGraphics, GuideMEClient.currentLightDarkMode());
     }
 
-    public SimpleRenderContext(GuiGraphics guiGraphics) {
+    public SimpleRenderContext(GuiGraphicsExtractor guiGraphics) {
         this(getDefaultViewport(), guiGraphics, GuideMEClient.currentLightDarkMode());
     }
 
@@ -114,8 +114,8 @@ public final class SimpleRenderContext implements RenderContext {
         // Purposefully do NOT scale the normals!
         // this happens on non-uniform scales when calling the normal scale method
         pose.scale(width / 16, height / 16);
-        guiGraphics().renderItem(stack, 0, 0);
-        guiGraphics().renderItemDecorations(font(), stack, 0, 0);
+        guiGraphics().item(stack, 0, 0);
+        guiGraphics().itemDecorations(font(), stack, 0, 0);
         pose.popMatrix();
     }
 
@@ -147,7 +147,7 @@ public final class SimpleRenderContext implements RenderContext {
     }
 
     @Override
-    public GuiGraphics guiGraphics() {
+    public GuiGraphicsExtractor guiGraphics() {
         return guiGraphics;
     }
 

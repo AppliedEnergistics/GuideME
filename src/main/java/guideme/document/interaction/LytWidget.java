@@ -9,7 +9,7 @@ import guideme.render.RenderContext;
 import guideme.ui.GuideUiHost;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
@@ -58,7 +58,7 @@ public class LytWidget extends LytBlock implements InteractiveElement {
 
         // This is a bit of a hack, but since scissor checks break out of the scaled environment,
         // we pass the scaled gui graphics to the widget to fix calls to containsPointInScissor
-        GuiGraphics guiGraphics = context.guiGraphics();
+        GuiGraphicsExtractor guiGraphics = context.guiGraphics();
         if (minecraft.screen instanceof IndepentScaleScreen indepentScaleScreen) {
             guiGraphics = new ScaledGuiGraphics(minecraft, guiGraphics.pose(),
                     guiGraphics.guiRenderState,
@@ -66,7 +66,7 @@ public class LytWidget extends LytBlock implements InteractiveElement {
                     guiGraphics.mouseY,
                     (float) indepentScaleScreen.getEffectiveScale());
         }
-        widget.render(
+        widget.extractRenderState(
                 guiGraphics,
                 mouseDocPos != null ? mouseDocPos.x() : -100,
                 mouseDocPos != null ? mouseDocPos.y() : -100,

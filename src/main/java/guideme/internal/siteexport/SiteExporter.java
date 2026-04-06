@@ -36,15 +36,14 @@ import java.util.function.IntUnaryOperator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DetectedVersion;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -73,7 +72,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.display.FluidStackContentsFactory;
@@ -514,7 +512,7 @@ public class SiteExporter implements ResourceExporter {
             MoreFiles.deleteRecursively(iconsFolder, RecursiveDeleteOption.ALLOW_INSECURE);
         }
 
-        // Set the GUI scale accordingly to get GuiGraphics to render out items full-screen, filling the scaled up
+        // Set the GUI scale accordingly to get GuiGraphicsExtractor to render out items full-screen, filling the scaled up
         // buffer
         var window = Minecraft.getInstance().getWindow();
         var previousWindowWidth = window.getWidth();
@@ -525,7 +523,7 @@ public class SiteExporter implements ResourceExporter {
         window.setGuiScale(ICON_SCALE);
 
         try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
-            var guiGraphics = new GuiGraphics(client, client.gameRenderer.guiRenderState, 0, 0);
+            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.getGameRenderState().guiRenderState, 0, 0);
 
             LOG.info("Exporting items...");
             for (var item : items) {
@@ -547,11 +545,9 @@ public class SiteExporter implements ResourceExporter {
                 var sprites = guessSprites(quadLists);
 
                 var iconPath = renderAndWrite(renderer, baseName, () -> {
-                    client.gameRenderer.guiRenderState.reset();
-                    guiGraphics.renderItem(stack, 0, 0);
-                    guiGraphics.renderItemDecorations(client.font, stack, 0, 0, "");
-                    client.gameRenderer.guiRenderer.incrementFrameNumber(); // If we don't, animations are cached and
-                                                                            // don't animate
+                    client.gameRenderer.getGameRenderState().guiRenderState.reset();
+                    guiGraphics.item(stack, 0, 0);
+                    guiGraphics.itemDecorations(client.font, stack, 0, 0, "");
                     client.gameRenderer.guiRenderer
                             .render(client.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
                 }, sprites, true);
@@ -571,7 +567,7 @@ public class SiteExporter implements ResourceExporter {
 
         for (var quadList : quadLists) {
             for (var quad : quadList) {
-                result.add(quad.sprite());
+                result.add(quad.materialInfo().sprite());
             }
         }
 
@@ -586,7 +582,7 @@ public class SiteExporter implements ResourceExporter {
             MoreFiles.deleteRecursively(fluidsFolder, RecursiveDeleteOption.ALLOW_INSECURE);
         }
 
-        // Set the GUI scale accordingly to get GuiGraphics to render out items full-screen, filling the scaled up
+        // Set the GUI scale accordingly to get GuiGraphicsExtractor to render out items full-screen, filling the scaled up
         // buffer
         var window = Minecraft.getInstance().getWindow();
         var previousWindowWidth = window.getWidth();
@@ -597,34 +593,31 @@ public class SiteExporter implements ResourceExporter {
         window.setGuiScale(ICON_SCALE);
 
         try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
-            var guiGraphics = new GuiGraphics(client, client.gameRenderer.guiRenderState, 0, 0);
+            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.getGameRenderState().guiRenderState, 0, 0);
 
             LOG.info("Exporting fluids...");
             for (var fluid : fluids) {
-                var fluidVariant = new FluidStack(fluid, 1);
+                var model = Minecraft.getInstance()
+                        .getModelManager()
+                        .getFluidStateModelSet()
+                        .get(fluid.defaultFluidState());
                 String fluidId = BuiltInRegistries.FLUID.getKey(fluid).toString();
 
-                var props = IClientFluidTypeExtensions.of(fluidVariant.getFluid());
 
-                var sprite = Minecraft.getInstance()
-                        .getAtlasManager()
-                        .getAtlasOrThrow(AtlasIds.BLOCKS)
-                        .getSprite(props.getStillTexture(fluidVariant));
-                var color = props.getTintColor(fluidVariant);
+                var sprite = model.stillMaterial().sprite();
+                var color = model.fluidTintSource() != null ? model.fluidTintSource().color(fluid.defaultFluidState()) : -1;
 
                 var baseName = "!fluids/" + fluidId.replace(':', '/');
                 var iconPath = renderAndWrite(
                         renderer,
                         baseName,
                         () -> {
-                            if (sprite != null) {
-                                client.gameRenderer.guiRenderState.reset();
-                                guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, 0, 0, 16, 16, color);
-                                client.gameRenderer.guiRenderer
-                                        .render(client.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
-                            }
+                            client.gameRenderer.getGameRenderState().guiRenderState.reset();
+                            guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, 0, 0, 16, 16, color);
+                            client.gameRenderer.guiRenderer
+                                    .render(client.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
                         },
-                        sprite != null ? Set.of(sprite) : Set.of(),
+                        Set.of(sprite),
                         false /*
                                * no alpha for fluids since water is translucent but there's nothing behind it in our
                                * icons
@@ -632,7 +625,7 @@ public class SiteExporter implements ResourceExporter {
                 );
 
                 String absIconUrl = "/" + outputFolder.relativize(iconPath).toString().replace('\\', '/');
-                siteExport.addFluid(fluidId, fluidVariant, absIconUrl);
+                siteExport.addFluid(fluidId, new FluidStack(fluid, 1), absIconUrl);
             }
         } finally {
             window.setWidth(previousWindowWidth);

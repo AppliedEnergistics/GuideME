@@ -28,13 +28,16 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
@@ -212,7 +215,6 @@ public final class StructureCommands {
             var contentSupplier = pair.getRight();
             LOG.info("Placing {}", snbtFile);
             try {
-                var manager = level.getServer().getStructureManager();
                 CompoundTag compound;
                 var textInFile = contentSupplier.get();
                 if (textInFile == null) {
@@ -220,7 +222,7 @@ public final class StructureCommands {
                 }
                 compound = NbtUtils.snbtToStructure(textInFile);
 
-                var structure = manager.readStructure(compound);
+                var structure = readStructure(level, compound);
                 var pos = origin.getValue();
                 if (!structure.placeInWorld(
                         level,
@@ -240,6 +242,17 @@ public final class StructureCommands {
         }
 
         source.sendSuccess(() -> Component.literal("Placed " + structures.size() + " structures"), true);
+    }
+
+    private static StructureTemplate readStructure(ServerLevel level, CompoundTag tag) {
+        HolderGetter<Block> blockLookup = level.registryAccess()
+                .lookupOrThrow(Registries.BLOCK)
+                .filterFeatures(level.enabledFeatures());
+
+        StructureTemplate structureTemplate = new StructureTemplate();
+        int version = NbtUtils.getDataVersion(tag, 500);
+        structureTemplate.load(blockLookup, DataFixTypes.STRUCTURE.updateToCurrentVersion(level.getServer().getFixerUpper(), tag, version));
+        return structureTemplate;
     }
 
     private static void importStructure(CommandSourceStack source, ServerLevel level, BlockPos origin) {
@@ -280,7 +293,6 @@ public final class StructureCommands {
     private static boolean placeStructure(ServerLevel level,
             BlockPos origin,
             String structurePath) throws CommandSyntaxException, IOException {
-        var manager = level.getServer().getStructureManager();
         CompoundTag compound;
         if (structurePath.toLowerCase(Locale.ROOT).endsWith(".snbt")) {
             var textInFile = Files.readString(Paths.get(structurePath), StandardCharsets.UTF_8);
@@ -290,7 +302,7 @@ public final class StructureCommands {
                 compound = NbtIo.readCompressed(is, NbtAccounter.unlimitedHeap());
             }
         }
-        var structure = manager.readStructure(compound);
+        var structure = readStructure(level, compound);
         return structure.placeInWorld(
                 level,
                 origin,

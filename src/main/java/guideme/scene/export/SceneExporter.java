@@ -5,7 +5,7 @@ import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -53,6 +53,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.state.GameRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
@@ -90,14 +91,16 @@ public class SceneExporter {
     private static List<Mesh> renderToMeshes(GuidebookLevel level) {
         try (var bufferSource = new MeshBuildingBufferSource()) {
             var submitStorage = new SubmitNodeStorage();
+            var gameRenderState = new GameRenderState();
             var featureRenderDispatcher = new FeatureRenderDispatcher(
                     submitStorage,
-                    Minecraft.getInstance().getBlockRenderer(),
+                    Minecraft.getInstance().getModelManager(),
                     bufferSource,
                     Minecraft.getInstance().getAtlasManager(),
                     Minecraft.getInstance().renderBuffers().outlineBufferSource(),
                     Minecraft.getInstance().renderBuffers().crumblingBufferSource(),
-                    Minecraft.getInstance().font);
+                    Minecraft.getInstance().font,
+                    gameRenderState);
             GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource, featureRenderDispatcher,
                     new PoseStack());
             featureRenderDispatcher.renderAllFeatures();
@@ -217,7 +220,7 @@ public class SceneExporter {
                 throw new RuntimeException(e);
             }
 
-            frameCount = animatedTexture.getUniqueFrames().count();
+            frameCount = animatedTexture.getUniqueFrames().size();
             frameRowSize = animatedTexture.frameRowSize;
 
             ExpAnimatedTexturePart.startFramesVector(builder, animatedTexture.frames.size());
@@ -286,18 +289,15 @@ public class SceneExporter {
 
             var element = elements.get(i);
             if (isRelevant(element)) {
-                var normalized = element.usage() == VertexFormatElement.Usage.NORMAL
-                        || element.usage() == VertexFormatElement.Usage.COLOR;
-
                 ExpVertexFormatElement.createExpVertexFormatElement(
                         builder,
                         element.index(),
                         mapType(element.type()),
-                        mapUsage(element.usage()),
+                        mapUsage(element),
                         element.count(),
                         offset,
                         element.byteSize(),
-                        normalized);
+                        element.normalized());
             }
         }
         var elementsOffset = builder.endVector();
@@ -311,7 +311,7 @@ public class SceneExporter {
     }
 
     private static boolean isRelevant(VertexFormatElement element) {
-        return element.usage() != VertexFormatElement.Usage.GENERIC;
+        return mapUsage(element) >= 0;
     }
 
     private Map<RenderType, Integer> writeMaterials(List<Mesh> meshes, FlatBufferBuilder builder) {
@@ -337,7 +337,7 @@ public class SceneExporter {
         var disableCulling = !pipeline.isCull();
 
         // Handle transparency
-        var transparencyState = pipeline.getBlendFunction().orElse(null);
+        var transparencyState = pipeline.getColorTargetState().blendFunction().orElse(null);
         int transparency;
         if (transparencyState == null) {
             transparency = ExpTransparency.DISABLED;
@@ -347,7 +347,7 @@ public class SceneExporter {
             transparency = ExpTransparency.LIGHTNING;
         } else if (transparencyState.equals(BlendFunction.GLINT)) {
             transparency = ExpTransparency.GLINT;
-        } else if (transparencyState.equals(RenderPipelines.CRUMBLING.getBlendFunction().orElse(null))) {
+        } else if (transparencyState.equals(RenderPipelines.CRUMBLING.getColorTargetState().blendFunction().orElse(null))) {
             transparency = ExpTransparency.CRUMBLING;
         } else if (transparencyState.equals(BlendFunction.TRANSLUCENT)) {
             transparency = ExpTransparency.TRANSLUCENT;
@@ -358,17 +358,18 @@ public class SceneExporter {
 
         // Handle depth-testing
         int depthTest;
-        var depthTestShard = pipeline.getDepthTestFunction();
-        if (depthTestShard == DepthTestFunction.NO_DEPTH_TEST) {
+        var depthStencilState = pipeline.getDepthStencilState();
+        CompareOp compareOp;
+        if (depthStencilState == null || (compareOp = depthStencilState.depthTest()) == CompareOp.ALWAYS_PASS) {
             depthTest = ExpDepthTest.DISABLED;
-        } else if (depthTestShard == DepthTestFunction.EQUAL_DEPTH_TEST) {
+        } else if (compareOp == CompareOp.EQUAL) {
             depthTest = ExpDepthTest.EQUAL;
-        } else if (depthTestShard == DepthTestFunction.LEQUAL_DEPTH_TEST) {
+        } else if (compareOp == CompareOp.LESS_THAN_OR_EQUAL) {
             depthTest = ExpDepthTest.LEQUAL;
-        } else if (depthTestShard == DepthTestFunction.GREATER_DEPTH_TEST) {
+        } else if (compareOp == CompareOp.GREATER_THAN) {
             depthTest = ExpDepthTest.GREATER;
         } else {
-            LOG.warn("Cannot handle depth-test state {} of render type {}", depthTestShard, type);
+            LOG.warn("Cannot handle depth-test op {} of render type {}", compareOp, type);
             depthTest = ExpDepthTest.DISABLED;
         }
 
@@ -409,14 +410,18 @@ public class SceneExporter {
         };
     }
 
-    private static int mapUsage(VertexFormatElement.Usage usage) {
-        return switch (usage) {
-            case POSITION -> ExpVertexElementUsage.POSITION;
-            case NORMAL -> ExpVertexElementUsage.NORMAL;
-            case COLOR -> ExpVertexElementUsage.COLOR;
-            case UV -> ExpVertexElementUsage.UV;
-            case GENERIC -> throw new IllegalStateException("Should have been skipped");
-        };
+    private static int mapUsage(VertexFormatElement element) {
+        if (element == VertexFormatElement.POSITION) {
+            return ExpVertexElementUsage.POSITION;
+        } else if (element == VertexFormatElement.COLOR) {
+            return ExpVertexElementUsage.COLOR;
+        } else if (element == VertexFormatElement.UV) {
+            return ExpVertexElementUsage.UV;
+        } else if (element == VertexFormatElement.NORMAL) {
+            return ExpVertexElementUsage.NORMAL;
+        } else {
+            return -1;
+        }
     }
 
     private static int mapType(VertexFormatElement.Type type) {

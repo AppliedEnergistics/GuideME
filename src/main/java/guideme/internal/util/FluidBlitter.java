@@ -19,11 +19,8 @@
 package guideme.internal.util;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 /**
@@ -39,15 +36,14 @@ public final class FluidBlitter {
             stack = new FluidStack(stack.typeHolder(), 1, stack.getComponentsPatch());
         }
 
+        var modelSet = Minecraft.getInstance().getModelManager().getFluidStateModelSet();
         Fluid fluid = stack.getFluid();
+        // TODO: stack-aware fluid models, should they be added back
+        var model = modelSet.get(fluid.defaultFluidState());
+        int tintColor = model.fluidTintSource() != null ? model.fluidTintSource().colorAsStack(stack) : -1;
 
-        var attributes = IClientFluidTypeExtensions.of(fluid);
-        TextureAtlasSprite sprite = Minecraft.getInstance()
-                .getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)
-                .getSprite(attributes.getStillTexture(stack));
-
-        return Blitter.sprite(sprite)
-                .colorRgb(attributes.getTintColor(stack))
+        return Blitter.sprite(model.stillMaterial().sprite())
+                .colorRgb(tintColor)
                 // Most fluid texture have transparency, but we want an opaque slot
                 .blending(false);
     }

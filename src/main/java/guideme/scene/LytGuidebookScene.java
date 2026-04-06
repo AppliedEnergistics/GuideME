@@ -29,7 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
@@ -301,7 +301,7 @@ public class LytGuidebookScene extends LytBox {
             // Pre-apply scissor area
             screenBounds = scissorArea != null ? scissorArea.intersection(screenBounds) : screenBounds;
             if (screenBounds != null) {
-                GuiGraphics guiGraphics = context.guiGraphics();
+                GuiGraphicsExtractor guiGraphics = context.guiGraphics();
                 guiGraphics.submitPictureInPictureRenderState(new ScenePictureInPictureRenderer.State(
                         context.lightDarkMode(),
                         new Matrix3x2f(context.poseStack()),

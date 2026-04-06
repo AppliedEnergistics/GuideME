@@ -4,7 +4,7 @@ import guideme.render.RenderContext;
 import guideme.render.SimpleRenderContext;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -39,7 +39,7 @@ public abstract class IndepentScaleScreen extends Screen {
     }
 
     @Override
-    public final void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public final void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         var scaledGraphics = new ScaledGuiGraphics(
                 Minecraft.getInstance(),
                 guiGraphics.pose(),
@@ -54,16 +54,16 @@ public abstract class IndepentScaleScreen extends Screen {
         // This scale has to be uniform, otherwise items rendered with it will have messed up normals (and broken
         // lighting)
         scaledGraphics.pose().scale((float) effectiveScale, (float) effectiveScale);
-        scaledRender(scaledGraphics, renderContext, toVirtual(mouseX), toVirtual(mouseY), partialTick);
+        scaledExtractRenderState(scaledGraphics, renderContext, toVirtual(mouseX), toVirtual(mouseY), partialTick);
 
-        scaledGraphics.renderDeferredElements();
+        scaledGraphics.extractDeferredElements(toVirtual(mouseX), toVirtual(mouseY), partialTick);
 
         scaledGraphics.pose().popMatrix();
     }
 
-    protected void scaledRender(GuiGraphics guiGraphics, RenderContext context, int mouseX, int mouseY,
+    protected void scaledExtractRenderState(GuiGraphicsExtractor guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
     }
 
     @Override

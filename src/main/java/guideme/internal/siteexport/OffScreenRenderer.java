@@ -16,7 +16,7 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.IntUnaryOperator;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.PerspectiveProjectionMatrixBuffer;
+import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -28,7 +28,7 @@ public class OffScreenRenderer implements AutoCloseable {
     private final CommandEncoder commandEncoder;
     private final GpuTexture colorTexture;
     private final GpuTexture depthTexture;
-    private final PerspectiveProjectionMatrixBuffer projMatrixBuffer;
+    private final ProjectionMatrixBuffer projMatrixBuffer;
     private final Lighting lighting = new Lighting();
 
     public OffScreenRenderer(int width, int height) {
@@ -38,7 +38,7 @@ public class OffScreenRenderer implements AutoCloseable {
         device = RenderSystem.getDevice();
         commandEncoder = device.createCommandEncoder();
 
-        projMatrixBuffer = new PerspectiveProjectionMatrixBuffer("GuideME OffScreen");
+        projMatrixBuffer = new ProjectionMatrixBuffer("GuideME OffScreen");
 
         colorTexture = Objects.requireNonNull(fb.getColorTexture(), "colorTexture");
         var colorTextureView = Objects.requireNonNull(fb.getColorTextureView(), "colorTexture");

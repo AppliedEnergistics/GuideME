@@ -73,7 +73,8 @@ public class FakeRenderEnvironment implements AutoCloseable {
                 new StatsCounter(),
                 new ClientRecipeBook(),
                 Input.EMPTY,
-                false);
+                false,
+                minecraft.computeChatAbilities());
 
         return new FakeRenderEnvironment(originalPlayer);
     }

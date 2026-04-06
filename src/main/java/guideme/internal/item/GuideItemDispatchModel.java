@@ -2,8 +2,9 @@ package guideme.internal.item;
 
 import guideme.internal.GuideRegistry;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.item.BlockModelWrapper;
+import net.minecraft.client.renderer.item.CuboidItemModelWrapper;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -11,6 +12,7 @@ import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 
 public class GuideItemDispatchModel implements ItemModel {
     private final ItemModel baseModel;
@@ -37,8 +39,8 @@ public class GuideItemDispatchModel implements ItemModel {
         if (guideId != null) {
             var guide = GuideRegistry.getById(guideId);
             if (guide != null && guide.getItemSettings().itemModel().isPresent()) {
-                itemModel = new BlockModelWrapper.Unbaked(guide.getItemSettings().itemModel().get(), List.of())
-                        .bake(bakingContext);
+                itemModel = new CuboidItemModelWrapper.Unbaked(guide.getItemSettings().itemModel().get(), Optional.empty(), List.of())
+                        .bake(bakingContext, new Matrix4f());
             }
         }
 

@@ -10,7 +10,7 @@ import guideme.siteexport.ResourceExporter;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,7 +44,7 @@ public class ContentTooltip implements GuideTooltip {
                     }
 
                     @Override
-                    public void renderText(GuiGraphics guiGraphics, Font font, int x, int y) {
+                    public void extractText(GuiGraphicsExtractor guiGraphics, Font font, int x, int y) {
                         getLayoutBox(); // Updates layout
 
                         var pose = guiGraphics.pose();
@@ -58,7 +58,7 @@ public class ContentTooltip implements GuideTooltip {
                     }
 
                     @Override
-                    public void renderImage(Font font, int x, int y, int width, int height, GuiGraphics guiGraphics) {
+                    public void extractImage(Font font, int x, int y, int width, int height, GuiGraphicsExtractor guiGraphics) {
                         getLayoutBox(); // Updates layout
 
                         var pose = guiGraphics.pose();

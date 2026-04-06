@@ -17,7 +17,7 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.DynamicUniforms;
-import net.minecraft.client.renderer.PerspectiveProjectionMatrixBuffer;
+import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -32,7 +32,7 @@ final public class AxisDebugRenderer implements AutoCloseable {
     private final GpuBuffer crosshairBuffer;
     private final RenderSystem.AutoStorageIndexBuffer crosshairIndicies = RenderSystem
             .getSequentialBuffer(VertexFormat.Mode.LINES);
-    private final PerspectiveProjectionMatrixBuffer projectionBuffer;
+    private final ProjectionMatrixBuffer projectionBuffer;
 
     public AxisDebugRenderer() {
         try (ByteBufferBuilder bytebufferbuilder = ByteBufferBuilder
@@ -52,7 +52,7 @@ final public class AxisDebugRenderer implements AutoCloseable {
             }
         }
 
-        projectionBuffer = new PerspectiveProjectionMatrixBuffer("debug crosshair projection");
+        projectionBuffer = new ProjectionMatrixBuffer("debug crosshair projection");
     }
 
     public void render(CameraSettings cameraSettings) {

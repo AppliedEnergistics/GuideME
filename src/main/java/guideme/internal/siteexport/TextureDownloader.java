@@ -2,6 +2,7 @@ package guideme.internal.siteexport;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -23,8 +24,7 @@ public final class TextureDownloader {
      */
     public static final RenderPipeline COPY_BLIT = RenderPipelines.ENTITY_OUTLINE_BLIT.toBuilder()
             .withLocation(GuideME.makeId("copy_blit"))
-            .withBlend(new BlendFunction(SourceFactor.ONE, DestFactor.ZERO))
-            .withColorWrite(true, true)
+            .withColorTargetState(new ColorTargetState(new BlendFunction(SourceFactor.ONE, DestFactor.ZERO)))
             .build();
 
     private TextureDownloader() {
