@@ -30,6 +30,10 @@ You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">do
     <Block id="minecraft:water" />
     <Block id="minecraft:water" x="-1" />
     <Block id="minecraft:water" x="1" />
+    <Block id="minecraft:grass_block" z="1" />
+    <Block id="minecraft:grass_block" x="1" z="1" />
+    <Block id="minecraft:pink_stained_glass" z="2" />
+    <Block id="minecraft:blue_stained_glass" x="1" z="2" />
 </GameScene>
 
 <GameScene zoom={4}>

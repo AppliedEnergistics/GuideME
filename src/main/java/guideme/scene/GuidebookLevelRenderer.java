@@ -9,6 +9,7 @@ import guideme.internal.scene.FakeRenderEnvironment;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
+import java.util.ArrayList;
 import java.util.Collection;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -23,30 +24,23 @@ import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.LightmapRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.GL11;
 
 public class GuidebookLevelRenderer {
 
@@ -159,41 +153,19 @@ public class GuidebookLevelRenderer {
             renderBlockEntities(level, featureRenderDispatcher, level.getPartialTick(), poseStack);
             renderEntities(level, level.getPartialTick(), poseStack, featureRenderDispatcher);
 
-            // The order comes from LevelRenderer#renderLevel
             buffers.endLastBatch();
 
-            // TODO
-//            buffers.endBatch(RenderTypes.entitySolid(AtlasIds.BLOCKS));
-//            buffers.endBatch(RenderTypes.entityCutout(AtlasIds.BLOCKS));
-//            buffers.endBatch(RenderTypes.entityCutoutNoCull(AtlasIds.BLOCKS));
-//            buffers.endBatch(RenderTypes.entitySmoothCutout(AtlasIds.BLOCKS));
-//
-//            // These would normally be pre-baked, but they are not for us
-//            for (var layer : ChunkSectionLayerGroup.OPAQUE.layers()) {
-//                buffers.endBatch(RenderTypeHelper.getEntityRenderType(layer));
-//            }
-//
-//            buffers.endBatch(RenderTypes.solidMovingBlock());
-//            buffers.endBatch(RenderTypes.endPortal());
-//            buffers.endBatch(RenderTypes.endGateway());
-//            buffers.endBatch(Sheets.solidBlockSheet());
-//            buffers.endBatch(Sheets.cutoutBlockSheet());
-//            buffers.endBatch(Sheets.bedSheet());
-//            buffers.endBatch(Sheets.shulkerBoxSheet());
-//            buffers.endBatch(Sheets.signSheet());
-//            buffers.endBatch(Sheets.hangingSignSheet());
-//            buffers.endBatch(Sheets.chestSheet());
-            buffers.endLastBatch();
-
-            renderBlocks(level, buffers, true, poseStack);
-            for (var group : ChunkSectionLayerGroup.values()) {
-                if (group == ChunkSectionLayerGroup.OPAQUE) {
-                    continue;
-                }
-                for (var layer : group.layers()) {
-//                    buffers.endBatch(RenderTypeHelper.getEntityRenderType(layer));
+            // Clear all non-transparent buffers: !sortOnUpload() should be a good approximation
+            var startedTypes = new ArrayList<>(buffers.startedBuilders.keySet());
+            for (var type : startedTypes) {
+                if (!type.sortOnUpload()) {
+                    buffers.endBatch(type);
                 }
             }
+
+            renderBlocks(level, buffers, true, poseStack);
+
+            buffers.endBatch();
         }
     }
 
@@ -214,8 +186,11 @@ public class GuidebookLevelRenderer {
         var fluidRenderer = new FluidRenderer(fluidModelSet);
 
         BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> {
-            var builder = buffers.getBuffer(getEntityRenderType(quad.materialInfo().layer()));
-            builder.putBakedQuad(poseStack.last(), quad, instance);
+            var layer = quad.materialInfo().layer();
+            if (layer.translucent() == translucent) {
+                var builder = buffers.getBuffer(getEntityRenderType(layer));
+                builder.putBakedQuad(poseStack.last(), quad, instance);
+            }
         };
 
         var it = level.getFilledBlocks().iterator();
@@ -224,18 +199,21 @@ public class GuidebookLevelRenderer {
             var blockState = level.getBlockState(pos);
             var fluidState = blockState.getFluidState();
             if (!fluidState.isEmpty()) {
-                // TODO: should we do anything about this: layer != ChunkSectionLayer.TRANSLUCENT || translucent?
                 var sectionPos = SectionPos.of(pos);
                 FluidRenderer.Output fluidOutput = layer -> {
-                    var baseBuffer = buffers.getBuffer(getEntityRenderType(layer));
-                    return new LiquidVertexConsumer(baseBuffer, sectionPos);
+                    if (layer.translucent() == translucent) {
+                        var baseBuffer = buffers.getBuffer(getEntityRenderType(layer));
+                        return new LiquidVertexConsumer(baseBuffer, sectionPos);
+                    } else {
+                        return NoopVertexConsumer.INSTANCE;
+                    }
                 };
 
                 var customRenderer = fluidModelSet.get(fluidState).customRenderer();
                 if (customRenderer == null || !customRenderer.renderFluid(fluidRenderer, fluidState, level, pos, fluidOutput, blockState)) {
                     fluidRenderer.tesselate(level, pos, fluidOutput, blockState, fluidState);
                 }
-                // TODO: markFluidSpritesActive(fluidState);
+                markFluidSpritesActive(fluidState);
             }
 
             if (blockState.getRenderShape() == RenderShape.INVISIBLE) {
@@ -243,23 +221,6 @@ public class GuidebookLevelRenderer {
             }
 
             var model = modelManager.getBlockStateModelSet().get(blockState);
-            // TODO?
-//            if (!translucent) {
-//                modelParts.removeIf(part -> {
-//                    var layer = part.getRenderType(blockState);
-//                    return layer == ChunkSectionLayer.TRANSLUCENT;
-//                });
-//            } else {
-//                modelParts.removeIf(part -> {
-//                    var layer = part.getRenderType(blockState);
-//                    return layer != ChunkSectionLayer.TRANSLUCENT;
-//                });
-//            }
-
-//            if (modelParts.isEmpty()) {
-//                continue;
-//            }
-
             poseStack.pushPose();
             poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
             blockRenderer.tesselateBlock(quadOutput, 0, 0, 0, level, pos, blockState, model, blockState.getSeed(pos));

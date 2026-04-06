@@ -56,7 +56,7 @@ public abstract class IndepentScaleScreen extends Screen {
         scaledGraphics.pose().scale((float) effectiveScale, (float) effectiveScale);
         scaledExtractRenderState(scaledGraphics, renderContext, toVirtual(mouseX), toVirtual(mouseY), partialTick);
 
-        scaledGraphics.extractDeferredElements(mouseX, mouseY, partialTick);
+        scaledGraphics.extractDeferredElements(toVirtual(mouseX), toVirtual(mouseY), partialTick);
 
         scaledGraphics.pose().popMatrix();
     }
