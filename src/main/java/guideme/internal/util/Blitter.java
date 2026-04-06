@@ -23,7 +23,6 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import guideme.internal.GuideME;
 import java.util.Objects;
 import java.util.Optional;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.render.TextureSetup;
