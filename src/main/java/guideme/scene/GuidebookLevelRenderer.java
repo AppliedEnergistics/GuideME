@@ -133,8 +133,6 @@ public class GuidebookLevelRenderer {
         var renderState = new LightmapRenderState();
         renderState.needsUpdate = true;
         gameRenderer.lightmap.render(renderState);
-        // TODO 26.1: Temporary(?) workaround to make sure that the fence that was just created is synced
-        GL11.glFlush();
         try {
             renderContent(level, buffers, gameRenderer.getFeatureRenderDispatcher(), new PoseStack());
 
@@ -145,8 +143,6 @@ public class GuidebookLevelRenderer {
             gameRenderer.useUiLightmap = previousUseUiLightmap;
             gameRenderer.getGameRenderState().lightmapRenderState.needsUpdate = true;
             gameRenderer.lightmap.render(gameRenderer.getGameRenderState().lightmapRenderState);
-            // TODO 26.1: Temporary(?) workaround to make sure that the fence that was just created is synced
-            GL11.glFlush();
         }
 
         modelViewStack.popMatrix();

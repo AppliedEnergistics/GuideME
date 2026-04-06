@@ -214,8 +214,7 @@ public class GuidebookLevel extends Level implements BlockAndTintGetter {
 
     @Override
     public int getBlockTint(BlockPos pos, ColorResolver color) {
-        // TODO
-        return 0;
+        return color.getColor(this.biome.value(), pos.getX(), pos.getZ());
     }
 
     public record Bounds(BlockPos min, BlockPos max) {
@@ -388,21 +387,6 @@ public class GuidebookLevel extends Level implements BlockAndTintGetter {
     @Override
     public void gameEvent(Holder<GameEvent> gameEvent, Vec3 vec3, GameEvent.Context context) {
     }
-
-    // TODO
-//    @Override
-//    public float getShade(Direction direction, boolean shade) {
-//        if (!shade) {
-//            return 1.0F;
-//        } else {
-//            return switch (direction) {
-//                case DOWN -> 0.5F;
-//                case NORTH, SOUTH -> 0.8F;
-//                case WEST, EAST -> 0.6F;
-//                default -> 1.0F;
-//            };
-//        }
-//    }
 
     @Override
     public List<? extends Player> players() {

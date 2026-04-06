@@ -28,6 +28,8 @@ You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">do
 <GameScene zoom={4} interactive={true}>
     <Entity id="minecraft:sheep" data="{Color: 2}" />
     <Block id="minecraft:water" />
+    <Block id="minecraft:water" x="-1" />
+    <Block id="minecraft:water" x="1" />
 </GameScene>
 
 <GameScene zoom={4}>

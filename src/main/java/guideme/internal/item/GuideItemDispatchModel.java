@@ -3,7 +3,6 @@ package guideme.internal.item;
 import guideme.internal.GuideRegistry;
 import java.util.List;
 import java.util.Optional;
-
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.CuboidItemModelWrapper;
 import net.minecraft.client.renderer.item.ItemModel;
