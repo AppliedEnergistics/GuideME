@@ -44,7 +44,6 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -73,7 +72,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.display.FluidStackContentsFactory;
@@ -550,9 +548,6 @@ public class SiteExporter implements ResourceExporter {
                     client.gameRenderer.getGameRenderState().guiRenderState.reset();
                     guiGraphics.item(stack, 0, 0);
                     guiGraphics.itemDecorations(client.font, stack, 0, 0, "");
-                    // TODO
-//                    client.gameRenderer.guiRenderer.incrementFrameNumber(); // If we don't, animations are cached and
-//                                                                            // don't animate
                     client.gameRenderer.guiRenderer
                             .render(client.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
                 }, sprites, true);

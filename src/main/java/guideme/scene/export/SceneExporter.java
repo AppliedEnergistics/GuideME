@@ -415,7 +415,7 @@ public class SceneExporter {
             return ExpVertexElementUsage.POSITION;
         } else if (element == VertexFormatElement.COLOR) {
             return ExpVertexElementUsage.COLOR;
-        } else if (element == VertexFormatElement.UV || element == VertexFormatElement.UV1 ||  element == VertexFormatElement.UV2) {
+        } else if (element == VertexFormatElement.UV) {
             return ExpVertexElementUsage.UV;
         } else if (element == VertexFormatElement.NORMAL) {
             return ExpVertexElementUsage.NORMAL;
