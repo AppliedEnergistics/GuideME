@@ -3,37 +3,41 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
-## 26.1.1.0-alpha (Minecraft 26.1.1)
+## 26.1.9-alpha (Minecraft 26.1.1)
+
+- Hopefully fix CurseForge publishing.
+
+## 26.1.8-alpha (Minecraft 26.1.1)
 
 - First update to Minecraft 26.1.1.
 
-## 26.1.0.7-alpha (Minecraft 26.1-snapshot-4)
+## 26.1.7-alpha (Minecraft 26.1-snapshot-4)
 
 - Use ItemStackTemplate for navigation nodes to avoid crash on startup.
 
-## 26.1.0.6-alpha (Minecraft 26.1-snapshot-4)
+## 26.1.6-alpha (Minecraft 26.1-snapshot-4)
 
 - First update to 26.1-snapshot-4
 
-## 26.1.0.5-alpha (Minecraft 26.1-snapshot-3)
+## 26.1.5-alpha (Minecraft 26.1-snapshot-3)
 
 - First update to 26.1-snapshot-3
 
-## 26.1.0.4-alpha (Minecraft 26.1-snapshot-1)
+## 26.1.4-alpha (Minecraft 26.1-snapshot-1)
 
 - Add the "major" game version to the index.json exported for the web guide (i.e. 26.1 for 26.1-snapshot-1).
 
-## 26.1.0.3-alpha (Minecraft 26.1-snapshot-1)
+## 26.1.3-alpha (Minecraft 26.1-snapshot-1)
 
 - Fix rendering of navigation bar indicators (even more)
 
-## 26.1.0.2-alpha (Minecraft 26.1-snapshot-1)
+## 26.1.2-alpha (Minecraft 26.1-snapshot-1)
 
 - Update to NeoForge 26.1.0.0-alpha.3
 - Fix rendering of navigation bar indicators
 - Web Export now uses correct Minecraft version
 
-## 26.1.0.1-alpha (Minecraft 26.1-snapshot-1)
+## 26.1.1-alpha (Minecraft 26.1-snapshot-1)
 
 - First port to 26.1-snapshot-1
 
