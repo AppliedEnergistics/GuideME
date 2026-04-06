@@ -212,10 +212,8 @@ public class GuideSearchScreen extends DocumentScreen {
     }
 
     @Override
-    protected void scaledRender(GuiGraphicsExtractor guiGraphics, RenderContext context, int mouseX, int mouseY,
+    protected void scaledExtractRenderState(GuiGraphicsExtractor guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
-//        renderBlurredBackground(guiGraphics);
-
         context.fillIcon(screenRect, GuiAssets.GUIDE_BACKGROUND, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
 
         Blitter.texture(GuideME.makeId("textures/guide/buttons.png"), 64, 64)
@@ -245,15 +243,10 @@ public class GuideSearchScreen extends DocumentScreen {
 
         renderTitle(documentRect, context);
 
-        super.scaledRender(guiGraphics, context, mouseX, mouseY, partialTick);
+        super.scaledExtractRenderState(guiGraphics, context, mouseX, mouseY, partialTick);
 
         renderDocumentTooltip(guiGraphics, mouseX, mouseY, partialTick);
     }
-
-//    @Override
-//    public void renderBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-//        // Stub this out otherwise vanilla renders a background on top of our content
-//    }
 
     private void renderTitle(LytRect documentRect, RenderContext context) {
         var separatorRect = new LytRect(

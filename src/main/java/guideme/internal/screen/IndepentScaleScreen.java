@@ -54,14 +54,14 @@ public abstract class IndepentScaleScreen extends Screen {
         // This scale has to be uniform, otherwise items rendered with it will have messed up normals (and broken
         // lighting)
         scaledGraphics.pose().scale((float) effectiveScale, (float) effectiveScale);
-        scaledRender(scaledGraphics, renderContext, toVirtual(mouseX), toVirtual(mouseY), partialTick);
+        scaledExtractRenderState(scaledGraphics, renderContext, toVirtual(mouseX), toVirtual(mouseY), partialTick);
 
         scaledGraphics.extractDeferredElements(mouseX, mouseY, partialTick);
 
         scaledGraphics.pose().popMatrix();
     }
 
-    protected void scaledRender(GuiGraphicsExtractor guiGraphics, RenderContext context, int mouseX, int mouseY,
+    protected void scaledExtractRenderState(GuiGraphicsExtractor guiGraphics, RenderContext context, int mouseX, int mouseY,
             float partialTick) {
         super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
     }
