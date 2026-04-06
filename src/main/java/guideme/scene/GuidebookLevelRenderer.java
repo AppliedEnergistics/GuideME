@@ -37,7 +37,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -213,7 +212,6 @@ public class GuidebookLevelRenderer {
                 if (customRenderer == null || !customRenderer.renderFluid(fluidRenderer, fluidState, level, pos, fluidOutput, blockState)) {
                     fluidRenderer.tesselate(level, pos, fluidOutput, blockState, fluidState);
                 }
-                markFluidSpritesActive(fluidState);
             }
 
             if (blockState.getRenderShape() == RenderShape.INVISIBLE) {
@@ -243,19 +241,6 @@ public class GuidebookLevelRenderer {
         }
 
         dispatcher.renderAllFeatures();
-    }
-
-    private static void markFluidSpritesActive(FluidState fluidState) {
-        // For Sodium compatibility, ensure the sprites actually animate even if no block is on-screen
-        // that would cause them to, otherwise.
-        // TODO
-//        var props = IClientFluidTypeExtensions.of(fluidState);
-//        var sprite1 = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)
-//                .getSprite(props.getStillTexture());
-//        SodiumCompat.markSpriteActive(sprite1);
-//        var sprite2 = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)
-//                .getSprite(props.getFlowingTexture());
-//        SodiumCompat.markSpriteActive(sprite2);
     }
 
     private <E extends BlockEntity> void handleBlockEntity(PoseStack stack,
