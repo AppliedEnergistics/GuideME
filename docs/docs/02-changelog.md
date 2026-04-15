@@ -3,6 +3,9 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.1.10-alpha (Minecraft 26.1.2)
+- Update to Minecraft 26.1.2.
+
 ## 26.1.9-alpha (Minecraft 26.1.1)
 
 - Hopefully fix CurseForge publishing.
