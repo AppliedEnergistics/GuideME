@@ -17,7 +17,7 @@ public final class GuideMELanguageProvider extends LanguageProvider {
 
         addItem(GuideME.GUIDE_ITEM, "Guide");
 
-        add("key.guideme.category", "GuideME");
+        add("key.category.guideme.category", "GuideME");
         add("key.guideme.guide", "Open Guide for Items");
 
         addConfigTranslations();
