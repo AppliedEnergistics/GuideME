@@ -27,6 +27,7 @@ public class LytSlot extends LytBlock implements InteractiveElement {
     private static final int CYCLE_TIME = 2000;
 
     private boolean largeSlot;
+    private boolean visibleSlot = true;
 
     private final ItemStack[] stacks;
 
@@ -45,6 +46,10 @@ public class LytSlot extends LytBlock implements InteractiveElement {
     public void setLargeSlot(boolean largeSlot) {
         this.largeSlot = largeSlot;
     }
+
+    public boolean isSlotVisible() {return visibleSlot;}
+
+    public void setSlotVisible(boolean visibleSlot){this.visibleSlot = visibleSlot;}
 
     @Override
     protected LytRect computeLayout(LayoutContext context, int x, int y, int availableWidth) {
@@ -69,19 +74,20 @@ public class LytSlot extends LytBlock implements InteractiveElement {
         var x = bounds.x();
         var y = bounds.y();
 
-        GuiSprite texture;
-        if (largeSlot) {
-            texture = GuiAssets.LARGE_SLOT;
-        } else {
-            texture = GuiAssets.SLOT;
+        if (visibleSlot) {
+            GuiSprite texture;
+            if (largeSlot) {
+                texture = GuiAssets.LARGE_SLOT;
+            } else {
+                texture = GuiAssets.SLOT;
+            }
+            context.fillIcon(bounds, texture);
         }
-        context.fillIcon(bounds, texture);
-
         var padding = largeSlot ? LARGE_PADDING : PADDING;
 
         var stack = getDisplayedStack();
         if (!stack.isEmpty()) {
-            context.renderItem(stack, x + padding, y + padding, 1, ITEM_SIZE, ITEM_SIZE);
+            context.renderItem(stack, x + padding, y + padding, visibleSlot? 1: 0, ITEM_SIZE, ITEM_SIZE);
         }
     }
 
