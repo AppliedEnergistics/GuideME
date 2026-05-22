@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.1.11-beta (Minecraft 26.1.2)
+- LytSlot allows the slot background to be hidden, which is for use by addons.
+- Fix translation of keybind category.
+
 ## 26.1.10-alpha (Minecraft 26.1.2)
 - Update to Minecraft 26.1.2.
 
