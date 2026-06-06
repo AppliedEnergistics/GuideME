@@ -3,6 +3,9 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.1.12-beta (Minecraft 26.1.2)
+- Fix a scaling issue where the guide would become invisible under certain conditions
+
 ## 26.1.11-beta (Minecraft 26.1.2)
 - LytSlot allows the slot background to be hidden, which is for use by addons.
 - Fix translation of keybind category.

@@ -112,7 +112,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
             effectiveScale = reducedEffectiveScale;
         }
 
-        return (float) (effectiveScale / currentScale);
+        return (float) effectiveScale / currentScale;
     }
 
     protected final void ensureDocumentLayout() {
@@ -487,7 +487,8 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         return true;
     }
 
-    protected final void renderDocumentTooltip(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected final void renderDocumentTooltip(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY,
+            float partialTick) {
         var document = getDocumentWithLayout();
         // Render tooltip
         if (document != null && document.getHoveredElement() != null) {
