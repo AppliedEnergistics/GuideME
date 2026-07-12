@@ -31,7 +31,7 @@ import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonInfo;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.HitResult;
@@ -217,10 +217,8 @@ public class LytGuidebookScene extends LytBox {
                 scene.getCameraSettings().setViewportSize(prefSize);
                 var annotations = hideAnnotations ? Collections.<InWorldAnnotation>emptyList()
                         : scene.getInWorldAnnotations();
-                var buffers = Minecraft.getInstance().renderBuffers().bufferSource();
-                renderer.render(scene.getLevel(), scene.getCameraSettings(), buffers, annotations,
+                renderer.render(scene.getLevel(), scene.getCameraSettings(), annotations,
                         LightDarkMode.LIGHT_MODE);
-                buffers.endBatch();
             });
         }
     }
@@ -312,7 +310,7 @@ public class LytGuidebookScene extends LytBox {
                         LytGuidebookScene.this,
                         screenBounds,
                         scissorArea,
-                        (lightDarkMode, _, buffers) -> renderViewport(lightDarkMode, buffers)));
+                        (lightDarkMode, _, nodes) -> renderViewport(lightDarkMode, nodes)));
             }
 
             if (!hideAnnotations) {
@@ -321,7 +319,7 @@ public class LytGuidebookScene extends LytBox {
         }
 
         private void renderViewport(LightDarkMode lightDarkMode,
-                MultiBufferSource.BufferSource buffers) {
+                SubmitNodeStorage nodes) {
             var renderer = GuidebookLevelRenderer.getInstance();
 
             Collection<InWorldAnnotation> inWorldAnnotations;
@@ -336,7 +334,7 @@ public class LytGuidebookScene extends LytBox {
             } else {
                 inWorldAnnotations = scene.getInWorldAnnotations();
             }
-            renderer.render(scene.getLevel(), scene.getCameraSettings(), buffers, inWorldAnnotations,
+            renderer.render(scene.getLevel(), scene.getCameraSettings(), nodes, inWorldAnnotations,
                     lightDarkMode);
 
             renderDebugCrosshairs();

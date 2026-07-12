@@ -17,7 +17,9 @@ import net.minecraft.client.TextureFilteringMethod;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.StagedVertexBuffer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.block.BlockQuadOutput;
 import net.minecraft.client.renderer.block.FluidRenderer;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
@@ -48,6 +50,8 @@ public class GuidebookLevelRenderer {
     private final ProjectionMatrixBuffer projMatBuffer = new ProjectionMatrixBuffer(
             "GuideME level renderer proj mat UBO");
 
+    private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
+
     public static GuidebookLevelRenderer getInstance() {
         RenderSystem.assertOnRenderThread();
         if (instance == null) {
@@ -58,7 +62,7 @@ public class GuidebookLevelRenderer {
 
     public void render(GuidebookLevel level,
             CameraSettings cameraSettings,
-            MultiBufferSource.BufferSource buffers,
+            SubmitNodeStorage nodes,
             Collection<InWorldAnnotation> annotations,
             LightDarkMode lightDarkMode) {
 
@@ -83,7 +87,7 @@ public class GuidebookLevelRenderer {
             }
         };
 
-        var globalSettingsUniform = gameRenderer.getGlobalSettingsUniform();
+        var globalSettingsUniform = gameRenderer.globalSettingsUniform;
         globalSettingsUniform
                 .update(
                         cameraSettings.getViewportSize().width(),
@@ -118,8 +122,8 @@ public class GuidebookLevelRenderer {
         lightTransform.invert();
         lightTransform.transform(lightDirection);
 
-        gameRenderer.getLighting().updateLevel(CardinalLighting.Type.DEFAULT);
-        gameRenderer.getLighting().setupFor(Lighting.Entry.LEVEL);
+        gameRenderer.lighting().updateLevel(CardinalLighting.Type.DEFAULT);
+        gameRenderer.lighting().setupFor(Lighting.Entry.LEVEL);
 
         var previousUseUiLightmap = gameRenderer.useUiLightmap;
         gameRenderer.useUiLightmap = false;
@@ -127,15 +131,15 @@ public class GuidebookLevelRenderer {
         renderState.needsUpdate = true;
         gameRenderer.lightmap.render(renderState);
         try {
-            renderContent(level, buffers, gameRenderer.getFeatureRenderDispatcher(), new PoseStack());
+            renderContent(level, nodes, new PoseStack());
 
-            InWorldAnnotationRenderer.render(buffers, annotations, lightDarkMode);
+            InWorldAnnotationRenderer.render(nodes, annotations, lightDarkMode);
 
-            buffers.endBatch();
+            gameRenderer.featureRenderDispatcher().renderAllFeatures(submitNodeStorage);
         } finally {
             gameRenderer.useUiLightmap = previousUseUiLightmap;
-            gameRenderer.getGameRenderState().lightmapRenderState.needsUpdate = true;
-            gameRenderer.lightmap.render(gameRenderer.getGameRenderState().lightmapRenderState);
+            gameRenderer.gameRenderState().lightmapRenderState.needsUpdate = true;
+            gameRenderer.lightmap.render(gameRenderer.gameRenderState().lightmapRenderState);
         }
 
         modelViewStack.popMatrix();
@@ -145,26 +149,12 @@ public class GuidebookLevelRenderer {
     /**
      * Render without any setup.
      */
-    public void renderContent(GuidebookLevel level, MultiBufferSource.BufferSource buffers,
-            FeatureRenderDispatcher featureRenderDispatcher, PoseStack poseStack) {
+    public void renderContent(GuidebookLevel level, SubmitNodeStorage nodes,
+            PoseStack poseStack) {
         try (var fake = FakeRenderEnvironment.create(level)) {
-            renderBlocks(level, buffers, false, poseStack);
+            renderBlocks(level, nodes, false, poseStack);
             renderBlockEntities(level, featureRenderDispatcher, level.getPartialTick(), poseStack);
             renderEntities(level, level.getPartialTick(), poseStack, featureRenderDispatcher);
-
-            buffers.endLastBatch();
-
-            // Clear all non-transparent buffers: !sortOnUpload() should be a good approximation
-            var startedTypes = new ArrayList<>(buffers.startedBuilders.keySet());
-            for (var type : startedTypes) {
-                if (!type.sortOnUpload()) {
-                    buffers.endBatch(type);
-                }
-            }
-
-            renderBlocks(level, buffers, true, poseStack);
-
-            buffers.endBatch();
         }
     }
 
@@ -175,8 +165,7 @@ public class GuidebookLevelRenderer {
         };
     }
 
-    private void renderBlocks(GuidebookLevel level, MultiBufferSource buffers, boolean translucent,
-            PoseStack poseStack) {
+    private void renderBlocks(GuidebookLevel level, SubmitNodeStorage nodes, PoseStack poseStack) {
         var minecraft = Minecraft.getInstance();
         boolean ambientOcclusion = minecraft.options.ambientOcclusion().get();
         var blockRenderer = new ModelBlockRenderer(ambientOcclusion, false, minecraft.getBlockColors());
@@ -187,7 +176,7 @@ public class GuidebookLevelRenderer {
         BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> {
             var layer = quad.materialInfo().layer();
             if (layer.translucent() == translucent) {
-                var builder = buffers.getBuffer(getEntityRenderType(layer));
+                var builder = buffers.getVertexBuilder(getEntityRenderType(layer));
                 builder.putBakedQuad(poseStack.last(), quad, instance);
             }
         };
@@ -198,6 +187,8 @@ public class GuidebookLevelRenderer {
             var blockState = level.getBlockState(pos);
             var fluidState = blockState.getFluidState();
             if (!fluidState.isEmpty()) {
+                var fluidModel = minecraft.getModelManager().getFluidStateModelSet().get(fluidState);
+                fluidModel.customRenderer()
                 var sectionPos = SectionPos.of(pos);
                 FluidRenderer.Output fluidOutput = layer -> {
                     if (layer.translucent() == translucent) {

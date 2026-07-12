@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.2.1-alpha (Minecraft 26.2.0)
+
+- Update to Minecraft 26.2.0
+
 ## 26.1.12-beta (Minecraft 26.1.2)
 - Fix a scaling issue where the guide would become invisible under certain conditions
 
