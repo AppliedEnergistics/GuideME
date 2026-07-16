@@ -15,6 +15,8 @@ import guideme.libs.micromark.Types;
 import guideme.libs.micromark.factory.FactorySpace;
 import guideme.libs.micromark.symbol.Codes;
 import guideme.libs.micromark.symbol.Constants;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,9 +61,9 @@ public class GfmTableSyntax extends Extension {
                 }
 
                 if (
-                // Combine separate content parts into one.
-                (token.type.equals("tableCellDivider") || token.type.equals("tableRow")) &&
-                        contentEnd != -1) {
+                    // Combine separate content parts into one.
+                        (token.type.equals("tableCellDivider") || token.type.equals("tableRow")) &&
+                                contentEnd != -1) {
                     Assert.check(
                             contentStart != -1,
                             "expected `contentStart` to be defined if `contentEnd` is");
@@ -249,6 +251,10 @@ public class GfmTableSyntax extends Extension {
                 }
 
                 Assert.check(CharUtil.markdownLineEnding(code), "expected eol");
+                return getState(code);
+            }
+
+            private @Nullable State getState(int code) {
                 effects.exit("tableRow");
                 effects.exit("tableHead");
                 var originalInterrupt = context.isInterrupt();
@@ -395,12 +401,12 @@ public class GfmTableSyntax extends Extension {
                 construct.partial = true;
 
                 return effects.check.hook(
-                        nextPrefixedOrBlank,
-                        this::tableClose,
-                        effects.attempt.hook(
-                                construct,
-                                FactorySpace.create(effects, this::bodyStart, Types.linePrefix, Constants.tabSize),
-                                this::tableClose))
+                                nextPrefixedOrBlank,
+                                this::tableClose,
+                                effects.attempt.hook(
+                                        construct,
+                                        FactorySpace.create(effects, this::bodyStart, Types.linePrefix, Constants.tabSize),
+                                        this::tableClose))
                         .step(code);
             }
 
@@ -503,16 +509,16 @@ public class GfmTableSyntax extends Extension {
                 construct.partial = true;
 
                 return effects.check.hook(
-                        nextPrefixedOrBlank,
-                        this::tableBodyClose,
-                        effects.attempt.hook(
-                                construct,
-                                FactorySpace.create(
-                                        effects,
-                                        this::rowStartBody,
-                                        Types.linePrefix,
-                                        Constants.tabSize),
-                                this::tableBodyClose))
+                                nextPrefixedOrBlank,
+                                this::tableBodyClose,
+                                effects.attempt.hook(
+                                        construct,
+                                        FactorySpace.create(
+                                                effects,
+                                                this::rowStartBody,
+                                                Types.linePrefix,
+                                                Constants.tabSize),
+                                        this::tableBodyClose))
                         .step(code);
             }
 
