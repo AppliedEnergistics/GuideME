@@ -1,5 +1,6 @@
 package guideme.scene;
 
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -13,6 +14,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import net.minecraft.client.Minecraft;
@@ -31,13 +33,13 @@ final public class AxisDebugRenderer implements AutoCloseable {
 
     private final GpuBuffer crosshairBuffer;
     private final RenderSystem.AutoStorageIndexBuffer crosshairIndicies = RenderSystem
-            .getSequentialBuffer(VertexFormat.Mode.LINES);
+            .getSequentialBuffer(PrimitiveTopology.LINES);
     private final ProjectionMatrixBuffer projectionBuffer;
 
     public AxisDebugRenderer() {
         try (ByteBufferBuilder bytebufferbuilder = ByteBufferBuilder
                 .exactlySized(DefaultVertexFormat.POSITION_COLOR_NORMAL.getVertexSize() * 12)) {
-            BufferBuilder bufferbuilder = new BufferBuilder(bytebufferbuilder, VertexFormat.Mode.LINES,
+            BufferBuilder bufferbuilder = new BufferBuilder(bytebufferbuilder, PrimitiveTopology.LINES,
                     DefaultVertexFormat.POSITION_COLOR_NORMAL);
             bufferbuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(0XFFFF0000).setNormal(1.0F, 0.0F, 0.0F);
             bufferbuilder.addVertex(25, 0.0F, 0.0F).setColor(0XFFFF0000).setNormal(1.0F, 0.0F, 0.0F);
@@ -65,7 +67,7 @@ final public class AxisDebugRenderer implements AutoCloseable {
         modelViewStack.mul(cameraSettings.getViewMatrix());
 
         RenderPipeline renderpipeline = RenderPipelines.LINES;
-        RenderTarget rendertarget = Minecraft.getInstance().getMainRenderTarget();
+        RenderTarget rendertarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         var colorView = Objects.requireNonNullElse(RenderSystem.outputColorTextureOverride,
                 rendertarget.getColorTextureView());
         var depthView = Objects.requireNonNullElse(RenderSystem.outputDepthTextureOverride,
@@ -77,14 +79,14 @@ final public class AxisDebugRenderer implements AutoCloseable {
 
         try (RenderPass renderpass = RenderSystem.getDevice()
                 .createCommandEncoder()
-                .createRenderPass(() -> "3d crosshair", colorView, OptionalInt.empty(), depthView,
+                .createRenderPass(() -> "3d crosshair", colorView, Optional.empty(), depthView,
                         OptionalDouble.empty())) {
             renderpass.setPipeline(renderpipeline);
             RenderSystem.bindDefaultUniforms(renderpass);
-            renderpass.setVertexBuffer(0, this.crosshairBuffer);
+            renderpass.setVertexBuffer(0, this.crosshairBuffer.slice());
             renderpass.setIndexBuffer(gpubuffer, this.crosshairIndicies.type());
             renderpass.setUniform("DynamicTransforms", slices[0]);
-            renderpass.drawIndexed(0, 0, 18, 1);
+            renderpass.drawIndexed(18, 1, 0, 0, 0);
         }
 
         modelViewStack.popMatrix();

@@ -50,8 +50,8 @@ public class CommandLinkCompiler extends FlowTagCompiler {
         link.setClickCallback(uiHost -> {
             if (closeGuide) {
                 int attempts = 5;
-                while (Minecraft.getInstance().screen != null) {
-                    Minecraft.getInstance().screen.onClose();
+                while (Minecraft.getInstance().gui.screen() != null) {
+                    Minecraft.getInstance().gui.screen().onClose();
                     if (--attempts <= 0) {
                         break; // Give up at some point...
                     }

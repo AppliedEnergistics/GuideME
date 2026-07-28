@@ -1,6 +1,9 @@
 package guideme.scene.export;
 
 import com.google.flatbuffers.FlatBufferBuilder;
+import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.IndexType;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
@@ -55,6 +58,7 @@ import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.GameRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import org.apache.commons.lang3.NotImplementedException;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
@@ -89,23 +93,25 @@ public class SceneExporter {
     }
 
     private static List<Mesh> renderToMeshes(GuidebookLevel level) {
-        try (var bufferSource = new MeshBuildingBufferSource()) {
-            var submitStorage = new SubmitNodeStorage();
-            var gameRenderState = new GameRenderState();
-            var featureRenderDispatcher = new FeatureRenderDispatcher(
-                    submitStorage,
-                    Minecraft.getInstance().getModelManager(),
-                    bufferSource,
-                    Minecraft.getInstance().getAtlasManager(),
-                    Minecraft.getInstance().renderBuffers().outlineBufferSource(),
-                    Minecraft.getInstance().renderBuffers().crumblingBufferSource(),
-                    Minecraft.getInstance().font,
-                    gameRenderState);
-            GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource, featureRenderDispatcher,
-                    new PoseStack());
-            featureRenderDispatcher.renderAllFeatures();
-            return bufferSource.getMeshes();
-        }
+// TODO 26.2
+//        try (var bufferSource = new MeshBuildingBufferSource()) {
+//            var submitStorage = new SubmitNodeStorage();
+//            var gameRenderState = new GameRenderState();
+//            var featureRenderDispatcher = new FeatureRenderDispatcher(
+//                    submitStorage,
+//                    Minecraft.getInstance().getModelManager(),
+//                    bufferSource,
+//                    Minecraft.getInstance().getAtlasManager(),
+//                    Minecraft.getInstance().renderBuffers().outlineBufferSource(),
+//                    Minecraft.getInstance().renderBuffers().crumblingBufferSource(),
+//                    Minecraft.getInstance().font,
+//                    gameRenderState);
+//            GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource, featureRenderDispatcher,
+//                    new PoseStack());
+//            featureRenderDispatcher.renderAllFeatures();
+//            return bufferSource.getMeshes();
+//        }
+        throw new NotImplementedException();
     }
 
     public byte[] export(GuidebookScene scene) {
@@ -284,20 +290,25 @@ public class SceneExporter {
         for (int i = elements.size() - 1; i >= 0; i--) {
             var offset = 0;
             for (int j = 0; j < i; j++) {
-                offset += elements.get(j).byteSize();
+                offset += elements.get(j).format().blockSize();
             }
 
             var element = elements.get(i);
             if (isRelevant(element)) {
+                char lastLetter = element.name().charAt(element.name().length() - 1);
+                int index = 0;
+                if (Character.isDigit(lastLetter)) {
+                    index = Integer.parseInt(String.valueOf(lastLetter));
+                }
                 ExpVertexFormatElement.createExpVertexFormatElement(
                         builder,
-                        element.index(),
-                        mapType(element.type()),
+                        index,
+                        mapType(element.format().componentType()),
                         mapUsage(element),
-                        element.count(),
+                        element.format().componentCount(),
                         offset,
-                        element.byteSize(),
-                        element.normalized());
+                        element.format().blockSize(),
+                        isNormalized(element.format().componentType()));
             }
         }
         var elementsOffset = builder.endVector();
@@ -308,6 +319,13 @@ public class SceneExporter {
 
         return ExpVertexFormat.endExpVertexFormat(builder);
 
+    }
+
+    private static boolean isNormalized(GpuFormat.ComponentType componentType) {
+        return switch (componentType) {
+            case UNORM_8, SNORM_16, UNORM_16, SNORM_8 -> true;
+            default -> false;
+        };
     }
 
     private static boolean isRelevant(VertexFormatElement element) {
@@ -398,7 +416,7 @@ public class SceneExporter {
 
     }
 
-    private static int mapMode(VertexFormat.Mode mode) {
+    private static int mapMode(PrimitiveTopology mode) {
         return switch (mode) {
             case LINES -> ExpPrimitiveType.LINES;
             case DEBUG_LINES -> ExpPrimitiveType.DEBUG_LINES;
@@ -411,28 +429,26 @@ public class SceneExporter {
     }
 
     private static int mapUsage(VertexFormatElement element) {
-        if (element == VertexFormatElement.POSITION) {
-            return ExpVertexElementUsage.POSITION;
-        } else if (element == VertexFormatElement.COLOR) {
-            return ExpVertexElementUsage.COLOR;
-        } else if (element == VertexFormatElement.UV) {
-            return ExpVertexElementUsage.UV;
-        } else if (element == VertexFormatElement.NORMAL) {
-            return ExpVertexElementUsage.NORMAL;
-        } else {
-            return -1;
-        }
+        return switch (element.name()) {
+            case "Position" -> ExpVertexElementUsage.POSITION;
+            case "UV0", "UV1" -> ExpVertexElementUsage.UV;
+            case "Color" -> ExpVertexElementUsage.COLOR;
+            case "Normal" -> ExpVertexElementUsage.NORMAL;
+            default -> -1;
+        };
     }
 
-    private static int mapType(VertexFormatElement.Type type) {
+    private static int mapType(GpuFormat.ComponentType type) {
         return switch (type) {
-            case FLOAT -> ExpVertexElementType.FLOAT;
-            case UBYTE -> ExpVertexElementType.UBYTE;
-            case BYTE -> ExpVertexElementType.BYTE;
-            case USHORT -> ExpVertexElementType.USHORT;
-            case SHORT -> ExpVertexElementType.SHORT;
-            case UINT -> ExpVertexElementType.UINT;
-            case INT -> ExpVertexElementType.INT;
+            case FLOAT_32 -> ExpVertexElementType.FLOAT;
+            case UINT_8 -> ExpVertexElementType.UBYTE;
+            case SINT_8 -> ExpVertexElementType.BYTE;
+            case UINT_16 -> ExpVertexElementType.USHORT;
+            case SINT_16 -> ExpVertexElementType.SHORT;
+            case UINT_32 -> ExpVertexElementType.UINT;
+            case SINT_32 -> ExpVertexElementType.INT;
+            // TODO 26.2: Support all component types
+            default -> throw new IllegalArgumentException("Unsupported component type " + type);
         };
     }
 
@@ -454,14 +470,14 @@ public class SceneExporter {
             ExpMesh.addIndexCount(builder, ibData.indexCount);
             ExpMesh.addMaterial(builder, materials.get(mesh.renderType()));
             ExpMesh.addVertexFormat(builder, vertexFormats.get(mesh.drawState().format()));
-            ExpMesh.addPrimitiveType(builder, mapMode(mesh.drawState().mode()));
+            ExpMesh.addPrimitiveType(builder, mapMode(mesh.drawState().primitiveTopology()));
             writtenMeshes.add(ExpMesh.endExpMesh(builder));
         }
 
         return ExpScene.createMeshesVector(builder, writtenMeshes.elements());
     }
 
-    private int mapIndexType(VertexFormat.IndexType indexType) {
+    private int mapIndexType(IndexType indexType) {
         return switch (indexType) {
             case INT -> ExpIndexElementType.UINT;
             case SHORT -> ExpIndexElementType.USHORT;
@@ -470,7 +486,7 @@ public class SceneExporter {
 
     record IndexBufferAttributes(
             ByteBuffer data,
-            VertexFormat.IndexType indexType,
+            IndexType indexType,
             int indexCount) {
     }
 
@@ -479,7 +495,7 @@ public class SceneExporter {
         ByteBuffer effectiveIndices;
         var indexType = drawState.indexType();
         var indexCount = drawState.indexCount();
-        var mode = drawState.mode();
+        var mode = drawState.primitiveTopology();
 
         // Auto-generated indices
         if (idxBuffer == null) {
@@ -490,9 +506,9 @@ public class SceneExporter {
             effectiveIndices = generated.data;
             indexType = generated.type;
             indexCount = generated.indexCount();
-        } else if (indexType == VertexFormat.IndexType.SHORT) {
+        } else if (indexType == IndexType.SHORT) {
             // Convert quads -> triangles
-            if (mode == VertexFormat.Mode.QUADS) {
+            if (mode == PrimitiveTopology.QUADS) {
                 var idxShortBuffer = idxBuffer.asShortBuffer();
                 var triIndices = ShortBuffer.allocate(idxShortBuffer.remaining() * 2);
                 while (idxShortBuffer.hasRemaining()) {
@@ -519,9 +535,9 @@ public class SceneExporter {
             } else {
                 effectiveIndices = idxBuffer;
             }
-        } else if (indexType == VertexFormat.IndexType.INT) {
+        } else if (indexType == IndexType.INT) {
             // Convert quads -> triangles
-            if (mode == VertexFormat.Mode.QUADS) {
+            if (mode == PrimitiveTopology.QUADS) {
                 var idxIntBuffer = idxBuffer.asIntBuffer();
                 var triIndices = IntBuffer.allocate(idxIntBuffer.remaining() * 2);
                 while (idxIntBuffer.hasRemaining()) {
@@ -556,18 +572,16 @@ public class SceneExporter {
         return new IndexBufferAttributes(effectiveIndices, indexType, indexCount);
     }
 
-    private GeneratedIndexBuffer generateSequentialIndices(VertexFormat.Mode mode, int vertexCount,
+    private GeneratedIndexBuffer generateSequentialIndices(PrimitiveTopology mode, int vertexCount,
             int expectedIndexCount) {
         var indicesPerPrimitive = switch (mode) {
-            case LINES -> 2;
-            case DEBUG_LINES -> 2;
+            case LINES, DEBUG_LINES -> 2;
             case TRIANGLES -> 3;
             case QUADS -> 6;
             default -> throw new UnsupportedOperationException();
         };
         var verticesPerPrimitive = switch (mode) {
-            case LINES -> 2;
-            case DEBUG_LINES -> 2;
+            case LINES, DEBUG_LINES -> 2;
             case TRIANGLES -> 3;
             case QUADS -> 4;
             default -> throw new UnsupportedOperationException();
@@ -578,11 +592,11 @@ public class SceneExporter {
             throw new RuntimeException("Would generate " + indexCount + " but MC expected " + expectedIndexCount);
         }
 
-        var indexType = VertexFormat.IndexType.least(indexCount);
+        var indexType = IndexType.least(indexCount);
         var buffer = ByteBuffer.allocate(indexType.bytes * indexCount).order(ByteOrder.nativeOrder());
 
         IntConsumer indexConsumer;
-        if (indexType == VertexFormat.IndexType.SHORT) {
+        if (indexType == IndexType.SHORT) {
             indexConsumer = value -> buffer.putShort((short) value);
         } else {
             indexConsumer = buffer::putInt;
@@ -607,7 +621,7 @@ public class SceneExporter {
         return new GeneratedIndexBuffer(indexType, buffer, indexCount);
     }
 
-    record GeneratedIndexBuffer(VertexFormat.IndexType type, ByteBuffer data, int indexCount) {
+    record GeneratedIndexBuffer(IndexType type, ByteBuffer data, int indexCount) {
     }
 
     private int createCameraModel(CameraSettings cameraSettings, FlatBufferBuilder builder) {

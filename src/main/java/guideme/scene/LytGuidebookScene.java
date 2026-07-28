@@ -31,6 +31,7 @@ import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonInfo;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -310,7 +311,7 @@ public class LytGuidebookScene extends LytBox {
                         LytGuidebookScene.this,
                         screenBounds,
                         scissorArea,
-                        (lightDarkMode, _, nodes) -> renderViewport(lightDarkMode, nodes)));
+                        (lightDarkMode, _, _) -> renderViewport(lightDarkMode)));
             }
 
             if (!hideAnnotations) {
@@ -318,8 +319,7 @@ public class LytGuidebookScene extends LytBox {
             }
         }
 
-        private void renderViewport(LightDarkMode lightDarkMode,
-                SubmitNodeStorage nodes) {
+        private void renderViewport(LightDarkMode lightDarkMode) {
             var renderer = GuidebookLevelRenderer.getInstance();
 
             Collection<InWorldAnnotation> inWorldAnnotations;
@@ -334,7 +334,7 @@ public class LytGuidebookScene extends LytBox {
             } else {
                 inWorldAnnotations = scene.getInWorldAnnotations();
             }
-            renderer.render(scene.getLevel(), scene.getCameraSettings(), nodes, inWorldAnnotations,
+            renderer.render(scene.getLevel(), scene.getCameraSettings(), inWorldAnnotations,
                     lightDarkMode);
 
             renderDebugCrosshairs();

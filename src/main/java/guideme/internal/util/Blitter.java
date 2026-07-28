@@ -42,7 +42,7 @@ import org.joml.Matrix3x2f;
 public final class Blitter {
     public static final RenderPipeline GUI_TEXTURED_OPAQUE = RenderPipelines.GUI_TEXTURED.toBuilder()
             .withLocation(GuideME.makeId("pipeline/gui_textured_opaque"))
-            .withColorTargetState(new ColorTargetState(Optional.empty(), ColorTargetState.WRITE_COLOR))
+            .withColorTargetState(new ColorTargetState(Optional.empty(), ColorTargetState.DEFAULT.format(), ColorTargetState.WRITE_COLOR))
             .build();
 
     // This assumption is obviously bogus, but currently all textures are this size,

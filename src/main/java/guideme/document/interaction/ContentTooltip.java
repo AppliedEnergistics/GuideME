@@ -81,7 +81,7 @@ public class ContentTooltip implements GuideTooltip {
     }
 
     private LytRect getLayoutBox() {
-        var screen = Minecraft.getInstance().screen;
+        var screen = Minecraft.getInstance().gui.screen();
         var currentViewport = new LytRect(0, 0, screen.width, screen.height);
         if (layoutBox == null || !currentViewport.equals(layoutViewport)) {
             layoutViewport = currentViewport;

@@ -61,13 +61,13 @@ public class LytFlowLink extends LytTooltipSpan {
 
         setClickCallback(screen -> {
             var mc = Minecraft.getInstance();
-            var previousScreen = mc.screen;
-            mc.setScreen(new ConfirmLinkScreen(yes -> {
+            var previousScreen = mc.gui.screen();
+            mc.gui.setScreen(new ConfirmLinkScreen(yes -> {
                 if (yes) {
                     Util.getPlatform().openUri(uri);
                 }
 
-                mc.setScreen(previousScreen);
+                mc.gui.setScreen(previousScreen);
             }, uri.toString(), true));
         });
     }

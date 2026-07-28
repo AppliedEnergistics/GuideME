@@ -8,12 +8,13 @@ import guideme.style.TextStyle;
 import guideme.style.WhiteSpaceMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.FontDescription;
+import net.minecraft.resources.Identifier;
 
 public final class DefaultStyles {
     private DefaultStyles() {
     }
 
-    private static final FontDescription UNIFORM_FONT = new FontDescription.Resource(Minecraft.UNIFORM_FONT);
+    private static final FontDescription UNIFORM_FONT = new FontDescription.Resource(Identifier.withDefaultNamespace("uniform"));
 
     /**
      * The base style everything else is based on.

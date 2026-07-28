@@ -424,8 +424,8 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
         if (document != null) {
             var mouseHandler = minecraft.mouseHandler;
             // We use screen here so it accounts for our gui-scale independent scaling screen.
-            var xScale = (double) minecraft.screen.width / (double) minecraft.getWindow().getScreenWidth();
-            var yScale = (double) minecraft.screen.height / (double) minecraft.getWindow().getScreenHeight();
+            var xScale = (double) minecraft.gui.screen().width / (double) minecraft.getWindow().getScreenWidth();
+            var yScale = (double) minecraft.gui.screen().height / (double) minecraft.getWindow().getScreenHeight();
             var x = mouseHandler.xpos() * xScale;
             var y = mouseHandler.ypos() * yScale;
 
@@ -555,7 +555,6 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
             x += 18;
         }
 
-        var bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
         int currentY = y;
 
         // Batch-render tooltip text first
@@ -564,8 +563,6 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
             line.extractText(guiGraphics, minecraft.font, x, currentY);
             currentY += line.getHeight(font) + (i == 0 ? 2 : 0);
         }
-
-        bufferSource.endBatch();
 
         // Then render tooltip decorations, items, etc.
         currentY = y;

@@ -281,8 +281,8 @@ public class GuideSearchScreen extends DocumentScreen {
 
     @Override
     public void onClose() {
-        if (minecraft != null && minecraft.screen == this && this.returnToOnClose != null) {
-            minecraft.setScreen(this.returnToOnClose);
+        if (minecraft != null && minecraft.gui.screen() == this && this.returnToOnClose != null) {
+            minecraft.gui.setScreen(this.returnToOnClose);
             this.returnToOnClose = null;
             return;
         }

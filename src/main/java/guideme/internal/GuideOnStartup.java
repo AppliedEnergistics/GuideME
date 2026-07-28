@@ -126,7 +126,7 @@ public final class GuideOnStartup {
             var client = Minecraft.getInstance();
             CompletableFuture<?> reload;
 
-            if (client.getOverlay() instanceof LoadingOverlay loadingOverlay) {
+            if (client.gui.overlay() instanceof LoadingOverlay loadingOverlay) {
                 reload = loadingOverlay.reload.done();
             } else {
                 reload = CompletableFuture.completedFuture(null);

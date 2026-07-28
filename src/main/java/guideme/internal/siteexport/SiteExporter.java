@@ -134,7 +134,7 @@ public class SiteExporter implements ResourceExporter {
             public void accept(ClientTickEvent.Post post) {
                 NeoForge.EVENT_BUS.unregister(this);
 
-                if (client.getOverlay() instanceof LoadingOverlay) {
+                if (client.gui.overlay() instanceof LoadingOverlay) {
                     return; // Do nothing while it's loading
                 }
 
@@ -523,7 +523,7 @@ public class SiteExporter implements ResourceExporter {
         window.setGuiScale(ICON_SCALE);
 
         try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
-            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.getGameRenderState().guiRenderState, 0, 0);
+            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.gameRenderState().guiRenderState, 0, 0);
 
             LOG.info("Exporting items...");
             for (var item : items) {
@@ -545,11 +545,10 @@ public class SiteExporter implements ResourceExporter {
                 var sprites = guessSprites(quadLists);
 
                 var iconPath = renderAndWrite(renderer, baseName, () -> {
-                    client.gameRenderer.getGameRenderState().guiRenderState.reset();
+                    client.gameRenderer.gameRenderState().guiRenderState.reset();
                     guiGraphics.item(stack, 0, 0);
                     guiGraphics.itemDecorations(client.font, stack, 0, 0, "");
-                    client.gameRenderer.guiRenderer
-                            .render(client.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
+                    client.gameRenderer.guiRenderer.render();
                 }, sprites, true);
 
                 String absIconUrl = "/" + outputFolder.relativize(iconPath).toString().replace('\\', '/');
@@ -593,7 +592,7 @@ public class SiteExporter implements ResourceExporter {
         window.setGuiScale(ICON_SCALE);
 
         try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
-            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.getGameRenderState().guiRenderState, 0, 0);
+            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.gameRenderState().guiRenderState, 0, 0);
 
             LOG.info("Exporting fluids...");
             for (var fluid : fluids) {
@@ -612,10 +611,9 @@ public class SiteExporter implements ResourceExporter {
                         renderer,
                         baseName,
                         () -> {
-                            client.gameRenderer.getGameRenderState().guiRenderState.reset();
+                            client.gameRenderer.gameRenderState().guiRenderState.reset();
                             guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, 0, 0, 16, 16, color);
-                            client.gameRenderer.guiRenderer
-                                    .render(client.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
+                            client.gameRenderer.guiRenderer.render();
                         },
                         Set.of(sprite),
                         false /*

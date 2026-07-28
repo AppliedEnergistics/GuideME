@@ -17,6 +17,7 @@ import guideme.internal.siteexport.SiteExportOnStartup;
 import guideme.internal.siteexport.TextureDownloader;
 import guideme.internal.util.Blitter;
 import guideme.render.GuiAssets;
+import guideme.scene.FluidModelFeatureRenderer;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import java.util.Objects;
 import java.util.Set;
@@ -42,6 +43,7 @@ import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+import net.neoforged.neoforge.client.event.RegisterFeatureRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterPictureInPictureRenderersEvent;
@@ -90,6 +92,7 @@ public class GuideMEClient {
         modBus.addListener(this::registerRenderPipelines);
         modBus.addListener(this::registerPipRenderers);
 
+        NeoForge.EVENT_BUS.addListener(this::registerCustomFeatureRenderer);
         NeoForge.EVENT_BUS.addListener(this::registerClientCommands);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
         modBus.addListener(this::resetSprites);
@@ -111,6 +114,10 @@ public class GuideMEClient {
 
         NeoForge.EVENT_BUS.addListener(this::onReceiveRecipes);
         NeoForge.EVENT_BUS.addListener(this::onPlayerDisconnect);
+    }
+
+    private void registerCustomFeatureRenderer(RegisterFeatureRenderersEvent event) {
+        event.register(FluidModelFeatureRenderer.TYPE, new FluidModelFeatureRenderer());
     }
 
     private void onReceiveRecipes(RecipesReceivedEvent event) {
@@ -206,7 +213,7 @@ public class GuideMEClient {
             clientConfig.fullWidthLayout.set(fullWidth);
             clientConfig.spec.save();
             var minecraft = Minecraft.getInstance();
-            var screen = minecraft.screen;
+            var screen = minecraft.gui.screen();
             if (screen != null) {
                 var window = minecraft.getWindow();
                 screen.resize(window.getGuiScaledWidth(), window.getGuiScaledHeight());

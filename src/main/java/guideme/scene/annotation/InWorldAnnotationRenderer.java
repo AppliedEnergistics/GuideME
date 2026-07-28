@@ -13,7 +13,6 @@ import guideme.color.LightDarkMode;
 import guideme.color.MutableColor;
 import guideme.internal.GuideME;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
@@ -36,7 +35,7 @@ public final class InWorldAnnotationRenderer {
             .withLocation(GuideME.makeId("pipeline/annotation_occluded"))
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN, false))
-            .withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS)
+            // TODO 26.2 .withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS)
             .build();
 
     private static final RenderType OCCLUDED = RenderType.create(
@@ -50,97 +49,97 @@ public final class InWorldAnnotationRenderer {
 
     private InWorldAnnotationRenderer() {
     }
-
-    public static void render(MultiBufferSource.BufferSource buffers, Iterable<InWorldAnnotation> annotations,
-            LightDarkMode lightDarkMode) {
-        var sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)
-                .getSprite(GuideME.makeId("block/noise"));
-
-        var occludedConsumer = buffers.getBuffer(OCCLUDED);
-        for (var annotation : annotations) {
-            if (annotation.isAlwaysOnTop()) {
-                continue; // Don't render occlusion for always-on-top annotations
-            }
-
-            if (annotation instanceof InWorldBoxAnnotation boxAnnotation) {
-                var color = MutableColor.of(boxAnnotation.color(), lightDarkMode);
-                color.darker(50).setAlpha(color.alpha() * 0.5f);
-                if (boxAnnotation.isHovered()) {
-                    color.lighter(50);
-                }
-                render(occludedConsumer,
-                        boxAnnotation.min(),
-                        boxAnnotation.max(),
-                        color.toArgb32(),
-                        boxAnnotation.thickness(),
-                        sprite);
-            } else if (annotation instanceof InWorldLineAnnotation lineAnnotation) {
-                var color = MutableColor.of(lineAnnotation.color(), lightDarkMode);
-                color.darker(50).setAlpha(color.alpha() * 0.5f);
-                if (lineAnnotation.isHovered()) {
-                    color.lighter(50);
-                }
-                strut(occludedConsumer,
-                        lineAnnotation.min(),
-                        lineAnnotation.max(),
-                        color.toArgb32(),
-                        lineAnnotation.thickness(),
-                        true,
-                        true,
-                        sprite);
-            }
-        }
-        buffers.endBatch(OCCLUDED);
-
-        // Render two passes to support annotations that are always on top of other annotations
-        for (var pass = 1; pass <= 2; pass++) {
-            if (pass == 2) {
-                RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(
-                        RenderSystem.outputDepthTextureOverride != null
-                                ? RenderSystem.outputDepthTextureOverride.texture()
-                                : Minecraft.getInstance().getMainRenderTarget().getDepthTexture(),
-                        1.0);
-            }
-
-            var renderType = RenderTypes.translucentMovingBlock();
-            var consumer = buffers.getBuffer(renderType);
-
-            for (var annotation : annotations) {
-                if (annotation.isAlwaysOnTop() != (pass == 2)) {
-                    continue;
-                }
-
-                if (annotation instanceof InWorldBoxAnnotation boxAnnotation) {
-                    var color = MutableColor.of(boxAnnotation.color(), lightDarkMode);
-                    if (boxAnnotation.isHovered()) {
-                        color.lighter(50);
-                    }
-                    render(consumer,
-                            boxAnnotation.min(),
-                            boxAnnotation.max(),
-                            color.toArgb32(),
-                            boxAnnotation.thickness(),
-                            sprite);
-                } else if (annotation instanceof InWorldLineAnnotation lineAnnotation) {
-                    var color = MutableColor.of(lineAnnotation.color(), lightDarkMode);
-                    if (lineAnnotation.isHovered()) {
-                        color.lighter(50);
-                    }
-                    strut(consumer,
-                            lineAnnotation.min(),
-                            lineAnnotation.max(),
-                            color.toArgb32(),
-                            lineAnnotation.thickness(),
-                            true,
-                            true,
-                            sprite);
-                }
-            }
-
-            buffers.endBatch(renderType);
-        }
-        buffers.endBatch();
-    }
+// TODO 26.2
+//    public static void render(MultiBufferSource.BufferSource buffers, Iterable<InWorldAnnotation> annotations,
+//            LightDarkMode lightDarkMode) {
+//        var sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)
+//                .getSprite(GuideME.makeId("block/noise"));
+//
+//        var occludedConsumer = buffers.getBuffer(OCCLUDED);
+//        for (var annotation : annotations) {
+//            if (annotation.isAlwaysOnTop()) {
+//                continue; // Don't render occlusion for always-on-top annotations
+//            }
+//
+//            if (annotation instanceof InWorldBoxAnnotation boxAnnotation) {
+//                var color = MutableColor.of(boxAnnotation.color(), lightDarkMode);
+//                color.darker(50).setAlpha(color.alpha() * 0.5f);
+//                if (boxAnnotation.isHovered()) {
+//                    color.lighter(50);
+//                }
+//                render(occludedConsumer,
+//                        boxAnnotation.min(),
+//                        boxAnnotation.max(),
+//                        color.toArgb32(),
+//                        boxAnnotation.thickness(),
+//                        sprite);
+//            } else if (annotation instanceof InWorldLineAnnotation lineAnnotation) {
+//                var color = MutableColor.of(lineAnnotation.color(), lightDarkMode);
+//                color.darker(50).setAlpha(color.alpha() * 0.5f);
+//                if (lineAnnotation.isHovered()) {
+//                    color.lighter(50);
+//                }
+//                strut(occludedConsumer,
+//                        lineAnnotation.min(),
+//                        lineAnnotation.max(),
+//                        color.toArgb32(),
+//                        lineAnnotation.thickness(),
+//                        true,
+//                        true,
+//                        sprite);
+//            }
+//        }
+//        buffers.endBatch(OCCLUDED);
+//
+//        // Render two passes to support annotations that are always on top of other annotations
+//        for (var pass = 1; pass <= 2; pass++) {
+//            if (pass == 2) {
+//                RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(
+//                        RenderSystem.outputDepthTextureOverride != null
+//                                ? RenderSystem.outputDepthTextureOverride.texture()
+//                                : Minecraft.getInstance().getMainRenderTarget().getDepthTexture(),
+//                        1.0);
+//            }
+//
+//            var renderType = RenderTypes.translucentMovingBlock();
+//            var consumer = buffers.getBuffer(renderType);
+//
+//            for (var annotation : annotations) {
+//                if (annotation.isAlwaysOnTop() != (pass == 2)) {
+//                    continue;
+//                }
+//
+//                if (annotation instanceof InWorldBoxAnnotation boxAnnotation) {
+//                    var color = MutableColor.of(boxAnnotation.color(), lightDarkMode);
+//                    if (boxAnnotation.isHovered()) {
+//                        color.lighter(50);
+//                    }
+//                    render(consumer,
+//                            boxAnnotation.min(),
+//                            boxAnnotation.max(),
+//                            color.toArgb32(),
+//                            boxAnnotation.thickness(),
+//                            sprite);
+//                } else if (annotation instanceof InWorldLineAnnotation lineAnnotation) {
+//                    var color = MutableColor.of(lineAnnotation.color(), lightDarkMode);
+//                    if (lineAnnotation.isHovered()) {
+//                        color.lighter(50);
+//                    }
+//                    strut(consumer,
+//                            lineAnnotation.min(),
+//                            lineAnnotation.max(),
+//                            color.toArgb32(),
+//                            lineAnnotation.thickness(),
+//                            true,
+//                            true,
+//                            sprite);
+//                }
+//            }
+//
+//            buffers.endBatch(renderType);
+//        }
+//        buffers.endBatch();
+//    }
 
     public static void render(VertexConsumer consumer,
             Vector3f min,

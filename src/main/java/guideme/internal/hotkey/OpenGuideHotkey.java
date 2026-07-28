@@ -89,7 +89,7 @@ public final class OpenGuideHotkey {
 
         // Don't do anything if we're already on the target page
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.screen instanceof GuideScreen guideScreen
+        if (minecraft.gui.screen() instanceof GuideScreen guideScreen
                 && guideScreen.getGuide() == guide
                 && guideScreen.getCurrentPageId().equals(pageAnchor.pageId())) {
             return;
@@ -173,7 +173,7 @@ public final class OpenGuideHotkey {
                     var foundPage = guidebookPages.getFirst();
                     var guide = foundPage.guide();
 
-                    if (Minecraft.getInstance().screen instanceof GuideUiHost uiHost && uiHost.getGuide() == guide) {
+                    if (Minecraft.getInstance().gui.screen() instanceof GuideUiHost uiHost && uiHost.getGuide() == guide) {
                         uiHost.navigateTo(foundPage.page());
                     } else {
                         GuideMEClient.openGuideAtAnchor(guide, foundPage.page());

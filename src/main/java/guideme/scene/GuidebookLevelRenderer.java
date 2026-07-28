@@ -14,7 +14,6 @@ import java.util.Collection;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.TextureFilteringMethod;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.StagedVertexBuffer;
@@ -62,7 +61,6 @@ public class GuidebookLevelRenderer {
 
     public void render(GuidebookLevel level,
             CameraSettings cameraSettings,
-            SubmitNodeStorage nodes,
             Collection<InWorldAnnotation> annotations,
             LightDarkMode lightDarkMode) {
 
@@ -117,29 +115,29 @@ public class GuidebookLevelRenderer {
         RenderSystem.backupProjectionMatrix();
         RenderSystem.setProjectionMatrix(projMatBuffer.getBuffer(projectionMatrix), ProjectionType.ORTHOGRAPHIC);
 
-        var lightDirection = new Vector4f(15 / 90f, .35f, 1, 0);
-        var lightTransform = new Matrix4f(viewMatrix);
-        lightTransform.invert();
-        lightTransform.transform(lightDirection);
+        // TODO 26.2 var lightDirection = new Vector4f(15 / 90f, .35f, 1, 0);
+        // TODO 26.2 var lightTransform = new Matrix4f(viewMatrix);
+        // TODO 26.2 lightTransform.invert();
+        // TODO 26.2 lightTransform.transform(lightDirection);
 
-        gameRenderer.lighting().updateLevel(CardinalLighting.Type.DEFAULT);
-        gameRenderer.lighting().setupFor(Lighting.Entry.LEVEL);
+        // TODO 26.2 gameRenderer.lighting().updateLevel(CardinalLighting.Type.DEFAULT);
+        // TODO 26.2 gameRenderer.lighting().setupFor(Lighting.Entry.LEVEL);
 
-        var previousUseUiLightmap = gameRenderer.useUiLightmap;
-        gameRenderer.useUiLightmap = false;
-        var renderState = new LightmapRenderState();
-        renderState.needsUpdate = true;
-        gameRenderer.lightmap.render(renderState);
+        // TODO 26.2 var previousUseUiLightmap = gameRenderer.useUiLightmap;
+        // TODO 26.2 gameRenderer.useUiLightmap = false;
+        // TODO 26.2 var renderState = new LightmapRenderState();
+        // TODO 26.2 renderState.needsUpdate = true;
+        // TODO 26.2 gameRenderer.lightmap.render(renderState);
         try {
-            renderContent(level, nodes, new PoseStack());
+            renderContent(level, submitNodeStorage, new PoseStack());
 
-            InWorldAnnotationRenderer.render(nodes, annotations, lightDarkMode);
+            // TODO 26.2: InWorldAnnotationRenderer.render(nodes, annotations, lightDarkMode);
 
             gameRenderer.featureRenderDispatcher().renderAllFeatures(submitNodeStorage);
         } finally {
-            gameRenderer.useUiLightmap = previousUseUiLightmap;
-            gameRenderer.gameRenderState().lightmapRenderState.needsUpdate = true;
-            gameRenderer.lightmap.render(gameRenderer.gameRenderState().lightmapRenderState);
+            // TODO 26.2 gameRenderer.useUiLightmap = previousUseUiLightmap;
+            // TODO 26.2 gameRenderer.gameRenderState().lightmapRenderState.needsUpdate = true;
+            // TODO 26.2 gameRenderer.lightmap.render(gameRenderer.gameRenderState().lightmapRenderState);
         }
 
         modelViewStack.popMatrix();
@@ -151,17 +149,20 @@ public class GuidebookLevelRenderer {
      */
     public void renderContent(GuidebookLevel level, SubmitNodeStorage nodes,
             PoseStack poseStack) {
+        var featureRenderDispatcher = Minecraft.getInstance().gameRenderer.featureRenderDispatcher();
+
         try (var fake = FakeRenderEnvironment.create(level)) {
-            renderBlocks(level, nodes, false, poseStack);
+            renderBlocks(level, nodes, poseStack);
             renderBlockEntities(level, featureRenderDispatcher, level.getPartialTick(), poseStack);
             renderEntities(level, level.getPartialTick(), poseStack, featureRenderDispatcher);
         }
     }
 
-    private static RenderType getEntityRenderType(ChunkSectionLayer layer) {
+    static RenderType getEntityRenderType(ChunkSectionLayer layer) {
+        // TODO 26.2: Unclear sheets
         return switch (layer) {
-            case SOLID, CUTOUT -> Sheets.cutoutBlockSheet();
-            case TRANSLUCENT -> Sheets.translucentBlockSheet();
+            case SOLID, CUTOUT -> Sheets.cutoutBlockItemSheet();
+            case TRANSLUCENT -> Sheets.translucentBlockItemSheet();
         };
     }
 
@@ -174,11 +175,11 @@ public class GuidebookLevelRenderer {
         var fluidRenderer = new FluidRenderer(fluidModelSet);
 
         BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> {
-            var layer = quad.materialInfo().layer();
-            if (layer.translucent() == translucent) {
-                var builder = buffers.getVertexBuilder(getEntityRenderType(layer));
-                builder.putBakedQuad(poseStack.last(), quad, instance);
-            }
+            // TODO 26.2 var layer = quad.materialInfo().layer();
+            // TODO 26.2 if (layer.translucent() == translucent) {
+            // TODO 26.2     var builder = buffers.getVertexBuilder(getEntityRenderType(layer));
+            // TODO 26.2     builder.putBakedQuad(poseStack.last(), quad, instance);
+            // TODO 26.2 }
         };
 
         var it = level.getFilledBlocks().iterator();
@@ -187,16 +188,15 @@ public class GuidebookLevelRenderer {
             var blockState = level.getBlockState(pos);
             var fluidState = blockState.getFluidState();
             if (!fluidState.isEmpty()) {
-                var fluidModel = minecraft.getModelManager().getFluidStateModelSet().get(fluidState);
-                fluidModel.customRenderer()
                 var sectionPos = SectionPos.of(pos);
                 FluidRenderer.Output fluidOutput = layer -> {
-                    if (layer.translucent() == translucent) {
-                        var baseBuffer = buffers.getBuffer(getEntityRenderType(layer));
-                        return new LiquidVertexConsumer(baseBuffer, sectionPos);
-                    } else {
-                        return NoopVertexConsumer.INSTANCE;
-                    }
+                    // TODO 26.2 if (layer.translucent() == translucent) {
+                    // TODO 26.2     var baseBuffer = buffers.getBuffer(getEntityRenderType(layer));
+                    // TODO 26.2     return new LiquidVertexConsumer(baseBuffer, sectionPos);
+                    // TODO 26.2 } else {
+                    // TODO 26.2     return NoopVertexConsumer.INSTANCE;
+                    // TODO 26.2 }
+                    return NoopVertexConsumer.INSTANCE;
                 };
 
                 var customRenderer = fluidModelSet.get(fluidState).customRenderer();
@@ -226,12 +226,12 @@ public class GuidebookLevelRenderer {
             if (blockState.hasBlockEntity()) {
                 var blockEntity = level.getBlockEntity(pos);
                 if (blockEntity != null) {
-                    this.handleBlockEntity(poseStack, blockEntity, partialTick, dispatcher.getSubmitNodeStorage());
+                    this.handleBlockEntity(poseStack, blockEntity, partialTick, submitNodeStorage);
                 }
             }
         }
 
-        dispatcher.renderAllFeatures();
+        dispatcher.renderAllFeatures(submitNodeStorage);
     }
 
     private <E extends BlockEntity> void handleBlockEntity(PoseStack stack,
@@ -240,7 +240,8 @@ public class GuidebookLevelRenderer {
             SubmitNodeCollector nodeCollector) {
         var dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
         var renderer = dispatcher.getRenderer(blockEntity);
-        if (renderer != null && renderer.shouldRender(blockEntity, blockEntity.getBlockPos().getCenter())) {
+        var fakeCameraPos = Vec3.atCenterOf(blockEntity.getBlockPos());
+        if (renderer != null && renderer.shouldRender(blockEntity, fakeCameraPos)) {
             var pos = blockEntity.getBlockPos();
             stack.pushPose();
             stack.translate(pos.getX(), pos.getY(), pos.getZ());
@@ -265,10 +266,10 @@ public class GuidebookLevelRenderer {
             PoseStack poseStack,
             FeatureRenderDispatcher featureRenderDispatcher) {
         for (var entity : level.getEntitiesForRendering()) {
-            handleEntity(poseStack, featureRenderDispatcher.getSubmitNodeStorage(), entity, partialTick);
+            handleEntity(poseStack, submitNodeStorage, entity, partialTick);
         }
 
-        featureRenderDispatcher.renderAllFeatures();
+        featureRenderDispatcher.renderAllFeatures(submitNodeStorage);
     }
 
     private <E extends Entity> void handleEntity(PoseStack poseStack,
