@@ -1,5 +1,7 @@
 package guideme.scene;
 
+import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.systems.RenderSystem;
 import guideme.document.LytSize;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
@@ -89,14 +91,16 @@ public class CameraSettings {
     }
 
     public Matrix4f getProjectionMatrix() {
+        boolean zZeroToOne = RenderSystem.getDevice().getDeviceInfo().isZZeroToOne();
         var projectionMatrix = new Matrix4f();
         projectionMatrix.setOrtho(
                 viewport.x(),
                 viewport.z(),
                 viewport.y(),
                 viewport.w(),
+                1000,
                 -1000,
-                3000);
+                zZeroToOne);
         return projectionMatrix;
     }
 

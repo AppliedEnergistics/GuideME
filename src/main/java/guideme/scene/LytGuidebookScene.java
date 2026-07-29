@@ -1,5 +1,6 @@
 package guideme.scene;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.color.ColorValue;
 import guideme.color.LightDarkMode;
 import guideme.color.SymbolicColor;
@@ -28,6 +29,7 @@ import guideme.ui.GuideUiHost;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonInfo;
@@ -218,8 +220,10 @@ public class LytGuidebookScene extends LytBox {
                 scene.getCameraSettings().setViewportSize(prefSize);
                 var annotations = hideAnnotations ? Collections.<InWorldAnnotation>emptyList()
                         : scene.getInWorldAnnotations();
+                var sns = new SubmitNodeStorage();
                 renderer.render(scene.getLevel(), scene.getCameraSettings(), annotations,
-                        LightDarkMode.LIGHT_MODE);
+                        LightDarkMode.LIGHT_MODE, sns, new PoseStack());
+                Minecraft.getInstance().gameRenderer.featureRenderDispatcher().renderAllFeatures(sns);
             });
         }
     }
@@ -311,7 +315,7 @@ public class LytGuidebookScene extends LytBox {
                         LytGuidebookScene.this,
                         screenBounds,
                         scissorArea,
-                        (lightDarkMode, _, _) -> renderViewport(lightDarkMode)));
+                        (lightDarkMode, poseStack, nodes) -> renderViewport(lightDarkMode, nodes, poseStack)));
             }
 
             if (!hideAnnotations) {
@@ -319,7 +323,7 @@ public class LytGuidebookScene extends LytBox {
             }
         }
 
-        private void renderViewport(LightDarkMode lightDarkMode) {
+        private void renderViewport(LightDarkMode lightDarkMode, SubmitNodeCollector nodes, PoseStack poseStack) {
             var renderer = GuidebookLevelRenderer.getInstance();
 
             Collection<InWorldAnnotation> inWorldAnnotations;
@@ -335,7 +339,7 @@ public class LytGuidebookScene extends LytBox {
                 inWorldAnnotations = scene.getInWorldAnnotations();
             }
             renderer.render(scene.getLevel(), scene.getCameraSettings(), inWorldAnnotations,
-                    lightDarkMode);
+                    lightDarkMode, nodes, poseStack);
 
             renderDebugCrosshairs();
         }
