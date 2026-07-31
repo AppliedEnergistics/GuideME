@@ -61,6 +61,15 @@ public final class OpenGuideHotkey {
                     if (evt.getEntity() != Minecraft.getInstance().player) {
                         return;
                     }
+                    // Also ignore any events not on the render thread. Vanilla's SessionSearchTrees
+                    // builds the creative-menu and recipe-book search trees on the background
+                    // executor and calls ItemStack#getTooltipLines with a null player there, and
+                    // EMI for example might try to index tooltips off-thread as well. The tooltip
+                    // this hotkey appends is measured with Font#width, which lazily bakes glyphs
+                    // into the font texture and therefore issues GL calls.
+                    if (!Minecraft.getInstance().isSameThread()) {
+                        return;
+                    }
                     handleTooltip(evt.getItemStack(), evt.getFlags(), evt.getToolTip());
                 });
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post evt) -> newTick = true);
