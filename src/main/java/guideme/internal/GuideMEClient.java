@@ -28,6 +28,7 @@ import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -211,43 +212,57 @@ public class GuideMEClient {
 
     private static class ClientConfig {
         final ForgeConfigSpec spec;
-        final ForgeConfigSpec.BooleanValue adaptiveScaling;
-        final ForgeConfigSpec.BooleanValue showDebugGuiOverlays;
-        final ForgeConfigSpec.BooleanValue fullWidthLayout;
-        final ForgeConfigSpec.BooleanValue ignoreTranslatedGuides;
-        final ForgeConfigSpec.BooleanValue hideMissingRecipeErrors;
+        final DelegateConfigValue<Boolean> adaptiveScaling;
+        final DelegateConfigValue<Boolean> showDebugGuiOverlays;
+        final DelegateConfigValue<Boolean> fullWidthLayout;
+        final DelegateConfigValue<Boolean> ignoreTranslatedGuides;
+        final DelegateConfigValue<Boolean> hideMissingRecipeErrors;
 
         public ClientConfig() {
             var builder = new ForgeConfigSpec.Builder();
 
             builder.push("guides");
-            ignoreTranslatedGuides = builder
+            ignoreTranslatedGuides = new DelegateConfigValue<>(this, builder
                     .comment("Never load translated guide pages for your current language.")
-                    .define("ignoreTranslatedGuides", false);
-            hideMissingRecipeErrors = builder
+                    .define("ignoreTranslatedGuides", false));
+            hideMissingRecipeErrors = new DelegateConfigValue<>(this, builder
                     .comment(
                             "Never show errors in guides when recipes can't be found (i.e. because they were hidden by a datapack).")
-                    .define("hideMissingRecipeErrors", false);
+                    .define("hideMissingRecipeErrors", false));
             builder.pop();
 
             builder.push("gui");
-            adaptiveScaling = builder
+            adaptiveScaling = new DelegateConfigValue<>(this, builder
                     .comment(
                             "Adapt GUI scaling for the Guide screen to fix Minecraft font issues at GUI scale 1 and 3.")
-                    .define("adaptiveScaling", true);
-            fullWidthLayout = builder
+                    .define("adaptiveScaling", true));
+            fullWidthLayout = new DelegateConfigValue<>(this, builder
                     .comment(
                             "Use the full width of the screen for the guide when it is opened.")
-                    .define("fullWidthLayout", true);
+                    .define("fullWidthLayout", true));
             builder.pop();
 
             builder.push("debug");
-            showDebugGuiOverlays = builder
+            showDebugGuiOverlays = new DelegateConfigValue<>(this, builder
                     .comment("Show debugging overlays in GUI on mouse-over.")
-                    .define("showDebugGuiOverlays", false);
+                    .define("showDebugGuiOverlays", false));
             builder.pop();
 
             spec = builder.build();
+        }
+
+        private record DelegateConfigValue<T>(ClientConfig configContainer, ConfigValue<T> configInstance) {
+
+            public T get() {
+                if (this.configContainer.spec.isLoaded()) {
+                    return this.configInstance.get();
+                }
+                return this.configInstance.getDefault();
+            }
+
+            public void set(T value) {
+                this.configInstance.set(value);
+            }
         }
     }
 
