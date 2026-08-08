@@ -139,6 +139,15 @@ public final class MdxAttrs {
     }
 
     @Nullable
+    public static Pair<Identifier, Item> getItemAndId(PageCompiler compiler, LytErrorSink errorSink,
+            MdxJsxElementFields el, String attribute) {
+        var itemId = getRequiredId(compiler, errorSink, el, attribute);
+
+        var resultItem = BuiltInRegistries.ITEM.getOptional(itemId).orElse(null);
+        return resultItem == null ? null : Pair.of(itemId, resultItem);
+    }
+
+    @Nullable
     public static Pair<Identifier, EntityType<?>> getRequiredEntityTypeAndId(PageCompiler compiler,
             LytErrorSink errorSink,
             MdxJsxElementFields el,
@@ -175,10 +184,19 @@ public final class MdxAttrs {
             LytErrorSink errorSink,
             MdxJsxElementFields el) {
         var itemAndId = getRequiredItemAndId(compiler, errorSink, el, "id");
-        if (itemAndId == null) {
-            return null;
-        }
+        return itemAndId == null ? null : getItemStackAndId(compiler, errorSink, el, itemAndId);
+    }
 
+    @Nullable
+    public static Pair<Identifier, ItemStack> getItemStackAndId(PageCompiler compiler, LytErrorSink errorSink,
+            MdxJsxElementFields el) {
+        var itemAndId = getItemAndId(compiler, errorSink, el, "id");
+        return itemAndId == null ? null : getItemStackAndId(compiler, errorSink, el, itemAndId);
+    }
+
+    @Nullable
+    private static Pair<Identifier, ItemStack> getItemStackAndId(PageCompiler compiler, LytErrorSink errorSink,
+            MdxJsxElementFields el, Pair<Identifier, Item> itemAndId) {
         var stack = new ItemStack(itemAndId.getRight());
         var componentsString = MdxAttrs.getString(compiler, errorSink, el, "components", null);
         if (componentsString != null) {

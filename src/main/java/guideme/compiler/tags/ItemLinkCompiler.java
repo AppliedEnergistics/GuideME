@@ -8,6 +8,9 @@ import guideme.document.interaction.ItemTooltip;
 import guideme.indices.ItemIndex;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import java.util.Set;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class ItemLinkCompiler extends FlowTagCompiler {
     @Override
@@ -17,8 +20,20 @@ public class ItemLinkCompiler extends FlowTagCompiler {
 
     @Override
     public void compile(PageCompiler compiler, LytFlowParent parent, MdxJsxElementFields el) {
-        var itemAndId = MdxAttrs.getRequiredItemStackAndId(compiler, parent, el);
+        var fallback = MdxAttrs.getString(compiler, parent, el, "fallback", null);
+        Pair<Identifier, ItemStack> itemAndId;
+        if (fallback != null) {
+            itemAndId = MdxAttrs.getItemStackAndId(compiler, parent, el);
+        } else {
+            itemAndId = MdxAttrs.getRequiredItemStackAndId(compiler, parent, el);
+        }
         if (itemAndId == null) {
+            if (fallback != null) {
+                var span = new LytTooltipSpan();
+                span.modifyStyle(style -> style.italic(true));
+                span.appendText(fallback);
+                parent.append(span);
+            }
             return;
         }
         var id = itemAndId.getLeft();
