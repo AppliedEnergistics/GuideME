@@ -38,6 +38,9 @@ jobs:
           git status
           if [ -n "$(git status --porcelain)" ]; then exit 1; fi
 
+      # Only ever publishes into the local repository at build/repo, never to a remote one. The signing
+      # secrets are unavailable for pull requests from forks, in which case GitHub substitutes empty
+      # strings and the signing block in build.gradle skips signing instead of failing the build.
       - name: Build with Gradle
         run: ./gradlew printProjectVersion build publish -x check --max-workers 1
         env:
@@ -59,6 +62,13 @@ jobs:
         with:
           name: dist
           path: build/libs/
+
+      # The local Maven repository produced by publishAllPublicationsToLocalRepository
+      - uses: actions/upload-artifact@v4
+        with:
+          name: maven-repo
+          path: build/repo/
+          if-no-files-found: error
 
       - name: Prepare artifact metadata. Note that VERSION is set by the gradle script.
         id: prepare_artifact_metadata
@@ -84,7 +94,6 @@ jobs:
     name: Publish Snapshot to Maven Central
     needs: build
     runs-on: ubuntu-latest
-    # Only push the snapshot for the main branch of our repo (i.e. not for forks)
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'AppliedEnergistics/GuideME'
     steps:
       - name: Download build artifact
