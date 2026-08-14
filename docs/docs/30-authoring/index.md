@@ -152,7 +152,7 @@ shown item name are retrieved from. `<ItemLink id="minecraft:stick" components="
 using the epic rarity color, for example.
 
 If the link targets an item from the same namespace as the page, an error will be shown if there's no page for that item.
-You can opt out of this behavior by adding `optional={true}` to the link, or opt in for items of other mods by 
+You can opt out of this behavior by adding `optional={true}` or just `optional` to the link, or opt in for items of other mods by 
 adding `optional={false}`.
 
 ### Command Links
