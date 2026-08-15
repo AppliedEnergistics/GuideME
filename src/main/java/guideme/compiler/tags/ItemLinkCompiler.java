@@ -25,9 +25,13 @@ public class ItemLinkCompiler extends FlowTagCompiler {
         var stack = itemAndId.getRight();
 
         var linksTo = compiler.getIndex(ItemIndex.class).get(id);
+
         // We'll error out for item-links to our own mod because we expect them to have a page
         // while we don't have pages for Vanilla items or items from other mods.
-        if (linksTo == null && id.getNamespace().equals(compiler.getPageId().getNamespace())) {
+        // But authors can opt-in or out of this behavior.
+        boolean defaultOptional = !id.getNamespace().equals(compiler.getPageId().getNamespace());
+        var optional = MdxAttrs.getBoolean(compiler, parent, el, "optional", defaultOptional);
+        if (linksTo == null && !optional) {
             parent.append(compiler.createErrorFlowContent("No page found for item " + id, el));
             return;
         }

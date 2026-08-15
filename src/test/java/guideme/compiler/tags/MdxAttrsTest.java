@@ -1,11 +1,17 @@
 package guideme.compiler.tags;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import guideme.compiler.PageCompiler;
 import guideme.document.LytErrorSink;
+import guideme.internal.GuideME;
 import guideme.libs.mdast.mdx.model.MdxJsxAttribute;
 import guideme.libs.mdast.mdx.model.MdxJsxAttributeNode;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.mdx.model.MdxJsxTextElement;
+import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -44,5 +50,30 @@ class MdxAttrsTest {
                 "from",
                 "");
         MdxAttrs.getVector3(compiler, errorSink, el, "from", null);
+    }
+
+    @Test
+    void testBooleanAttrsWithExpression() throws Exception {
+        var parsedPage = PageCompiler.parse("ignored", "en_us", GuideME.makeId("test"),
+                new ByteArrayInputStream("<Tag attr={true} />".getBytes()));
+        var firstTag = parsedPage.getAstRoot().children().getFirst();
+        assertTrue(MdxAttrs.getBoolean((MdxJsxElementFields) firstTag, "attr", false));
+    }
+
+    @Test
+    void testBooleanAttrsWithoutValue() throws Exception {
+        var parsedPage = PageCompiler.parse("ignored", "en_us", GuideME.makeId("test"),
+                new ByteArrayInputStream("<Tag attr />".getBytes()));
+        var firstTag = parsedPage.getAstRoot().children().getFirst();
+        assertTrue(MdxAttrs.getBoolean((MdxJsxElementFields) firstTag, "attr", false));
+    }
+
+    @Test
+    void testBooleanAttrsWithNullExpressionValue() throws Exception {
+        var parsedPage = PageCompiler.parse("ignored", "en_us", GuideME.makeId("test"),
+                new ByteArrayInputStream("<Tag attr={null} />".getBytes()));
+        var firstTag = parsedPage.getAstRoot().children().getFirst();
+        var e = assertThrows(Exception.class, () -> MdxAttrs.getBoolean((MdxJsxElementFields) firstTag, "attr", false));
+        assertThat(e).hasMessage("attr should be {true} or {false}");
     }
 }

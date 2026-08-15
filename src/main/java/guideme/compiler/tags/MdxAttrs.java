@@ -465,6 +465,10 @@ public final class MdxAttrs {
             } else if (expressionValue.equals("false")) {
                 return false;
             }
+        } else if (attribute.getStringValue() == null) {
+            // This allows for standalone attributes ("<Tag attr />") to be recognized as true
+            // but differentiates them from <Tag attr={null} />
+            return true;
         }
 
         throw new AttributeException(name, name + " should be {true} or {false}");
