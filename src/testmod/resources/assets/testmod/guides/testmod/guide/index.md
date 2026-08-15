@@ -25,6 +25,8 @@ You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">do
 
 <ItemLink id="minecraft:stick" components="rarity=epic" />
 
+<ItemLink id="not_installed:doesnt_exist" fallback="Fallback for non-existent item" />
+
 <GameScene zoom={4} interactive={true}>
     <Entity id="minecraft:sheep" data="{Color: 2}" />
     <Block id="minecraft:water" />
