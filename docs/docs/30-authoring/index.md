@@ -155,6 +155,9 @@ If the link targets an item from the same namespace as the page, an error will b
 You can opt out of this behavior by adding `optional={true}` or just `optional` to the link, or opt in for items of other mods by 
 adding `optional={false}`.
 
+If you're linking to items from another mod and want to account for cases where the item doesn't exist at all,
+you can specify a `fallback="text"` attribute to show a fallback text instead of an error.
+
 ### Command Links
 
 You can make links that run a command when clicked using `<CommandLink command="/command">text text</CommandLink>`.

@@ -3,6 +3,7 @@ package guideme.compiler.tags;
 import guideme.compiler.PageCompiler;
 import guideme.document.flow.LytFlowLink;
 import guideme.document.flow.LytFlowParent;
+import guideme.document.flow.LytFlowSpan;
 import guideme.document.flow.LytTooltipSpan;
 import guideme.document.interaction.ItemTooltip;
 import guideme.indices.ItemIndex;
@@ -29,7 +30,7 @@ public class ItemLinkCompiler extends FlowTagCompiler {
         }
         if (itemAndId == null) {
             if (fallback != null) {
-                var span = new LytTooltipSpan();
+                var span = new LytFlowSpan();
                 span.modifyStyle(style -> style.italic(true));
                 span.appendText(fallback);
                 parent.append(span);
