@@ -1,4 +1,4 @@
-package guideme.siteexport;
+package guideme.siteexport.web;
 
 import org.jetbrains.annotations.ApiStatus;
 
@@ -8,4 +8,7 @@ import org.jetbrains.annotations.ApiStatus;
 @ApiStatus.Experimental
 @ApiStatus.NonExtendable
 public interface ExportedItemInfo {
+    String icon();
+
+    String displayName();
 }

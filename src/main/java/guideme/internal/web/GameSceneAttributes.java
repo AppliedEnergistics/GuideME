@@ -1,5 +1,6 @@
 package guideme.internal.web;
 
+import guideme.siteexport.DefaultValue;
 import org.jspecify.annotations.Nullable;
 
 public record GameSceneAttributes(

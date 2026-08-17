@@ -13,6 +13,7 @@ import guideme.internal.GuideOnStartup;
 import guideme.internal.siteexport.mdastpostprocess.PageExportPostProcessor;
 import guideme.internal.util.Platform;
 import guideme.navigation.NavigationNode;
+import guideme.siteexport.AdditionalResourceExporter;
 import guideme.siteexport.ExportableResourceProvider;
 import guideme.siteexport.RecipeExporter;
 import guideme.siteexport.ResourceExporter;
@@ -414,6 +415,14 @@ public class SiteExporter implements ResourceExporter {
 
             // Post-Process the parsed Markdown AST and export it as JSON into the index directly
             ExportableResourceProvider.visit(compiledPage.document(), SiteExporter.this);
+        }
+
+        for (var additionalResourceExporter : guide.getExtensions().get(AdditionalResourceExporter.EXTENSION_POINT)) {
+            additionalResourceExporter.addResources(guide, this);
+        }
+
+        for (var entry : extraData.entrySet()) {
+            indexWriter.addModData(entry.getKey().toString(), entry.getValue());
         }
 
         dumpRecipes(indexWriter);
