@@ -4,6 +4,7 @@ import com.mojang.serialization.JavaOps;
 import guideme.compiler.ParsedGuidePage;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.item.ItemStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,8 @@ public final class NavigationUtil {
             var iconItem = BuiltInRegistries.ITEM.getHolder(navigation.iconItemId()).orElse(null);
             if (iconItem != null) {
                 if (navigation.iconComponents() != null) {
-                    var patch = DataComponentPatch.CODEC.parse(JavaOps.INSTANCE, navigation.iconComponents())
+                    var registryOps = RegistryOps.create(JavaOps.INSTANCE, Platform.getClientRegistryAccess());
+                    var patch = DataComponentPatch.CODEC.parse(registryOps, navigation.iconComponents())
                             .resultOrPartial(
                                     err -> LOG.error("Failed to deserialize component patch {} for icon {}: {}",
                                             navigation.iconComponents(), navigation.iconItemId(), err));
