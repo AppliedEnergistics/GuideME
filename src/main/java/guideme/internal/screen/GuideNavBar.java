@@ -256,7 +256,7 @@ public class GuideNavBar extends AbstractWidget {
                     renderContext.fillTriangle(p1, p2, p3, color);
                 }
 
-                var icon = row.node.icon();
+                var icon = row.node.iconFactory().get();
                 if (!icon.isEmpty()) {
                     renderContext.renderItem(icon, row.paragraph.getBounds().x() - 9, row.paragraph.getBounds().y(), 1,
                             8,
@@ -342,7 +342,7 @@ public class GuideNavBar extends AbstractWidget {
                 indent = 0;
             }
 
-            if (!row.node.icon().isEmpty()) {
+            if (!row.node.iconFactory().get().isEmpty()) {
                 indent += 8; // Indent for icon;
             }
 

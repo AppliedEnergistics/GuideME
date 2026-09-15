@@ -166,8 +166,8 @@ public class GuideSearchScreen extends DocumentScreen {
             var icon = NavigationUtil.createNavigationIcon(page);
 
             var image = new LytItemImage();
-            if (!icon.isEmpty()) {
-                image.setItem(icon);
+            if (!icon.icon().isEmpty()) {
+                image.setItem(icon.icon());
             }
             searchResultItem.append(image);
 

@@ -2,6 +2,8 @@ package guideme.internal.util;
 
 import com.mojang.serialization.JavaOps;
 import guideme.compiler.ParsedGuidePage;
+import java.util.function.Supplier;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
@@ -15,22 +17,52 @@ public final class NavigationUtil {
     private NavigationUtil() {
     }
 
-    public static ItemStack createNavigationIcon(ParsedGuidePage page) {
+    public record NavIcon(ItemStack icon, Supplier<ItemStack> iconFactory) {
+    }
+
+    public static NavIcon createNavigationIcon(ParsedGuidePage page) {
         var navigation = page.getFrontmatter().navigationEntry();
 
         var icon = ItemStack.EMPTY;
+        Supplier<ItemStack> iconFactory = () -> ItemStack.EMPTY;
         if (navigation != null && navigation.iconItemId() != null) {
             var iconItem = BuiltInRegistries.ITEM.getHolder(navigation.iconItemId()).orElse(null);
             if (iconItem != null) {
                 if (navigation.iconComponents() != null) {
-                    var registryOps = RegistryOps.create(JavaOps.INSTANCE, Platform.getClientRegistryAccess());
-                    var patch = DataComponentPatch.CODEC.parse(registryOps, navigation.iconComponents())
-                            .resultOrPartial(
-                                    err -> LOG.error("Failed to deserialize component patch {} for icon {}: {}",
-                                            navigation.iconComponents(), navigation.iconItemId(), err));
-                    icon = new ItemStack(iconItem, 1, patch.orElse(DataComponentPatch.EMPTY));
+                    RegistryAccess registryAccess;
+                    try {
+                        registryAccess = Platform.getClientRegistryAccess();
+                    } catch (NullPointerException ignored) {
+                        registryAccess = null;
+                    }
+
+                    if (registryAccess != null) {
+                        var patch = DataComponentPatch.CODEC
+                                .parse(RegistryOps.create(JavaOps.INSTANCE, registryAccess),
+                                        navigation.iconComponents())
+                                .resultOrPartial(
+                                        err -> LOG.error("Failed to deserialize component patch {} for icon {}: {}",
+                                                navigation.iconComponents(), navigation.iconItemId(), err));
+                        iconFactory = () -> new ItemStack(iconItem, 1, patch.orElse(DataComponentPatch.EMPTY));
+                        icon = iconFactory.get();
+                    } else {
+                        // Try to deserialize the icon component without registry access
+                        iconFactory = () -> {
+                            var patch = DataComponentPatch.CODEC
+                                    .parse(RegistryOps.create(JavaOps.INSTANCE, Platform.getClientRegistryAccess()),
+                                            navigation.iconComponents())
+                                    .resultOrPartial(
+                                            err -> LOG.error("Failed to deserialize component patch {} for icon {}: {}",
+                                                    navigation.iconComponents(), navigation.iconItemId(), err));
+                            return new ItemStack(iconItem, 1, patch.orElse(DataComponentPatch.EMPTY));
+                        };
+                        var patch = DataComponentPatch.CODEC.parse(JavaOps.INSTANCE, navigation.iconComponents())
+                                .resultOrPartial();
+                        icon = new ItemStack(iconItem, 1, patch.orElse(DataComponentPatch.EMPTY));
+                    }
                 } else {
-                    icon = new ItemStack(iconItem);
+                    iconFactory = () -> new ItemStack(iconItem);
+                    icon = iconFactory.get();
                 }
             }
 
@@ -39,6 +71,6 @@ public final class NavigationUtil {
             }
         }
 
-        return icon;
+        return new NavIcon(icon, iconFactory);
     }
 }

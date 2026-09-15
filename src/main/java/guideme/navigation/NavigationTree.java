@@ -133,7 +133,8 @@ public class NavigationTree {
         var node = new NavigationNode(
                 page.getId(),
                 navigationEntry.title(),
-                icon,
+                icon.icon(),
+                icon.iconFactory(),
                 childNodes,
                 navigationEntry.position(),
                 true);
