@@ -48,6 +48,7 @@ public class GuidebookLevelRenderer {
             CameraSettings cameraSettings,
             Collection<InWorldAnnotation> annotations,
             LightDarkMode lightDarkMode) {
+
         lightmap.update(level);
 
         RenderSystem.clear(GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
@@ -252,7 +253,13 @@ public class GuidebookLevelRenderer {
             E entity,
             MultiBufferSource buffers,
             float partialTicks) {
-        var dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
+        // Entity rendering does not work correctly if there's no level/player
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null || minecraft.player == null) {
+            return;
+        }
+
+        var dispatcher = minecraft.getEntityRenderDispatcher();
         var renderer = dispatcher.getRenderer(entity);
         if (renderer == null) {
             return;

@@ -26,6 +26,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.registries.DataPackRegistriesHooks;
 import net.neoforged.neoforge.resource.ResourcePackLoader;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
@@ -161,7 +162,7 @@ public final class GuideOnStartup {
             var worldgenLayer = RegistryDataLoader.load(
                     resourceManager,
                     layeredAccess.getAccessForLoading(RegistryLayer.WORLDGEN),
-                    RegistryDataLoader.WORLDGEN_REGISTRIES);
+                    DataPackRegistriesHooks.getDataPackRegistries());
             layeredAccess = layeredAccess.replaceFrom(RegistryLayer.WORLDGEN, worldgenLayer);
 
             var stuff = ReloadableServerResources.loadResources(
