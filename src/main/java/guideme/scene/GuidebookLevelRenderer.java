@@ -179,7 +179,7 @@ public class GuidebookLevelRenderer {
             PoseStack poseStack) {
         var minecraft = Minecraft.getInstance();
         boolean ambientOcclusion = minecraft.options.ambientOcclusion().get();
-        var blockRenderer = new ModelBlockRenderer(ambientOcclusion, false, minecraft.getBlockColors());
+        var blockRenderer = new ModelBlockRenderer(ambientOcclusion, true, minecraft.getBlockColors());
         var modelManager = minecraft.getModelManager();
         var fluidModelSet = modelManager.getFluidStateModelSet();
         var fluidRenderer = new FluidRenderer(fluidModelSet);
