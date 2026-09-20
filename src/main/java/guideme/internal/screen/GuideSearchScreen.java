@@ -1,5 +1,6 @@
 package guideme.internal.screen;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import guideme.Guide;
 import guideme.Guides;
 import guideme.PageAnchor;
@@ -38,7 +39,6 @@ import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 
 public class GuideSearchScreen extends DocumentScreen {
     /**
@@ -268,10 +268,10 @@ public class GuideSearchScreen extends DocumentScreen {
 
     @Override
     protected boolean documentClicked(UiPoint documentPoint, MouseButtonInfo button) {
-        if (button.button() == GLFW.GLFW_MOUSE_BUTTON_4) {
+        if (button.button() == InputConstants.MOUSE_BUTTON_4) {
             GuideNavigation.navigateBack(guide);
             return true;
-        } else if (button.button() == GLFW.GLFW_MOUSE_BUTTON_5) {
+        } else if (button.button() == InputConstants.MOUSE_BUTTON_5) {
             GuideNavigation.navigateForward(guide);
             return true;
         }
@@ -281,8 +281,8 @@ public class GuideSearchScreen extends DocumentScreen {
 
     @Override
     public void onClose() {
-        if (minecraft != null && minecraft.screen == this && this.returnToOnClose != null) {
-            minecraft.setScreen(this.returnToOnClose);
+        if (minecraft != null && minecraft.gui.screen() == this && this.returnToOnClose != null) {
+            minecraft.gui.setScreen(this.returnToOnClose);
             this.returnToOnClose = null;
             return;
         }

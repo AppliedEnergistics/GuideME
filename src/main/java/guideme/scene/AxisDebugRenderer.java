@@ -1,99 +1,51 @@
 package guideme.scene;
 
-import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.RenderPass;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import java.util.Objects;
-import java.util.OptionalDouble;
-import java.util.OptionalInt;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.DynamicUniforms;
-import net.minecraft.client.renderer.ProjectionMatrixBuffer;
-import net.minecraft.client.renderer.RenderPipelines;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 
 /**
  * Renders a 3d cross to visualize the alignment of the x, y, and z axes.
+ * <p>
+ * This used to build its own GPU vertex buffer and open its own {@code RenderPass} against
+ * {@code Minecraft#getMainRenderTarget()}. Neither works any more:
+ * <ul>
+ * <li>{@code Minecraft#getMainRenderTarget()} moved to {@code GameRenderer#mainRenderTarget()}, and
+ * {@code RenderSystem.outputColorTextureOverride}/{@code outputDepthTextureOverride} (which is how the
+ * guidebook redirected rendering into the picture-in-picture texture) were removed entirely.</li>
+ * <li>The scene is now drawn inside a render pass owned by {@code PictureInPictureRenderer}, whose color
+ * and depth texture views are private, so we cannot open a second pass against the correct target.</li>
+ * </ul>
+ * The renderer therefore submits its lines through the submit-node pipeline like everything else, which
+ * automatically puts them in the same render pass, with the same camera, as the rest of the scene.
  */
-final public class AxisDebugRenderer implements AutoCloseable {
+public final class AxisDebugRenderer {
 
-    private final GpuBuffer crosshairBuffer;
-    private final RenderSystem.AutoStorageIndexBuffer crosshairIndicies = RenderSystem
-            .getSequentialBuffer(VertexFormat.Mode.LINES);
-    private final ProjectionMatrixBuffer projectionBuffer;
+    private static final float LENGTH = 25f;
 
-    public AxisDebugRenderer() {
-        try (ByteBufferBuilder bytebufferbuilder = ByteBufferBuilder
-                .exactlySized(DefaultVertexFormat.POSITION_COLOR_NORMAL.getVertexSize() * 12)) {
-            BufferBuilder bufferbuilder = new BufferBuilder(bytebufferbuilder, VertexFormat.Mode.LINES,
-                    DefaultVertexFormat.POSITION_COLOR_NORMAL);
-            bufferbuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(0XFFFF0000).setNormal(1.0F, 0.0F, 0.0F);
-            bufferbuilder.addVertex(25, 0.0F, 0.0F).setColor(0XFFFF0000).setNormal(1.0F, 0.0F, 0.0F);
-            bufferbuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(0XFF00FF00).setNormal(0.0F, 1.0F, 0.0F);
-            bufferbuilder.addVertex(0.0F, 25, 0.0F).setColor(0XFF00FF00).setNormal(0.0F, 1.0F, 0.0F);
-            bufferbuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(0XFF7F7FFF).setNormal(0.0F, 0.0F, 1.0F);
-            bufferbuilder.addVertex(0.0F, 0.0F, 25).setColor(0XFF7F7FFF).setNormal(0.0F, 0.0F, 1.0F);
-
-            try (MeshData meshdata = bufferbuilder.buildOrThrow()) {
-                this.crosshairBuffer = RenderSystem.getDevice().createBuffer(() -> "GuideME crosshair vertex buffer",
-                        GpuBuffer.USAGE_VERTEX, meshdata.vertexBuffer());
-            }
-        }
-
-        projectionBuffer = new ProjectionMatrixBuffer("debug crosshair projection");
+    private AxisDebugRenderer() {
     }
 
-    public void render(CameraSettings cameraSettings) {
-        RenderSystem.backupProjectionMatrix();
-        RenderSystem.setProjectionMatrix(projectionBuffer.getBuffer(cameraSettings.getProjectionMatrix()),
-                ProjectionType.ORTHOGRAPHIC);
+    public static void render(SubmitNodeCollector collector, PoseStack poseStack) {
+        // RenderPipelines.LINES now takes the line width as a per-vertex attribute
+        // (DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH) instead of a global GL line width.
+        var lineWidth = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState.appropriateLineWidth;
 
-        Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
-        modelViewStack.pushMatrix();
-        modelViewStack.mul(cameraSettings.getViewMatrix());
-
-        RenderPipeline renderpipeline = RenderPipelines.LINES;
-        RenderTarget rendertarget = Minecraft.getInstance().getMainRenderTarget();
-        var colorView = Objects.requireNonNullElse(RenderSystem.outputColorTextureOverride,
-                rendertarget.getColorTextureView());
-        var depthView = Objects.requireNonNullElse(RenderSystem.outputDepthTextureOverride,
-                rendertarget.getDepthTextureView());
-        GpuBuffer gpubuffer = this.crosshairIndicies.getBuffer(18);
-        GpuBufferSlice[] slices = RenderSystem.getDynamicUniforms()
-                .writeTransforms(new DynamicUniforms.Transform(new Matrix4f(modelViewStack),
-                        new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f()));
-
-        try (RenderPass renderpass = RenderSystem.getDevice()
-                .createCommandEncoder()
-                .createRenderPass(() -> "3d crosshair", colorView, OptionalInt.empty(), depthView,
-                        OptionalDouble.empty())) {
-            renderpass.setPipeline(renderpipeline);
-            RenderSystem.bindDefaultUniforms(renderpass);
-            renderpass.setVertexBuffer(0, this.crosshairBuffer);
-            renderpass.setIndexBuffer(gpubuffer, this.crosshairIndicies.type());
-            renderpass.setUniform("DynamicTransforms", slices[0]);
-            renderpass.drawIndexed(0, 0, 18, 1);
-        }
-
-        modelViewStack.popMatrix();
-        RenderSystem.restoreProjectionMatrix();
+        collector.submitCustomGeometry(poseStack, RenderTypes.lines(), (pose, buffer) -> {
+            axis(buffer, pose, LENGTH, 0, 0, 0xFFFF0000, lineWidth);
+            axis(buffer, pose, 0, LENGTH, 0, 0xFF00FF00, lineWidth);
+            axis(buffer, pose, 0, 0, LENGTH, 0xFF7F7FFF, lineWidth);
+        });
     }
 
-    @Override
-    public void close() {
-        crosshairBuffer.close();
-        projectionBuffer.close();
+    private static void axis(VertexConsumer buffer, PoseStack.Pose pose, float x, float y, float z, int color,
+            float lineWidth) {
+        var nx = x != 0 ? 1f : 0f;
+        var ny = y != 0 ? 1f : 0f;
+        var nz = z != 0 ? 1f : 0f;
+        buffer.addVertex(pose, 0f, 0f, 0f).setColor(color).setNormal(pose, nx, ny, nz).setLineWidth(lineWidth);
+        buffer.addVertex(pose, x, y, z).setColor(color).setNormal(pose, nx, ny, nz).setLineWidth(lineWidth);
     }
 }

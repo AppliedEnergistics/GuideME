@@ -126,7 +126,7 @@ public final class GuideOnStartup {
             var client = Minecraft.getInstance();
             CompletableFuture<?> reload;
 
-            if (client.getOverlay() instanceof LoadingOverlay loadingOverlay) {
+            if (client.gui.overlay() instanceof LoadingOverlay loadingOverlay) {
                 reload = loadingOverlay.reload.done();
             } else {
                 reload = CompletableFuture.completedFuture(null);
@@ -162,13 +162,15 @@ public final class GuideOnStartup {
 
             var postponedTags = TagLoader.loadTagsForExistingRegistries(resourceManager,
                     layeredAccess.getLayer(RegistryLayer.STATIC));
+            // RegistryLayer.WORLDGEN was renamed to WORLD and
+            // RegistryDataLoader.WORLDGEN_REGISTRIES to WORLD_REGISTRIES.
             var worldgenLayer = RegistryDataLoader.load(
                     resourceManager,
-                    TagLoader.buildUpdatedLookups(layeredAccess.getAccessForLoading(RegistryLayer.WORLDGEN),
+                    TagLoader.buildUpdatedLookups(layeredAccess.getAccessForLoading(RegistryLayer.WORLD),
                             postponedTags),
-                    RegistryDataLoader.WORLDGEN_REGISTRIES,
+                    RegistryDataLoader.WORLD_REGISTRIES,
                     ForkJoinPool.commonPool()).join();
-            layeredAccess = layeredAccess.replaceFrom(RegistryLayer.WORLDGEN, worldgenLayer);
+            layeredAccess = layeredAccess.replaceFrom(RegistryLayer.WORLD, worldgenLayer);
 
             var stuff = ReloadableServerResources.loadResources(
                     resourceManager,

@@ -1,5 +1,6 @@
 package guideme.document.flow;
 
+import com.mojang.blaze3d.Blaze3D;
 import guideme.PageAnchor;
 import guideme.color.SymbolicColor;
 import guideme.internal.GuideMEClient;
@@ -11,7 +12,6 @@ import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 
 public class LytFlowLink extends LytTooltipSpan {
@@ -61,14 +61,14 @@ public class LytFlowLink extends LytTooltipSpan {
 
         setClickCallback(screen -> {
             var mc = Minecraft.getInstance();
-            var previousScreen = mc.screen;
-            mc.setScreen(new ConfirmLinkScreen(yes -> {
+            var previousScreen = mc.gui.screen();
+            mc.gui.setScreen(new ConfirmLinkScreen(yes -> {
                 if (yes) {
-                    Util.getPlatform().openUri(uri);
+                    Blaze3D.openUri(uri);
                 }
 
-                mc.setScreen(previousScreen);
-            }, uri.toString(), true));
+                mc.gui.setScreen(previousScreen);
+            }, uri, true));
         });
     }
 

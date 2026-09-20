@@ -324,7 +324,7 @@ public final class MutableGuide implements Guide {
         this.navigationTree = buildNavigation();
 
         // Reload the current page if it has been changed
-        if (Minecraft.getInstance().screen instanceof GuideScreen guideScreen) {
+        if (Minecraft.getInstance().gui.screen() instanceof GuideScreen guideScreen) {
             var currentPageId = guideScreen.getCurrentPageId();
             if (changes.stream().anyMatch(c -> c.pageId().equals(currentPageId))) {
                 guideScreen.reloadPage();

@@ -44,6 +44,10 @@ configurations {
 }
 
 dependencies {
+    // PORT26.3: LWJGL's tinyfd bindings are no longer on Minecraft's compile classpath, but
+    // lwjgl-tinyfd IS present at runtime in the NeoForge 26.3 instance, so compile against it only.
+    compileOnly "org.lwjgl:lwjgl-tinyfd:3.4.1"
+
     // To be copied into the jar file
     shaded project(path: ':markdown', configuration: "runtimeElements")
     shaded "io.methvin:directory-watcher:${directory_watcher_version}"

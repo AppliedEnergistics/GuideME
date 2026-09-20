@@ -32,7 +32,7 @@ import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
  */
 public final class OpenGuideHotkey {
     private static final KeyMapping OPEN_GUIDE_MAPPING = new KeyMapping(
-            "key.guideme.guide", KeyConflictContext.GUI, InputConstants.Type.KEYSYM, InputConstants.KEY_G,
+            "key.guideme.guide", KeyConflictContext.GUI, InputConstants.Type.KEYBOARD, InputConstants.KEY_G,
             GuideMEClient.KEYBIND_CATEGORY);
 
     private static final int TICKS_TO_OPEN = 10;
@@ -89,7 +89,7 @@ public final class OpenGuideHotkey {
 
         // Don't do anything if we're already on the target page
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.screen instanceof GuideScreen guideScreen
+        if (minecraft.gui.screen() instanceof GuideScreen guideScreen
                 && guideScreen.getGuide() == guide
                 && guideScreen.getCurrentPageId().equals(pageAnchor.pageId())) {
             return;
@@ -173,7 +173,8 @@ public final class OpenGuideHotkey {
                     var foundPage = guidebookPages.getFirst();
                     var guide = foundPage.guide();
 
-                    if (Minecraft.getInstance().screen instanceof GuideUiHost uiHost && uiHost.getGuide() == guide) {
+                    if (Minecraft.getInstance().gui.screen() instanceof GuideUiHost uiHost
+                            && uiHost.getGuide() == guide) {
                         uiHost.navigateTo(foundPage.page());
                     } else {
                         GuideMEClient.openGuideAtAnchor(guide, foundPage.page());
@@ -195,10 +196,11 @@ public final class OpenGuideHotkey {
      * This circumvents any current UI key handling.
      */
     private static boolean isKeyHeld() {
+        // InputConstants.isKeyDown no longer takes a Window; it queries the SDL keyboard state
+        // directly and is indexed by the SDL scancode, which is what Type.KEYBOARD keys now carry.
         int keyCode = getHotkey().getKey().getValue();
-        var window = Minecraft.getInstance().getWindow();
 
-        return InputConstants.isKeyDown(window, keyCode);
+        return InputConstants.isKeyDown(keyCode);
     }
 
     private static boolean isKeyBound() {

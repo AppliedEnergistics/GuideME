@@ -18,8 +18,9 @@
 
 package guideme.internal.util;
 
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import guideme.internal.GuideME;
 import java.util.Objects;
 import java.util.Optional;
@@ -42,7 +43,10 @@ import org.joml.Matrix3x2f;
 public final class Blitter {
     public static final RenderPipeline GUI_TEXTURED_OPAQUE = RenderPipelines.GUI_TEXTURED.toBuilder()
             .withLocation(GuideME.makeId("pipeline/gui_textured_opaque"))
-            .withColorTargetState(new ColorTargetState(Optional.empty(), ColorTargetState.WRITE_COLOR))
+            // ColorTargetState gained an explicit GpuFormat component; RGBA8_UNORM matches
+            // the previous implicit default (ColorTargetState.DEFAULT).
+            .withColorTargetState(new ColorTargetState(Optional.empty(), GpuFormat.RGBA8_UNORM,
+                    ColorTargetState.WRITE_COLOR))
             .build();
 
     // This assumption is obviously bogus, but currently all textures are this size,

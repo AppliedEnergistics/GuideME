@@ -1,6 +1,6 @@
 package guideme.render;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import guideme.color.ColorValue;
 import guideme.color.ConstantColor;
 import guideme.color.LightDarkMode;

@@ -3,15 +3,17 @@ package guideme.internal.siteexport;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.CommandEncoder;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.textures.GpuTexture;
 import guideme.internal.util.Platform;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.IntUnaryOperator;
@@ -20,6 +22,7 @@ import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import org.joml.Vector4f;
 
 public class OffScreenRenderer implements AutoCloseable {
     private final NativeImage nativeImage;
@@ -33,7 +36,8 @@ public class OffScreenRenderer implements AutoCloseable {
 
     public OffScreenRenderer(int width, int height) {
         nativeImage = new NativeImage(width, height, false);
-        fb = new TextureTarget("GuideME OSR", width, height, true /* with depth */, false /* with stencil */);
+        // The with-depth/with-stencil booleans became explicit GpuFormat attachments.
+        fb = new TextureTarget("GuideME OSR", width, height, GpuFormat.RGBA8_UNORM, GpuFormat.D32_FLOAT);
 
         device = RenderSystem.getDevice();
         commandEncoder = device.createCommandEncoder();
@@ -44,8 +48,10 @@ public class OffScreenRenderer implements AutoCloseable {
         var colorTextureView = Objects.requireNonNull(fb.getColorTextureView(), "colorTexture");
         depthTexture = Objects.requireNonNull(fb.getDepthTexture(), "depthTexture");
         var depthTextureView = Objects.requireNonNull(fb.getDepthTextureView(), "depthTexture");
-        commandEncoder.createRenderPass(() -> "GuideME OffScreen", colorTextureView, OptionalInt.of(0),
-                depthTextureView, OptionalDouble.of(1.0)).close();
+        // clearColor is now Optional<Vector4fc> (linear RGBA) instead of OptionalInt ARGB.
+        commandEncoder.createRenderPass(() -> "GuideME OffScreen", colorTextureView,
+                Optional.of(new Vector4f(0f, 0f, 0f, 0f)),
+                depthTextureView, OptionalDouble.of(0.0)).close();
     }
 
     @Override
@@ -123,14 +129,17 @@ public class OffScreenRenderer implements AutoCloseable {
     private void renderToBuffer(Runnable r) {
         var minecraft = Minecraft.getInstance();
 
-        commandEncoder.clearColorAndDepthTextures(colorTexture, 0, depthTexture, 1.0);
-        var previousRt = minecraft.mainRenderTarget;
-        minecraft.mainRenderTarget = fb;
+        // reversed-Z depth buffer - vanilla now clears depth to 0.0 (GameRenderer:484).
+        commandEncoder.clearColorAndDepthTextures(colorTexture, new Vector4f(0f, 0f, 0f, 0f), depthTexture, 0.0);
+        // mainRenderTarget moved from Minecraft to GameRenderer; our accesstransformer
+        // re-opens it (public-f) exactly as the original did for the Minecraft field.
+        var previousRt = minecraft.gameRenderer.mainRenderTarget;
+        minecraft.gameRenderer.mainRenderTarget = fb;
 
         try {
             r.run();
         } finally {
-            minecraft.mainRenderTarget = previousRt;
+            minecraft.gameRenderer.mainRenderTarget = previousRt;
         }
         TextureDownloader.downloadTexture(colorTexture, 0, IntUnaryOperator.identity(), nativeImage, true);
     }

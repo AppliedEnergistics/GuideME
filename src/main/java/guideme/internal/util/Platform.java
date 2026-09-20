@@ -11,7 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.context.ContextMap;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -19,7 +18,6 @@ import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.slf4j.Logger;
@@ -66,20 +64,13 @@ public class Platform {
         if (level != null) {
             return SlotDisplayContext.fromLevel(level);
         } else {
-            return new ContextMap.Builder()
-                    .withParameter(SlotDisplayContext.FUEL_VALUES, fuelValues())
-                    .withParameter(SlotDisplayContext.REGISTRIES, getClientRegistryAccess())
-                    .create(SlotDisplayContext.CONTEXT);
+            // FuelValues (and SlotDisplayContext.FUEL_VALUES) were removed; fuel is now an item
+            // component (CookingFuel/BrewingFuel), so the slot display context only carries the registries.
+            // ContextMap.Builder's constructor is private now and withParameter/create were renamed.
+            return ContextMap.builder()
+                    .set(SlotDisplayContext.REGISTRIES, getClientRegistryAccess())
+                    .buildAndValidate(SlotDisplayContext.CONTEXT);
         }
-    }
-
-    public static FuelValues fuelValues() {
-        var level = Minecraft.getInstance().level;
-        if (level != null) {
-            return fuelValues();
-        }
-
-        return FuelValues.vanillaBurnTimes(getClientRegistryAccess(), FeatureFlags.VANILLA_SET);
     }
 
     public static RecipeMap getRecipeMap() {

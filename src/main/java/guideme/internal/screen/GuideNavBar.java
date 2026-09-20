@@ -1,5 +1,6 @@
 package guideme.internal.screen;
 
+import com.mojang.blaze3d.Blaze3D;
 import guideme.color.SymbolicColor;
 import guideme.document.LytPoint;
 import guideme.document.LytRect;
@@ -26,7 +27,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
-import org.lwjgl.glfw.GLFW;
 
 public class GuideNavBar extends AbstractWidget {
     public static final int WIDTH_OPEN = 150;
@@ -139,7 +139,7 @@ public class GuideNavBar extends AbstractWidget {
 
         var renderContext = new SimpleRenderContext(graphics);
 
-        double currentTime = GLFW.glfwGetTime();
+        double currentTime = Blaze3D.getTime();
 
         boolean containsMouse = (mouseX >= getX() && mouseY >= getY() && mouseX < getX() + width
                 && mouseY <= getY() + height);

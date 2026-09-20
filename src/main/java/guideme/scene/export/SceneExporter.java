@@ -2,15 +2,20 @@ package guideme.scene.export;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.pipeline.IndexType;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
+import com.mojang.renderpearl.api.vertex.VertexFormatElement;
 import guideme.flatbuffers.scene.ExpAnimatedTexturePart;
 import guideme.flatbuffers.scene.ExpAnimatedTexturePartFrame;
 import guideme.flatbuffers.scene.ExpCameraSettings;
@@ -88,24 +93,26 @@ public class SceneExporter {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * DISABLED. Capturing scene geometry into {@link Mesh}es is not possible on Minecraft
+     * 26.3 as of this port.
+     *
+     * <p>26.3 removed {@code MultiBufferSource} and rebuilt rendering around submit nodes. There is
+     * no longer an interception point: {@code FeatureRenderDispatcher} takes no buffer source, all
+     * vertex data goes into {@code RenderBuffers#stagedVertexBuffer()} which uploads to GPU buffers
+     * during {@code prepareFrame} and then frees the CPU staging slices, and the Draw -&gt; RenderType
+     * mapping only exists inside the private {@code RenderTypeFeatureRenderer.Group}. So even reading
+     * the staging memory back loses the material information a {@link Mesh} needs.
+     *
+     * <p>This only affects exporting the guidebook to the static <em>website</em> - the in-game
+     * guidebook renders normally. See {@code MeshBuildingBufferSource} for the three redesign
+     * options if this needs to be restored.
+     */
     private static List<Mesh> renderToMeshes(GuidebookLevel level) {
-        try (var bufferSource = new MeshBuildingBufferSource()) {
-            var submitStorage = new SubmitNodeStorage();
-            var gameRenderState = new GameRenderState();
-            var featureRenderDispatcher = new FeatureRenderDispatcher(
-                    submitStorage,
-                    Minecraft.getInstance().getModelManager(),
-                    bufferSource,
-                    Minecraft.getInstance().getAtlasManager(),
-                    Minecraft.getInstance().renderBuffers().outlineBufferSource(),
-                    Minecraft.getInstance().renderBuffers().crumblingBufferSource(),
-                    Minecraft.getInstance().font,
-                    gameRenderState);
-            GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource, featureRenderDispatcher,
-                    new PoseStack());
-            featureRenderDispatcher.renderAllFeatures();
-            return bufferSource.getMeshes();
-        }
+        throw new UnsupportedOperationException(
+                "Exporting 3D guidebook scenes to the static website is not supported on Minecraft 26.3: "
+                        + "the submit-node renderer provides no way to capture geometry. "
+                        + "The in-game guidebook is unaffected.");
     }
 
     public byte[] export(GuidebookScene scene) {
@@ -282,22 +289,19 @@ public class SceneExporter {
         // Vectors are written in reverse-order
         var elements = format.getElements();
         for (int i = elements.size() - 1; i >= 0; i--) {
-            var offset = 0;
-            for (int j = 0; j < i; j++) {
-                offset += elements.get(j).byteSize();
-            }
-
+            // VertexFormatElement is now a record carrying its own byte offset.
             var element = elements.get(i);
+            var offset = element.offset();
             if (isRelevant(element)) {
                 ExpVertexFormatElement.createExpVertexFormatElement(
                         builder,
-                        element.index(),
-                        mapType(element.type()),
+                        semanticIndex(element),
+                        mapType(element.format().componentType()),
                         mapUsage(element),
-                        element.count(),
+                        element.format().componentCount(),
                         offset,
-                        element.byteSize(),
-                        element.normalized());
+                        element.format().blockSize(),
+                        isNormalized(element.format().componentType()));
             }
         }
         var elementsOffset = builder.endVector();
@@ -337,7 +341,8 @@ public class SceneExporter {
         var disableCulling = !pipeline.isCull();
 
         // Handle transparency
-        var transparencyState = pipeline.getColorTargetState().blendFunction().orElse(null);
+        // A pipeline can now have several colour targets; target 0 is the blend-bearing one.
+        var transparencyState = firstBlendFunction(pipeline);
         int transparency;
         if (transparencyState == null) {
             transparency = ExpTransparency.DISABLED;
@@ -347,7 +352,7 @@ public class SceneExporter {
             transparency = ExpTransparency.LIGHTNING;
         } else if (transparencyState.equals(BlendFunction.GLINT)) {
             transparency = ExpTransparency.GLINT;
-        } else if (transparencyState.equals(RenderPipelines.CRUMBLING.getColorTargetState().blendFunction().orElse(null))) {
+        } else if (transparencyState.equals(firstBlendFunction(RenderPipelines.CRUMBLING))) {
             transparency = ExpTransparency.CRUMBLING;
         } else if (transparencyState.equals(BlendFunction.TRANSLUCENT)) {
             transparency = ExpTransparency.TRANSLUCENT;
@@ -398,7 +403,21 @@ public class SceneExporter {
 
     }
 
-    private static int mapMode(VertexFormat.Mode mode) {
+    /**
+     * {@code RenderPipeline.getColorTargetState()} became {@code getColorTargetStates()},
+     * a list that may be empty or contain nulls. Returns the blend function of the first target
+     * that declares one, or null when the pipeline does not blend.
+     */
+    private static BlendFunction firstBlendFunction(RenderPipeline pipeline) {
+        for (var target : pipeline.getColorTargetStates()) {
+            if (target != null && target.blendFunction().isPresent()) {
+                return target.blendFunction().get();
+            }
+        }
+        return null;
+    }
+
+    private static int mapMode(PrimitiveTopology mode) {
         return switch (mode) {
             case LINES -> ExpPrimitiveType.LINES;
             case DEBUG_LINES -> ExpPrimitiveType.DEBUG_LINES;
@@ -410,29 +429,56 @@ public class SceneExporter {
         };
     }
 
+    // The VertexFormatElement.POSITION/COLOR/UV/NORMAL singletons are gone; elements are
+    // now identified by their semantic attribute name (see DefaultVertexFormat.*_SEMANTIC_NAME).
     private static int mapUsage(VertexFormatElement element) {
-        if (element == VertexFormatElement.POSITION) {
+        var name = element.name();
+        if (DefaultVertexFormat.POSITION_SEMANTIC_NAME.equals(name)) {
             return ExpVertexElementUsage.POSITION;
-        } else if (element == VertexFormatElement.COLOR) {
+        } else if (DefaultVertexFormat.COLOR_SEMANTIC_NAME.equals(name)) {
             return ExpVertexElementUsage.COLOR;
-        } else if (element == VertexFormatElement.UV) {
+        } else if (name.startsWith("UV")) {
             return ExpVertexElementUsage.UV;
-        } else if (element == VertexFormatElement.NORMAL) {
+        } else if (DefaultVertexFormat.NORMAL_SEMANTIC_NAME.equals(name)) {
             return ExpVertexElementUsage.NORMAL;
         } else {
             return -1;
         }
     }
 
-    private static int mapType(VertexFormatElement.Type type) {
+    // Replaces VertexFormatElement.index() - the UV slot is now encoded in the name.
+    private static int semanticIndex(VertexFormatElement element) {
+        var name = element.name();
+        if (name.startsWith("UV") && name.length() > 2) {
+            try {
+                return Integer.parseInt(name.substring(2));
+            } catch (NumberFormatException ignored) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    // Replaces VertexFormatElement.normalized() - normalisation is now encoded in the
+    // component type (UNORM/SNORM are normalised, UINT/SINT/FLOAT are not).
+    private static boolean isNormalized(GpuFormat.ComponentType type) {
         return switch (type) {
-            case FLOAT -> ExpVertexElementType.FLOAT;
-            case UBYTE -> ExpVertexElementType.UBYTE;
-            case BYTE -> ExpVertexElementType.BYTE;
-            case USHORT -> ExpVertexElementType.USHORT;
-            case SHORT -> ExpVertexElementType.SHORT;
-            case UINT -> ExpVertexElementType.UINT;
-            case INT -> ExpVertexElementType.INT;
+            case UNORM_8, SNORM_8, UNORM_16, SNORM_16 -> true;
+            default -> false;
+        };
+    }
+
+    // VertexFormatElement.Type -> GpuFormat.ComponentType (split by normalisation).
+    private static int mapType(GpuFormat.ComponentType type) {
+        return switch (type) {
+            case FLOAT_32 -> ExpVertexElementType.FLOAT;
+            case UNORM_8, UINT_8 -> ExpVertexElementType.UBYTE;
+            case SNORM_8, SINT_8 -> ExpVertexElementType.BYTE;
+            case UNORM_16, UINT_16 -> ExpVertexElementType.USHORT;
+            case SNORM_16, SINT_16 -> ExpVertexElementType.SHORT;
+            case UINT_32 -> ExpVertexElementType.UINT;
+            case SINT_32 -> ExpVertexElementType.INT;
+            default -> throw new IllegalArgumentException("Unsupported vertex component type: " + type);
         };
     }
 
@@ -454,14 +500,14 @@ public class SceneExporter {
             ExpMesh.addIndexCount(builder, ibData.indexCount);
             ExpMesh.addMaterial(builder, materials.get(mesh.renderType()));
             ExpMesh.addVertexFormat(builder, vertexFormats.get(mesh.drawState().format()));
-            ExpMesh.addPrimitiveType(builder, mapMode(mesh.drawState().mode()));
+            ExpMesh.addPrimitiveType(builder, mapMode(mesh.drawState().primitiveTopology()));
             writtenMeshes.add(ExpMesh.endExpMesh(builder));
         }
 
         return ExpScene.createMeshesVector(builder, writtenMeshes.elements());
     }
 
-    private int mapIndexType(VertexFormat.IndexType indexType) {
+    private int mapIndexType(IndexType indexType) {
         return switch (indexType) {
             case INT -> ExpIndexElementType.UINT;
             case SHORT -> ExpIndexElementType.USHORT;
@@ -470,7 +516,7 @@ public class SceneExporter {
 
     record IndexBufferAttributes(
             ByteBuffer data,
-            VertexFormat.IndexType indexType,
+            IndexType indexType,
             int indexCount) {
     }
 
@@ -479,7 +525,7 @@ public class SceneExporter {
         ByteBuffer effectiveIndices;
         var indexType = drawState.indexType();
         var indexCount = drawState.indexCount();
-        var mode = drawState.mode();
+        var mode = drawState.primitiveTopology();
 
         // Auto-generated indices
         if (idxBuffer == null) {
@@ -490,9 +536,9 @@ public class SceneExporter {
             effectiveIndices = generated.data;
             indexType = generated.type;
             indexCount = generated.indexCount();
-        } else if (indexType == VertexFormat.IndexType.SHORT) {
+        } else if (indexType == IndexType.SHORT) {
             // Convert quads -> triangles
-            if (mode == VertexFormat.Mode.QUADS) {
+            if (mode == PrimitiveTopology.QUADS) {
                 var idxShortBuffer = idxBuffer.asShortBuffer();
                 var triIndices = ShortBuffer.allocate(idxShortBuffer.remaining() * 2);
                 while (idxShortBuffer.hasRemaining()) {
@@ -519,9 +565,9 @@ public class SceneExporter {
             } else {
                 effectiveIndices = idxBuffer;
             }
-        } else if (indexType == VertexFormat.IndexType.INT) {
+        } else if (indexType == IndexType.INT) {
             // Convert quads -> triangles
-            if (mode == VertexFormat.Mode.QUADS) {
+            if (mode == PrimitiveTopology.QUADS) {
                 var idxIntBuffer = idxBuffer.asIntBuffer();
                 var triIndices = IntBuffer.allocate(idxIntBuffer.remaining() * 2);
                 while (idxIntBuffer.hasRemaining()) {
@@ -556,7 +602,7 @@ public class SceneExporter {
         return new IndexBufferAttributes(effectiveIndices, indexType, indexCount);
     }
 
-    private GeneratedIndexBuffer generateSequentialIndices(VertexFormat.Mode mode, int vertexCount,
+    private GeneratedIndexBuffer generateSequentialIndices(PrimitiveTopology mode, int vertexCount,
             int expectedIndexCount) {
         var indicesPerPrimitive = switch (mode) {
             case LINES -> 2;
@@ -578,11 +624,11 @@ public class SceneExporter {
             throw new RuntimeException("Would generate " + indexCount + " but MC expected " + expectedIndexCount);
         }
 
-        var indexType = VertexFormat.IndexType.least(indexCount);
+        var indexType = IndexType.least(indexCount);
         var buffer = ByteBuffer.allocate(indexType.bytes * indexCount).order(ByteOrder.nativeOrder());
 
         IntConsumer indexConsumer;
-        if (indexType == VertexFormat.IndexType.SHORT) {
+        if (indexType == IndexType.SHORT) {
             indexConsumer = value -> buffer.putShort((short) value);
         } else {
             indexConsumer = buffer::putInt;
@@ -607,7 +653,7 @@ public class SceneExporter {
         return new GeneratedIndexBuffer(indexType, buffer, indexCount);
     }
 
-    record GeneratedIndexBuffer(VertexFormat.IndexType type, ByteBuffer data, int indexCount) {
+    record GeneratedIndexBuffer(IndexType type, ByteBuffer data, int indexCount) {
     }
 
     private int createCameraModel(CameraSettings cameraSettings, FlatBufferBuilder builder) {
