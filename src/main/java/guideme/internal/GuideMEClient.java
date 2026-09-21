@@ -9,6 +9,7 @@ import guideme.internal.data.GuideMELanguageProvider;
 import guideme.internal.data.GuideMEModelProvider;
 import guideme.internal.hotkey.OpenGuideHotkey;
 import guideme.internal.item.GuideItemDispatchUnbaked;
+import guideme.internal.scene.FakeRenderEnvironment;
 import guideme.internal.scene.ScenePictureInPictureRenderer;
 import guideme.internal.screen.GlobalInMemoryHistory;
 import guideme.internal.screen.GuideNavigation;
@@ -129,6 +130,7 @@ public class GuideMEClient {
         recipeMap = RecipeMap.EMPTY;
         availableRecipeTypes = Set.of();
         invalidateNavigationIcons();
+        FakeRenderEnvironment.clearCache();
     }
 
     /**
