@@ -246,7 +246,10 @@ public final class PageCompiler {
         for (var child : children) {
             LytBlock layoutChild;
             if (child instanceof MdAstThematicBreak) {
-                layoutChild = new LytThematicBreak();
+                var thematicBreak = new LytThematicBreak();
+                thematicBreak.setMarginTop(DEFAULT_ELEMENT_SPACING);
+                thematicBreak.setMarginBottom(DEFAULT_ELEMENT_SPACING);
+                layoutChild = thematicBreak;
             } else if (child instanceof MdAstList astList) {
                 layoutChild = compileList(astList);
             } else if (child instanceof MdAstCode astCode) {

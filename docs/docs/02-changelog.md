@@ -8,6 +8,7 @@ import Video from '@site/src/components/Video';
 - Fix toolbar buttons, sidebar and scrollbar not reacting to clicks with certain GUI scales (#105)
 - Avoid constructing a fake connection for rendering scenes (reuse an existing one instead), which might fix compat
   with forgified fabric-networking-api.
+- Fix horizontal rules having less spacing below them when followed by a table, list or other block element (#104)
 
 ## 26.1.13-beta (Minecraft 26.1.2)
 - Fix an issue on startup with navigation icons requiring loaded data packs
