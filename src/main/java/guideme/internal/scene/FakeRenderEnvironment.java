@@ -49,24 +49,32 @@ public class FakeRenderEnvironment implements AutoCloseable {
 
     public static LocalPlayer createFakePlayer(RegistryAccess registries) {
         var minecraft = Minecraft.getInstance();
-        var connection = new Connection(PacketFlow.CLIENTBOUND);
-        var packetListener = new ClientPacketListener(minecraft, connection, new CommonListenerCookie(
-                new LevelLoadTracker(),
-                new GameProfile(UUID.randomUUID(), "Site Exporter"),
-                new WorldSessionTelemetryManager((eventType, propertyAdder) -> {
-                }, false, null, null),
-                registries.freeze(),
-                FeatureFlags.VANILLA_SET,
-                null,
-                null,
-                null,
-                Map.of(),
-                null,
-                Map.of(),
-                new ServerLinks(List.of()),
-                Map.of(),
-                false,
-                ConnectionType.NEOFORGE));
+
+        // use the real packet listener (with attached registry access) if available
+        // to avoid various mixins into CPL's constructor (i.e. forgified fabric-network-api) from firing again.
+        ClientPacketListener packetListener;
+        if (minecraft.getConnection() != null && minecraft.getConnection().registryAccess() == registries) {
+            packetListener = minecraft.getConnection();
+        } else {
+            var connection = new Connection(PacketFlow.CLIENTBOUND);
+            packetListener = new ClientPacketListener(minecraft, connection, new CommonListenerCookie(
+                    new LevelLoadTracker(),
+                    new GameProfile(UUID.randomUUID(), "Site Exporter"),
+                    new WorldSessionTelemetryManager((eventType, propertyAdder) -> {
+                    }, false, null, null),
+                    registries.freeze(),
+                    FeatureFlags.VANILLA_SET,
+                    null,
+                    null,
+                    null,
+                    Map.of(),
+                    null,
+                    Map.of(),
+                    new ServerLinks(List.of()),
+                    Map.of(),
+                    false,
+                    ConnectionType.NEOFORGE));
+        }
         var levelData = new ClientLevel.ClientLevelData(
                 Difficulty.NORMAL,
                 false,
