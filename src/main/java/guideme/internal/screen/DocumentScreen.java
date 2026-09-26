@@ -430,7 +430,7 @@ public abstract class DocumentScreen extends IndepentScaleScreen implements Guid
             var y = mouseHandler.ypos() * yScale;
 
             // If there's a widget under the cursor, ignore document hit-testing
-            if (getScaledChildAt(x, y).isPresent()) {
+            if (getChildAt(x, y).isPresent()) {
                 document.setHoveredElement(null);
                 return;
             }
