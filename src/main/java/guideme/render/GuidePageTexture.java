@@ -5,7 +5,7 @@ import guideme.document.LytSize;
 import guideme.internal.GuideME;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
@@ -29,8 +29,10 @@ public class GuidePageTexture {
 
     private static final Logger LOG = LoggerFactory.getLogger(GuidePageTexture.class);
 
-    // Textures in use by the current page
-    private static final Map<GuidePageTexture, Identifier> usedTextures = new IdentityHashMap<>();
+    // Textures in use by the current page, keyed by image id. Multiple instances may share the same image id
+    // (i.e. the same image used twice on a page), and since the registered texture id is derived from the image id,
+    // registering a second texture would close the first one while it may still be referenced by pending draws.
+    private static final Map<Identifier, Identifier> usedTextures = new HashMap<>();
 
     private final Identifier id;
 
@@ -78,19 +80,19 @@ public class GuidePageTexture {
     }
 
     public Identifier use() {
-        return usedTextures.computeIfAbsent(this, guidePageTexture -> {
-            if (guidePageTexture.imageContent == null) {
-                return MissingTextureAtlasSprite.getLocation();
-            }
+        if (imageContent == null) {
+            return MissingTextureAtlasSprite.getLocation();
+        }
 
+        return usedTextures.computeIfAbsent(id, ignored -> {
             try {
-                var nativeImage = NativeImage.read(guidePageTexture.imageContent);
+                var nativeImage = NativeImage.read(imageContent);
                 var textureId = GuideME.makeId("guidepage/" + id.getNamespace() + "/" + id.getPath());
                 var texture = new DynamicTexture(textureId::toString, nativeImage);
                 Minecraft.getInstance().getTextureManager().register(textureId, texture);
                 return textureId;
             } catch (IOException e) {
-                LOG.error("Failed to read image {}: {}", guidePageTexture.id, e.toString());
+                LOG.error("Failed to read image {}: {}", id, e.toString());
                 return MissingTextureAtlasSprite.getLocation();
             }
         });
