@@ -1,7 +1,6 @@
 package guideme.internal.scene;
 
 import com.mojang.authlib.GameProfile;
-import guideme.internal.util.Platform;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,56 +27,28 @@ import net.neoforged.neoforge.network.connection.ConnectionType;
 import org.jetbrains.annotations.Nullable;
 
 public class FakeRenderEnvironment implements AutoCloseable {
-    /**
-     * The fake player and the throwaway level and connection behind it are reused across calls. Building them runs
-     * two registration paths that mods hook: constructing the ClientPacketListener bootstraps PotionBrewing, which
-     * fires RegisterBrewingRecipesEvent, and constructing the ClientLevel fires LevelEvent.Load. Since create() runs
-     * once per scene per frame, building these fresh made every mod listening to those two events redo its
-     * registration hundreds of times a second.
-     */
-    @Nullable
-    private static LocalPlayer fakePlayer;
-
-    /**
-     * The registries the cached fake player was built against. The fake player embeds them, so it has to be rebuilt
-     * whenever the client switches to a world that has different ones.
-     */
-    @Nullable
-    private static RegistryAccess fakePlayerRegistries;
-
+    private final LocalPlayer fakePlayer;
     private final @Nullable LocalPlayer originalPlayer;
 
-    private FakeRenderEnvironment(@Nullable LocalPlayer originalPlayer) {
+    private FakeRenderEnvironment(LocalPlayer fakePlayer, @Nullable LocalPlayer originalPlayer) {
+        this.fakePlayer = fakePlayer;
         this.originalPlayer = originalPlayer;
     }
 
-    public static FakeRenderEnvironment create(Level level) {
+    public static FakeRenderEnvironment create(LocalPlayer fakePlayer) {
         Minecraft minecraft = Minecraft.getInstance();
 
         var camera = new Camera();
         minecraft.getEntityRenderDispatcher().prepare(camera, null);
 
-        var registries = Platform.getClientRegistryAccess();
-        if (fakePlayer == null || fakePlayerRegistries != registries) {
-            fakePlayer = createFakePlayer(minecraft, registries);
-            fakePlayerRegistries = registries;
-        }
-
         var originalPlayer = minecraft.player;
         minecraft.player = fakePlayer;
 
-        return new FakeRenderEnvironment(originalPlayer);
+        return new FakeRenderEnvironment(fakePlayer, originalPlayer);
     }
 
-    /**
-     * Drops the cached fake player so that leaving a world does not keep that world's registries alive.
-     */
-    public static void clearCache() {
-        fakePlayer = null;
-        fakePlayerRegistries = null;
-    }
-
-    private static LocalPlayer createFakePlayer(Minecraft minecraft, RegistryAccess registries) {
+    public static LocalPlayer createFakePlayer(RegistryAccess registries) {
+        var minecraft = Minecraft.getInstance();
         var connection = new Connection(PacketFlow.CLIENTBOUND);
         var packetListener = new ClientPacketListener(minecraft, connection, new CommonListenerCookie(
                 new LevelLoadTracker(),
@@ -118,6 +89,10 @@ public class FakeRenderEnvironment implements AutoCloseable {
 
     @Override
     public void close() {
-        Minecraft.getInstance().player = originalPlayer;
+        var minecraft = Minecraft.getInstance();
+        // Only restore the original player if nobody replaced the fake player in the meantime
+        if (minecraft.player == fakePlayer) {
+            minecraft.player = originalPlayer;
+        }
     }
 }

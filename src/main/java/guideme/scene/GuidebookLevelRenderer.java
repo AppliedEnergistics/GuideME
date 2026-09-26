@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.color.LightDarkMode;
 import guideme.internal.scene.FakeRenderEnvironment;
+import guideme.internal.util.Platform;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
@@ -14,6 +15,7 @@ import java.util.Collection;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.TextureFilteringMethod;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -32,12 +34,15 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.LightmapRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
@@ -47,6 +52,20 @@ public class GuidebookLevelRenderer {
 
     private final ProjectionMatrixBuffer projMatBuffer = new ProjectionMatrixBuffer(
             "GuideME level renderer proj mat UBO");
+
+    /**
+     * Cached local player used for faking the render environment for vanilla and modded renderers. Cached since
+     * initializing it involves also creating a fake level et al.
+     */
+    @Nullable
+    private LocalPlayer fakePlayer;
+
+    /**
+     * The registries the cached fake player was built against. The fake player embeds them, so it has to be rebuilt
+     * whenever the client switches to a world that has different one.
+     */
+    @Nullable
+    private RegistryAccess fakePlayerRegistries;
 
     public static GuidebookLevelRenderer getInstance() {
         RenderSystem.assertOnRenderThread();
@@ -147,7 +166,7 @@ public class GuidebookLevelRenderer {
      */
     public void renderContent(GuidebookLevel level, MultiBufferSource.BufferSource buffers,
             FeatureRenderDispatcher featureRenderDispatcher, PoseStack poseStack) {
-        try (var fake = FakeRenderEnvironment.create(level)) {
+        try (var fake = FakeRenderEnvironment.create(getFakePlayer())) {
             renderBlocks(level, buffers, false, poseStack);
             renderBlockEntities(level, featureRenderDispatcher, level.getPartialTick(), poseStack);
             renderEntities(level, level.getPartialTick(), poseStack, featureRenderDispatcher);
@@ -166,6 +185,24 @@ public class GuidebookLevelRenderer {
 
             buffers.endBatch();
         }
+    }
+
+    private LocalPlayer getFakePlayer() {
+        var registries = Platform.getClientRegistryAccess();
+        if (fakePlayer == null || fakePlayerRegistries != registries) {
+            fakePlayer = FakeRenderEnvironment.createFakePlayer(registries);
+            fakePlayerRegistries = registries;
+        }
+        return fakePlayer;
+    }
+
+    /**
+     * Drops the cached fake player so that leaving a world does not keep that world's registries alive.
+     */
+    @ApiStatus.Internal
+    public void clearCache() {
+        fakePlayer = null;
+        fakePlayerRegistries = null;
     }
 
     private static RenderType getBlockRenderType(ChunkSectionLayer layer) {
@@ -210,7 +247,8 @@ public class GuidebookLevelRenderer {
                 };
 
                 var customRenderer = fluidModelSet.get(fluidState).customRenderer();
-                if (customRenderer == null || !customRenderer.renderFluid(fluidRenderer, fluidState, level, pos, fluidOutput, blockState)) {
+                if (customRenderer == null || !customRenderer.renderFluid(fluidRenderer, fluidState, level, pos,
+                        fluidOutput, blockState)) {
                     fluidRenderer.tesselate(level, pos, fluidOutput, blockState, fluidState);
                 }
             }

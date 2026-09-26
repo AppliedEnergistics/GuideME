@@ -9,7 +9,6 @@ import guideme.internal.data.GuideMELanguageProvider;
 import guideme.internal.data.GuideMEModelProvider;
 import guideme.internal.hotkey.OpenGuideHotkey;
 import guideme.internal.item.GuideItemDispatchUnbaked;
-import guideme.internal.scene.FakeRenderEnvironment;
 import guideme.internal.scene.ScenePictureInPictureRenderer;
 import guideme.internal.screen.GlobalInMemoryHistory;
 import guideme.internal.screen.GuideNavigation;
@@ -19,6 +18,7 @@ import guideme.internal.siteexport.TextureDownloader;
 import guideme.internal.util.Blitter;
 import guideme.navigation.NavigationNode;
 import guideme.render.GuiAssets;
+import guideme.scene.GuidebookLevelRenderer;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import java.util.List;
 import java.util.Objects;
@@ -130,7 +130,7 @@ public class GuideMEClient {
         recipeMap = RecipeMap.EMPTY;
         availableRecipeTypes = Set.of();
         invalidateNavigationIcons();
-        FakeRenderEnvironment.clearCache();
+        GuidebookLevelRenderer.getInstance().clearCache();
     }
 
     /**
