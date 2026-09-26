@@ -1,8 +1,11 @@
 ---
 navigation:
-  title: Markdown Test
+    title: Markdown Test
+    description: Which Markdown extensions are supported by GuideME.
+    icon: minecraft:stick
+    icon_components:
+      enchantment_glint_override: True
 ---
-
 # Markdown Test
 
 ## Inline Formatting
