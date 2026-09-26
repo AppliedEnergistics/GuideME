@@ -18,6 +18,7 @@ import guideme.internal.siteexport.TextureDownloader;
 import guideme.internal.util.Blitter;
 import guideme.navigation.NavigationNode;
 import guideme.render.GuiAssets;
+import guideme.scene.GuidebookLevelRenderer;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import java.util.List;
 import java.util.Objects;
@@ -129,6 +130,7 @@ public class GuideMEClient {
         recipeMap = RecipeMap.EMPTY;
         availableRecipeTypes = Set.of();
         invalidateNavigationIcons();
+        GuidebookLevelRenderer.getInstance().clearCache();
     }
 
     /**
