@@ -21,7 +21,8 @@ public class GuideItemDispatchUnbaked implements ItemModel.Unbaked {
 
     @Override
     public ItemModel bake(ItemModel.BakingContext bakingContext, Matrix4fc transformation) {
-        var baseModel = new CuboidItemModelWrapper.Unbaked(GuideItem.BASE_MODEL_ID, Optional.empty(), List.of()).bake(bakingContext, transformation);
+        var baseModel = new CuboidItemModelWrapper.Unbaked(GuideItem.BASE_MODEL_ID, Optional.empty(), List.of())
+                .bake(bakingContext, transformation);
 
         return new GuideItemDispatchModel(baseModel, bakingContext);
     }

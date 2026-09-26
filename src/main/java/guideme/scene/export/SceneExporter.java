@@ -347,7 +347,8 @@ public class SceneExporter {
             transparency = ExpTransparency.LIGHTNING;
         } else if (transparencyState.equals(BlendFunction.GLINT)) {
             transparency = ExpTransparency.GLINT;
-        } else if (transparencyState.equals(RenderPipelines.CRUMBLING.getColorTargetState().blendFunction().orElse(null))) {
+        } else if (transparencyState
+                .equals(RenderPipelines.CRUMBLING.getColorTargetState().blendFunction().orElse(null))) {
             transparency = ExpTransparency.CRUMBLING;
         } else if (transparencyState.equals(BlendFunction.TRANSLUCENT)) {
             transparency = ExpTransparency.TRANSLUCENT;

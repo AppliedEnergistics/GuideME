@@ -5,9 +5,9 @@ import net.minecraft.core.SectionPos;
 
 /**
  * The only purpose of this vertex consumer proxy is to transform vertex positions emitted by the
- * {@link net.minecraft.client.renderer.block.FluidRenderer} into absolute coordinates. The renderer assumes it is
- * being called in the context of tessellating a chunk section (16x16x16) and emits corresponding coordinates, while we
- * batch all visible chunks in the guidebook together.
+ * {@link net.minecraft.client.renderer.block.FluidRenderer} into absolute coordinates. The renderer assumes it is being
+ * called in the context of tessellating a chunk section (16x16x16) and emits corresponding coordinates, while we batch
+ * all visible chunks in the guidebook together.
  */
 public class LiquidVertexConsumer implements VertexConsumer {
     private final VertexConsumer delegate;
