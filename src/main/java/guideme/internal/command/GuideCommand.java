@@ -10,6 +10,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Prediction;
 
 public final class GuideCommand {
     private GuideCommand() {
@@ -66,7 +67,8 @@ public final class GuideCommand {
             Identifier guideId) {
         var guideItem = Guides.createGuideItem(guideId);
         for (var target : targets) {
-            target.getInventory().placeItemBackInInventory(guideItem.copy());
+            // Inventory mutations now take a Prediction; this runs server-side.
+            target.getInventory().placeItemBackInInventory(guideItem.copy(), Prediction.SERVER_ONLY);
         }
 
         if (targets.size() == 1) {

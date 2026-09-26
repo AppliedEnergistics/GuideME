@@ -12,6 +12,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.CommonListenerCookie;
 import net.minecraft.client.multiplayer.LevelLoadTracker;
+import net.minecraft.client.player.ItemActivation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
 import net.minecraft.core.registries.Registries;
@@ -42,8 +43,9 @@ public class FakeRenderEnvironment implements AutoCloseable {
         var packetListener = new ClientPacketListener(minecraft, connection, new CommonListenerCookie(
                 new LevelLoadTracker(),
                 new GameProfile(UUID.randomUUID(), "Site Exporter"),
+                // gained a trailing non-null UUID sessionId parameter.
                 new WorldSessionTelemetryManager((eventType, propertyAdder) -> {
-                }, false, null, null),
+                }, false, null, null, UUID.randomUUID()),
                 Platform.getClientRegistryAccess().freeze(),
                 FeatureFlags.VANILLA_SET,
                 null,
@@ -74,7 +76,9 @@ public class FakeRenderEnvironment implements AutoCloseable {
                 new ClientRecipeBook(),
                 Input.EMPTY,
                 false,
-                minecraft.computeChatAbilities());
+                minecraft.computeChatAbilities(),
+                // LocalPlayer now owns an ItemActivation animation state object.
+                new ItemActivation());
 
         return new FakeRenderEnvironment(originalPlayer);
     }

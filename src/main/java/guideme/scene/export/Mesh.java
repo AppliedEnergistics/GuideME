@@ -1,8 +1,11 @@
 package guideme.scene.export;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.pipeline.IndexType;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.vertex.VertexFormatElement;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.function.IntFunction;
@@ -35,7 +38,7 @@ record Mesh(MeshData.DrawState drawState,
 
         // We only implement this for quads since standard block vertex-format
         // uses BakedQuads
-        if (drawState.mode() != VertexFormat.Mode.QUADS) {
+        if (drawState.primitiveTopology() != PrimitiveTopology.QUADS) {
             return Stream.of();
         }
 
@@ -49,22 +52,14 @@ record Mesh(MeshData.DrawState drawState,
             return Stream.of(); // Only atlases can have sprites
         }
 
-        var offset = 0;
-        VertexFormatElement uvElement = null;
-        for (var element : renderType.format().getElements()) {
-            if (element == VertexFormatElement.UV && element.index() == 0
-                    && element.count() == 2) {
-                uvElement = element;
-                break;
-            }
-            offset += element.byteSize();
-        }
-
-        if (uvElement == null) {
+        // VertexFormatElement is now a record (name, offset, GpuFormat) looked up by
+        // semantic name, and it carries its own byte offset - so the manual offset walk is gone.
+        var uvElement = renderType.format().getElement(DefaultVertexFormat.UV0_SEMANTIC_NAME);
+        if (uvElement == null || uvElement.format().componentCount() != 2) {
             return Stream.of(); // No UV coordinates
         }
 
-        var uvSupplier = getUvSupplier(offset, uvElement);
+        var uvSupplier = getUvSupplier(uvElement.offset(), uvElement);
         // TODO: Should cache this...
         var spriteFinder = new SpriteFinder(textureAtlas.getTextures(), textureAtlas);
 
@@ -82,7 +77,7 @@ record Mesh(MeshData.DrawState drawState,
             var quadCount = drawState.vertexCount() / 4;
             return IntStream.range(0, quadCount)
                     .mapToObj(quadIdx -> new Vector4i(quadIdx * 4, quadIdx * 4 + 1, quadIdx * 4 + 2, quadIdx * 4 + 3));
-        } else if (drawState.indexType() == VertexFormat.IndexType.INT) {
+        } else if (drawState.indexType() == IndexType.INT) {
             var quadCount = drawState.indexCount() / 4;
             return IntStream.range(0, quadCount)
                     .mapToObj(quadIdx -> new Vector4i(
@@ -90,7 +85,7 @@ record Mesh(MeshData.DrawState drawState,
                             indexBuffer.getInt(quadIdx * 4 * 4 + 4),
                             indexBuffer.getInt(quadIdx * 4 * 4 + 8),
                             indexBuffer.getInt(quadIdx * 4 * 4 + 12)));
-        } else if (drawState.indexType() == VertexFormat.IndexType.SHORT) {
+        } else if (drawState.indexType() == IndexType.SHORT) {
             var quadCount = drawState.indexCount() / 4;
             return IntStream.range(0, quadCount)
                     .mapToObj(quadIdx -> new Vector4i(
@@ -122,19 +117,23 @@ record Mesh(MeshData.DrawState drawState,
     private Vector2f getUV(int index, int offset, VertexFormatElement uvElement) {
         var stride = drawState.format().getVertexSize();
         var dataStart = index * stride + offset;
+        var componentType = uvElement.format().componentType();
         return new Vector2f(
-                readFloat(uvElement.type(), dataStart),
-                readFloat(uvElement.type(), dataStart + uvElement.type().size()));
+                readFloat(componentType, dataStart),
+                readFloat(componentType, dataStart + componentType.byteSize()));
     }
 
-    private float readFloat(VertexFormatElement.Type type, int offset) {
+    // VertexFormatElement.Type was replaced by GpuFormat.ComponentType, which splits the
+    // old types by normalisation (UNORM/SNORM vs UINT/SINT) and adds half-float and opaque kinds.
+    private float readFloat(GpuFormat.ComponentType type, int offset) {
         return switch (type) {
-            case FLOAT -> vertexBuffer.getFloat(offset);
-            case UBYTE -> ((int) vertexBuffer.get(offset)) & 0xFF;
-            case BYTE -> vertexBuffer.get(offset);
-            case USHORT -> ((int) vertexBuffer.getShort(offset)) & 0xFFFF;
-            case SHORT -> vertexBuffer.getShort(offset);
-            case UINT, INT -> vertexBuffer.getInt(offset);
+            case FLOAT_32 -> vertexBuffer.getFloat(offset);
+            case UNORM_8, UINT_8 -> ((int) vertexBuffer.get(offset)) & 0xFF;
+            case SNORM_8, SINT_8 -> vertexBuffer.get(offset);
+            case UNORM_16, UINT_16 -> ((int) vertexBuffer.getShort(offset)) & 0xFFFF;
+            case SNORM_16, SINT_16 -> vertexBuffer.getShort(offset);
+            case UINT_32, SINT_32 -> vertexBuffer.getInt(offset);
+            default -> throw new IllegalArgumentException("Unsupported UV component type: " + type);
         };
     }
 }

@@ -37,6 +37,12 @@ public class NoopVertexConsumer implements VertexConsumer {
         return this;
     }
 
+    // VertexConsumer gained setUv3 (a float UV channel) in 26.3.
+    @Override
+    public VertexConsumer setUv3(float u, float v) {
+        return this;
+    }
+
     @Override
     public VertexConsumer setNormal(float x, float y, float z) {
         return this;

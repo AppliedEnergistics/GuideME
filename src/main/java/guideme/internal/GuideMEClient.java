@@ -234,7 +234,8 @@ public class GuideMEClient {
             clientConfig.fullWidthLayout.set(fullWidth);
             clientConfig.spec.save();
             var minecraft = Minecraft.getInstance();
-            var screen = minecraft.screen;
+            // Screens moved from Minecraft to Minecraft#gui
+            var screen = minecraft.gui.screen();
             if (screen != null) {
                 var window = minecraft.getWindow();
                 screen.resize(window.getGuiScaledWidth(), window.getGuiScaledHeight());

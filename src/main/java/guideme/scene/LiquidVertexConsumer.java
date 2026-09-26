@@ -52,6 +52,12 @@ public class LiquidVertexConsumer implements VertexConsumer {
         return delegate.setUv2(u, v);
     }
 
+    // VertexConsumer gained setUv3 (a float UV channel) in 26.3.
+    @Override
+    public VertexConsumer setUv3(float u, float v) {
+        return delegate.setUv3(u, v);
+    }
+
     @Override
     public VertexConsumer setNormal(float x, float y, float z) {
         return delegate.setNormal(x, y, z);

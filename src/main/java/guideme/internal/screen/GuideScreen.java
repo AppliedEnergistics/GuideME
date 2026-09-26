@@ -1,5 +1,6 @@
 package guideme.internal.screen;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import guideme.Guide;
 import guideme.GuidePage;
 import guideme.PageAnchor;
@@ -38,7 +39,6 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforgespi.language.IModInfo;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,10 +162,10 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
     @Override
     protected boolean documentClicked(UiPoint documentPoint, MouseButtonInfo button) {
-        if (button.button() == GLFW.GLFW_MOUSE_BUTTON_4) {
+        if (button.button() == InputConstants.MOUSE_BUTTON_4) {
             GuideNavigation.navigateBack(guide);
             return true;
-        } else if (button.button() == GLFW.GLFW_MOUSE_BUTTON_5) {
+        } else if (button.button() == InputConstants.MOUSE_BUTTON_5) {
             GuideNavigation.navigateForward(guide);
             return true;
         }
@@ -418,8 +418,8 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
     @Override
     public void onClose() {
-        if (minecraft != null && minecraft.screen == this && this.returnToOnClose != null) {
-            minecraft.setScreen(this.returnToOnClose);
+        if (minecraft != null && minecraft.gui.screen() == this && this.returnToOnClose != null) {
+            minecraft.gui.setScreen(this.returnToOnClose);
             this.returnToOnClose = null;
             return;
         }

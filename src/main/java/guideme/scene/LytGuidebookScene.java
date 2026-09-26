@@ -1,5 +1,6 @@
 package guideme.scene;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.color.ColorValue;
 import guideme.color.LightDarkMode;
 import guideme.color.SymbolicColor;
@@ -28,10 +29,9 @@ import guideme.ui.GuideUiHost;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonInfo;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.HitResult;
@@ -217,10 +217,11 @@ public class LytGuidebookScene extends LytBox {
                 scene.getCameraSettings().setViewportSize(prefSize);
                 var annotations = hideAnnotations ? Collections.<InWorldAnnotation>emptyList()
                         : scene.getInWorldAnnotations();
-                var buffers = Minecraft.getInstance().renderBuffers().bufferSource();
-                renderer.render(scene.getLevel(), scene.getCameraSettings(), buffers, annotations,
+                // MultiBufferSource is gone; there is no shared buffer source to flush any more.
+                // GuidebookLevelRenderer drives the whole submit/prepare/render-pass cycle itself and
+                // renders into the currently bound main render target (which OffScreenRenderer swapped out).
+                renderer.renderToMainTarget(scene.getLevel(), scene.getCameraSettings(), annotations,
                         LightDarkMode.LIGHT_MODE);
-                buffers.endBatch();
             });
         }
     }
@@ -310,9 +311,10 @@ public class LytGuidebookScene extends LytBox {
                         bounds.right(),
                         bounds.bottom(),
                         LytGuidebookScene.this,
+                        scene,
                         screenBounds,
                         scissorArea,
-                        (lightDarkMode, _, buffers) -> renderViewport(lightDarkMode, buffers)));
+                        (lightDarkMode, pose, collector) -> renderViewport(lightDarkMode, pose, collector)));
             }
 
             if (!hideAnnotations) {
@@ -321,7 +323,8 @@ public class LytGuidebookScene extends LytBox {
         }
 
         private void renderViewport(LightDarkMode lightDarkMode,
-                MultiBufferSource.BufferSource buffers) {
+                PoseStack poseStack,
+                SubmitNodeCollector collector) {
             var renderer = GuidebookLevelRenderer.getInstance();
 
             Collection<InWorldAnnotation> inWorldAnnotations;
@@ -336,23 +339,24 @@ public class LytGuidebookScene extends LytBox {
             } else {
                 inWorldAnnotations = scene.getInWorldAnnotations();
             }
-            renderer.render(scene.getLevel(), scene.getCameraSettings(), buffers, inWorldAnnotations,
-                    lightDarkMode);
+            renderer.render(scene.getLevel(), scene.getCameraSettings(), collector, inWorldAnnotations,
+                    lightDarkMode, poseStack);
 
-            renderDebugCrosshairs();
+            renderDebugCrosshairs(collector, poseStack);
         }
 
         /**
          * Render one in 3D space at 0,0,0.
          */
-        private void renderDebugCrosshairs() {
+        private void renderDebugCrosshairs(SubmitNodeCollector collector,
+                PoseStack poseStack) {
             if (!GuideMEClient.instance().isShowDebugGuiOverlays()) {
                 return;
             }
 
-            try (var renderer = new AxisDebugRenderer()) {
-                renderer.render(scene.getCameraSettings());
-            }
+            // AxisDebugRenderer now submits into the scene's submit-node collector instead of
+            // opening its own render pass against the (no longer reachable) output target.
+            AxisDebugRenderer.render(collector, poseStack);
         }
 
         @Override

@@ -13,6 +13,7 @@ import net.minecraft.world.entity.EntityType;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import net.minecraft.world.entity.EntitySpawnRequest;
 
 public class EntityElementCompiler implements SceneElementTagCompiler {
     private static final Logger LOG = LoggerFactory.getLogger(EntityElementCompiler.class);
@@ -36,7 +37,7 @@ public class EntityElementCompiler implements SceneElementTagCompiler {
         var data = MdxAttrs.getCompoundTag(compiler, errorSink, el, "data", new CompoundTag());
         data.putString("id", entityId);
 
-        var entity = EntityType.loadEntityRecursive(data, scene.getLevel(), EntitySpawnReason.LOAD,
+        var entity = EntityType.loadEntityRecursive(data, scene.getLevel(), new EntitySpawnRequest(EntitySpawnReason.LOAD, false),
                 EntityProcessor.NOP);
         if (entity == null) {
             errorSink.appendError(compiler, "Failed to load entity '" + entityId, el);

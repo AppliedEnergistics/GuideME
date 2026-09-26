@@ -1,5 +1,6 @@
 package guideme.internal.screen;
 
+import com.mojang.blaze3d.Blaze3D;
 import guideme.Guide;
 import guideme.PageAnchor;
 import java.net.URI;
@@ -7,7 +8,6 @@ import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,14 +31,14 @@ public final class GuideNavigation {
         } else if (currentScreen instanceof GuideSearchScreen searchScreen) {
             screenToReturnTo = searchScreen.getReturnToOnClose();
         } else {
-            screenToReturnTo = Minecraft.getInstance().screen;
+            screenToReturnTo = Minecraft.getInstance().gui.screen();
         }
 
         // Handle built-in pages
         if (GuideSearchScreen.PAGE_ID.equals(anchor.pageId())) {
             var guiScreen = GuideSearchScreen.open(guide, anchor.anchor());
             guiScreen.setReturnToOnClose(screenToReturnTo);
-            Minecraft.getInstance().setScreen(guiScreen);
+            Minecraft.getInstance().gui.setScreen(guiScreen);
             return;
         }
 
@@ -58,12 +58,12 @@ public final class GuideNavigation {
 
         GuideScreen guideScreen = GuideScreen.openNew(guide, anchor, history);
         guideScreen.setReturnToOnClose(screenToReturnTo);
-        Minecraft.getInstance().setScreen(guideScreen);
+        Minecraft.getInstance().gui.setScreen(guideScreen);
     }
 
     @Nullable
     private static Screen getCurrentGuideMeScreen() {
-        var currentScreen = Minecraft.getInstance().screen;
+        var currentScreen = Minecraft.getInstance().gui.screen();
         if (currentScreen instanceof GuideScreen || currentScreen instanceof GuideSearchScreen) {
             return currentScreen;
         }
@@ -91,18 +91,18 @@ public final class GuideNavigation {
 
         // Treat it as an external URL if it has a scheme
         var minecraft = Minecraft.getInstance();
-        var previousScreen = minecraft.screen;
+        var previousScreen = minecraft.gui.screen();
 
         if (uri.getScheme() != null) {
             if (minecraft.options.chatLinksPrompt().get().booleanValue()) {
-                minecraft.setScreen(new ConfirmLinkScreen(doOpen -> {
+                minecraft.gui.setScreen(new ConfirmLinkScreen(doOpen -> {
                     if (doOpen) {
-                        Util.getPlatform().openUri(uri);
+                        Blaze3D.openUri(uri);
                     }
-                    minecraft.setScreen(previousScreen);
-                }, href, false));
+                    minecraft.gui.setScreen(previousScreen);
+                }, uri, false));
             } else {
-                Util.getPlatform().openUri(uri);
+                Blaze3D.openUri(uri);
             }
         } else {
             LOG.debug("Can't open relative URL: '{}'", href);
