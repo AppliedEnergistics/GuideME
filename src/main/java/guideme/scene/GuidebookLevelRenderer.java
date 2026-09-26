@@ -16,7 +16,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.TextureFilteringMethod;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockQuadOutput;
 import net.minecraft.client.renderer.block.FluidRenderer;
@@ -29,6 +28,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.LightmapRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
@@ -168,10 +168,11 @@ public class GuidebookLevelRenderer {
         }
     }
 
-    private static RenderType getEntityRenderType(ChunkSectionLayer layer) {
+    private static RenderType getBlockRenderType(ChunkSectionLayer layer) {
         return switch (layer) {
-            case SOLID, CUTOUT -> Sheets.cutoutBlockSheet();
-            case TRANSLUCENT -> Sheets.translucentBlockSheet();
+            case SOLID -> RenderTypes.solidMovingBlock();
+            case CUTOUT -> RenderTypes.cutoutMovingBlock();
+            case TRANSLUCENT -> RenderTypes.translucentMovingBlock();
         };
     }
 
@@ -179,7 +180,7 @@ public class GuidebookLevelRenderer {
             PoseStack poseStack) {
         var minecraft = Minecraft.getInstance();
         boolean ambientOcclusion = minecraft.options.ambientOcclusion().get();
-        var blockRenderer = new ModelBlockRenderer(ambientOcclusion, false, minecraft.getBlockColors());
+        var blockRenderer = new ModelBlockRenderer(ambientOcclusion, true, minecraft.getBlockColors());
         var modelManager = minecraft.getModelManager();
         var fluidModelSet = modelManager.getFluidStateModelSet();
         var fluidRenderer = new FluidRenderer(fluidModelSet);
@@ -187,7 +188,7 @@ public class GuidebookLevelRenderer {
         BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> {
             var layer = quad.materialInfo().layer();
             if (layer.translucent() == translucent) {
-                var builder = buffers.getBuffer(getEntityRenderType(layer));
+                var builder = buffers.getBuffer(getBlockRenderType(layer));
                 builder.putBakedQuad(poseStack.last(), quad, instance);
             }
         };
@@ -201,7 +202,7 @@ public class GuidebookLevelRenderer {
                 var sectionPos = SectionPos.of(pos);
                 FluidRenderer.Output fluidOutput = layer -> {
                     if (layer.translucent() == translucent) {
-                        var baseBuffer = buffers.getBuffer(getEntityRenderType(layer));
+                        var baseBuffer = buffers.getBuffer(getBlockRenderType(layer));
                         return new LiquidVertexConsumer(baseBuffer, sectionPos);
                     } else {
                         return NoopVertexConsumer.INSTANCE;
