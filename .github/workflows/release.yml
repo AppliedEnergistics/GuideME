@@ -145,7 +145,7 @@ jobs:
       - name: Validate artifacts exist
         run: test -d ./build
       - name: Upload to Curseforge
-      - uses: Kira-NT/mc-publish@52307b03863581dec6b652b83e597aec02ebb075
+        uses: Kira-NT/mc-publish@52307b03863581dec6b652b83e597aec02ebb075
         with:
           name: GuideME ${{ needs.build.outputs.VERSION }}
           version: ${{ needs.build.outputs.VERSION }}
@@ -170,7 +170,7 @@ jobs:
       - name: Validate artifacts exist
         run: test -d ./build
       - name: Upload to Modrinth
-      - uses: Kira-NT/mc-publish@52307b03863581dec6b652b83e597aec02ebb075
+        uses: Kira-NT/mc-publish@52307b03863581dec6b652b83e597aec02ebb075
         with:
           name: GuideME ${{ needs.build.outputs.VERSION }}
           version: ${{ needs.build.outputs.VERSION }}
