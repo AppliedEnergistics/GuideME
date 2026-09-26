@@ -63,9 +63,13 @@ public class LytSlot extends LytBlock implements InteractiveElement {
         this.largeSlot = largeSlot;
     }
 
-    public boolean isSlotVisible() {return visibleSlot;}
+    public boolean isSlotVisible() {
+        return visibleSlot;
+    }
 
-    public void setSlotVisible(boolean visibleSlot){this.visibleSlot = visibleSlot;}
+    public void setSlotVisible(boolean visibleSlot) {
+        this.visibleSlot = visibleSlot;
+    }
 
     @Override
     protected LytRect computeLayout(LayoutContext context, int x, int y, int availableWidth) {
@@ -98,7 +102,7 @@ public class LytSlot extends LytBlock implements InteractiveElement {
 
         var stack = getDisplayedStack();
         if (!stack.isEmpty()) {
-            context.renderItem(stack, x + padding, y + padding, visibleSlot? 1: 0, ITEM_SIZE, ITEM_SIZE);
+            context.renderItem(stack, x + padding, y + padding, visibleSlot ? 1 : 0, ITEM_SIZE, ITEM_SIZE);
         }
     }
 

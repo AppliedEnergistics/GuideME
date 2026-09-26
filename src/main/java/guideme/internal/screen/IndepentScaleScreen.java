@@ -61,7 +61,8 @@ public abstract class IndepentScaleScreen extends Screen {
         scaledGraphics.pose().popMatrix();
     }
 
-    protected void scaledExtractRenderState(GuiGraphicsExtractor guiGraphics, RenderContext context, int mouseX, int mouseY,
+    protected void scaledExtractRenderState(GuiGraphicsExtractor guiGraphics, RenderContext context, int mouseX,
+            int mouseY,
             float partialTick) {
         super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
     }
