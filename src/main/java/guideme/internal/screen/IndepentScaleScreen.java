@@ -2,10 +2,8 @@ package guideme.internal.screen;
 
 import guideme.render.RenderContext;
 import guideme.render.SimpleRenderContext;
-import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -65,15 +63,6 @@ public abstract class IndepentScaleScreen extends Screen {
             int mouseY,
             float partialTick) {
         super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
-    }
-
-    @Override
-    public final Optional<GuiEventListener> getChildAt(double mouseX, double mouseY) {
-        return super.getChildAt(toVirtual(mouseX), toVirtual(mouseY));
-    }
-
-    protected final Optional<GuiEventListener> getScaledChildAt(double mouseX, double mouseY) {
-        return super.getChildAt(mouseX, mouseY);
     }
 
     @Override

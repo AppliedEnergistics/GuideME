@@ -5,6 +5,7 @@ import Video from '@site/src/components/Video';
 
 ## 26.1.14-beta (Minecraft 26.1.2)
 - Fix a crash ("Texture view has been closed") when the same image is used more than once on a guide page
+- Fix toolbar buttons, sidebar and scrollbar not reacting to clicks with certain GUI scales (#105)
 
 ## 26.1.13-beta (Minecraft 26.1.2)
 - Fix an issue on startup with navigation icons requiring loaded data packs
