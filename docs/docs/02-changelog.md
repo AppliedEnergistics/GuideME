@@ -3,6 +3,12 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.1.13-beta (Minecraft 26.1.2)
+- Fix an issue on startup with navigation icons requiring loaded data packs
+- Cache fake player / level used to render guidebook scenes to avoid repeated initialization
+- Fix several other rendering issues related to the site export
+- Fix icons of the site export having incorrect size
+
 ## 26.1.12-beta (Minecraft 26.1.2)
 - Fix a scaling issue where the guide would become invisible under certain conditions
 
