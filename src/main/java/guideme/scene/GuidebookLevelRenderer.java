@@ -8,6 +8,7 @@ import guideme.color.LightDarkMode;
 import guideme.internal.scene.FakeRenderEnvironment;
 import guideme.internal.util.Platform;
 import guideme.scene.annotation.InWorldAnnotation;
+import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.client.DeltaTracker;
@@ -158,9 +159,10 @@ public class GuidebookLevelRenderer {
             var ns = new SubmitNodeStorage();
             renderContent(level, ns, new PoseStack());
 
-            // TODO 26.2: InWorldAnnotationRenderer.render(nodes, annotations, lightDarkMode);
-
             gameRenderer.featureRenderDispatcher().renderAllFeatures(ns);
+
+            // Annotations depend on the depth buffer of the rendered scene, so they have to come afterward
+            InWorldAnnotationRenderer.render(gameRenderer.featureRenderDispatcher(), annotations, lightDarkMode);
         } finally {
             gameRenderer.useUiLightmap = previousUseUiLightmap;
             if (previousShaderLights != null) {
