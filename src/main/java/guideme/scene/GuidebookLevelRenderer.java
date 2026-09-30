@@ -1,6 +1,7 @@
 package guideme.scene;
 
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.color.LightDarkMode;
@@ -12,7 +13,6 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.TextureFilteringMethod;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -37,6 +37,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
@@ -66,6 +67,13 @@ public class GuidebookLevelRenderer {
      */
     @Nullable
     private RegistryAccess fakePlayerRegistries;
+
+    /**
+     * Our own light directions for scenes. We do not use the game renderer's, since updating its level lighting would
+     * clobber the lighting of the dimension the player is currently in (e.g. the nether).
+     */
+    @Nullable
+    private Lighting lighting;
 
     public static GuidebookLevelRenderer getInstance() {
         RenderSystem.assertOnRenderThread();
@@ -132,19 +140,15 @@ public class GuidebookLevelRenderer {
         RenderSystem.backupProjectionMatrix();
         RenderSystem.setProjectionMatrix(projMatBuffer.getBuffer(projectionMatrix), ProjectionType.ORTHOGRAPHIC);
 
-        // TODO 26.2 var lightDirection = new Vector4f(15 / 90f, .35f, 1, 0);
-        // TODO 26.2 var lightTransform = new Matrix4f(viewMatrix);
-        // TODO 26.2 lightTransform.invert();
-        // TODO 26.2 lightTransform.transform(lightDirection);
+        // Scenes are rendered while the GUI is being drawn, where the bound lights are meant for GUI space
+        // (ITEMS_3D, ENTITY_IN_UI, ...) and would light the scene from below. Bind world-space level lighting instead.
+        var previousShaderLights = RenderSystem.getShaderLights();
+        getLighting().setupFor(Lighting.Entry.LEVEL);
 
-        // TODO 26.2 gameRenderer.lighting().updateLevel(CardinalLighting.Type.DEFAULT);
-        // TODO 26.2 gameRenderer.lighting().setupFor(Lighting.Entry.LEVEL);
-
-        // TODO 26.2 var previousUseUiLightmap = gameRenderer.useUiLightmap;
-        // TODO 26.2 gameRenderer.useUiLightmap = false;
-        // TODO 26.2 var renderState = new LightmapRenderState();
-        // TODO 26.2 renderState.needsUpdate = true;
-        // TODO 26.2 gameRenderer.lightmap.render(renderState);
+        // Use the UI lightmap (full brightness everywhere) instead of the lightmap of the level the player is in.
+        // Re-rendering the level lightmap is not an option, since its ring buffer only supports one update per frame.
+        var previousUseUiLightmap = gameRenderer.useUiLightmap;
+        gameRenderer.useUiLightmap = true;
         try {
             var ns = new SubmitNodeStorage();
             renderContent(level, ns, new PoseStack());
@@ -153,9 +157,10 @@ public class GuidebookLevelRenderer {
 
             gameRenderer.featureRenderDispatcher().renderAllFeatures(ns);
         } finally {
-            // TODO 26.2 gameRenderer.useUiLightmap = previousUseUiLightmap;
-            // TODO 26.2 gameRenderer.gameRenderState().lightmapRenderState.needsUpdate = true;
-            // TODO 26.2 gameRenderer.lightmap.render(gameRenderer.gameRenderState().lightmapRenderState);
+            gameRenderer.useUiLightmap = previousUseUiLightmap;
+            if (previousShaderLights != null) {
+                RenderSystem.setShaderLights(previousShaderLights);
+            }
         }
 
         modelViewStack.popMatrix();
@@ -183,6 +188,14 @@ public class GuidebookLevelRenderer {
             fakePlayerRegistries = registries;
         }
         return fakePlayer;
+    }
+
+    private Lighting getLighting() {
+        if (lighting == null) {
+            lighting = new Lighting();
+            lighting.updateLevel(CardinalLighting.Type.DEFAULT);
+        }
+        return lighting;
     }
 
     /**
