@@ -51,7 +51,7 @@ public class ContentTooltip implements GuideTooltip {
                         pose.pushMatrix();
                         pose.translate(x, y);
 
-                        var ctx = new SimpleRenderContext(layoutViewport, guiGraphics);
+                        var ctx = new SimpleRenderContext(guiGraphics);
                         content.render(ctx);
 
                         pose.popMatrix();
@@ -65,7 +65,7 @@ public class ContentTooltip implements GuideTooltip {
                         var pose = guiGraphics.pose();
                         pose.pushMatrix();
                         pose.translate(x, y);
-                        var ctx = new SimpleRenderContext(layoutViewport, guiGraphics);
+                        var ctx = new SimpleRenderContext(guiGraphics);
                         content.render(ctx);
                         pose.popMatrix();
                     }
