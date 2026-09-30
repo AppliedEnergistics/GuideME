@@ -43,14 +43,14 @@ public class LytWidget extends LytBlock implements InteractiveElement {
 
         var minecraft = Minecraft.getInstance();
 
-        if (!(minecraft.screen instanceof GuideUiHost uiHost)) {
+        if (!(minecraft.gui.screen() instanceof GuideUiHost uiHost)) {
             return; // Can't render if we can't translate
         }
 
         var mouseHandler = minecraft.mouseHandler;
         // We use screen here so it accounts for our gui-scale independent scaling screen.
-        var xScale = (double) minecraft.screen.width / (double) minecraft.getWindow().getScreenWidth();
-        var yScale = (double) minecraft.screen.height / (double) minecraft.getWindow().getScreenHeight();
+        var xScale = (double) minecraft.gui.screen().width / (double) minecraft.getWindow().getScreenWidth();
+        var yScale = (double) minecraft.gui.screen().height / (double) minecraft.getWindow().getScreenHeight();
         var mouseX = mouseHandler.xpos() * xScale;
         var mouseY = mouseHandler.ypos() * yScale;
 
@@ -59,7 +59,7 @@ public class LytWidget extends LytBlock implements InteractiveElement {
         // This is a bit of a hack, but since scissor checks break out of the scaled environment,
         // we pass the scaled gui graphics to the widget to fix calls to containsPointInScissor
         GuiGraphicsExtractor guiGraphics = context.guiGraphics();
-        if (minecraft.screen instanceof IndepentScaleScreen indepentScaleScreen) {
+        if (minecraft.gui.screen() instanceof IndepentScaleScreen indepentScaleScreen) {
             guiGraphics = new ScaledGuiGraphics(minecraft, guiGraphics.pose(),
                     guiGraphics.guiRenderState,
                     guiGraphics.mouseX,

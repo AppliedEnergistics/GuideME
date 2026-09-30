@@ -1,30 +1,26 @@
 package guideme.scene;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.core.SectionPos;
 
 /**
  * The only purpose of this vertex consumer proxy is to transform vertex positions emitted by the
- * {@link net.minecraft.client.renderer.block.FluidRenderer} into absolute coordinates. The renderer assumes it is being
- * called in the context of tessellating a chunk section (16x16x16) and emits corresponding coordinates, while we batch
- * all visible chunks in the guidebook together.
+ * {@link net.minecraft.client.renderer.block.FluidRenderer} using a pose. The renderer assumes it is being called in
+ * the context of tessellating a chunk section (16x16x16) and emits coordinates relative to the section origin, while we
+ * render all visible chunks in the guidebook together. The pose is expected to translate to the section origin.
  */
 public class LiquidVertexConsumer implements VertexConsumer {
     private final VertexConsumer delegate;
-    private final SectionPos sectionPos;
+    private final PoseStack.Pose pose;
 
-    public LiquidVertexConsumer(VertexConsumer delegate, SectionPos sectionPos) {
+    public LiquidVertexConsumer(VertexConsumer delegate, PoseStack.Pose pose) {
         this.delegate = delegate;
-        this.sectionPos = sectionPos;
+        this.pose = pose;
     }
 
     @Override
     public VertexConsumer addVertex(float x, float y, float z) {
-        x += sectionPos.getX() * SectionPos.SECTION_SIZE;
-        y += sectionPos.getY() * SectionPos.SECTION_SIZE;
-        z += sectionPos.getZ() * SectionPos.SECTION_SIZE;
-
-        return delegate.addVertex(x, y, z);
+        return delegate.addVertex(pose, x, y, z);
     }
 
     @Override
@@ -54,7 +50,7 @@ public class LiquidVertexConsumer implements VertexConsumer {
 
     @Override
     public VertexConsumer setNormal(float x, float y, float z) {
-        return delegate.setNormal(x, y, z);
+        return delegate.setNormal(pose, x, y, z);
     }
 
     @Override

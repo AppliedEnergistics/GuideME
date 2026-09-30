@@ -1,5 +1,6 @@
 package guideme.internal.siteexport;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -12,16 +13,21 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import java.util.function.IntUnaryOperator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import org.joml.Vector4f;
+import org.joml.Vector4fc;
 
 public class OffScreenRenderer implements AutoCloseable {
+    private static final Vector4fc TRANSPARENT = new Vector4f(0, 0, 0, 0);
+    // Minecraft uses a reversed depth buffer, where 0 is the farthest depth
+    private static final double CLEAR_DEPTH = 0.0;
     private final NativeImage nativeImage;
     private final TextureTarget fb;
     private final GpuDevice device;
@@ -33,7 +39,8 @@ public class OffScreenRenderer implements AutoCloseable {
 
     public OffScreenRenderer(int width, int height) {
         nativeImage = new NativeImage(width, height, false);
-        fb = new TextureTarget("GuideME OSR", width, height, true /* with depth */, false /* with stencil */);
+        fb = new TextureTarget("GuideME OSR", width, height, true /* with depth */, false /* with stencil */,
+                GpuFormat.RGBA8_UNORM);
 
         device = RenderSystem.getDevice();
         commandEncoder = device.createCommandEncoder();
@@ -44,8 +51,8 @@ public class OffScreenRenderer implements AutoCloseable {
         var colorTextureView = Objects.requireNonNull(fb.getColorTextureView(), "colorTexture");
         depthTexture = Objects.requireNonNull(fb.getDepthTexture(), "depthTexture");
         var depthTextureView = Objects.requireNonNull(fb.getDepthTextureView(), "depthTexture");
-        commandEncoder.createRenderPass(() -> "GuideME OffScreen", colorTextureView, OptionalInt.of(0),
-                depthTextureView, OptionalDouble.of(1.0)).close();
+        commandEncoder.createRenderPass(() -> "GuideME OffScreen", colorTextureView, Optional.of(TRANSPARENT),
+                depthTextureView, OptionalDouble.of(CLEAR_DEPTH)).close();
     }
 
     @Override
@@ -121,16 +128,23 @@ public class OffScreenRenderer implements AutoCloseable {
     }
 
     private void renderToBuffer(Runnable r) {
-        var minecraft = Minecraft.getInstance();
 
-        commandEncoder.clearColorAndDepthTextures(colorTexture, 0, depthTexture, 1.0);
-        var previousRt = minecraft.mainRenderTarget;
-        minecraft.mainRenderTarget = fb;
+        commandEncoder.clearColorAndDepthTextures(colorTexture, TRANSPARENT, depthTexture, CLEAR_DEPTH);
+        var previousColorOverride = RenderSystem.outputColorTextureOverride;
+        var previousDepthOverride = RenderSystem.outputDepthTextureOverride;
+        RenderSystem.outputColorTextureOverride = fb.getColorTextureView();
+        RenderSystem.outputDepthTextureOverride = fb.getDepthTextureView();
+        // The GUI renderer ignores the output overrides and always renders into the main render target
+        var gameRenderer = Minecraft.getInstance().gameRenderer;
+        var previousMainRenderTarget = gameRenderer.mainRenderTarget;
+        gameRenderer.mainRenderTarget = fb;
 
         try {
             r.run();
         } finally {
-            minecraft.mainRenderTarget = previousRt;
+            gameRenderer.mainRenderTarget = previousMainRenderTarget;
+            RenderSystem.outputColorTextureOverride = previousColorOverride;
+            RenderSystem.outputDepthTextureOverride = previousDepthOverride;
         }
         TextureDownloader.downloadTexture(colorTexture, 0, IntUnaryOperator.identity(), nativeImage, true);
     }

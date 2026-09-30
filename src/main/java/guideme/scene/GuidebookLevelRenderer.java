@@ -10,41 +10,47 @@ import guideme.internal.util.Platform;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.ArrayList;
 import java.util.Collection;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.TextureFilteringMethod;
+import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.block.BlockQuadOutput;
-import net.minecraft.client.renderer.block.FluidRenderer;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.LightmapRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
+import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.NeoForgeRenderTypes;
+import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
+import net.neoforged.neoforge.client.submit.RenderPhaseKeys;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
-import org.joml.Vector4f;
 
 public class GuidebookLevelRenderer {
 
@@ -67,6 +73,13 @@ public class GuidebookLevelRenderer {
     @Nullable
     private RegistryAccess fakePlayerRegistries;
 
+    /**
+     * Our own light directions for scenes. We do not use the game renderer's, since updating its level lighting would
+     * clobber the lighting of the dimension the player is currently in (e.g. the nether).
+     */
+    @Nullable
+    private Lighting lighting;
+
     public static GuidebookLevelRenderer getInstance() {
         RenderSystem.assertOnRenderThread();
         if (instance == null) {
@@ -77,9 +90,9 @@ public class GuidebookLevelRenderer {
 
     public void render(GuidebookLevel level,
             CameraSettings cameraSettings,
-            MultiBufferSource.BufferSource buffers,
             Collection<InWorldAnnotation> annotations,
-            LightDarkMode lightDarkMode) {
+            LightDarkMode lightDarkMode,
+            SubmitNodeCollector nodes, PoseStack poseStack) {
 
         level.onRenderFrame();
 
@@ -102,7 +115,7 @@ public class GuidebookLevelRenderer {
             }
         };
 
-        var globalSettingsUniform = gameRenderer.getGlobalSettingsUniform();
+        var globalSettingsUniform = gameRenderer.globalSettingsUniform;
         globalSettingsUniform
                 .update(
                         cameraSettings.getViewportSize().width(),
@@ -132,29 +145,28 @@ public class GuidebookLevelRenderer {
         RenderSystem.backupProjectionMatrix();
         RenderSystem.setProjectionMatrix(projMatBuffer.getBuffer(projectionMatrix), ProjectionType.ORTHOGRAPHIC);
 
-        var lightDirection = new Vector4f(15 / 90f, .35f, 1, 0);
-        var lightTransform = new Matrix4f(viewMatrix);
-        lightTransform.invert();
-        lightTransform.transform(lightDirection);
+        // Scenes are rendered while the GUI is being drawn, where the bound lights are meant for GUI space
+        // (ITEMS_3D, ENTITY_IN_UI, ...) and would light the scene from below. Bind world-space level lighting instead.
+        var previousShaderLights = RenderSystem.getShaderLights();
+        getLighting().setupFor(Lighting.Entry.LEVEL);
 
-        gameRenderer.getLighting().updateLevel(CardinalLighting.Type.DEFAULT);
-        gameRenderer.getLighting().setupFor(Lighting.Entry.LEVEL);
-
+        // Use the UI lightmap (full brightness everywhere) instead of the lightmap of the level the player is in.
+        // Re-rendering the level lightmap is not an option, since its ring buffer only supports one update per frame.
         var previousUseUiLightmap = gameRenderer.useUiLightmap;
-        gameRenderer.useUiLightmap = false;
-        var renderState = new LightmapRenderState();
-        renderState.needsUpdate = true;
-        gameRenderer.lightmap.render(renderState);
+        gameRenderer.useUiLightmap = true;
         try {
-            renderContent(level, buffers, gameRenderer.getFeatureRenderDispatcher(), new PoseStack());
+            var ns = new SubmitNodeStorage();
+            renderContent(level, ns, new PoseStack());
 
-            InWorldAnnotationRenderer.render(buffers, annotations, lightDarkMode);
+            gameRenderer.featureRenderDispatcher().renderAllFeatures(ns);
 
-            buffers.endBatch();
+            // Annotations depend on the depth buffer of the rendered scene, so they have to come afterward
+            InWorldAnnotationRenderer.render(gameRenderer.featureRenderDispatcher(), annotations, lightDarkMode);
         } finally {
             gameRenderer.useUiLightmap = previousUseUiLightmap;
-            gameRenderer.getGameRenderState().lightmapRenderState.needsUpdate = true;
-            gameRenderer.lightmap.render(gameRenderer.getGameRenderState().lightmapRenderState);
+            if (previousShaderLights != null) {
+                RenderSystem.setShaderLights(previousShaderLights);
+            }
         }
 
         modelViewStack.popMatrix();
@@ -164,26 +176,14 @@ public class GuidebookLevelRenderer {
     /**
      * Render without any setup.
      */
-    public void renderContent(GuidebookLevel level, MultiBufferSource.BufferSource buffers,
-            FeatureRenderDispatcher featureRenderDispatcher, PoseStack poseStack) {
+    public void renderContent(GuidebookLevel level, SubmitNodeCollector nodes,
+            PoseStack poseStack) {
+        var featureRenderDispatcher = Minecraft.getInstance().gameRenderer.featureRenderDispatcher();
+
         try (var fake = FakeRenderEnvironment.create(getFakePlayer())) {
-            renderBlocks(level, buffers, false, poseStack);
-            renderBlockEntities(level, featureRenderDispatcher, level.getPartialTick(), poseStack);
-            renderEntities(level, level.getPartialTick(), poseStack, featureRenderDispatcher);
-
-            buffers.endLastBatch();
-
-            // Clear all non-transparent buffers: !sortOnUpload() should be a good approximation
-            var startedTypes = new ArrayList<>(buffers.startedBuilders.keySet());
-            for (var type : startedTypes) {
-                if (!type.sortOnUpload()) {
-                    buffers.endBatch(type);
-                }
-            }
-
-            renderBlocks(level, buffers, true, poseStack);
-
-            buffers.endBatch();
+            renderBlocks(level, nodes, poseStack);
+            renderBlockEntities(level, level.getPartialTick(), poseStack, nodes);
+            renderEntities(level, level.getPartialTick(), poseStack, nodes);
         }
     }
 
@@ -196,6 +196,14 @@ public class GuidebookLevelRenderer {
         return fakePlayer;
     }
 
+    private Lighting getLighting() {
+        if (lighting == null) {
+            lighting = new Lighting();
+            lighting.updateLevel(CardinalLighting.Type.DEFAULT);
+        }
+        return lighting;
+    }
+
     /**
      * Drops the cached fake player so that leaving a world does not keep that world's registries alive.
      */
@@ -205,29 +213,31 @@ public class GuidebookLevelRenderer {
         fakePlayerRegistries = null;
     }
 
-    private static RenderType getBlockRenderType(ChunkSectionLayer layer) {
+    /**
+     * Same mapping NeoForge uses for multi-layer block models submitted via
+     * {@link SubmitNodeCollector#submitMultiLayerBlockModel}.
+     */
+    static RenderType getEntityRenderType(ChunkSectionLayer layer) {
         return switch (layer) {
-            case SOLID -> RenderTypes.solidMovingBlock();
-            case CUTOUT -> RenderTypes.cutoutMovingBlock();
-            case TRANSLUCENT -> RenderTypes.translucentMovingBlock();
+            case SOLID -> NeoForgeRenderTypes.SOLID_BLOCK_SHEET;
+            case CUTOUT -> Sheets.cutoutBlockItemSheet();
+            case TRANSLUCENT -> Sheets.translucentBlockItemSheet();
         };
     }
 
-    private void renderBlocks(GuidebookLevel level, MultiBufferSource buffers, boolean translucent,
-            PoseStack poseStack) {
+    private void renderBlocks(GuidebookLevel level, SubmitNodeCollector nodes, PoseStack poseStack) {
         var minecraft = Minecraft.getInstance();
         boolean ambientOcclusion = minecraft.options.ambientOcclusion().get();
         var blockRenderer = new ModelBlockRenderer(ambientOcclusion, true, minecraft.getBlockColors());
         var modelManager = minecraft.getModelManager();
         var fluidModelSet = modelManager.getFluidStateModelSet();
-        var fluidRenderer = new FluidRenderer(fluidModelSet);
 
         BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> {
-            var layer = quad.materialInfo().layer();
-            if (layer.translucent() == translucent) {
-                var builder = buffers.getBuffer(getBlockRenderType(layer));
-                builder.putBakedQuad(poseStack.last(), quad, instance);
-            }
+            // TODO 26.2 var layer = quad.materialInfo().layer();
+            // TODO 26.2 if (layer.translucent() == translucent) {
+            // TODO 26.2 var builder = buffers.getVertexBuilder(getEntityRenderType(layer));
+            // TODO 26.2 builder.putBakedQuad(poseStack.last(), quad, instance);
+            // TODO 26.2 }
         };
 
         var it = level.getFilledBlocks().iterator();
@@ -236,20 +246,19 @@ public class GuidebookLevelRenderer {
             var blockState = level.getBlockState(pos);
             var fluidState = blockState.getFluidState();
             if (!fluidState.isEmpty()) {
+                // The fluid renderer emits vertices relative to the chunk section origin
                 var sectionPos = SectionPos.of(pos);
-                FluidRenderer.Output fluidOutput = layer -> {
-                    if (layer.translucent() == translucent) {
-                        var baseBuffer = buffers.getBuffer(getBlockRenderType(layer));
-                        return new LiquidVertexConsumer(baseBuffer, sectionPos);
-                    } else {
-                        return NoopVertexConsumer.INSTANCE;
-                    }
-                };
+                poseStack.pushPose();
+                poseStack.translate(sectionPos.minBlockX(), sectionPos.minBlockY(), sectionPos.minBlockZ());
+                // Tessellation is deferred until the submits are rendered, so we cannot hold on to the mutable pos
+                var submit = new FluidModelFeatureRenderer.Submit(level, pos.immutable(), poseStack.last().copy(),
+                        blockState, fluidState);
+                poseStack.popPose();
 
-                var customRenderer = fluidModelSet.get(fluidState).customRenderer();
-                if (customRenderer == null || !customRenderer.renderFluid(fluidRenderer, fluidState, level, pos,
-                        fluidOutput, blockState)) {
-                    fluidRenderer.tesselate(level, pos, fluidOutput, blockState, fluidState);
+                if (fluidModelSet.get(fluidState).layer().translucent()) {
+                    nodes.submitSpecial(RenderPhaseKeys.TRANSLUCENT_BLOCKS_AND_ITEMS, submit);
+                } else {
+                    nodes.submitSpecial(RenderPhaseKeys.SOLID, submit);
                 }
             }
 
@@ -258,15 +267,45 @@ public class GuidebookLevelRenderer {
             }
 
             var model = modelManager.getBlockStateModelSet().get(blockState);
+            // Only decides whether the model is submitted for sorted translucent rendering. The render type is chosen
+            // per quad based on its chunk section layer.
+            var translucent = model.hasMaterialFlag(level, pos, blockState, BakedQuad.FLAG_TRANSLUCENT);
+
             poseStack.pushPose();
             poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
-            blockRenderer.tesselateBlock(quadOutput, 0, 0, 0, level, pos, blockState, model, blockState.getSeed(pos));
+            var modelParts = new ArrayList<BlockStateModelPart>();
+            model.collectParts(level, pos, blockState, RandomSource.create(blockState.getSeed(pos)), modelParts);
+            var tintLayers = computeTintLayers(minecraft.getBlockColors(), level, pos, blockState);
+            nodes.submitMultiLayerBlockModel(poseStack, modelParts, translucent, tintLayers,
+                    LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, -1);
+            // blockRenderer.tesselateBlock(quadOutput, 0, 0, 0, level, pos, blockState, model,
+            // blockState.getSeed(pos));
             poseStack.popPose();
         }
     }
 
-    private void renderBlockEntities(GuidebookLevel level, FeatureRenderDispatcher dispatcher, float partialTick,
-            PoseStack poseStack) {
+    /**
+     * Computes the tint color for each tint index of the block model, in the same way as {@link ModelBlockRenderer}
+     * does it for terrain.
+     */
+    private static int[] computeTintLayers(BlockColors blockColors, GuidebookLevel level, BlockPos pos,
+            BlockState blockState) {
+        var tintSources = blockColors.getTintSources(blockState);
+        if (tintSources.isEmpty()) {
+            var dynamicTints = new IntArrayList();
+            IClientBlockExtensions.of(blockState).collectDynamicTintValues(blockState, level, pos, dynamicTints);
+            return dynamicTints.toIntArray();
+        }
+
+        var tintLayers = new int[tintSources.size()];
+        for (int i = 0; i < tintLayers.length; i++) {
+            tintLayers[i] = tintSources.get(i).colorInWorld(blockState, level, pos);
+        }
+        return tintLayers;
+    }
+
+    private void renderBlockEntities(GuidebookLevel level, float partialTick, PoseStack poseStack,
+            SubmitNodeCollector nodes) {
         var it = level.getFilledBlocks().iterator();
         while (it.hasNext()) {
             var pos = it.next();
@@ -274,12 +313,10 @@ public class GuidebookLevelRenderer {
             if (blockState.hasBlockEntity()) {
                 var blockEntity = level.getBlockEntity(pos);
                 if (blockEntity != null) {
-                    this.handleBlockEntity(poseStack, blockEntity, partialTick, dispatcher.getSubmitNodeStorage());
+                    this.handleBlockEntity(poseStack, blockEntity, partialTick, nodes);
                 }
             }
         }
-
-        dispatcher.renderAllFeatures();
     }
 
     private <E extends BlockEntity> void handleBlockEntity(PoseStack stack,
@@ -288,7 +325,8 @@ public class GuidebookLevelRenderer {
             SubmitNodeCollector nodeCollector) {
         var dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
         var renderer = dispatcher.getRenderer(blockEntity);
-        if (renderer != null && renderer.shouldRender(blockEntity, blockEntity.getBlockPos().getCenter())) {
+        var fakeCameraPos = Vec3.atCenterOf(blockEntity.getBlockPos());
+        if (renderer != null && renderer.shouldRender(blockEntity, fakeCameraPos)) {
             var pos = blockEntity.getBlockPos();
             stack.pushPose();
             stack.translate(pos.getX(), pos.getY(), pos.getZ());
@@ -311,12 +349,10 @@ public class GuidebookLevelRenderer {
     private void renderEntities(GuidebookLevel level,
             float partialTick,
             PoseStack poseStack,
-            FeatureRenderDispatcher featureRenderDispatcher) {
+            SubmitNodeCollector nodes) {
         for (var entity : level.getEntitiesForRendering()) {
-            handleEntity(poseStack, featureRenderDispatcher.getSubmitNodeStorage(), entity, partialTick);
+            handleEntity(poseStack, nodes, entity, partialTick);
         }
-
-        featureRenderDispatcher.renderAllFeatures();
     }
 
     private <E extends Entity> void handleEntity(PoseStack poseStack,

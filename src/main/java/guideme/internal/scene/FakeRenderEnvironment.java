@@ -12,6 +12,7 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.CommonListenerCookie;
 import net.minecraft.client.multiplayer.LevelLoadTracker;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.telemetry.TelemetryEventSender;
 import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -60,8 +61,8 @@ public class FakeRenderEnvironment implements AutoCloseable {
             packetListener = new ClientPacketListener(minecraft, connection, new CommonListenerCookie(
                     new LevelLoadTracker(),
                     new GameProfile(UUID.randomUUID(), "Site Exporter"),
-                    new WorldSessionTelemetryManager((eventType, propertyAdder) -> {
-                    }, false, null, null),
+                    new WorldSessionTelemetryManager(TelemetryEventSender.DISABLED, false, null, null,
+                            UUID.randomUUID()),
                     registries.freeze(),
                     FeatureFlags.VANILLA_SET,
                     null,

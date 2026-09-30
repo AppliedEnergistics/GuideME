@@ -1,20 +1,24 @@
 package guideme.scene.annotation;
 
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import guideme.color.ColorValue;
 import guideme.color.LightDarkMode;
 import guideme.color.MutableColor;
 import guideme.internal.GuideME;
+import java.util.Collection;
+import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
+import net.minecraft.client.renderer.rendertype.OutputTarget;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -31,114 +35,108 @@ import org.joml.Vector3f;
 @ApiStatus.Internal
 public final class InWorldAnnotationRenderer {
 
-    public static final RenderPipeline OCCLUDED_PIPELINE = RenderPipelines.ITEM_TRANSLUCENT.toBuilder()
+    /**
+     * Renders the parts of annotations that are hidden behind other geometry. Note that Minecraft uses a reversed depth
+     * buffer, so hidden fragments are those with a smaller depth value than what has been rendered before.
+     */
+    public static final RenderPipeline OCCLUDED_PIPELINE = RenderPipelines.TRANSLUCENT_BLOCK.toBuilder()
             .withLocation(GuideME.makeId("pipeline/annotation_occluded"))
-            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN, false))
-            .withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS)
+            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN, false))
             .build();
 
+    // Mirrors RenderTypes.translucentMovingBlock(), which we use for the non-occluded parts
     private static final RenderType OCCLUDED = RenderType.create(
             "guideme_annotation_occluded",
             RenderSetup.builder(OCCLUDED_PIPELINE)
                     .useLightmap()
-                    .withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
-                    .useLightmap()
-                    .useOverlay()
+                    .withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS,
+                            () -> RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE,
+                                    AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true))
+                    .sortOnUpload()
+                    .setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
                     .createRenderSetup());
 
     private InWorldAnnotationRenderer() {
     }
 
-    public static void render(MultiBufferSource.BufferSource buffers, Iterable<InWorldAnnotation> annotations,
+    /**
+     * Renders the annotations on top of the already rendered scene. Every pass is rendered immediately, since they
+     * depend on the depth buffer contents left behind by the previous passes.
+     */
+    public static void render(FeatureRenderDispatcher dispatcher, Collection<InWorldAnnotation> annotations,
             LightDarkMode lightDarkMode) {
+        if (annotations.isEmpty()) {
+            return;
+        }
+
         var sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS)
                 .getSprite(GuideME.makeId("block/noise"));
 
-        var occludedConsumer = buffers.getBuffer(OCCLUDED);
-        for (var annotation : annotations) {
-            if (annotation.isAlwaysOnTop()) {
-                continue; // Don't render occlusion for always-on-top annotations
-            }
-
-            if (annotation instanceof InWorldBoxAnnotation boxAnnotation) {
-                var color = MutableColor.of(boxAnnotation.color(), lightDarkMode);
-                color.darker(50).setAlpha(color.alpha() * 0.5f);
-                if (boxAnnotation.isHovered()) {
-                    color.lighter(50);
+        // Render the parts of annotations hidden by other geometry in a darker color
+        renderPass(dispatcher, OCCLUDED, consumer -> {
+            for (var annotation : annotations) {
+                if (annotation.isAlwaysOnTop()) {
+                    continue; // Don't render occlusion for always-on-top annotations
                 }
-                render(occludedConsumer,
-                        boxAnnotation.min(),
-                        boxAnnotation.max(),
-                        color.toArgb32(),
-                        boxAnnotation.thickness(),
-                        sprite);
-            } else if (annotation instanceof InWorldLineAnnotation lineAnnotation) {
-                var color = MutableColor.of(lineAnnotation.color(), lightDarkMode);
-                color.darker(50).setAlpha(color.alpha() * 0.5f);
-                if (lineAnnotation.isHovered()) {
-                    color.lighter(50);
-                }
-                strut(occludedConsumer,
-                        lineAnnotation.min(),
-                        lineAnnotation.max(),
-                        color.toArgb32(),
-                        lineAnnotation.thickness(),
-                        true,
-                        true,
-                        sprite);
+                renderAnnotation(consumer, annotation, lightDarkMode, true, sprite);
             }
-        }
-        buffers.endBatch(OCCLUDED);
+        });
 
         // Render two passes to support annotations that are always on top of other annotations
         for (var pass = 1; pass <= 2; pass++) {
-            if (pass == 2) {
-                RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(
-                        RenderSystem.outputDepthTextureOverride != null
-                                ? RenderSystem.outputDepthTextureOverride.texture()
-                                : Minecraft.getInstance().getMainRenderTarget().getDepthTexture(),
-                        1.0);
+            var alwaysOnTop = pass == 2;
+            if (annotations.stream().noneMatch(annotation -> annotation.isAlwaysOnTop() == alwaysOnTop)) {
+                continue;
             }
 
-            var renderType = RenderTypes.translucentMovingBlock();
-            var consumer = buffers.getBuffer(renderType);
-
-            for (var annotation : annotations) {
-                if (annotation.isAlwaysOnTop() != (pass == 2)) {
-                    continue;
-                }
-
-                if (annotation instanceof InWorldBoxAnnotation boxAnnotation) {
-                    var color = MutableColor.of(boxAnnotation.color(), lightDarkMode);
-                    if (boxAnnotation.isHovered()) {
-                        color.lighter(50);
-                    }
-                    render(consumer,
-                            boxAnnotation.min(),
-                            boxAnnotation.max(),
-                            color.toArgb32(),
-                            boxAnnotation.thickness(),
-                            sprite);
-                } else if (annotation instanceof InWorldLineAnnotation lineAnnotation) {
-                    var color = MutableColor.of(lineAnnotation.color(), lightDarkMode);
-                    if (lineAnnotation.isHovered()) {
-                        color.lighter(50);
-                    }
-                    strut(consumer,
-                            lineAnnotation.min(),
-                            lineAnnotation.max(),
-                            color.toArgb32(),
-                            lineAnnotation.thickness(),
-                            true,
-                            true,
-                            sprite);
-                }
+            if (alwaysOnTop) {
+                var depthTexture = RenderSystem.outputDepthTextureOverride != null
+                        ? RenderSystem.outputDepthTextureOverride.texture()
+                        : Minecraft.getInstance().gameRenderer.mainRenderTarget().getDepthTexture();
+                // The depth buffer is reversed, so 0 is the farthest value
+                RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(depthTexture, 0.0);
             }
 
-            buffers.endBatch(renderType);
+            renderPass(dispatcher, RenderTypes.translucentMovingBlock(), consumer -> {
+                for (var annotation : annotations) {
+                    if (annotation.isAlwaysOnTop() == alwaysOnTop) {
+                        renderAnnotation(consumer, annotation, lightDarkMode, false, sprite);
+                    }
+                }
+            });
         }
-        buffers.endBatch();
+    }
+
+    private static void renderPass(FeatureRenderDispatcher dispatcher, RenderType renderType,
+            Consumer<VertexConsumer> geometry) {
+        var nodes = new SubmitNodeStorage();
+        // Annotations are positioned in absolute level coordinates, so no pose is applied
+        nodes.submitCustomGeometry(new PoseStack(), renderType, (pose, consumer) -> geometry.accept(consumer));
+        dispatcher.renderAllFeatures(nodes);
+    }
+
+    private static void renderAnnotation(VertexConsumer consumer, InWorldAnnotation annotation,
+            LightDarkMode lightDarkMode, boolean occluded, TextureAtlasSprite sprite) {
+        if (annotation instanceof InWorldBoxAnnotation boxAnnotation) {
+            var color = getColor(boxAnnotation.color(), boxAnnotation.isHovered(), lightDarkMode, occluded);
+            render(consumer, boxAnnotation.min(), boxAnnotation.max(), color, boxAnnotation.thickness(), sprite);
+        } else if (annotation instanceof InWorldLineAnnotation lineAnnotation) {
+            var color = getColor(lineAnnotation.color(), lineAnnotation.isHovered(), lightDarkMode, occluded);
+            strut(consumer, lineAnnotation.min(), lineAnnotation.max(), color, lineAnnotation.thickness(), true,
+                    true, sprite);
+        }
+    }
+
+    private static int getColor(ColorValue colorValue, boolean hovered, LightDarkMode lightDarkMode,
+            boolean occluded) {
+        var color = MutableColor.of(colorValue, lightDarkMode);
+        if (occluded) {
+            color.darker(50).setAlpha(color.alpha() * 0.5f);
+        }
+        if (hovered) {
+            color.lighter(50);
+        }
+        return color.toArgb32();
     }
 
     public static void render(VertexConsumer consumer,

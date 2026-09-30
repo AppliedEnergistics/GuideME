@@ -285,8 +285,8 @@ public final class StructureCommands {
                     return null;
                 }, server)
                 .thenRunAsync(() -> {
-                    if (minecraft.screen instanceof PauseScreen) {
-                        minecraft.setScreen(null);
+                    if (minecraft.gui.screen() instanceof PauseScreen) {
+                        minecraft.gui.setScreen(null);
                     }
                 }, minecraft);
     }
@@ -398,8 +398,8 @@ public final class StructureCommands {
                     return null;
                 }, server)
                 .thenRunAsync(() -> {
-                    if (minecraft.screen instanceof PauseScreen) {
-                        minecraft.setScreen(null);
+                    if (minecraft.gui.screen() instanceof PauseScreen) {
+                        minecraft.gui.setScreen(null);
                     }
                 }, minecraft);
     }

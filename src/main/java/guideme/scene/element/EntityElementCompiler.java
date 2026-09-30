@@ -6,16 +6,16 @@ import guideme.document.LytErrorSink;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.scene.GuidebookScene;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityProcessor;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.EntityType;
 import org.joml.Vector3f;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class EntityElementCompiler implements SceneElementTagCompiler {
-    private static final Logger LOG = LoggerFactory.getLogger(EntityElementCompiler.class);
+    private static final AtomicInteger ENTITY_ID_GENERATOR = new AtomicInteger();
 
     @Override
     public Set<String> getTagNames() {
@@ -36,7 +36,8 @@ public class EntityElementCompiler implements SceneElementTagCompiler {
         var data = MdxAttrs.getCompoundTag(compiler, errorSink, el, "data", new CompoundTag());
         data.putString("id", entityId);
 
-        var entity = EntityType.loadEntityRecursive(data, scene.getLevel(), EntitySpawnReason.LOAD,
+        var entity = EntityType.loadEntityRecursive(data, scene.getLevel(),
+                new EntitySpawnRequest(EntitySpawnReason.LOAD, true),
                 EntityProcessor.NOP);
         if (entity == null) {
             errorSink.appendError(compiler, "Failed to load entity '" + entityId, el);
@@ -54,6 +55,8 @@ public class EntityElementCompiler implements SceneElementTagCompiler {
         entity.setOldPosAndRot();
         entity.setYHeadRot(entity.getYRot());
         entity.setYBodyRot(entity.getYRot());
+
+        entity.setId(ENTITY_ID_GENERATOR.incrementAndGet());
 
         scene.getLevel().addEntity(entity);
         entity.tick();

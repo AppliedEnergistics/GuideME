@@ -1,7 +1,9 @@
 package guideme.scene.export;
 
+import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.IndexType;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import java.nio.ByteBuffer;
 import java.util.Objects;
@@ -35,7 +37,7 @@ record Mesh(MeshData.DrawState drawState,
 
         // We only implement this for quads since standard block vertex-format
         // uses BakedQuads
-        if (drawState.mode() != VertexFormat.Mode.QUADS) {
+        if (drawState.primitiveTopology() != PrimitiveTopology.QUADS) {
             return Stream.of();
         }
 
@@ -52,12 +54,11 @@ record Mesh(MeshData.DrawState drawState,
         var offset = 0;
         VertexFormatElement uvElement = null;
         for (var element : renderType.format().getElements()) {
-            if (element == VertexFormatElement.UV && element.index() == 0
-                    && element.count() == 2) {
+            if ("UV0".equals(element.name()) && element.format().componentCount() == 2) {
                 uvElement = element;
                 break;
             }
-            offset += element.byteSize();
+            offset += element.format().blockSize();
         }
 
         if (uvElement == null) {
@@ -82,7 +83,7 @@ record Mesh(MeshData.DrawState drawState,
             var quadCount = drawState.vertexCount() / 4;
             return IntStream.range(0, quadCount)
                     .mapToObj(quadIdx -> new Vector4i(quadIdx * 4, quadIdx * 4 + 1, quadIdx * 4 + 2, quadIdx * 4 + 3));
-        } else if (drawState.indexType() == VertexFormat.IndexType.INT) {
+        } else if (drawState.indexType() == IndexType.INT) {
             var quadCount = drawState.indexCount() / 4;
             return IntStream.range(0, quadCount)
                     .mapToObj(quadIdx -> new Vector4i(
@@ -90,7 +91,7 @@ record Mesh(MeshData.DrawState drawState,
                             indexBuffer.getInt(quadIdx * 4 * 4 + 4),
                             indexBuffer.getInt(quadIdx * 4 * 4 + 8),
                             indexBuffer.getInt(quadIdx * 4 * 4 + 12)));
-        } else if (drawState.indexType() == VertexFormat.IndexType.SHORT) {
+        } else if (drawState.indexType() == IndexType.SHORT) {
             var quadCount = drawState.indexCount() / 4;
             return IntStream.range(0, quadCount)
                     .mapToObj(quadIdx -> new Vector4i(
@@ -123,18 +124,26 @@ record Mesh(MeshData.DrawState drawState,
         var stride = drawState.format().getVertexSize();
         var dataStart = index * stride + offset;
         return new Vector2f(
-                readFloat(uvElement.type(), dataStart),
-                readFloat(uvElement.type(), dataStart + uvElement.type().size()));
+                readFloat(uvElement.format(), dataStart),
+                readFloat(uvElement.format(), dataStart + uvElement.format().componentType().byteSize()));
     }
 
-    private float readFloat(VertexFormatElement.Type type, int offset) {
-        return switch (type) {
-            case FLOAT -> vertexBuffer.getFloat(offset);
-            case UBYTE -> ((int) vertexBuffer.get(offset)) & 0xFF;
-            case BYTE -> vertexBuffer.get(offset);
-            case USHORT -> ((int) vertexBuffer.getShort(offset)) & 0xFFFF;
-            case SHORT -> vertexBuffer.getShort(offset);
-            case UINT, INT -> vertexBuffer.getInt(offset);
+    private float readFloat(GpuFormat format, int offset) {
+        return switch (format.componentType()) {
+            case FLOAT_32 -> vertexBuffer.getFloat(offset);
+            case UINT_8 -> ((int) vertexBuffer.get(offset)) & 0xFF;
+            case SINT_8 -> vertexBuffer.get(offset);
+            case UINT_16 -> ((int) vertexBuffer.getShort(offset)) & 0xFFFF;
+            case SINT_16 -> vertexBuffer.getShort(offset);
+            case UINT_32, SINT_32 -> vertexBuffer.getInt(offset);
+            case UNORM_8 -> (((int) vertexBuffer.get(offset)) & 0xFF) / 255f;
+            case SNORM_8 -> Math.max(vertexBuffer.get(offset) / 127f, -1f);
+            case UNORM_16 -> (((int) vertexBuffer.getShort(offset)) & 0xFFFF) / 65535f;
+            case SNORM_16 -> Math.max(vertexBuffer.getShort(offset) / 32767f, -1f);
+            case FLOAT_16 -> Float.float16ToFloat(vertexBuffer.getShort(offset));
+            // Opaque formats have no defined numeric interpretation
+            case OPAQUE_8, OPAQUE_16, OPAQUE_32, OPAQUE_64 -> throw new IllegalArgumentException(
+                    "Unsupported component type: " + format.componentType());
         };
     }
 }

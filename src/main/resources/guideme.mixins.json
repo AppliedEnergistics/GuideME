@@ -4,6 +4,7 @@
   "package": "guideme.internal.hooks.mixins",
   "compatibilityLevel": "JAVA_11",
   "client": [
+    "RenderTypeFeatureRendererMixin"
   ],
   "server": [],
   "injectors": {
