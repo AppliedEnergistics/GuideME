@@ -10,6 +10,8 @@ export { ExpMesh } from './scene/exp-mesh.js';
 export { ExpPrimitiveType } from './scene/exp-primitive-type.js';
 export { ExpSampler } from './scene/exp-sampler.js';
 export { ExpScene } from './scene/exp-scene.js';
+export { ExpShaderInfo } from './scene/exp-shader-info.js';
+export { ExpShaderLighting } from './scene/exp-shader-lighting.js';
 export { ExpTransparency } from './scene/exp-transparency.js';
 export { ExpVec3 } from './scene/exp-vec3.js';
 export { ExpVertexElementType } from './scene/exp-vertex-element-type.js';

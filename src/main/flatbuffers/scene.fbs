@@ -71,6 +71,26 @@ table ExpMaterial {
   samplers: [ExpSampler];
 }
 
+enum ExpShaderLighting : ubyte {
+    LIGHTMAP,
+    DIFFUSE,
+    NONE
+}
+
+// Describes how the shader used by a material processes geometry. Materials reference
+// this by their shader_name, which matches ExpShaderInfo.name.
+// "lightmap" means the lighting is already pre-baked into the vertex colors.
+// This has the same effect as "none", since both will not apply additional
+// diffuse lighting.
+table ExpShaderInfo {
+  name: string;
+  lighting: ExpShaderLighting;
+  // Fragments with an alpha value below this are discarded. 0 disables the alpha test.
+  alpha_test: float = 0;
+  vertex_color: bool;
+  textured: bool;
+}
+
 enum ExpPrimitiveType : ubyte {
     LINES,
     LINE_STRIP,
@@ -133,6 +153,7 @@ table ExpScene {
   camera:ExpCameraSettings;
   meshes:[ExpMesh];
   animated_textures: [ExpAnimatedTexturePart];
+  shaders:[ExpShaderInfo];
 }
 
 root_type ExpScene;
