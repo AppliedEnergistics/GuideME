@@ -372,8 +372,12 @@ publishing {
 }
 
 signing {
-    def signingKey = findProperty("signingKey")
-    def signingPassword = findProperty("signingPassword")
+    // Note that CI passes these as empty strings when the GPG secrets are unavailable, which is the case for
+    // pull requests opened from forks. Blank values have to be normalized to null, because the in-memory
+    // signatory provider throws when it is asked to read an empty key, which would fail the build even
+    // though signing is not required.
+    def signingKey = findProperty("signingKey")?.toString()?.trim() ?: null
+    def signingPassword = findProperty("signingPassword")?.toString() ?: null
     required = signingKey != null && signingPassword != null
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign publishing.publications.maven

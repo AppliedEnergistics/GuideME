@@ -251,7 +251,8 @@ public final class StructureCommands {
 
         StructureTemplate structureTemplate = new StructureTemplate();
         int version = NbtUtils.getDataVersion(tag, 500);
-        structureTemplate.load(blockLookup, DataFixTypes.STRUCTURE.updateToCurrentVersion(level.getServer().getFixerUpper(), tag, version));
+        structureTemplate.load(blockLookup,
+                DataFixTypes.STRUCTURE.updateToCurrentVersion(level.getServer().getFixerUpper(), tag, version));
         return structureTemplate;
     }
 

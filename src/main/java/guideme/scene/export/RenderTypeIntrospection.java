@@ -21,7 +21,9 @@ final class RenderTypeIntrospection {
             var textureId = binding.location();
             var texture = Minecraft.getInstance().getTextureManager().getTexture(textureId).getTexture();
             var sampler = binding.sampler().get();
-            var blur = sampler != null && sampler.getMinFilter() != FilterMode.NEAREST;
+            // The web viewer uses this for magnification, so base it on the mag filter. The block atlas samplers
+            // use LINEAR only for minification (mipmapping) and NEAREST for magnification.
+            var blur = sampler != null && sampler.getMagFilter() != FilterMode.NEAREST;
             var useMipmaps = texture.getMipLevels() > 1;
 
             return List.of(new Sampler(textureId, blur, useMipmaps));

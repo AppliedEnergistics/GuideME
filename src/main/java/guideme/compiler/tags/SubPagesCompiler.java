@@ -79,11 +79,11 @@ public class SubPagesCompiler extends BlockTagCompiler {
 
             LytBlock listItemBlock = listItemPar;
 
-            if (showIcons && childNode.icon() != null) {
+            if (showIcons && childNode.iconFactory() != null) {
                 var lytHBox = new LytHBox();
 
                 var icon = new LytItemImage();
-                icon.setItem(childNode.icon().create());
+                icon.setItem(childNode.iconFactory().get());
                 lytHBox.append(icon);
                 lytHBox.append(listItemPar);
                 lytHBox.setAlignItems(AlignItems.CENTER);

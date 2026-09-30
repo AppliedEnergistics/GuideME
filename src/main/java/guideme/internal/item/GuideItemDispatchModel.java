@@ -39,7 +39,8 @@ public class GuideItemDispatchModel implements ItemModel {
         if (guideId != null) {
             var guide = GuideRegistry.getById(guideId);
             if (guide != null && guide.getItemSettings().itemModel().isPresent()) {
-                itemModel = new CuboidItemModelWrapper.Unbaked(guide.getItemSettings().itemModel().get(), Optional.empty(), List.of())
+                itemModel = new CuboidItemModelWrapper.Unbaked(guide.getItemSettings().itemModel().get(),
+                        Optional.empty(), List.of())
                         .bake(bakingContext, new Matrix4f());
             }
         }

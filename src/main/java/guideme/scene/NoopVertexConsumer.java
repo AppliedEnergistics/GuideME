@@ -5,7 +5,8 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 public class NoopVertexConsumer implements VertexConsumer {
     public static final NoopVertexConsumer INSTANCE = new NoopVertexConsumer();
 
-    private NoopVertexConsumer() {}
+    private NoopVertexConsumer() {
+    }
 
     @Override
     public VertexConsumer addVertex(float x, float y, float z) {

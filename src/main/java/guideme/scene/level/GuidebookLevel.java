@@ -18,7 +18,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
@@ -230,7 +229,13 @@ public class GuidebookLevel extends Level implements BlockAndTintGetter {
 
     @Override
     public ModelData getModelData(BlockPos pos) {
-        return modelDataManager.getAt(pos);
+        // Query the block entity directly. modelDataManager only knows about
+        // BEs that requested a refresh, so it misses BEs placed via structures
+        var blockEntity = getBlockEntity(pos);
+        if (blockEntity != null && !blockEntity.isRemoved()) {
+            return blockEntity.getModelData();
+        }
+        return ModelData.EMPTY;
     }
 
     @Override

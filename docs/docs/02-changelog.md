@@ -7,6 +7,19 @@ import Video from '@site/src/components/Video';
 
 - Update to Minecraft 26.2.0
 
+## 26.1.14-beta (Minecraft 26.1.2)
+- Fix a crash ("Texture view has been closed") when the same image is used more than once on a guide page
+- Fix toolbar buttons, sidebar and scrollbar not reacting to clicks with certain GUI scales (#105)
+- Avoid constructing a fake connection for rendering scenes (reuse an existing one instead), which might fix compat
+  with forgified fabric-networking-api.
+- Fix horizontal rules having less spacing below them when followed by a table, list or other block element (#104)
+
+## 26.1.13-beta (Minecraft 26.1.2)
+- Fix an issue on startup with navigation icons requiring loaded data packs
+- Cache fake player / level used to render guidebook scenes to avoid repeated initialization
+- Fix several other rendering issues related to the site export
+- Fix icons of the site export having incorrect size
+
 ## 26.1.12-beta (Minecraft 26.1.2)
 - Fix a scaling issue where the guide would become invisible under certain conditions
 

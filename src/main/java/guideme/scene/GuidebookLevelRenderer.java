@@ -5,11 +5,13 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.color.LightDarkMode;
 import guideme.internal.scene.FakeRenderEnvironment;
+import guideme.internal.util.Platform;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.level.GuidebookLevel;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.TextureFilteringMethod;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.Sheets;
@@ -30,6 +32,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.RandomSource;
@@ -37,6 +40,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,6 +52,20 @@ public class GuidebookLevelRenderer {
 
     private final ProjectionMatrixBuffer projMatBuffer = new ProjectionMatrixBuffer(
             "GuideME level renderer proj mat UBO");
+
+    /**
+     * Cached local player used for faking the render environment for vanilla and modded renderers. Cached since
+     * initializing it involves also creating a fake level et al.
+     */
+    @Nullable
+    private LocalPlayer fakePlayer;
+
+    /**
+     * The registries the cached fake player was built against. The fake player embeds them, so it has to be rebuilt
+     * whenever the client switches to a world that has different one.
+     */
+    @Nullable
+    private RegistryAccess fakePlayerRegistries;
 
     public static GuidebookLevelRenderer getInstance() {
         RenderSystem.assertOnRenderThread();
@@ -150,11 +169,29 @@ public class GuidebookLevelRenderer {
                               PoseStack poseStack) {
         var featureRenderDispatcher = Minecraft.getInstance().gameRenderer.featureRenderDispatcher();
 
-        try (var fake = FakeRenderEnvironment.create(level)) {
+        try (var fake = FakeRenderEnvironment.create(getFakePlayer())) {
             renderBlocks(level, nodes, poseStack);
             renderBlockEntities(level, level.getPartialTick(), poseStack, nodes);
             renderEntities(level, level.getPartialTick(), poseStack, nodes);
         }
+    }
+
+    private LocalPlayer getFakePlayer() {
+        var registries = Platform.getClientRegistryAccess();
+        if (fakePlayer == null || fakePlayerRegistries != registries) {
+            fakePlayer = FakeRenderEnvironment.createFakePlayer(registries);
+            fakePlayerRegistries = registries;
+        }
+        return fakePlayer;
+    }
+
+    /**
+     * Drops the cached fake player so that leaving a world does not keep that world's registries alive.
+     */
+    @ApiStatus.Internal
+    public void clearCache() {
+        fakePlayer = null;
+        fakePlayerRegistries = null;
     }
 
     static RenderType getEntityRenderType(ChunkSectionLayer layer) {
@@ -168,7 +205,7 @@ public class GuidebookLevelRenderer {
     private void renderBlocks(GuidebookLevel level, SubmitNodeCollector nodes, PoseStack poseStack) {
         var minecraft = Minecraft.getInstance();
         boolean ambientOcclusion = minecraft.options.ambientOcclusion().get();
-        var blockRenderer = new ModelBlockRenderer(ambientOcclusion, false, minecraft.getBlockColors());
+        var blockRenderer = new ModelBlockRenderer(ambientOcclusion, true, minecraft.getBlockColors());
         var modelManager = minecraft.getModelManager();
         var fluidModelSet = modelManager.getFluidStateModelSet();
         var fluidRenderer = new FluidRenderer(fluidModelSet);
@@ -199,7 +236,8 @@ public class GuidebookLevelRenderer {
                 };
 
                 var customRenderer = fluidModelSet.get(fluidState).customRenderer();
-                if (customRenderer == null || !customRenderer.renderFluid(fluidRenderer, fluidState, level, pos, fluidOutput, blockState)) {
+                if (customRenderer == null || !customRenderer.renderFluid(fluidRenderer, fluidState, level, pos,
+                        fluidOutput, blockState)) {
                     fluidRenderer.tesselate(level, pos, fluidOutput, blockState, fluidState);
                 }
             }

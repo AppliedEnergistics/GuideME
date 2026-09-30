@@ -16,9 +16,12 @@ import guideme.internal.search.GuideSearch;
 import guideme.internal.siteexport.SiteExportOnStartup;
 import guideme.internal.siteexport.TextureDownloader;
 import guideme.internal.util.Blitter;
+import guideme.navigation.NavigationNode;
 import guideme.render.GuiAssets;
 import guideme.scene.FluidModelFeatureRenderer;
+import guideme.scene.GuidebookLevelRenderer;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import net.minecraft.client.KeyMapping;
@@ -113,6 +116,7 @@ public class GuideMEClient {
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
 
         NeoForge.EVENT_BUS.addListener(this::onReceiveRecipes);
+        NeoForge.EVENT_BUS.addListener(this::onPlayerConnect);
         NeoForge.EVENT_BUS.addListener(this::onPlayerDisconnect);
     }
 
@@ -125,9 +129,35 @@ public class GuideMEClient {
         availableRecipeTypes = Set.copyOf(event.getRecipeTypes());
     }
 
+    private void onPlayerConnect(ClientPlayerNetworkEvent.LoggingIn event) {
+        invalidateNavigationIcons();
+    }
+
     private void onPlayerDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
         recipeMap = RecipeMap.EMPTY;
         availableRecipeTypes = Set.of();
+        invalidateNavigationIcons();
+        GuidebookLevelRenderer.getInstance().clearCache();
+    }
+
+    /**
+     * Navigation icons are item stacks, which can only be created while the dynamic registries are available (i.e.
+     * while connected to a world). Drop the cached icons whenever that changes.
+     */
+    private static void invalidateNavigationIcons() {
+        for (var guide : GuideRegistry.getAll()) {
+            invalidateNavigationIcons(guide.getNavigationTree().getRootNodes());
+        }
+    }
+
+    private static void invalidateNavigationIcons(List<NavigationNode> nodes) {
+        for (var node : nodes) {
+            var iconFactory = node.iconFactory();
+            if (iconFactory != null) {
+                iconFactory.invalidate();
+            }
+            invalidateNavigationIcons(node.children());
+        }
     }
 
     private void registerRenderPipelines(RegisterRenderPipelinesEvent event) {

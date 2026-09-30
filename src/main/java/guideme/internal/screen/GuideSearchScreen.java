@@ -169,7 +169,7 @@ public class GuideSearchScreen extends DocumentScreen {
 
             var image = new LytItemImage();
             if (icon != null) {
-                image.setItem(icon.create());
+                image.setItem(icon.iconFactory().get());
             }
             searchResultItem.append(image);
 
@@ -212,7 +212,8 @@ public class GuideSearchScreen extends DocumentScreen {
     }
 
     @Override
-    protected void scaledExtractRenderState(GuiGraphicsExtractor guiGraphics, RenderContext context, int mouseX, int mouseY,
+    protected void scaledExtractRenderState(GuiGraphicsExtractor guiGraphics, RenderContext context, int mouseX,
+            int mouseY,
             float partialTick) {
         context.fillIcon(screenRect, GuiAssets.GUIDE_BACKGROUND, SymbolicColor.GUIDE_SCREEN_BACKGROUND);
 

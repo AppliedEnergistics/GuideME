@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import net.minecraft.resources.Identifier;
+import net.neoforged.neoforge.common.util.Lazy;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -133,7 +134,8 @@ public class NavigationTree {
         var node = new NavigationNode(
                 page.getId(),
                 navigationEntry.title(),
-                icon,
+                icon != null ? icon.icon() : null,
+                icon != null ? Lazy.of(icon.iconFactory()) : null,
                 childNodes,
                 navigationEntry.position(),
                 true);

@@ -39,7 +39,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
@@ -512,18 +511,10 @@ public class SiteExporter implements ResourceExporter {
             MoreFiles.deleteRecursively(iconsFolder, RecursiveDeleteOption.ALLOW_INSECURE);
         }
 
-        // Set the GUI scale accordingly to get GuiGraphicsExtractor to render out items full-screen, filling the scaled up
-        // buffer
-        var window = Minecraft.getInstance().getWindow();
-        var previousWindowWidth = window.getWidth();
-        var previousWindowHeight = window.getHeight();
-        var previousWindowScale = window.getGuiScale();
-        window.setWidth(ICON_DIMENSION);
-        window.setHeight(ICON_DIMENSION);
-        window.setGuiScale(ICON_SCALE);
-
-        try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
-            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.gameRenderState().guiRenderState, 0, 0);
+        try (var ignored = new IconViewportContext(client);
+                var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
+            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.gameRenderState().guiRenderState,
+                    0, 0);
 
             LOG.info("Exporting items...");
             for (var item : items) {
@@ -554,10 +545,6 @@ public class SiteExporter implements ResourceExporter {
                 String absIconUrl = "/" + outputFolder.relativize(iconPath).toString().replace('\\', '/');
                 siteExport.addItem(itemId, stack, absIconUrl);
             }
-        } finally {
-            window.setWidth(previousWindowWidth);
-            window.setHeight(previousWindowHeight);
-            window.setGuiScale(previousWindowScale);
         }
     }
 
@@ -581,18 +568,10 @@ public class SiteExporter implements ResourceExporter {
             MoreFiles.deleteRecursively(fluidsFolder, RecursiveDeleteOption.ALLOW_INSECURE);
         }
 
-        // Set the GUI scale accordingly to get GuiGraphicsExtractor to render out items full-screen, filling the scaled up
-        // buffer
-        var window = Minecraft.getInstance().getWindow();
-        var previousWindowWidth = window.getWidth();
-        var previousWindowHeight = window.getHeight();
-        var previousWindowScale = window.getGuiScale();
-        window.setWidth(ICON_DIMENSION);
-        window.setHeight(ICON_DIMENSION);
-        window.setGuiScale(ICON_SCALE);
-
-        try (var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
-            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.gameRenderState().guiRenderState, 0, 0);
+        try (var ignored = new IconViewportContext(client);
+                var renderer = new OffScreenRenderer(ICON_DIMENSION, ICON_DIMENSION)) {
+            var guiGraphics = new GuiGraphicsExtractor(client, client.gameRenderer.gameRenderState().guiRenderState,
+                    0, 0);
 
             LOG.info("Exporting fluids...");
             for (var fluid : fluids) {
@@ -602,9 +581,9 @@ public class SiteExporter implements ResourceExporter {
                         .get(fluid.defaultFluidState());
                 String fluidId = BuiltInRegistries.FLUID.getKey(fluid).toString();
 
-
                 var sprite = model.stillMaterial().sprite();
-                var color = model.fluidTintSource() != null ? model.fluidTintSource().color(fluid.defaultFluidState()) : -1;
+                var color = model.fluidTintSource() != null ? model.fluidTintSource().color(fluid.defaultFluidState())
+                        : -1;
 
                 var baseName = "!fluids/" + fluidId.replace(':', '/');
                 var iconPath = renderAndWrite(
@@ -625,10 +604,6 @@ public class SiteExporter implements ResourceExporter {
                 String absIconUrl = "/" + outputFolder.relativize(iconPath).toString().replace('\\', '/');
                 siteExport.addFluid(fluidId, new FluidStack(fluid, 1), absIconUrl);
             }
-        } finally {
-            window.setWidth(previousWindowWidth);
-            window.setHeight(previousWindowHeight);
-            window.setGuiScale(previousWindowScale);
         }
 
     }
@@ -702,4 +677,45 @@ public class SiteExporter implements ResourceExporter {
     public void addCleanupCallback(Runnable runnable) {
         cleanupCallbacks.add(runnable);
     }
+
+    /**
+     * Sizes the window to a single icon at {@link #ICON_SCALE}, so GUI rendering fills the scaled-up buffer
+     */
+    private static final class IconViewportContext implements AutoCloseable {
+        private final Minecraft client;
+        private final int previousWidth;
+        private final int previousHeight;
+        private final int previousScale;
+
+        IconViewportContext(Minecraft client) {
+            this.client = client;
+
+            var window = client.getWindow();
+            previousWidth = window.getWidth();
+            previousHeight = window.getHeight();
+            previousScale = window.getGuiScale();
+
+            apply(ICON_DIMENSION, ICON_DIMENSION, ICON_SCALE);
+        }
+
+        private void apply(int width, int height, int guiScale) {
+            // GuiGraphicsExtractor uses the Window
+            var window = client.getWindow();
+            window.setWidth(width);
+            window.setHeight(height);
+            window.setGuiScale(guiScale);
+
+            // GuiRenderer uses this per-frame snapshot, normally only refreshed at the start of each frame
+            var windowState = client.gameRenderer.gameRenderState().windowRenderState;
+            windowState.width = width;
+            windowState.height = height;
+            windowState.guiScale = guiScale;
+        }
+
+        @Override
+        public void close() {
+            apply(previousWidth, previousHeight, previousScale);
+        }
+    }
+
 }
