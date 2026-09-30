@@ -1,17 +1,24 @@
-package guideme.scene.export;
+package guideme.siteexport;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import java.util.List;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class RenderTypeIntrospection {
-    private static final Logger LOG = LoggerFactory.getLogger(RenderTypeIntrospection.class);
+/**
+ * Describes how the shaders of a render pipeline process geometry, so that the web viewer can approximate them.
+ *
+ * @param lighting    The type of lighting applied by the shader.
+ * @param alphaTest   Fragments with an alpha below this value are discarded. 0 means no alpha test.
+ * @param vertexColor Whether the shader multiplies the vertex color into the output color.
+ * @param textured    Whether the shader samples the texture bound to {@code Sampler0}.
+ * @see SceneShaderInfoProvider
+ */
+public record SceneShaderInfo(Lighting lighting, float alphaTest, boolean vertexColor, boolean textured) {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SceneShaderInfo.class);
 
     /**
      * Vanilla fragment shaders (by path prefix) that discard fragments with alpha < 0.1 without using the ALPHA_CUTOUT
@@ -23,32 +30,27 @@ final class RenderTypeIntrospection {
             "core/glint",
             "core/rendertype_crumbling");
 
-    private RenderTypeIntrospection() {
-    }
-
-    public static List<Sampler> getSamplers(RenderType type) {
-
-        var binding = type.state.textures.get("Sampler0");
-        if (binding != null) {
-            var textureId = binding.location();
-            var texture = Minecraft.getInstance().getTextureManager().getTexture(textureId).getTexture();
-            var sampler = binding.sampler().get();
-            // The web viewer uses this for magnification, so base it on the mag filter. The block atlas samplers
-            // use LINEAR only for minification (mipmapping) and NEAREST for magnification.
-            var blur = sampler != null && sampler.getMagFilter() != FilterMode.NEAREST;
-            var useMipmaps = texture.getMipLevels() > 1;
-
-            return List.of(new Sampler(textureId, blur, useMipmaps));
-        }
-
-        return List.of();
+    public enum Lighting {
+        /**
+         * Lighting is pre-baked into the vertex colors by sampling the lightmap. The web viewer does not apply any
+         * additional lighting.
+         */
+        LIGHTMAP,
+        /**
+         * Directional diffuse lighting is applied based on the vertex normals.
+         */
+        DIFFUSE,
+        /**
+         * No lighting is applied.
+         */
+        NONE
     }
 
     /**
-     * Derives how the shaders of a pipeline process geometry from the pipeline definition. This mirrors the logic found
-     * in the vanilla core shaders.
+     * Derives the shader info from the pipeline definition, mirroring the behavior of the vanilla core shaders. This is
+     * used for all pipelines that no {@link SceneShaderInfoProvider} handles.
      */
-    public static ShaderInfo getShaderInfo(RenderPipeline pipeline) {
+    public static SceneShaderInfo fromPipeline(RenderPipeline pipeline) {
         var defines = pipeline.getShaderDefines();
         var samplers = pipeline.getSamplers();
 
@@ -64,7 +66,7 @@ final class RenderTypeIntrospection {
             lighting = Lighting.NONE;
         }
 
-        return new ShaderInfo(
+        return new SceneShaderInfo(
                 lighting,
                 getAlphaTest(pipeline),
                 pipeline.getVertexFormat().contains(VertexFormatElement.COLOR),
@@ -89,26 +91,5 @@ final class RenderTypeIntrospection {
         }
 
         return 0;
-    }
-
-    public record Sampler(Identifier texture, boolean blur, boolean mipmap) {
-    }
-
-    public enum Lighting {
-        /**
-         * Lighting is pre-baked into the vertex colors by sampling the lightmap.
-         */
-        LIGHTMAP,
-        /**
-         * Directional diffuse lighting is applied based on the vertex normals.
-         */
-        DIFFUSE,
-        NONE
-    }
-
-    /**
-     * @param alphaTest Fragments with an alpha below this value are discarded. 0 means no alpha test.
-     */
-    public record ShaderInfo(Lighting lighting, float alphaTest, boolean vertexColor, boolean textured) {
     }
 }

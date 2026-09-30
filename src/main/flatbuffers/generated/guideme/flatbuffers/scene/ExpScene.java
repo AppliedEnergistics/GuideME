@@ -91,8 +91,32 @@ public final class ExpScene extends Table {
         return o != 0 ? obj.__assign(__vector(o), 4, bb) : null;
     }
 
+    public guideme.flatbuffers.scene.ExpShaderInfo shaders(int j) {
+        return shaders(new guideme.flatbuffers.scene.ExpShaderInfo(), j);
+    }
+
+    public guideme.flatbuffers.scene.ExpShaderInfo shaders(guideme.flatbuffers.scene.ExpShaderInfo obj, int j) {
+        int o = __offset(10);
+        return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null;
+    }
+
+    public int shadersLength() {
+        int o = __offset(10);
+        return o != 0 ? __vector_len(o) : 0;
+    }
+
+    public guideme.flatbuffers.scene.ExpShaderInfo.Vector shadersVector() {
+        return shadersVector(new guideme.flatbuffers.scene.ExpShaderInfo.Vector());
+    }
+
+    public guideme.flatbuffers.scene.ExpShaderInfo.Vector shadersVector(
+            guideme.flatbuffers.scene.ExpShaderInfo.Vector obj) {
+        int o = __offset(10);
+        return o != 0 ? obj.__assign(__vector(o), 4, bb) : null;
+    }
+
     public static void startExpScene(FlatBufferBuilder builder) {
-        builder.startTable(3);
+        builder.startTable(4);
     }
 
     public static void addCamera(FlatBufferBuilder builder, int cameraOffset) {
@@ -126,6 +150,21 @@ public final class ExpScene extends Table {
     }
 
     public static void startAnimatedTexturesVector(FlatBufferBuilder builder, int numElems) {
+        builder.startVector(4, numElems, 4);
+    }
+
+    public static void addShaders(FlatBufferBuilder builder, int shadersOffset) {
+        builder.addOffset(3, shadersOffset, 0);
+    }
+
+    public static int createShadersVector(FlatBufferBuilder builder, int[] data) {
+        builder.startVector(4, data.length, 4);
+        for (int i = data.length - 1; i >= 0; i--)
+            builder.addOffset(data[i]);
+        return builder.endVector();
+    }
+
+    public static void startShadersVector(FlatBufferBuilder builder, int numElems) {
         builder.startVector(4, numElems, 4);
     }
 

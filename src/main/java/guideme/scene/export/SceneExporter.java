@@ -5,12 +5,14 @@ import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
+import guideme.extensions.ExtensionCollection;
 import guideme.flatbuffers.scene.ExpAnimatedTexturePart;
 import guideme.flatbuffers.scene.ExpAnimatedTexturePartFrame;
 import guideme.flatbuffers.scene.ExpCameraSettings;
@@ -21,6 +23,8 @@ import guideme.flatbuffers.scene.ExpMesh;
 import guideme.flatbuffers.scene.ExpPrimitiveType;
 import guideme.flatbuffers.scene.ExpSampler;
 import guideme.flatbuffers.scene.ExpScene;
+import guideme.flatbuffers.scene.ExpShaderInfo;
+import guideme.flatbuffers.scene.ExpShaderLighting;
 import guideme.flatbuffers.scene.ExpTransparency;
 import guideme.flatbuffers.scene.ExpVertexElementType;
 import guideme.flatbuffers.scene.ExpVertexElementUsage;
@@ -33,6 +37,8 @@ import guideme.scene.GuidebookLevelRenderer;
 import guideme.scene.GuidebookScene;
 import guideme.scene.level.GuidebookLevel;
 import guideme.siteexport.ResourceExporter;
+import guideme.siteexport.SceneShaderInfo;
+import guideme.siteexport.SceneShaderInfoProvider;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,6 +47,7 @@ import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,6 +62,7 @@ import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.GameRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
@@ -69,8 +77,15 @@ public class SceneExporter {
 
     private final ResourceExporter resourceExporter;
 
+    private final ExtensionCollection extensions;
+
     public SceneExporter(ResourceExporter resourceExporter) {
+        this(resourceExporter, ExtensionCollection.empty());
+    }
+
+    public SceneExporter(ResourceExporter resourceExporter, ExtensionCollection extensions) {
         this.resourceExporter = resourceExporter;
+        this.extensions = extensions;
     }
 
     public static boolean isAnimated(GuidebookScene scene) {
@@ -146,9 +161,11 @@ public class SceneExporter {
         var vertexFormats = writeVertexFormats(meshes, builder);
         var materials = writeMaterials(meshes, builder);
         var meshesOffset = writeMeshes(meshes, builder, vertexFormats, materials);
+        var shadersOffset = writeShaderInfos(meshes, builder);
 
         ExpScene.startExpScene(builder);
         ExpScene.addMeshes(builder, meshesOffset);
+        ExpScene.addShaders(builder, shadersOffset);
         var cameraOffset = createCameraModel(scene.getCameraSettings(), builder);
         ExpScene.addCamera(builder, cameraOffset);
         ExpScene.addAnimatedTextures(builder, animatedTexturesOffset);
@@ -397,6 +414,47 @@ public class SceneExporter {
                 depthTest,
                 samplersOffset);
 
+    }
+
+    /**
+     * Writes a description of each shader pipeline used by the meshes' materials. Materials reference these by their
+     * shader name.
+     */
+    private int writeShaderInfos(List<Mesh> meshes, FlatBufferBuilder builder) {
+        var pipelines = new LinkedHashMap<Identifier, RenderPipeline>();
+        for (var mesh : meshes) {
+            var pipeline = mesh.renderType().state.pipeline;
+            pipelines.putIfAbsent(pipeline.getLocation(), pipeline);
+        }
+
+        var shaderInfos = new IntArrayList(pipelines.size());
+        for (var entry : pipelines.entrySet()) {
+            var shaderInfo = getShaderInfo(entry.getValue());
+            var lighting = switch (shaderInfo.lighting()) {
+                case LIGHTMAP -> ExpShaderLighting.LIGHTMAP;
+                case DIFFUSE -> ExpShaderLighting.DIFFUSE;
+                case NONE -> ExpShaderLighting.NONE;
+            };
+            shaderInfos.add(ExpShaderInfo.createExpShaderInfo(
+                    builder,
+                    builder.createSharedString(entry.getKey().toString()),
+                    lighting,
+                    shaderInfo.alphaTest(),
+                    shaderInfo.vertexColor(),
+                    shaderInfo.textured()));
+        }
+
+        return ExpScene.createShadersVector(builder, shaderInfos.toIntArray());
+    }
+
+    private SceneShaderInfo getShaderInfo(RenderPipeline pipeline) {
+        for (var provider : extensions.get(SceneShaderInfoProvider.EXTENSION_POINT)) {
+            var shaderInfo = provider.getShaderInfo(pipeline);
+            if (shaderInfo != null) {
+                return shaderInfo;
+            }
+        }
+        return SceneShaderInfo.fromPipeline(pipeline);
     }
 
     private static int mapMode(VertexFormat.Mode mode) {

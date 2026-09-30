@@ -149,7 +149,7 @@ class SceneExportVisitor implements MdAstVisitor {
 
     private String exportScene(LytGuidebookScene scene, String baseName) throws IOException {
         var scenePath = exporter.getPageSpecificPathForWriting(baseName + ".scene.gz");
-        var exporter = new SceneExporter(this.exporter);
+        var exporter = new SceneExporter(this.exporter, scene.getExtensions());
         var sceneContent = exporter.export(scene.getScene());
         scenePath = CacheBusting.writeAsset(scenePath, sceneContent);
 

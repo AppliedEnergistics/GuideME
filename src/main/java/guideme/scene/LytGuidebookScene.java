@@ -101,6 +101,10 @@ public class LytGuidebookScene extends LytBox {
         }));
     }
 
+    public ExtensionCollection getExtensions() {
+        return extensions;
+    }
+
     @Nullable
     public GuidebookScene getScene() {
         return scene;
