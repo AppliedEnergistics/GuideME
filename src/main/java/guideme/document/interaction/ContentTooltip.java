@@ -44,20 +44,6 @@ public class ContentTooltip implements GuideTooltip {
                     }
 
                     @Override
-                    public void extractText(GuiGraphicsExtractor guiGraphics, Font font, int x, int y) {
-                        getLayoutBox(); // Updates layout
-
-                        var pose = guiGraphics.pose();
-                        pose.pushMatrix();
-                        pose.translate(x, y);
-
-                        var ctx = new SimpleRenderContext(guiGraphics);
-                        content.render(ctx);
-
-                        pose.popMatrix();
-                    }
-
-                    @Override
                     public void extractImage(Font font, int x, int y, int width, int height,
                             GuiGraphicsExtractor guiGraphics) {
                         getLayoutBox(); // Updates layout
