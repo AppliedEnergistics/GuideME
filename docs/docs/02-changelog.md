@@ -7,6 +7,11 @@ import Video from '@site/src/components/Video';
 
 - Update to Minecraft 26.2.0
 
+## 26.1.15-beta (Minecraft 26.1.2)
+- Fix content of tooltips (e.g. for scene annotations) disappearing when the tooltip is shown near the bottom or
+  right side of the screen
+- Fix content of tooltips being rendered twice
+
 ## 26.1.14-beta (Minecraft 26.1.2)
 - Fix a crash ("Texture view has been closed") when the same image is used more than once on a guide page
 - Fix toolbar buttons, sidebar and scrollbar not reacting to clicks with certain GUI scales (#105)
