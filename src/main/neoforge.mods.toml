@@ -1,6 +1,6 @@
 modLoader = "javafml"
 loaderVersion = "*"
-logoFile = "logo.png"
+iconFile = "logo.png"
 authors = "shartte"
 license = "See GitHub repository for details"
 
