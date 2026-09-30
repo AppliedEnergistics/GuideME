@@ -173,7 +173,8 @@ public final class OpenGuideHotkey {
                     var foundPage = guidebookPages.getFirst();
                     var guide = foundPage.guide();
 
-                    if (Minecraft.getInstance().gui.screen() instanceof GuideUiHost uiHost && uiHost.getGuide() == guide) {
+                    if (Minecraft.getInstance().gui.screen() instanceof GuideUiHost uiHost
+                            && uiHost.getGuide() == guide) {
                         uiHost.navigateTo(foundPage.page());
                     } else {
                         GuideMEClient.openGuideAtAnchor(guide, foundPage.page());

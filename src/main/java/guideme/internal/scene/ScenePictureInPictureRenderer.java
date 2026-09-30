@@ -17,7 +17,6 @@ public class ScenePictureInPictureRenderer extends PictureInPictureRenderer<Scen
         return State.class;
     }
 
-
     @Override
     protected void renderToTexture(State state, PoseStack pose, SubmitNodeCollector submitNodeCollector) {
         state.renderer.render(state.lightDarkMode, pose, submitNodeCollector);

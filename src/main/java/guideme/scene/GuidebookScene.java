@@ -166,7 +166,8 @@ public class GuidebookScene {
         invViewProj.invert();
 
         // Minecraft uses a reversed depth buffer, so the near plane is at z=1 in normalized device coordinates.
-        // We cannot use Matrix4f#unprojectRay since it assumes the opposite, producing a ray pointing towards the camera.
+        // We cannot use Matrix4f#unprojectRay since it assumes the opposite, producing a ray pointing towards the
+        // camera.
         // Using z=-1 for the far end works for both [0,1] and [-1,1] depth ranges, since it at most extends the ray.
         invViewProj.transformProject(screenX, screenY, 1, rayOrigin);
         invViewProj.transformProject(screenX, screenY, -1, rayDir);

@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import java.util.function.IntUnaryOperator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
@@ -39,7 +38,8 @@ public class OffScreenRenderer implements AutoCloseable {
     public OffScreenRenderer(int width, int height) {
         nativeImage = new NativeImage(width, height, false);
         // TODO 26.2: GpuFormat.RGBA8_UINT may be wrong, check output
-        fb = new TextureTarget("GuideME OSR", width, height, true /* with depth */, false /* with stencil */, GpuFormat.RGBA8_UINT);
+        fb = new TextureTarget("GuideME OSR", width, height, true /* with depth */, false /* with stencil */,
+                GpuFormat.RGBA8_UINT);
 
         device = RenderSystem.getDevice();
         commandEncoder = device.createCommandEncoder();

@@ -11,6 +11,8 @@ import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import java.util.ArrayList;
+import java.util.Collection;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.TextureFilteringMethod;
@@ -43,15 +45,12 @@ import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.neoforged.neoforge.client.submit.RenderPhaseKeys;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 public class GuidebookLevelRenderer {
 
@@ -90,10 +89,10 @@ public class GuidebookLevelRenderer {
     }
 
     public void render(GuidebookLevel level,
-                       CameraSettings cameraSettings,
-                       Collection<InWorldAnnotation> annotations,
-                       LightDarkMode lightDarkMode,
-                       SubmitNodeCollector nodes, PoseStack poseStack) {
+            CameraSettings cameraSettings,
+            Collection<InWorldAnnotation> annotations,
+            LightDarkMode lightDarkMode,
+            SubmitNodeCollector nodes, PoseStack poseStack) {
 
         level.onRenderFrame();
 
@@ -178,7 +177,7 @@ public class GuidebookLevelRenderer {
      * Render without any setup.
      */
     public void renderContent(GuidebookLevel level, SubmitNodeCollector nodes,
-                              PoseStack poseStack) {
+            PoseStack poseStack) {
         var featureRenderDispatcher = Minecraft.getInstance().gameRenderer.featureRenderDispatcher();
 
         try (var fake = FakeRenderEnvironment.create(getFakePlayer())) {
@@ -236,8 +235,8 @@ public class GuidebookLevelRenderer {
         BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> {
             // TODO 26.2 var layer = quad.materialInfo().layer();
             // TODO 26.2 if (layer.translucent() == translucent) {
-            // TODO 26.2     var builder = buffers.getVertexBuilder(getEntityRenderType(layer));
-            // TODO 26.2     builder.putBakedQuad(poseStack.last(), quad, instance);
+            // TODO 26.2 var builder = buffers.getVertexBuilder(getEntityRenderType(layer));
+            // TODO 26.2 builder.putBakedQuad(poseStack.last(), quad, instance);
             // TODO 26.2 }
         };
 
@@ -279,14 +278,15 @@ public class GuidebookLevelRenderer {
             var tintLayers = computeTintLayers(minecraft.getBlockColors(), level, pos, blockState);
             nodes.submitMultiLayerBlockModel(poseStack, modelParts, translucent, tintLayers,
                     LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, -1);
-            // blockRenderer.tesselateBlock(quadOutput, 0, 0, 0, level, pos, blockState, model, blockState.getSeed(pos));
+            // blockRenderer.tesselateBlock(quadOutput, 0, 0, 0, level, pos, blockState, model,
+            // blockState.getSeed(pos));
             poseStack.popPose();
         }
     }
 
     /**
-     * Computes the tint color for each tint index of the block model, in the same way as
-     * {@link ModelBlockRenderer} does it for terrain.
+     * Computes the tint color for each tint index of the block model, in the same way as {@link ModelBlockRenderer}
+     * does it for terrain.
      */
     private static int[] computeTintLayers(BlockColors blockColors, GuidebookLevel level, BlockPos pos,
             BlockState blockState) {
@@ -304,7 +304,8 @@ public class GuidebookLevelRenderer {
         return tintLayers;
     }
 
-    private void renderBlockEntities(GuidebookLevel level, float partialTick, PoseStack poseStack, SubmitNodeCollector nodes) {
+    private void renderBlockEntities(GuidebookLevel level, float partialTick, PoseStack poseStack,
+            SubmitNodeCollector nodes) {
         var it = level.getFilledBlocks().iterator();
         while (it.hasNext()) {
             var pos = it.next();
@@ -319,9 +320,9 @@ public class GuidebookLevelRenderer {
     }
 
     private <E extends BlockEntity> void handleBlockEntity(PoseStack stack,
-                                                           E blockEntity,
-                                                           float partialTicks,
-                                                           SubmitNodeCollector nodeCollector) {
+            E blockEntity,
+            float partialTicks,
+            SubmitNodeCollector nodeCollector) {
         var dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
         var renderer = dispatcher.getRenderer(blockEntity);
         var fakeCameraPos = Vec3.atCenterOf(blockEntity.getBlockPos());
@@ -336,28 +337,28 @@ public class GuidebookLevelRenderer {
     }
 
     private static <E extends BlockEntity, S extends BlockEntityRenderState> void renderBlockEntity(PoseStack stack,
-                                                                                                    E blockEntity,
-                                                                                                    float partialTicks,
-                                                                                                    BlockEntityRenderer<E, S> renderer,
-                                                                                                    SubmitNodeCollector nodeCollector) {
+            E blockEntity,
+            float partialTicks,
+            BlockEntityRenderer<E, S> renderer,
+            SubmitNodeCollector nodeCollector) {
         var state = renderer.createRenderState();
         renderer.extractRenderState(blockEntity, state, partialTicks, Vec3.ZERO, null);
         renderer.submit(state, stack, nodeCollector, new CameraRenderState());
     }
 
     private void renderEntities(GuidebookLevel level,
-                                float partialTick,
-                                PoseStack poseStack,
-                                SubmitNodeCollector nodes) {
+            float partialTick,
+            PoseStack poseStack,
+            SubmitNodeCollector nodes) {
         for (var entity : level.getEntitiesForRendering()) {
             handleEntity(poseStack, nodes, entity, partialTick);
         }
     }
 
     private <E extends Entity> void handleEntity(PoseStack poseStack,
-                                                 SubmitNodeCollector submitNodeCollector,
-                                                 E entity,
-                                                 float partialTicks) {
+            SubmitNodeCollector submitNodeCollector,
+            E entity,
+            float partialTicks) {
         var dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
         var renderer = dispatcher.getRenderer(entity);
         if (renderer == null) {
@@ -368,10 +369,10 @@ public class GuidebookLevelRenderer {
     }
 
     private static <E extends Entity, S extends EntityRenderState> void renderEntity(PoseStack poseStack,
-                                                                                     SubmitNodeCollector submitNodeCollector,
-                                                                                     E entity,
-                                                                                     float partialTicks,
-                                                                                     EntityRenderer<? super E, S> renderer) {
+            SubmitNodeCollector submitNodeCollector,
+            E entity,
+            float partialTicks,
+            EntityRenderer<? super E, S> renderer) {
         var probePos = BlockPos.containing(entity.getLightProbePosition(partialTicks));
 
         var pos = entity.position();

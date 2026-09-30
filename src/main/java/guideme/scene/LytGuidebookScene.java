@@ -29,7 +29,6 @@ import guideme.ui.GuideUiHost;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonInfo;

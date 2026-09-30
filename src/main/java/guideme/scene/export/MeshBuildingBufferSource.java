@@ -1,9 +1,5 @@
 package guideme.scene.export;
 
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -15,7 +11,7 @@ class MeshBuildingBufferSource /* extends MultiBufferSource.BufferSource impleme
     private final List<Mesh> meshes = new ArrayList<>();
 
     public MeshBuildingBufferSource() {
-        //super(new ByteBufferBuilder(786432), Object2ObjectSortedMaps.emptyMap());
+        // super(new ByteBufferBuilder(786432), Object2ObjectSortedMaps.emptyMap());
     }
 
     public List<Mesh> getMeshes() {
@@ -58,8 +54,8 @@ class MeshBuildingBufferSource /* extends MultiBufferSource.BufferSource impleme
 //        }
     }
 
-    //@Override
-    //public void close() {
+    // @Override
+    // public void close() {
 //        fixedBuffers.values().forEach(ByteBufferBuilder::close);
 //        sharedBuffer.close();
 //    }

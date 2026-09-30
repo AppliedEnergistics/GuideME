@@ -11,11 +11,8 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import guideme.internal.GuideME;
-
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.function.IntUnaryOperator;
 import net.minecraft.client.renderer.RenderPipelines;
 
@@ -94,7 +91,7 @@ public final class TextureDownloader {
 
                     try (var pass = commandencoder.createRenderPass(() -> "Blit texture", tempFramebufferView,
                             Optional.empty());
-                         var view = device.createTextureView(texture)) {
+                            var view = device.createTextureView(texture)) {
                         pass.setPipeline(COPY_BLIT);
                         RenderSystem.bindDefaultUniforms(pass);
                         pass.setIndexBuffer(indicesBuffer, indicesStorage.type());

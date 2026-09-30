@@ -1,6 +1,5 @@
 package guideme.scene;
 
-import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import guideme.document.LytSize;
 import net.minecraft.util.Mth;
