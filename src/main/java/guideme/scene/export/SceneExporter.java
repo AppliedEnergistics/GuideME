@@ -11,6 +11,7 @@ import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import guideme.flatbuffers.scene.ExpAnimatedTexturePart;
@@ -31,6 +32,7 @@ import guideme.flatbuffers.scene.ExpVertexFormatElement;
 import guideme.internal.siteexport.CacheBusting;
 import guideme.internal.util.Platform;
 import guideme.scene.CameraSettings;
+import guideme.scene.GuidebookLevelRenderer;
 import guideme.scene.GuidebookScene;
 import guideme.scene.level.GuidebookLevel;
 import guideme.siteexport.ResourceExporter;
@@ -49,10 +51,11 @@ import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.GZIPOutputStream;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import org.apache.commons.lang3.NotImplementedException;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
@@ -87,25 +90,13 @@ public class SceneExporter {
     }
 
     private static List<Mesh> renderToMeshes(GuidebookLevel level) {
-// TODO 26.2
-//        try (var bufferSource = new MeshBuildingBufferSource()) {
-//            var submitStorage = new SubmitNodeStorage();
-//            var gameRenderState = new GameRenderState();
-//            var featureRenderDispatcher = new FeatureRenderDispatcher(
-//                    submitStorage,
-//                    Minecraft.getInstance().getModelManager(),
-//                    bufferSource,
-//                    Minecraft.getInstance().getAtlasManager(),
-//                    Minecraft.getInstance().renderBuffers().outlineBufferSource(),
-//                    Minecraft.getInstance().renderBuffers().crumblingBufferSource(),
-//                    Minecraft.getInstance().font,
-//                    gameRenderState);
-//            GuidebookLevelRenderer.getInstance().renderContent(level, bufferSource, featureRenderDispatcher,
-//                    new PoseStack());
-//            featureRenderDispatcher.renderAllFeatures();
-//            return bufferSource.getMeshes();
-//        }
-        throw new NotImplementedException();
+        try (var capture = new MeshBuildingBufferSource()) {
+            var nodes = new SubmitNodeStorage();
+            GuidebookLevelRenderer.getInstance().renderContent(level, nodes, new PoseStack());
+            var featureRenderDispatcher = Minecraft.getInstance().gameRenderer.featureRenderDispatcher();
+            capture.captureDuring(() -> featureRenderDispatcher.renderAllFeatures(nodes));
+            return capture.getMeshes();
+        }
     }
 
     public byte[] export(GuidebookScene scene) {
@@ -369,7 +360,8 @@ public class SceneExporter {
             transparency = ExpTransparency.DISABLED;
         }
 
-        // Handle depth-testing
+        // Handle depth-testing. Minecraft uses a reversed depth buffer, while the web viewer uses a regular one,
+        // so the comparisons have to be flipped.
         int depthTest;
         var depthStencilState = pipeline.getDepthStencilState();
         CompareOp compareOp;
@@ -377,9 +369,9 @@ public class SceneExporter {
             depthTest = ExpDepthTest.DISABLED;
         } else if (compareOp == CompareOp.EQUAL) {
             depthTest = ExpDepthTest.EQUAL;
-        } else if (compareOp == CompareOp.LESS_THAN_OR_EQUAL) {
+        } else if (compareOp == CompareOp.GREATER_THAN_OR_EQUAL) {
             depthTest = ExpDepthTest.LEQUAL;
-        } else if (compareOp == CompareOp.GREATER_THAN) {
+        } else if (compareOp == CompareOp.LESS_THAN) {
             depthTest = ExpDepthTest.GREATER;
         } else {
             LOG.warn("Cannot handle depth-test op {} of render type {}", compareOp, type);
@@ -436,14 +428,16 @@ public class SceneExporter {
     private static int mapType(GpuFormat.ComponentType type) {
         return switch (type) {
             case FLOAT_32 -> ExpVertexElementType.FLOAT;
-            case UINT_8 -> ExpVertexElementType.UBYTE;
-            case SINT_8 -> ExpVertexElementType.BYTE;
-            case UINT_16 -> ExpVertexElementType.USHORT;
-            case SINT_16 -> ExpVertexElementType.SHORT;
+            // Normalization is exported separately (see isNormalized)
+            case UINT_8, UNORM_8 -> ExpVertexElementType.UBYTE;
+            case SINT_8, SNORM_8 -> ExpVertexElementType.BYTE;
+            case UINT_16, UNORM_16 -> ExpVertexElementType.USHORT;
+            case SINT_16, SNORM_16 -> ExpVertexElementType.SHORT;
             case UINT_32 -> ExpVertexElementType.UINT;
             case SINT_32 -> ExpVertexElementType.INT;
-            // TODO 26.2: Support all component types
-            default -> throw new IllegalArgumentException("Unsupported component type " + type);
+            // The scene format has no representation for half-floats or opaque data
+            case FLOAT_16, OPAQUE_8, OPAQUE_16, OPAQUE_32, OPAQUE_64 -> throw new IllegalArgumentException(
+                    "Unsupported component type " + type);
         };
     }
 

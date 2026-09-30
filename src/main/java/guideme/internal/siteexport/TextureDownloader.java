@@ -1,18 +1,19 @@
 package guideme.internal.siteexport;
 
 import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.BlendFactor;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import guideme.internal.GuideME;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.IntUnaryOperator;
 import net.minecraft.client.renderer.RenderPipelines;
 
@@ -26,7 +27,24 @@ public final class TextureDownloader {
             .withColorTargetState(new ColorTargetState(new BlendFunction(BlendFactor.ONE, BlendFactor.ZERO)))
             .build();
 
+    private static final long DOWNLOAD_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(10);
+
     private TextureDownloader() {
+    }
+
+    /**
+     * The download callback only runs once the GPU completed the commands of the current submit, which normally ends
+     * with the frame. Since we need the data immediately, we submit early and wait for the GPU to catch up.
+     */
+    private static void awaitDownload(CommandEncoder commandEncoder) {
+        try (var fence = commandEncoder.createFence()) {
+            commandEncoder.submit();
+            if (!fence.awaitCompletion(DOWNLOAD_TIMEOUT_NS)) {
+                throw new IllegalStateException("Timed out waiting for texture download");
+            }
+        }
+
+        RenderSystem.executePendingTasks();
     }
 
     public static NativeImage downloadTexture(GpuTexture texture, int mipLevel, IntUnaryOperator pixelOp) {
@@ -79,13 +97,9 @@ public final class TextureDownloader {
 
             // We might need an intermediate buffer
             if ((texture.usage() & GpuBuffer.USAGE_COPY_SRC) == 0) {
-                var indicesStorage = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
-                var indicesBuffer = indicesStorage.getBuffer(6);
-
                 // We blit it to a temporary framebuffer and then copy that
                 try (var tempFramebuffer = device.createTexture(() -> "GuideME temp color copy",
-                        // TODO 26.2 GpuFormat.RGBA8_UINT Validate
-                        GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_RENDER_ATTACHMENT, GpuFormat.RGBA8_UINT, width,
+                        GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_RENDER_ATTACHMENT, GpuFormat.RGBA8_UNORM, width,
                         height, 1, 1);
                         var tempFramebufferView = device.createTextureView(tempFramebuffer)) {
 
@@ -94,31 +108,19 @@ public final class TextureDownloader {
                             var view = device.createTextureView(texture)) {
                         pass.setPipeline(COPY_BLIT);
                         RenderSystem.bindDefaultUniforms(pass);
-                        pass.setIndexBuffer(indicesBuffer, indicesStorage.type());
                         pass.bindTexture("InSampler", view,
                                 RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
-                        // TODO: 26.1 validate
+                        // Full-screen triangle, same as RenderTarget#blitAndBlendToTexture
                         pass.draw(3, 1, 0, 0);
                     }
 
                     commandencoder.copyTextureToBuffer(tempFramebuffer, downloadBuffer, 0, saveImage, mipLevel);
                 }
-
-                try (var fence = commandencoder.createFence()) {
-                    fence.awaitCompletion(100000000);
-                }
-
-                RenderSystem.executePendingTasks();
-
             } else {
                 commandencoder.copyTextureToBuffer(texture, downloadBuffer, 0, saveImage, mipLevel);
-
-                try (var fence = commandencoder.createFence()) {
-                    fence.awaitCompletion(100000000);
-                }
-
-                RenderSystem.executePendingTasks();
             }
+
+            awaitDownload(commandencoder);
         }
     }
 }

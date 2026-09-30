@@ -136,8 +136,14 @@ record Mesh(MeshData.DrawState drawState,
             case UINT_16 -> ((int) vertexBuffer.getShort(offset)) & 0xFFFF;
             case SINT_16 -> vertexBuffer.getShort(offset);
             case UINT_32, SINT_32 -> vertexBuffer.getInt(offset);
-            // TODO 26.2 We can read them all if we want to.
-            default -> throw new IllegalArgumentException("Unsupported component type: " + format.componentType());
+            case UNORM_8 -> (((int) vertexBuffer.get(offset)) & 0xFF) / 255f;
+            case SNORM_8 -> Math.max(vertexBuffer.get(offset) / 127f, -1f);
+            case UNORM_16 -> (((int) vertexBuffer.getShort(offset)) & 0xFFFF) / 65535f;
+            case SNORM_16 -> Math.max(vertexBuffer.getShort(offset) / 32767f, -1f);
+            case FLOAT_16 -> Float.float16ToFloat(vertexBuffer.getShort(offset));
+            // Opaque formats have no defined numeric interpretation
+            case OPAQUE_8, OPAQUE_16, OPAQUE_32, OPAQUE_64 -> throw new IllegalArgumentException(
+                    "Unsupported component type: " + format.componentType());
         };
     }
 }
