@@ -1,8 +1,10 @@
 package guideme.internal.web;
 
-import static guideme.internal.web.HtmlUtils.createHtmlElement;
 import static guideme.internal.web.HtmlUtils.escapeHtml;
 
+import guideme.siteexport.web.HTMLFragment;
+import guideme.siteexport.web.HTMLNode;
+import guideme.siteexport.web.HTMLTag;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -13,10 +15,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,26 +115,29 @@ final class WebAssetsBundle {
         var footer = buildFooter(context);
 
         return layoutTemplate
-                .replace(PLACEHOLDER_PAGE_CONTENT, placeholders.pageContent())
+                .replace(PLACEHOLDER_PAGE_CONTENT, placeholders.pageContent().outerHtml())
                 .replace(PLACEHOLDER_PAGE_TITLE, placeholders.pageTitle())
                 .replace(PLACEHOLDER_PAGE_TITLE_TEXT, titleText)
                 .replace(PLACEHOLDER_RELATIVE_PATH_TO_ROOT, relativePathToRoot)
                 .replace(PLACEHOLDER_GUIDE_TITLE, escapeHtml(context.guide().getGuideTitle()))
-                .replace(PLACEHOLDER_GUIDE_NAVBAR, guideNavbar)
-                .replace(PLACEHOLDER_FOOTER, footer);
+                .replace(PLACEHOLDER_GUIDE_NAVBAR, guideNavbar.outerHtml())
+                .replace(PLACEHOLDER_FOOTER, footer.outerHtml());
     }
 
-    private static @NonNull String buildFooter(WebPageCompileContext context) {
-        String footerContent = "Minecraft " + context.guide().getGameMajorVersion();
+    private static HTMLTag buildFooter(WebPageCompileContext context) {
+        var fragment = new HTMLFragment();
+        fragment.append("Minecraft " + context.guide().getGameMajorVersion());
+
         String changeVersionUrl = context.options().changeVersionUrl();
         if (changeVersionUrl != null) {
-            footerContent += " [" + createHtmlElement("a", Map.of(
-                    "href", changeVersionUrl), "change") + "]";
+            fragment.append(" [");
+            fragment.append(HTMLNode.tag("a")
+                    .setAttribute("href", changeVersionUrl).append("change"));
+            fragment.append("]");
         }
-        return createHtmlElement(
-                "div",
-                Map.of("class", "version-picker"),
-                footerContent);
+
+        return HTMLNode.tag("div", fragment)
+                .setClassName("version-picker");
     }
 
     public void copyToOutputFolder() throws IOException {
