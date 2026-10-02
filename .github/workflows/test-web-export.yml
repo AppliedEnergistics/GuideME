@@ -29,13 +29,15 @@ jobs:
         shell: bash
       - uses: ./.github/actions/gradle-setup
 
+      # Xvfb offers no sRGB-capable GLX visual, which the OpenGL backend requires. The game then falls back to Vulkan,
+      # for which we install Mesa's software implementation (lavapipe).
+      - name: Install software Vulkan driver
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends mesa-vulkan-drivers libvulkan1
+
       - name: Generate Static HTML Site
-        # SDL needs a 24-bit screen to find a GLX visual for the OpenGL context (xvfb-run defaults to 8-bit).
         # If the game can't create a renderer, it hangs on an error dialog, so limit how long this can take.
         timeout-minutes: 10
         run: xvfb-run -a -s "-screen 0 1280x1024x24" ./gradlew printProjectVersion createStaticSite --max-workers 1
-        env:
-          SDL_HINT_VIDEO_FORCE_EGL: 1
 
       - name: Upload Generated Site
         uses: actions/upload-artifact@v4
