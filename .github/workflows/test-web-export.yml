@@ -35,7 +35,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends mesa-utils
 
       - name: glxinfo 1
-        run: xvfb-run -a -s "-screen 0 1280x1024x24" glxinfo
+        run: xvfb-run -a -s "-screen 0 1280x1024x24" glxinfo -t -v
 
       - name: glxinfo 2
-        run: xvfb-run -a -s "-screen 0 1280x1024x24+32" glxinfo
+        run: xvfb-run -a -s "-screen 0 1280x1024x24+32" glxinfo -t -v
