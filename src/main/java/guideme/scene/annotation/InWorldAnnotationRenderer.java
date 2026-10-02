@@ -1,24 +1,24 @@
 package guideme.scene.annotation;
 
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.textures.AddressMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import guideme.color.ColorValue;
 import guideme.color.LightDarkMode;
 import guideme.color.MutableColor;
 import guideme.internal.GuideME;
+import guideme.internal.scene.SceneRenderTarget;
 import java.util.Collection;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
-import net.minecraft.client.renderer.rendertype.OutputTarget;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -53,7 +53,6 @@ public final class InWorldAnnotationRenderer {
                             () -> RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE,
                                     AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true))
                     .sortOnUpload()
-                    .setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
                     .createRenderSetup());
 
     private InWorldAnnotationRenderer() {
@@ -90,9 +89,7 @@ public final class InWorldAnnotationRenderer {
             }
 
             if (alwaysOnTop) {
-                var depthTexture = RenderSystem.outputDepthTextureOverride != null
-                        ? RenderSystem.outputDepthTextureOverride.texture()
-                        : Minecraft.getInstance().gameRenderer.mainRenderTarget().getDepthTexture();
+                var depthTexture = SceneRenderTarget.depthView().texture();
                 // The depth buffer is reversed, so 0 is the farthest value
                 RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(depthTexture, 0.0);
             }
@@ -112,7 +109,7 @@ public final class InWorldAnnotationRenderer {
         var nodes = new SubmitNodeStorage();
         // Annotations are positioned in absolute level coordinates, so no pose is applied
         nodes.submitCustomGeometry(new PoseStack(), renderType, (pose, consumer) -> geometry.accept(consumer));
-        dispatcher.renderAllFeatures(nodes);
+        SceneRenderTarget.renderAllFeatures(dispatcher, nodes, () -> "GuideME annotations");
     }
 
     private static void renderAnnotation(VertexConsumer consumer, InWorldAnnotation annotation,

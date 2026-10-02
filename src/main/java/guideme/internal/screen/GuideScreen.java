@@ -38,7 +38,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforgespi.language.IModInfo;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLMouse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,10 +162,10 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
     @Override
     protected boolean documentClicked(UiPoint documentPoint, MouseButtonInfo button) {
-        if (button.button() == GLFW.GLFW_MOUSE_BUTTON_4) {
+        if (button.button() == SDLMouse.SDL_BUTTON_X1) {
             GuideNavigation.navigateBack(guide);
             return true;
-        } else if (button.button() == GLFW.GLFW_MOUSE_BUTTON_5) {
+        } else if (button.button() == SDLMouse.SDL_BUTTON_X2) {
             GuideNavigation.navigateForward(guide);
             return true;
         }

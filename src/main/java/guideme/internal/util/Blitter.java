@@ -18,8 +18,8 @@
 
 package guideme.internal.util;
 
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import guideme.internal.GuideME;
 import java.util.Objects;
 import java.util.Optional;

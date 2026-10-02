@@ -530,7 +530,7 @@ public class SiteExporter implements ResourceExporter {
 
                 var quadLists = new HashSet<List<BakedQuad>>();
                 for (var layer : renderState.layers) {
-                    quadLists.add(layer.prepareQuadList());
+                    quadLists.add(layer.quads.all());
                 }
 
                 var sprites = guessSprites(quadLists);

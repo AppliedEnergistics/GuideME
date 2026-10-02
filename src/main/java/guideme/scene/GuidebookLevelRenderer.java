@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.color.LightDarkMode;
 import guideme.internal.scene.FakeRenderEnvironment;
+import guideme.internal.scene.SceneRenderTarget;
 import guideme.internal.util.Platform;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
@@ -13,7 +14,6 @@ import guideme.scene.level.GuidebookLevel;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.ArrayList;
 import java.util.Collection;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.TextureFilteringMethod;
 import net.minecraft.client.color.block.BlockColors;
@@ -98,23 +98,6 @@ public class GuidebookLevelRenderer {
 
         var minecraft = Minecraft.getInstance();
         var gameRenderer = minecraft.gameRenderer;
-        var deltaTracker = new DeltaTracker() {
-            @Override
-            public float getGameTimeDeltaTicks() {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public float getGameTimeDeltaPartialTick(boolean runsNormally) {
-                return level.getPartialTick();
-            }
-
-            @Override
-            public float getRealtimeDeltaTicks() {
-                throw new UnsupportedOperationException();
-            }
-        };
-
         var globalSettingsUniform = gameRenderer.globalSettingsUniform;
         globalSettingsUniform
                 .update(
@@ -122,7 +105,7 @@ public class GuidebookLevelRenderer {
                         cameraSettings.getViewportSize().height(),
                         minecraft.options.glintStrength().get(),
                         level.getGameTime(),
-                        deltaTracker,
+                        level.getPartialTick(),
                         minecraft.options.getMenuBackgroundBlurriness(),
                         Vec3.ZERO,
                         minecraft.options.textureFiltering().get() == TextureFilteringMethod.RGSS);
@@ -158,7 +141,7 @@ public class GuidebookLevelRenderer {
             var ns = new SubmitNodeStorage();
             renderContent(level, ns, new PoseStack());
 
-            gameRenderer.featureRenderDispatcher().renderAllFeatures(ns);
+            SceneRenderTarget.renderAllFeatures(gameRenderer.featureRenderDispatcher(), ns, () -> "GuideME scene");
 
             // Annotations depend on the depth buffer of the rendered scene, so they have to come afterward
             InWorldAnnotationRenderer.render(gameRenderer.featureRenderDispatcher(), annotations, lightDarkMode);

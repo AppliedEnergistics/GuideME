@@ -1,16 +1,16 @@
 package guideme.internal.siteexport;
 
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.BlendFactor;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.renderpearl.api.pipeline.BlendFactor;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuTexture;
 import guideme.internal.GuideME;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -106,9 +106,9 @@ public final class TextureDownloader {
                     try (var pass = commandencoder.createRenderPass(() -> "Blit texture", tempFramebufferView,
                             Optional.empty());
                             var view = device.createTextureView(texture)) {
-                        pass.setPipeline(COPY_BLIT);
+                        pass.setPipeline(RenderSystem.getCompiledPipeline(COPY_BLIT));
                         RenderSystem.bindDefaultUniforms(pass);
-                        pass.bindTexture("InSampler", view,
+                        pass.setUniform("InSampler", view,
                                 RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
                         // Full-screen triangle, same as RenderTarget#blitAndBlendToTexture
                         pass.draw(3, 1, 0, 0);

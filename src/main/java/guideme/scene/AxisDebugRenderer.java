@@ -1,28 +1,21 @@
 package guideme.scene;
 
-import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalDouble;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.DynamicUniforms;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import guideme.internal.scene.SceneRenderTarget;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 /**
  * Renders a 3d cross to visualize the alignment of the x, y, and z axes.
@@ -65,25 +58,16 @@ final public class AxisDebugRenderer implements AutoCloseable {
         modelViewStack.mul(cameraSettings.getViewMatrix());
 
         RenderPipeline renderpipeline = RenderPipelines.LINES;
-        RenderTarget rendertarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
-        var colorView = Objects.requireNonNullElse(RenderSystem.outputColorTextureOverride,
-                rendertarget.getColorTextureView());
-        var depthView = Objects.requireNonNullElse(RenderSystem.outputDepthTextureOverride,
-                rendertarget.getDepthTextureView());
         GpuBuffer gpubuffer = this.crosshairIndicies.getBuffer(18);
-        GpuBufferSlice[] slices = RenderSystem.getDynamicUniforms()
-                .writeTransforms(new DynamicUniforms.Transform(new Matrix4f(modelViewStack),
-                        new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f()));
+        GpuBufferSlice dynamicTransform = RenderSystem.getDynamicUniforms()
+                .writeTransform(new Matrix4f(modelViewStack));
 
-        try (RenderPass renderpass = RenderSystem.getDevice()
-                .createCommandEncoder()
-                .createRenderPass(() -> "3d crosshair", colorView, Optional.empty(), depthView,
-                        OptionalDouble.empty())) {
-            renderpass.setPipeline(renderpipeline);
+        try (RenderPass renderpass = SceneRenderTarget.createRenderPass(() -> "3d crosshair")) {
+            renderpass.setPipeline(RenderSystem.getCompiledPipeline(renderpipeline));
             RenderSystem.bindDefaultUniforms(renderpass);
             renderpass.setVertexBuffer(0, this.crosshairBuffer.slice());
             renderpass.setIndexBuffer(gpubuffer, this.crosshairIndicies.type());
-            renderpass.setUniform("DynamicTransforms", slices[0]);
+            renderpass.setUniform("DynamicTransforms", dynamicTransform);
             renderpass.drawIndexed(18, 1, 0, 0, 0);
         }
 

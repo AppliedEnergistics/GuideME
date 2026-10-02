@@ -164,11 +164,12 @@ public final class GuideOnStartup {
                     layeredAccess.getLayer(RegistryLayer.STATIC));
             var worldgenLayer = RegistryDataLoader.load(
                     resourceManager,
-                    TagLoader.buildUpdatedLookups(layeredAccess.getAccessForLoading(RegistryLayer.WORLDGEN),
+                    TagLoader.buildUpdatedLookups(layeredAccess.getAccessForLoading(RegistryLayer.WORLD),
                             postponedTags),
-                    RegistryDataLoader.WORLDGEN_REGISTRIES,
-                    ForkJoinPool.commonPool()).join();
-            layeredAccess = layeredAccess.replaceFrom(RegistryLayer.WORLDGEN, worldgenLayer);
+                    RegistryDataLoader.WORLD_REGISTRIES,
+                    ForkJoinPool.commonPool(),
+                    postponedTags).join();
+            layeredAccess = layeredAccess.replaceFrom(RegistryLayer.WORLD, worldgenLayer);
 
             var stuff = ReloadableServerResources.loadResources(
                     resourceManager,
