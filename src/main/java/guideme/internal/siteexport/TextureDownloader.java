@@ -33,8 +33,11 @@ public final class TextureDownloader {
     }
 
     /**
-     * The download callback only runs once the GPU completed the commands of the current submit, which normally ends
-     * with the frame. Since we need the data immediately, we submit early and wait for the GPU to catch up.
+     * Copies to a buffer only complete once the GPU has executed the commands of the current submit, which normally
+     * ends with the frame. Since we need the data immediately, we submit early and wait for the GPU to catch up.
+     * <p>
+     * We do not rely on the copy callback to read the data, since when it runs depends on the backend. The Vulkan
+     * backend only runs it several submits later, at which point the download buffer has already been closed.
      */
     private static void awaitDownload(CommandEncoder commandEncoder) {
         try (var fence = commandEncoder.createFence()) {
@@ -114,13 +117,16 @@ public final class TextureDownloader {
                         pass.draw(3, 1, 0, 0);
                     }
 
-                    commandencoder.copyTextureToBuffer(tempFramebuffer, downloadBuffer, 0, saveImage, mipLevel);
+                    commandencoder.copyTextureToBuffer(tempFramebuffer, downloadBuffer, 0, () -> {
+                    }, mipLevel);
                 }
             } else {
-                commandencoder.copyTextureToBuffer(texture, downloadBuffer, 0, saveImage, mipLevel);
+                commandencoder.copyTextureToBuffer(texture, downloadBuffer, 0, () -> {
+                }, mipLevel);
             }
 
             awaitDownload(commandencoder);
+            saveImage.run();
         }
     }
 }
