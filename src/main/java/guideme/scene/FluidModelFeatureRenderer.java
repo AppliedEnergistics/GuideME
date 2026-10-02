@@ -1,6 +1,6 @@
 package guideme.scene;
 
-import static guideme.scene.GuidebookLevelRenderer.getEntityRenderType;
+import static guideme.scene.GuidebookLevelRenderer.getBlockRenderType;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
@@ -32,7 +32,7 @@ public class FluidModelFeatureRenderer extends RenderTypeFeatureRenderer<FluidMo
         for (var submit : submits) {
             var fluidState = submit.fluidState;
             FluidRenderer.Output fluidOutput = layer -> new LiquidVertexConsumer(
-                    getVertexBuilder(getEntityRenderType(layer)), submit.pose);
+                    getVertexBuilder(getBlockRenderType(layer)), submit.pose);
 
             var customRenderer = fluidModelSet.get(fluidState).customRenderer();
             if (customRenderer == null || !customRenderer.renderFluid(fluidRenderer, fluidState, submit.level,

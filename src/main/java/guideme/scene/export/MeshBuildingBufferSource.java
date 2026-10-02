@@ -7,6 +7,7 @@ import guideme.internal.hooks.VertexCaptureHooks;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,7 +19,8 @@ import net.minecraft.client.renderer.rendertype.RenderType;
  */
 class MeshBuildingBufferSource implements AutoCloseable {
     private final Map<RenderType, ByteBufferBuilder> buffers = new IdentityHashMap<>();
-    // Keep the order in which render types were first used, since it is also the order they'd be drawn in
+    // Keep the order in which render types were first used, since within a render phase, it is also the order they'd
+    // be drawn in. Feature renderers are prepared feature by feature though, not phase by phase.
     private final Map<RenderType, BufferBuilder> builders = new LinkedHashMap<>();
 
     /**
@@ -67,6 +69,9 @@ class MeshBuildingBufferSource implements AutoCloseable {
             }
         }
         builders.clear();
+
+        // Translucent geometry is drawn in a later phase, after all opaque geometry.
+        meshes.sort(Comparator.comparing(mesh -> mesh.renderType().sortOnUpload()));
 
         return meshes;
     }
