@@ -33,13 +33,13 @@ import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
+import net.minecraft.world.clock.ClockInstance;
 import net.minecraft.world.clock.ClockManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.item.crafting.RecipePropertySet;
 import net.minecraft.world.item.crafting.SelectableRecipe;
@@ -54,7 +54,6 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkSource;
@@ -103,7 +102,27 @@ public class GuidebookLevel extends Level implements BlockAndTintGetter {
     private final EnvironmentAttributeSystem environmentAttributes = EnvironmentAttributeSystem.builder().build();
 
     // set time of day to noon (from TimeCommand noon)
-    private final ClockManager clockManager = _ -> 6000;
+    private final ClockManager clockManager = _ -> new ClockInstance() {
+        @Override
+        public long totalTicks() {
+            return 6000;
+        }
+
+        @Override
+        public float partialTick() {
+            return 0;
+        }
+
+        @Override
+        public float rate() {
+            return 0;
+        }
+
+        @Override
+        public boolean isPaused() {
+            return true;
+        }
+    };
 
     public GuidebookLevel() {
         this(Platform.getClientRegistryAccess());
@@ -366,11 +385,6 @@ public class GuidebookLevel extends Level implements BlockAndTintGetter {
     }
 
     @Override
-    public FuelValues fuelValues() {
-        return Platform.fuelValues();
-    }
-
-    @Override
     public LevelTickAccess<Block> getBlockTicks() {
         return BlackholeTickAccess.emptyLevelList();
     }
@@ -411,11 +425,6 @@ public class GuidebookLevel extends Level implements BlockAndTintGetter {
     @Override
     public EnvironmentAttributeSystem environmentAttributes() {
         return environmentAttributes;
-    }
-
-    @Override
-    public PotionBrewing potionBrewing() {
-        throw new UnsupportedOperationException();
     }
 
     @Override

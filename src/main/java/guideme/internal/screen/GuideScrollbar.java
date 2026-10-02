@@ -1,5 +1,6 @@
 package guideme.internal.screen;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import guideme.color.Colors;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -73,7 +74,7 @@ public class GuideScrollbar extends AbstractWidget {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (!this.visible || event.button() != 0) {
+        if (!this.visible || event.button() != InputConstants.MOUSE_BUTTON_LEFT) {
             return false;
         }
 
@@ -95,7 +96,7 @@ public class GuideScrollbar extends AbstractWidget {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        if (event.button() != 0) {
+        if (event.button() != InputConstants.MOUSE_BUTTON_LEFT) {
             return super.mouseReleased(event);
         }
 

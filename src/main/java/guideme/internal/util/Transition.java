@@ -1,6 +1,6 @@
 package guideme.internal.util;
 
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.Blaze3D;
 
 /**
  * Models transitions for numeric values.
@@ -85,7 +85,7 @@ public final class Transition {
 
     @FunctionalInterface
     public interface Ticker {
-        Ticker SYSTEM = GLFW::glfwGetTime;
+        Ticker SYSTEM = Blaze3D::getTime;
 
         double currentSeconds();
     }

@@ -1,13 +1,14 @@
 package guideme.internal.siteexport;
 
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.CommandEncoder;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.textures.GpuTexture;
+import guideme.internal.scene.SceneRenderTarget;
 import guideme.internal.util.Platform;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -39,8 +40,7 @@ public class OffScreenRenderer implements AutoCloseable {
 
     public OffScreenRenderer(int width, int height) {
         nativeImage = new NativeImage(width, height, false);
-        fb = new TextureTarget("GuideME OSR", width, height, true /* with depth */, false /* with stencil */,
-                GpuFormat.RGBA8_UNORM);
+        fb = new TextureTarget("GuideME OSR", width, height, GpuFormat.RGBA8_UNORM, GpuFormat.D32_FLOAT);
 
         device = RenderSystem.getDevice();
         commandEncoder = device.createCommandEncoder();
@@ -130,21 +130,15 @@ public class OffScreenRenderer implements AutoCloseable {
     private void renderToBuffer(Runnable r) {
 
         commandEncoder.clearColorAndDepthTextures(colorTexture, TRANSPARENT, depthTexture, CLEAR_DEPTH);
-        var previousColorOverride = RenderSystem.outputColorTextureOverride;
-        var previousDepthOverride = RenderSystem.outputDepthTextureOverride;
-        RenderSystem.outputColorTextureOverride = fb.getColorTextureView();
-        RenderSystem.outputDepthTextureOverride = fb.getDepthTextureView();
-        // The GUI renderer ignores the output overrides and always renders into the main render target
+        // The GUI renderer always renders into the main render target
         var gameRenderer = Minecraft.getInstance().gameRenderer;
         var previousMainRenderTarget = gameRenderer.mainRenderTarget;
         gameRenderer.mainRenderTarget = fb;
 
-        try {
+        try (var ignored = SceneRenderTarget.push(fb.getColorTextureView(), fb.getDepthTextureView())) {
             r.run();
         } finally {
             gameRenderer.mainRenderTarget = previousMainRenderTarget;
-            RenderSystem.outputColorTextureOverride = previousColorOverride;
-            RenderSystem.outputDepthTextureOverride = previousDepthOverride;
         }
         TextureDownloader.downloadTexture(colorTexture, 0, IntUnaryOperator.identity(), nativeImage, true);
     }
