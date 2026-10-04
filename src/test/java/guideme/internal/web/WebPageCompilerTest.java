@@ -226,6 +226,8 @@ class WebPageCompilerTest {
                         </GameScene>""");
 
         assertThat(html).contains("data-scene-interactive=\"true\"");
+        // Asset paths in scenes are relative to the website root, which is "./" for this page
+        assertThat(html).contains("data-scene-asset-prefix=\"./\"");
         assertThat(html).contains("&quot;minCorner&quot;:[0.0,0.0,0.0]");
         assertThat(html).contains("&quot;contentTemplateId&quot;:&quot;tmpl-1&quot;,&quot;alwaysOnTop&quot;:true");
         assertThat(html).contains("<template id=\"tmpl-1\"><p>Box</p></template>");

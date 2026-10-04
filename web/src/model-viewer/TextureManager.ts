@@ -23,14 +23,22 @@ export default class TextureManager {
 
   constructor(private readonly assetBaseUrl: string) {}
 
+  /**
+   * Asset paths in scenes are relative to the root of the website, but start with a slash
+   * (i.e. "/minecraft/textures/atlas/blocks.png"). Join them with the asset base URL without
+   * producing a double slash, which web servers don't resolve.
+   */
   getFullUrl(url: string): string {
+    if (this.assetBaseUrl.endsWith("/") && url.startsWith("/")) {
+      return this.assetBaseUrl + url.substring(1);
+    }
     return this.assetBaseUrl + url;
   }
 
   async getImage(url: string, builtIn = false): Promise<ImageBitmap> {
     let image = this.images[url];
     if (!this.enableCaching || !image) {
-      const fullUrl = builtIn ? url : this.assetBaseUrl + url;
+      const fullUrl = builtIn ? url : this.getFullUrl(url);
       console.debug("Loading image %s", fullUrl);
       try {
         this.loader.setOptions({
@@ -55,6 +63,10 @@ export default class TextureManager {
     mipmaps: boolean,
     builtIn = false,
   ): Promise<Texture> {
+    // three.js builds mipmaps from the whole texture atlas,
+    // which mixes neighboring textures together and causes visible seams
+    mipmaps = false;
+
     // Acquire the image first
     const image = await this.getImage(url, builtIn);
 

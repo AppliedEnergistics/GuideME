@@ -1157,8 +1157,9 @@ class WebPageCompiler {
                 .setAttribute("data-scene-interactive", String.valueOf(attributes.interactive()))
                 .setAttribute("data-scene-in-world-annotations", new Gson().toJson(inWorldAnnotations))
                 .setAttribute("data-scene-overlay-annotations", new Gson().toJson(overlayAnnotations))
-                // Compute the relative path to the output folder to fixup asset links
-                .setAttribute("data-scene-asset-prefix", context.getUrlPrefixToRoot());
+                // The URL of the website root, which asset paths in the scene are relative to.
+                // This is never empty, since the empty URL would refer to the page itself.
+                .setAttribute("data-scene-asset-prefix", context.url(""));
 
         if (attributes.background() != null) {
             placeholderImage.setAttribute("data-scene-background", attributes.background());
