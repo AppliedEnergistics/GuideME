@@ -32,15 +32,22 @@ final class JsxAttributeMapper {
                 // Find matching record component
                 for (int i = 0; i < components.length; i++) {
                     if (components[i].getName().equals(attributeNode.name)) {
-                        String value = attributeNode.hasStringValue() ? attributeNode.getStringValue()
-                                : attributeNode.getExpressionValue();
+                        String value;
+                        if (attributeNode.hasStringValue()) {
+                            value = attributeNode.getStringValue();
+                        } else if (attributeNode.hasExpressionValue()) {
+                            value = attributeNode.getExpressionValue();
+                        } else {
+                            // Standalone attributes (<Tag attr />) are boolean flags
+                            value = "true";
+                        }
                         ctorParameters[i] = convertType(components[i], value, attributeNode.hasExpressionValue());
                         attributePresent[i] = true;
                         continue attributes;
                     }
                 }
 
-                throw new RuntimeException("Unknown attribute " + attributeNode.name);
+                // Like the in-game compiler, ignore attributes that are not relevant for the website
             } else {
                 throw new RuntimeException("Unsupported attribute " + attribute);
             }
@@ -92,7 +99,7 @@ final class JsxAttributeMapper {
                 case "true" -> true;
                 case "false" -> false;
                 default ->
-                    throw new IllegalArgumentException("Expected float value for attribute " + component.getName());
+                    throw new IllegalArgumentException("Expected boolean value for attribute " + component.getName());
             };
 
         }

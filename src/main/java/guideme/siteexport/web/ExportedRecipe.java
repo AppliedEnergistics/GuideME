@@ -11,6 +11,11 @@ import org.jetbrains.annotations.ApiStatus;
 @ApiStatus.NonExtendable
 public interface ExportedRecipe {
     /**
+     * {@return the id of the recipe}
+     */
+    String id();
+
+    /**
      * The string representation of the recipe types key, i.e. {@code minecraft:crafting}.
      */
     String type();
@@ -32,15 +37,16 @@ public interface ExportedRecipe {
 
     /**
      * Convenience method to read an ingredient from the recipe, which was represented as a list of item ids.
+     *
+     * @return The item ids of the ingredient, or an empty list if the field is missing.
      */
     default List<String> getIngredient(String fieldName) {
         var field = fields().get(fieldName);
-        if (field == null) {
-            return List.of();
-        }
         if (field instanceof List<?> list) {
             return list.stream().map(Object::toString).toList();
+        } else if (field instanceof String itemId) {
+            return List.of(itemId);
         }
-        return null;
+        return List.of();
     }
 }

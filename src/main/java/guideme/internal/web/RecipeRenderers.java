@@ -15,7 +15,7 @@ final class CraftingRecipeRenderer implements RecipeWebRenderer {
 
     @Override
     public void render(RecipeWebRenderingContext builder, ExportedRecipe recipe) {
-        var shapeless = (boolean) recipe.fields().get("shapeless");
+        var shapeless = Boolean.TRUE.equals(recipe.fields().get("shapeless"));
 
         var type = "Crafting";
         if (shapeless) {

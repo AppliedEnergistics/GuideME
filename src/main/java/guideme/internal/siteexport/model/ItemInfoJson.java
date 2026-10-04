@@ -9,6 +9,16 @@ public class ItemInfoJson implements ExportedItemInfo {
     public String icon;
 
     @Override
+    public String id() {
+        return id;
+    }
+
+    @Override
+    public String rarity() {
+        return rarity;
+    }
+
+    @Override
     public String icon() {
         return icon;
     }

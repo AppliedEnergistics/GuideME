@@ -19,7 +19,7 @@ import { buildInWorldAnnotation } from "./buildInWorldAnnotation.ts";
 import addLevelLighting from "./addSceneLighting.ts";
 import buildOverlayAnnotation from "./buildOverlayAnnotations.ts";
 import TextureManager from "./TextureManager.ts";
-import tippy from "tippy.js";
+import tippy, { followCursor } from "tippy.js";
 
 const DEBUG = false;
 
@@ -323,6 +323,21 @@ async function initialize(
   };
 }
 
+function parseAnnotations<T>(
+  element: HTMLElement,
+  json: string | undefined,
+): T[] {
+  if (!json) {
+    return [];
+  }
+  try {
+    return JSON.parse(json) as T[];
+  } catch (e) {
+    console.error("Scene %o has malformed annotations: %s", element, e);
+    return [];
+  }
+}
+
 export async function setupGameScene(element: HTMLElement) {
   const sceneAssetPrefix = element.dataset.sceneAssetPrefix;
   if (sceneAssetPrefix === undefined) {
@@ -388,11 +403,35 @@ export async function setupGameScene(element: HTMLElement) {
   viewportElement.className = "viewport";
   rootElement.append(viewportElement);
 
+  const inWorldAnnotations = parseAnnotations<InWorldAnnotation>(
+    element,
+    element.dataset.sceneInWorldAnnotations,
+  );
+  const overlayAnnotations = parseAnnotations<OverlayAnnotation>(
+    element,
+    element.dataset.sceneOverlayAnnotations,
+  );
+
+  // Shows the content of the hovered annotation as a tooltip that follows the mouse
+  const annotationTooltip = tippy(rootElement, {
+    trigger: "manual",
+    allowHTML: true,
+    followCursor: true,
+    plugins: [followCursor],
+    animation: false,
+  });
   let currentTooltipTemplateId: string | undefined = undefined;
   const setTooltipContent = (templateId: string | undefined) => {
-    if (templateId !== currentTooltipTemplateId) {
-      currentTooltipTemplateId = templateId;
-      console.info("Setting tooltip content to template %s", templateId);
+    if (templateId === currentTooltipTemplateId) {
+      return;
+    }
+    currentTooltipTemplateId = templateId;
+    const template = templateId ? document.getElementById(templateId) : null;
+    if (template) {
+      annotationTooltip.setContent(template.innerHTML);
+      annotationTooltip.show();
+    } else {
+      annotationTooltip.hide();
     }
   };
 
@@ -426,8 +465,8 @@ export async function setupGameScene(element: HTMLElement) {
     sceneSrc,
     viewportElement,
     interactive,
-    [],
-    [],
+    inWorldAnnotations,
+    overlayAnnotations,
     mousePos,
     setTooltipContent,
     abortController.signal,

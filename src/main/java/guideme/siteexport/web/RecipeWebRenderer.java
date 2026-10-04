@@ -7,7 +7,10 @@ import org.jetbrains.annotations.ApiStatus;
 /**
  * Renders recipes that were previously exported through {@link RecipeExporter} for use in the web-version of the guide.
  * <p/>
- * **NOTE:** This is loaded through the Java {@link java.util.ServiceLoader} mechanism.
+ * <b>NOTE:</b> This is loaded through the Java {@link java.util.ServiceLoader} mechanism by the
+ * {@link WebSiteGenerator}. Implementations run outside the game. They may use Minecraft classes, but must not access
+ * registries or other game state. Everything they need must come from the exported recipe or
+ * {@link RecipeWebRenderingContext#guide()}.
  */
 @ApiStatus.Experimental
 public interface RecipeWebRenderer {

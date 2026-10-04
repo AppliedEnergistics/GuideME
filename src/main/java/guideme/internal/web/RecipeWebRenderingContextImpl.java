@@ -154,8 +154,8 @@ class RecipeWebRenderingContextImpl extends WebRenderingContextImpl implements R
     }
 
     private HtmlTag createRecipeIngredientGrid(WebPageCompileContext context, MdAstParent<?> node,
-                                               ExportedRecipe recipe) {
-        var shapeless = recipe.recipe().getAsJsonPrimitive("shapeless").getAsBoolean();
+            ExportedRecipe recipe) {
+        var shapeless = recipe.recipe().has("shapeless") && recipe.recipe().get("shapeless").getAsBoolean();
         var ingredientsJson = recipe.recipe().getAsJsonArray("ingredients");
 
         // Convert JSON ingredients to List<List<String>>
@@ -258,7 +258,7 @@ class RecipeWebRenderingContextImpl extends WebRenderingContextImpl implements R
     }
 
     private HtmlTag createRecipeDisplayName(WebPageCompileContext context, MdAstParent<?> node, String iconId,
-                                            String title, ItemInfoJson resultItem) {
+            String title, ItemInfoJson resultItem) {
         return HtmlNode.tag("div")
                 .setAttribute("title", resultItem.displayName)
                 .append(webPageCompiler.createItemIcon(context, node, iconId, true))

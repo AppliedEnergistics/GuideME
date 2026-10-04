@@ -93,16 +93,19 @@ public final class HtmlTag extends HtmlNode {
         StringBuilder sb = new StringBuilder();
         sb.append("<").append(name);
         for (var entry : attributes.entrySet()) {
-            sb.append(" ").append(entry.getKey()).append("=\"")
-                    .append(escapeAttribute(String.valueOf(entry.getValue())))
-                    .append("\"");
+            sb.append(" ").append(entry.getKey());
+            // Attributes without value are boolean attributes (i.e. <details open>)
+            if (entry.getValue() != null) {
+                sb.append("=\"").append(escapeAttribute(entry.getValue())).append("\"");
+            }
         }
         if (VOID_ELEMENTS.contains(name) && children.isEmpty()) {
             sb.append("/>");
         } else {
             sb.append(">");
             for (var child : children) {
-                sb.append(child.outerHtml()).append("\n");
+                // No whitespace between children, since it would be significant in inline content
+                sb.append(child.outerHtml());
             }
             sb.append("</").append(name).append(">");
         }

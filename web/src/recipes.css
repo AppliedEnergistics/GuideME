@@ -116,10 +116,10 @@
 }
 
 /**
- * Implements cycling ingredients display by hiding everything but the first element.
+ * Implements cycling display (i.e. of ingredients with multiple options) by hiding everything but the first element.
  * JavaScript takes care of essentially rotating the child elements through in an interval.
  */
-.ingredient-box.cycling {
+.cycling {
   /* Initially, hide everything but the first element, this is before the JavaScript kicks in */
   &:not(.is-cycling) {
     & > :not(:first-child) {

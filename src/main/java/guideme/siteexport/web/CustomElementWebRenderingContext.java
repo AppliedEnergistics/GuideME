@@ -22,6 +22,11 @@ public interface CustomElementWebRenderingContext extends WebRenderingContext {
     MdxJsxElementFields element();
 
     /**
+     * {@return the children of the element being compiled, compiled to HTML}
+     */
+    HtmlFragment compileChildren();
+
+    /**
      * Maps between a JSX tags attributes and a given record that models these attributes.
      * <p>
      * Record components that are annotated with {@link org.jspecify.annotations.Nullable} are considered optional.

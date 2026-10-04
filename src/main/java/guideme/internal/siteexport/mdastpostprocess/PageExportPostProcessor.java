@@ -41,6 +41,7 @@ public final class PageExportPostProcessor {
 
         astRoot.visit(new SceneExportVisitor(exporter, nodeMapping));
         astRoot.visit(new ImageExportVisitor(exporter));
+        astRoot.visit(new KeyBindExportVisitor(exporter));
 
         astRoot.visit(new RemovePositionVisitor());
     }

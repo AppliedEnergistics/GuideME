@@ -1,6 +1,7 @@
 @import "./main.css";
 @import "./navbar.css";
 @import "./item-name.css";
+@import "./tooltip.css";
 @import "./recipes.css";
 @import "./model-viewer.css";
 
@@ -238,4 +239,29 @@ th + th {
     vertical-align: sub;
     padding-right: 5px;
   }
+}
+
+.floating-image-left {
+  float: left;
+  margin-right: calc(5px * var(--gui-scale));
+  margin-bottom: calc(5px * var(--gui-scale));
+}
+
+.floating-image-right {
+  float: right;
+  margin-left: calc(5px * var(--gui-scale));
+  margin-bottom: calc(5px * var(--gui-scale));
+}
+
+.command-link {
+  color: var(--color-link);
+  cursor: help;
+  text-decoration: underline dotted;
+}
+
+kbd {
+  font-family: inherit;
+  padding: 0 0.3em;
+  border: 1px solid currentColor;
+  border-radius: 3px;
 }

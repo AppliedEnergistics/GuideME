@@ -6,7 +6,13 @@ import java.util.function.Consumer;
 import org.jetbrains.annotations.ApiStatus;
 
 /**
- * This interface is loaded via service-loader and used to compile custom elements in the website renderer.
+ * Compiles custom elements (i.e. those added through {@link TagCompiler}) to HTML for the website.
+ * <p>
+ * <b>NOTE:</b> This is loaded through the Java {@link java.util.ServiceLoader} mechanism by the
+ * {@link WebSiteGenerator}. Implementations run outside the game. They may use Minecraft classes, but must not access
+ * registries or other game state. Everything they need must come from the element or
+ * {@link CustomElementWebRenderingContext#guide()}. Data that is only available in-game can be exported using
+ * {@link guideme.siteexport.ResourceExporter#addExtraData}.
  */
 @ApiStatus.Experimental
 public interface CustomElementWebRenderer {

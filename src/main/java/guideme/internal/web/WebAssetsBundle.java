@@ -14,8 +14,12 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -33,12 +37,31 @@ final class WebAssetsBundle {
     private static final String PLACEHOLDER_GUIDE_TITLE = "{{GUIDE_TITLE}}";
     private static final String PLACEHOLDER_GUIDE_NAVBAR = "{{GUIDE_NAVBAR}}";
     private static final String PLACEHOLDER_FOOTER = "{{FOOTER}}";
+    private static final String PLACEHOLDER_EXTRA_HEAD = "{{EXTRA_HEAD}}";
+    private static final String PLACEHOLDER_LOGO_URL = "{{LOGO_URL}}";
+    private static final String PLACEHOLDER_HOME_URL = "{{HOME_URL}}";
+    private static final String PLACEHOLDER_BASE_PATH = "{{BASE_PATH}}";
+
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{[A-Z0-9_]+}}");
 
     @Nullable
     private final Path folder;
     private final Path outputFolder;
 
     private final String layoutTemplate;
+
+    /**
+     * Paths of stylesheets and scripts relative to the output folder, which are added to the head of every page.
+     */
+    private final List<String> extraStylesheets = new ArrayList<>();
+    private final List<String> extraScripts = new ArrayList<>();
+
+    /**
+     * Paths of the logo and favicon relative to the output folder.
+     */
+    private String logo = "";
+    @Nullable
+    private String favicon;
 
     public WebAssetsBundle(StaticSiteGenerator.Options options) {
         this.folder = options.webAssetsPath();
@@ -51,7 +74,27 @@ final class WebAssetsBundle {
                 PLACEHOLDER_RELATIVE_PATH_TO_ROOT,
                 PLACEHOLDER_GUIDE_TITLE,
                 PLACEHOLDER_GUIDE_NAVBAR,
-                PLACEHOLDER_FOOTER);
+                PLACEHOLDER_FOOTER,
+                PLACEHOLDER_EXTRA_HEAD,
+                PLACEHOLDER_LOGO_URL,
+                PLACEHOLDER_HOME_URL,
+                PLACEHOLDER_BASE_PATH);
+    }
+
+    public void setLogo(String pathInOutputFolder) {
+        this.logo = pathInOutputFolder;
+    }
+
+    public void setFavicon(String pathInOutputFolder) {
+        this.favicon = pathInOutputFolder;
+    }
+
+    public void addStylesheet(String pathInOutputFolder) {
+        extraStylesheets.add(pathInOutputFolder);
+    }
+
+    public void addScript(String pathInOutputFolder) {
+        extraScripts.add(pathInOutputFolder);
     }
 
     private byte[] loadAsset(String name) throws IOException {
@@ -84,7 +127,7 @@ final class WebAssetsBundle {
         }
 
         var foundPlaceholders = new HashSet<String>();
-        var matcher = Pattern.compile("\\{\\{[A-Z0-9_]+}}").matcher(content);
+        var matcher = PLACEHOLDER_PATTERN.matcher(content);
         while (matcher.find()) {
             foundPlaceholders.add(matcher.group());
         }
@@ -99,36 +142,66 @@ final class WebAssetsBundle {
     }
 
     public String realizeLayoutTemplate(WebPageCompileContext context, LayoutPlaceholders placeholders) {
-        // Compute the relative path to the output folder to fixup asset links
-        var relativePathToRoot = "";
-        if (!placeholders.destinationFolder().equals(outputFolder)) {
-            relativePathToRoot = placeholders.destinationFolder().relativize(outputFolder).toString().replace('\\', '/')
-                    + "/";
-        }
+        var options = context.options();
 
-        // Strip all HTML and escape
-        var titleText = placeholders.pageTitle().replaceAll("<[^>]+>", "") + " - "
-                + escapeHtml("AE2 Players Guide for " + context.guide().getGameMajorVersion());
+        // The page title is plain text
+        var titleText = escapeHtml(placeholders.pageTitle() + " - " + options.title() + " for Minecraft "
+                + context.guide().getGameMajorVersion());
 
         var guideNavbar = WebGuideNavBar.generate(context);
 
         var footer = buildFooter(context);
 
-        return layoutTemplate
-                .replace(PLACEHOLDER_PAGE_CONTENT, placeholders.pageContent().outerHtml())
-                .replace(PLACEHOLDER_PAGE_TITLE, placeholders.pageTitle())
-                .replace(PLACEHOLDER_PAGE_TITLE_TEXT, titleText)
-                .replace(PLACEHOLDER_RELATIVE_PATH_TO_ROOT, relativePathToRoot)
-                .replace(PLACEHOLDER_GUIDE_TITLE, escapeHtml(context.guide().getGuideTitle()))
-                .replace(PLACEHOLDER_GUIDE_NAVBAR, guideNavbar.outerHtml())
-                .replace(PLACEHOLDER_FOOTER, footer.outerHtml());
+        var extraHead = new HtmlFragment();
+        if (placeholders.canonicalUrl() != null) {
+            extraHead.append(HtmlNode.tag("link")
+                    .setAttribute("rel", "canonical")
+                    .setAttribute("href", placeholders.canonicalUrl()));
+        }
+        if (favicon != null) {
+            extraHead.append(HtmlNode.tag("link")
+                    .setAttribute("rel", "icon")
+                    .setAttribute("href", context.url(favicon)));
+        }
+        for (var stylesheet : extraStylesheets) {
+            extraHead.append(HtmlNode.tag("link")
+                    .setAttribute("rel", "stylesheet")
+                    .setAttribute("href", context.url(stylesheet)));
+        }
+        for (var script : extraScripts) {
+            extraHead.append(HtmlNode.tag("script")
+                    .setAttribute("src", context.url(script))
+                    .setAttribute("defer", null));
+        }
+
+        var values = new HashMap<String, String>();
+        values.put(PLACEHOLDER_PAGE_CONTENT, placeholders.pageContent().outerHtml());
+        values.put(PLACEHOLDER_PAGE_TITLE, escapeHtml(placeholders.pageTitle()));
+        values.put(PLACEHOLDER_PAGE_TITLE_TEXT, titleText);
+        values.put(PLACEHOLDER_RELATIVE_PATH_TO_ROOT, context.getUrlPrefixToRoot());
+        values.put(PLACEHOLDER_GUIDE_TITLE, escapeHtml(options.title()));
+        values.put(PLACEHOLDER_GUIDE_NAVBAR, guideNavbar.outerHtml());
+        values.put(PLACEHOLDER_FOOTER, footer.outerHtml());
+        values.put(PLACEHOLDER_EXTRA_HEAD, extraHead.outerHtml());
+        values.put(PLACEHOLDER_LOGO_URL, escapeHtml(context.url(logo)));
+        values.put(PLACEHOLDER_HOME_URL, escapeHtml(context.url("")));
+        values.put(PLACEHOLDER_BASE_PATH, escapeHtml(options.basePath()));
+
+        // Replace in a single pass, so that placeholders in the inserted content are not replaced
+        return PLACEHOLDER_PATTERN.matcher(layoutTemplate)
+                .replaceAll(m -> Matcher.quoteReplacement(values.getOrDefault(m.group(), m.group())));
     }
 
     private static HtmlTag buildFooter(WebPageCompileContext context) {
         var fragment = new HtmlFragment();
         fragment.append("Minecraft " + context.guide().getGameMajorVersion());
 
-        String changeVersionUrl = context.options().changeVersionUrl();
+        // When the website is served from a sub-path, assume that the root lists the available versions
+        var options = context.options();
+        var changeVersionUrl = options.changeVersionUrl();
+        if (changeVersionUrl == null && !options.basePath().equals("/")) {
+            changeVersionUrl = "/";
+        }
         if (changeVersionUrl != null) {
             fragment.append(" [");
             fragment.append(HtmlNode.tag("a")
@@ -141,7 +214,7 @@ final class WebAssetsBundle {
     }
 
     public void copyToOutputFolder() throws IOException {
-        var filesCreated = new HashSet<>();
+        var filesCreated = new HashSet<Path>();
         if (this.folder != null) {
             Path templatesFolder = folder.resolve("templates");
             Files.walkFileTree(folder, new SimpleFileVisitor<>() {
@@ -158,7 +231,7 @@ final class WebAssetsBundle {
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     var destination = outputFolder.resolve(folder.relativize(file));
                     Files.copy(file, destination, StandardCopyOption.REPLACE_EXISTING);
-                    filesCreated.add(file.toAbsolutePath().normalize());
+                    filesCreated.add(destination.toAbsolutePath().normalize());
                     return super.visitFile(file, attrs);
                 }
             });
@@ -179,7 +252,7 @@ final class WebAssetsBundle {
                 continue;
             }
             var targetPath = outputFolder.resolve(assetIndexLine);
-            if (filesCreated.contains(targetPath)) {
+            if (filesCreated.contains(targetPath.toAbsolutePath().normalize())) {
                 continue;
             }
             var assetContent = loadDefaultAsset(assetIndexLine);

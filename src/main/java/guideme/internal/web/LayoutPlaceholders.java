@@ -1,10 +1,14 @@
 package guideme.internal.web;
 
 import guideme.siteexport.web.HtmlFragment;
-import java.nio.file.Path;
+import org.jspecify.annotations.Nullable;
 
+/**
+ * @param pageTitle    The page title as plain text.
+ * @param canonicalUrl The absolute URL of the page, if known.
+ */
 record LayoutPlaceholders(
-        Path destinationFolder,
         String pageTitle,
-        HtmlFragment pageContent) {
+        HtmlFragment pageContent,
+        @Nullable String canonicalUrl) {
 }

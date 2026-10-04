@@ -6,11 +6,12 @@
     "@types/tippy.js": "^6.3.0",
     "esbuild": "^0.27.2",
     "flatbuffers": "^23.5.26",
+    "minisearch": "^7.2.0",
     "pako": "^2.1.0",
+    "prettier": "^3.7.4",
     "three": "^0.151.3",
     "tippy.js": "^6.3.7",
-    "typescript": "^5.9.3",
-    "prettier": "^3.7.4"
+    "typescript": "^5.9.3"
   },
   "scripts": {
     "build": "tsc && npm run bundle",

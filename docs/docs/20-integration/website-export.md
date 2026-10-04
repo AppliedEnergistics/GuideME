@@ -1,0 +1,137 @@
+# Website Export
+
+GuideME can turn your guide into a static website. This happens in two steps:
+
+1. The guide is **exported** from the game. This writes the pages, item icons, recipes and 3D scenes to a folder.
+2. A **website is generated** from that export. This runs outside the game as a Gradle task, with GuideME,
+   Minecraft and your mod on the classpath.
+
+Since the website is generated from the export, you can also regenerate the website for guides you exported in the
+past, for example with a newer version of GuideME.
+
+:::warning
+The website export API is experimental and may change between versions.
+:::
+
+## Exporting the Guide
+
+Add a run configuration that exports your guide and then exits the game. With ModDevGradle:
+
+```gradle
+neoForge {
+    runs {
+        exportGuide {
+            client()
+            systemProperty('guideme.exportOnStartupAndExit', 'yourmod:guide')
+            systemProperty('guideme.exportDestination.yourmod.guide', file('build/exportedGuide').absolutePath)
+            // Optional, defaults to the version of your mod
+            systemProperty('guideme.exportModVersion.yourmod.guide', project.version.toString())
+        }
+    }
+}
+```
+
+In a running game, you can also use `/guidemec <guide> export`, which writes the export to
+`guideme_exports` in the game directory.
+
+## Generating the Website
+
+Add a `JavaExec` task that runs the website generator with the runtime classpath of your mod:
+
+```gradle
+tasks.register('createGuideWebsite', JavaExec) {
+    dependsOn 'runExportGuide'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'guideme.siteexport.web.WebSiteGenerator'
+    args '--data', file('build/exportedGuide').absolutePath,
+         '--output', file('build/guideWebsite').absolutePath
+}
+```
+
+| Argument | Description |
+|---|---|
+| `--data <folder>` | The folder containing the guide export (required). |
+| `--output <folder>` | The folder the website is written to (required). |
+| `--title <title>` | The title of the guide, shown in the header and the browser title. |
+| `--logo <id>` | The logo, either as a resource id (`yourmod:textures/guide/logo.png`) or a path on the classpath (`logo.png`). Defaults to the GuideME logo. |
+| `--favicon <id>` | The favicon, given like the logo. Defaults to the logo. |
+| `--site-url <url>` | The URL the website is published at, i.e. `https://guide.example.com`. Enables canonical links, `sitemap.xml` and `robots.txt`. |
+| `--base-path <path>` | The URL path the website is served from, i.e. `/1.21.1/` when publishing several versions side by side. Defaults to `/`. |
+| `--clean-urls` | Writes pages as `page/index.html` so they can be linked without the `.html` extension on any web host. |
+| `--web-assets <folder>` | A folder whose files override the default web assets, such as the page layout. |
+| `--change-version-url <url>` | A URL to link to for picking a different version of the guide. Defaults to `/` if a base path is set. |
+
+The website includes a search function, a `404.html` page, and an `index.html` that redirects to the start page
+of the guide if the guide has no `index.md`.
+
+## Previewing the Website
+
+Browsers block the scripts of pages opened directly from disk, so serve the website over HTTP to preview it.
+GuideME includes a small server that serves a folder on a random local port:
+
+```gradle
+tasks.register('serveGuideWebsite', JavaExec) {
+    mustRunAfter 'createGuideWebsite'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'guideme.siteexport.web.WebSiteServer'
+    args file('build/guideWebsite').absolutePath
+}
+```
+
+Running `./gradlew createGuideWebsite serveGuideWebsite` prints the URL to open. Stop the server with Ctrl+C.
+
+## Rendering Custom Content
+
+The tags built into GuideME are rendered automatically, with two exceptions: `BlockAnnotationTemplate` in game
+scenes, and `Color` with a symbolic color added by a mod. If your guide uses custom tags or custom recipe types, you
+need to tell the website generator how to render them. The following interfaces are discovered using the
+Java `ServiceLoader`, so register your implementations in `META-INF/services/<interface name>` in your mod.
+
+| Interface | Purpose |
+|---|---|
+| `guideme.siteexport.web.CustomElementWebRenderer` | Renders custom tags to HTML. |
+| `guideme.siteexport.web.RecipeWebRenderer` | Renders custom recipe types. Use `RecipeExporter` to export the recipe data. |
+| `guideme.siteexport.web.WebSiteContribution` | Adds stylesheets and scripts to every page. |
+
+:::note
+These run in the website generator, **not in the game**. They may use Minecraft and mod classes, but must not access
+registries or other game state. Everything they need must come from the export.
+
+Data that is only available in-game can be exported using `ResourceExporter#addExtraData` from an
+`AdditionalResourceExporter` extension, and read using `ExportedGuide#getExtraData`.
+:::
+
+Renderers produce HTML using `HtmlNode.tag(...)` and the helpers on their rendering context, for example
+`itemIcon`, `itemLink`, `getPageUrl`, or `getAssetUrl(Identifier)`, which copies a texture from your mod resources
+into the website.
+
+```java
+public class ConfigValueWebRenderer implements CustomElementWebRenderer {
+    @Override
+    public Set<String> getTagNames() {
+        return Set.of("yourmod:ConfigValue");
+    }
+
+    @Override
+    public void render(CustomElementWebRenderingContext context, Consumer<HtmlNode> output) {
+        record Attributes(String name) {
+        }
+        var attributes = context.map(Attributes.class);
+
+        @SuppressWarnings("unchecked")
+        var values = (Map<String, String>) context.guide().getExtraData("yourmod:config_values");
+        var value = values != null ? values.get(attributes.name()) : null;
+        if (value == null) {
+            output.accept(context.compileError("Unknown config value " + attributes.name()));
+            return;
+        }
+        output.accept(HtmlNode.tag("code").append(value));
+    }
+}
+```
+
+Stylesheets added through `WebSiteContribution` are loaded from `assets/<namespace>/<path>` on the classpath.
+Relative `url(...)` references in them are copied into the website as well.
+
+Keep in mind that renderers may be given data exported by older versions of your mod, if you regenerate the website
+for older guide exports.

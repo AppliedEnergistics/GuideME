@@ -8,6 +8,11 @@ public class FluidInfoJson implements ExportedFluidInfo {
     public String icon;
 
     @Override
+    public String id() {
+        return id;
+    }
+
+    @Override
     public String icon() {
         return icon;
     }

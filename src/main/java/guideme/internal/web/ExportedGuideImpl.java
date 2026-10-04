@@ -9,7 +9,6 @@ import guideme.internal.siteexport.model.NavigationNodeJson;
 import guideme.internal.siteexport.model.SiteExportJson;
 import guideme.siteexport.web.ExportedGuide;
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,16 +39,20 @@ class ExportedGuideImpl implements ExportedGuide {
         for (var entry : json.recipes.entrySet()) {
             recipes.put(entry.getKey(), new ExportedRecipe(entry.getKey(), entry.getValue()));
         }
-        // Then index by result
+        // Then index by result. Some recipe types (i.e. AE2 entropy) have no result item.
         for (var exportedRecipe : recipes.values()) {
-            recipesByResult.computeIfAbsent(exportedRecipe.resultItem(), _ -> new ArrayList<>()).add(exportedRecipe);
+            if (exportedRecipe.recipe().has("resultItem")) {
+                recipesByResult.computeIfAbsent(exportedRecipe.resultItem(), _ -> new ArrayList<>())
+                        .add(exportedRecipe);
+            }
         }
 
+        // Page indices were renamed when they moved from AE2 into GuideME (1.21.1)
         visitIndex(
-                getItemIndexName(json),
+                List.of("guideme.indices.ItemIndex", "appeng.client.guidebook.indices.ItemIndex"),
                 (key, value) -> pageByItemIndex.put(key, value.getAsString()));
         visitIndex(
-                getCategoryIndexName(json),
+                List.of("guideme.indices.CategoryIndex", "appeng.client.guidebook.indices.CategoryIndex"),
                 (key, value) -> {
                     var elements = pagesByCategoryIndex.computeIfAbsent(key, _ -> new ArrayList<>());
                     for (var jsonElement : value.getAsJsonArray()) {
@@ -58,33 +61,22 @@ class ExportedGuideImpl implements ExportedGuide {
                 });
     }
 
-    private static String getItemIndexName(SiteExportJson jsonModel) {
-        // Handle older AE2 guides as well
-        for (var id : List.of("appeng.client.guidebook.indices.ItemIndex", "guideme.indices.ItemIndex")) {
-            if (jsonModel.pageIndices.containsKey(id)) {
-                return id;
+    /**
+     * Visits the first page index that exists under any of the given names.
+     */
+    private void visitIndex(List<String> indexNames, BiConsumer<String, JsonElement> visitor) {
+        JsonElement indexContent = null;
+        for (var indexName : indexNames) {
+            indexContent = json.pageIndices.get(indexName);
+            if (indexContent != null) {
+                break;
             }
         }
-        throw new IllegalArgumentException("Missing item index in guide.");
-    }
-
-    private static String getCategoryIndexName(SiteExportJson jsonModel) {
-        // Handle older AE2 guides as well
-        for (var id : List.of("appeng.client.guidebook.indices.CategoryIndex", "guideme.indices.CategoryIndex")) {
-            if (jsonModel.pageIndices.containsKey(id)) {
-                return id;
-            }
-        }
-        throw new IllegalArgumentException("Missing item index in guide.");
-    }
-
-    private void visitIndex(String indexName, BiConsumer<String, JsonElement> visitor) {
-        // Indices are serialized as [key, value, key, value, key, value] in one large array.
-        // Convert this to [[key,value], [key,value], ...] and pass it to the map ctor.
-        var indexContent = json.pageIndices.get(indexName);
         if (indexContent == null) {
             return;
         }
+
+        // Indices are serialized as [key, value, key, value, key, value] in one large array.
         var array = indexContent.getAsJsonArray();
         for (int i = 0; i < array.size(); i += 2) {
             var key = array.get(i).getAsString();
@@ -177,6 +169,7 @@ class ExportedGuideImpl implements ExportedGuide {
         return idText;
     }
 
+    @Override
     public boolean pageExists(String pageId) {
         return json.pages.containsKey(pageId);
     }
@@ -186,22 +179,10 @@ class ExportedGuideImpl implements ExportedGuide {
         return pagesByCategoryIndex.get(category);
     }
 
-    public String getPagePath(String pageId) {
-        return getPageBasePath(pageId) + ".html";
-    }
-
-    public String getRelativePagePath(String pageId, String anchor) {
-        var anchorPath = Path.of(getPagePath(anchor));
-        if (anchorPath.getParent() == null) {
-            return getPagePath(pageId);
-        }
-        var targetPath = Path.of(getPagePath(pageId));
-        return anchorPath.getParent().relativize(targetPath).toString().replace('\\', '/');
-    }
-
     /**
      * Resolves a potentially namespace-less id to an id that is guaranteed to have a namespace.
      */
+    @Override
     public String resolveId(String idText) {
         if (!idText.contains(":")) {
             return getDefaultNamespace() + ":" + idText;
@@ -209,9 +190,10 @@ class ExportedGuideImpl implements ExportedGuide {
         return idText;
     }
 
+    @Override
     @Nullable
-    public String getPageUrlForItem(String itemId) {
-        return this.pageByItemIndex.get(itemId);
+    public String getPageIdForItem(String itemId) {
+        return this.pageByItemIndex.get(resolveId(itemId));
     }
 
     @Override
@@ -249,10 +231,6 @@ class ExportedGuideImpl implements ExportedGuide {
         return json.modData.get(identifier);
     }
 
-    public String getGuideTitle() {
-        return "Applied Energistics 2";
-    }
-
     public List<NavigationNodeJson> getRootNavigationNodes() {
         return json.navigationRootNodes;
     }
@@ -261,12 +239,14 @@ class ExportedGuideImpl implements ExportedGuide {
         return Objects.requireNonNullElse(index.gameMajorVersion(), index.gameVersion());
     }
 
+    @Override
     public List<ExportedRecipe> getRecipesForItem(String id) {
         id = resolveId(id);
 
         return recipesByResult.getOrDefault(id, List.of());
     }
 
+    @Override
     @Nullable
     public ExportedRecipe getRecipeById(String id) {
         id = resolveId(id);

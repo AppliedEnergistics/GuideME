@@ -1,10 +1,13 @@
 import * as flatbuffers from "flatbuffers";
 import { ExpScene } from "@generated/scene.ts";
-import { Group, Mesh, Texture } from "three";
+import { Group, Material, Mesh, Texture } from "three";
+import { ExpMaterial } from "@generated/scene/exp-material.ts";
+import { ExpTransparency } from "@generated/scene/exp-transparency.ts";
 import TextureManager from "./TextureManager.ts";
 import loadGeometry from "./loadGeometry.ts";
 import loadMaterial from "./loadMaterial.ts";
 import decompress from "../decompress.ts";
+import { fromExpShaderInfo, ShaderProps } from "./shaderInfo.ts";
 
 type LoadedScene = {
   group: Group;
@@ -52,6 +55,22 @@ async function decompressResponse(response: Response) {
   return sceneContent;
 }
 
+/**
+ * Draw meshes in the same order Minecraft draws its layers: solid, then cutout, then blended.
+ * Models often have coplanar overlay quads (i.e. emissive parts) that only show up if they're drawn
+ * after the base quads. Newer exports don't order the meshes that way, and three.js would otherwise
+ * draw opaque meshes in material creation order (i.e. the order they appear in the export).
+ */
+function getRenderOrder(expMaterial: ExpMaterial, material: Material): number {
+  if (expMaterial.transparency() !== ExpTransparency.DISABLED) {
+    return 2;
+  } else if (material.alphaTest > 0) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 export default async function loadScene(
   textureManager: TextureManager,
   source: string,
@@ -70,6 +89,16 @@ export default async function loadScene(
   const group = new Group();
   const texturesById = new Map<string, Texture[]>();
   const expScene = ExpScene.getRootAsExpScene(buf);
+
+  const shaderInfos = new Map<string, ShaderProps>();
+  for (let i = 0; i < expScene.shadersLength(); i++) {
+    const expShaderInfo = expScene.shaders(i);
+    const name = expShaderInfo?.name();
+    if (expShaderInfo && name) {
+      shaderInfos.set(name, fromExpShaderInfo(expShaderInfo));
+    }
+  }
+
   for (let i = 0; i < expScene.meshesLength(); i++) {
     const expMesh = expScene.meshes(i);
     if (!expMesh) {
@@ -86,9 +115,11 @@ export default async function loadScene(
       textureManager,
       expMaterial,
       texturesById,
+      shaderInfos,
     );
     const mesh = new Mesh(geometry, material);
     mesh.frustumCulled = false;
+    mesh.renderOrder = getRenderOrder(expMaterial, material);
     group.add(mesh);
   }
 

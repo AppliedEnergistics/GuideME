@@ -14,7 +14,9 @@ record ExportedRecipe(String id, JsonObject recipe) implements guideme.siteexpor
     }
 
     public int resultCount() {
-        return recipe.getAsJsonPrimitive("resultCount").getAsInt();
+        // Not all recipe types export the count (i.e. AE2 charger and transform recipes)
+        var resultCount = recipe.get("resultCount");
+        return resultCount != null ? resultCount.getAsInt() : 1;
     }
 
     @SuppressWarnings("unchecked")
