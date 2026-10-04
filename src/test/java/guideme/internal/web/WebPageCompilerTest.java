@@ -162,6 +162,26 @@ class WebPageCompilerTest {
     }
 
     @Test
+    void testSmithingTrimRecipeShowsBaseItemsAsResult() throws Exception {
+        addItem("minecraft:diamond_chestplate", "Diamond Chestplate");
+        addItem("minecraft:smithing_table", "Smithing Table");
+        json.recipes.put("minecraft:trim", JsonParser.parseString("""
+                {
+                  "type": "minecraft:smithing",
+                  "base": ["minecraft:diamond_chestplate"],
+                  "addition": ["minecraft:stick"],
+                  "template": ["minecraft:oak_planks"]
+                }""").getAsJsonObject());
+
+        var html = compile("<Recipe id=\"minecraft:trim\" />");
+
+        assertThat(html).doesNotContain("Error:");
+        assertThat(html).contains("<svg class=\"recipe-arrow\"");
+        // The base item is shown as the input and as the result
+        assertThat(html.split("aria-description=\"Diamond Chestplate\"", -1)).hasSize(3);
+    }
+
+    @Test
     void testMissingRecipeFallbackText() throws Exception {
         assertThat(compile("<Recipe id=\"missing\" fallbackText=\"Disabled\" />"))
                 .contains("<p>Disabled</p>")

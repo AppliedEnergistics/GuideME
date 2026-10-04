@@ -68,10 +68,17 @@ final class SmithingRecipeRenderer implements RecipeWebRenderer {
         var addition = recipe.getIngredient("addition");
         var template = recipe.getIngredient("template");
 
-        builder.recipeBox("minecraft:smithing_table", "Smithing", recipe.resultItem())
-                .shapelessSlots(List.of(base, addition, template))
+        // Trim recipes have no result item, since the result is the base item with the trim applied
+        var result = recipe.fields().containsKey("resultItem") ? List.of(recipe.resultItem()) : base;
+        if (result.isEmpty()) {
+            builder.recipeBox(builder.compileError("Smithing recipe without result")).build();
+            return;
+        }
+
+        builder.recipeBox("minecraft:smithing_table", "Smithing", result.getFirst())
+                .shapelessSlots(List.of(template, base, addition))
                 .arrow()
-                .slot(recipe.resultItem())
+                .slot(result)
                 .build();
     }
 }
