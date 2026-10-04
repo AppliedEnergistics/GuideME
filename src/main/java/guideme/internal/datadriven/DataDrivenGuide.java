@@ -22,8 +22,9 @@ public record DataDrivenGuide(GuideItemSettings itemSettings, String defaultLang
                     rgba -> String.format(Locale.ROOT, "#%08X", rgba));
 
     private static final Codec<ConstantColor> CONSTANT_COLOR_CODEC = RecordCodecBuilder.create(builder -> builder.group(
-            COLOR_VALUE_CODEC.fieldOf("dark_mode").forGetter(ConstantColor::darkModeColor),
-            COLOR_VALUE_CODEC.fieldOf("light_mode").forGetter(ConstantColor::lightModeColor))
+            // The order has to match the parameters of the ConstantColor constructor
+            COLOR_VALUE_CODEC.fieldOf("light_mode").forGetter(ConstantColor::lightModeColor),
+            COLOR_VALUE_CODEC.fieldOf("dark_mode").forGetter(ConstantColor::darkModeColor))
             .apply(builder, ConstantColor::new));
 
     @Deprecated(forRemoval = true)

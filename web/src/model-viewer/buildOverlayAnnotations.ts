@@ -4,6 +4,7 @@ import { Group, Object3D, Sprite } from "three";
 import diamond from "@assets/diamond.png";
 import diamondColored from "@assets/diamond_colored.png";
 import { OverlayAnnotation } from "./modelViewer.ts";
+import { parseAnnotationColor } from "./annotationColor.ts";
 
 export default async function buildOverlayAnnotation(
   textureManager: TextureManager,
@@ -57,7 +58,7 @@ export default async function buildOverlayAnnotation(
     depthTest: false,
     sizeAttenuation: false,
     fog: false,
-    color: annotation.color,
+    color: parseAnnotationColor(annotation.color),
   });
   const annotationNodeTop = new Sprite(diamondColoredMaterial);
   annotationNodeTop.position.set(

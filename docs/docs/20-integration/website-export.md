@@ -130,6 +130,39 @@ public class ConfigValueWebRenderer implements CustomElementWebRenderer {
 }
 ```
 
+### Resolving In-Game Information During Export
+
+Some tags depend on information that is only available in-game, such as whether a mod is loaded. A
+`guideme.siteexport.PageExportProcessor` extension can modify the page before it is exported, so the website
+generator only sees the result. Register it on your guide like any other extension.
+
+A processor selects the nodes it applies to and can change their attributes, or replace them, for example with their
+own content. All changes are undone after the export. GuideME uses this itself to resolve symbolic colors of `<Color>`
+and the keys of `<KeyBind>`.
+
+Processors can also access the result of compiling the page for the in-game guide: `PageExportContext#getLayoutNodes`
+returns the layout nodes compiled from an element, and `getParent` its parent. GuideME uses this to replace
+`<BlockAnnotationTemplate>` with the annotations it created in the scene of the enclosing `<GameScene>`.
+
+```java
+public class OptionalSectionExportProcessor implements PageExportProcessor {
+    @Override
+    public NodeSelector getSelector() {
+        return NodeSelector.element("OptionalSection");
+    }
+
+    @Override
+    public void process(PageExportContext context, MdAstNode node) {
+        var element = (MdxJsxElementFields) node;
+        if (ModList.get().isLoaded(element.getAttributeString("modId", ""))) {
+            context.unwrap(node); // Replace the element with its content
+        } else {
+            context.remove(node);
+        }
+    }
+}
+```
+
 Stylesheets added through `WebSiteContribution` are loaded from `assets/<namespace>/<path>` on the classpath.
 Relative `url(...)` references in them are copied into the website as well.
 

@@ -20,6 +20,9 @@ import guideme.compiler.tags.SubPagesCompiler;
 import guideme.extensions.Extension;
 import guideme.extensions.ExtensionCollection;
 import guideme.extensions.ExtensionPoint;
+import guideme.internal.siteexport.mdastpostprocess.BlockAnnotationTemplateExportProcessor;
+import guideme.internal.siteexport.mdastpostprocess.ColorExportProcessor;
+import guideme.internal.siteexport.mdastpostprocess.KeyBindExportProcessor;
 import guideme.scene.BlockImageTagCompiler;
 import guideme.scene.ItemImageTagCompiler;
 import guideme.scene.SceneTagCompiler;
@@ -34,6 +37,7 @@ import guideme.scene.element.IsometricCameraElementCompiler;
 import guideme.scene.element.SceneBlockElementCompiler;
 import guideme.scene.element.SceneElementTagCompiler;
 import guideme.scene.element.SceneRemoveBlocksElementCompiler;
+import guideme.siteexport.PageExportProcessor;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -44,7 +48,8 @@ public final class DefaultExtensions {
     private static final List<Registration<?>> EXTENSIONS = List.of(
             new Registration<>(TagCompiler.EXTENSION_POINT, DefaultExtensions::tagCompilers),
             new Registration<>(SceneElementTagCompiler.EXTENSION_POINT, DefaultExtensions::sceneElementTagCompilers),
-            new Registration<>(RecipeTypeMappingSupplier.EXTENSION_POINT, DefaultExtensions::vanillaRecipeTypes));
+            new Registration<>(RecipeTypeMappingSupplier.EXTENSION_POINT, DefaultExtensions::vanillaRecipeTypes),
+            new Registration<>(PageExportProcessor.EXTENSION_POINT, DefaultExtensions::pageExportProcessors));
 
     private DefaultExtensions() {
     }
@@ -64,6 +69,13 @@ public final class DefaultExtensions {
         for (var extension : registration.factory.get()) {
             builder.add(registration.extensionPoint, extension);
         }
+    }
+
+    private static List<PageExportProcessor> pageExportProcessors() {
+        return List.of(
+                new ColorExportProcessor(),
+                new KeyBindExportProcessor(),
+                new BlockAnnotationTemplateExportProcessor());
     }
 
     private static List<TagCompiler> tagCompilers() {

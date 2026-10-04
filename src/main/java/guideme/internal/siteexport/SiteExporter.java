@@ -454,7 +454,7 @@ public class SiteExporter implements ResourceExporter {
             GuidePage compiledPage) {
 
         // Run post-processors on the AST
-        PageExportPostProcessor.postprocess(this, page, compiledPage);
+        PageExportPostProcessor.postprocess(this, guide.getExtensions(), page, compiledPage);
 
         exportWriter.addPage(page);
     }

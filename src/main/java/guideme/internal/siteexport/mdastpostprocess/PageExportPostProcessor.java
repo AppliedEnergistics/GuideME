@@ -6,10 +6,12 @@ import guideme.GuidePage;
 import guideme.compiler.ParsedGuidePage;
 import guideme.document.block.LytNode;
 import guideme.document.block.LytVisitor;
+import guideme.extensions.ExtensionCollection;
 import guideme.libs.mdast.MdAstVisitor;
 import guideme.libs.mdast.MdAstYamlFrontmatter;
 import guideme.libs.mdast.model.MdAstNode;
 import guideme.siteexport.ResourceExporter;
+import java.util.List;
 
 /**
  * Post-Processes page content before exporting it.
@@ -17,6 +19,7 @@ import guideme.siteexport.ResourceExporter;
 public final class PageExportPostProcessor {
 
     public static void postprocess(ResourceExporter exporter,
+            ExtensionCollection extensions,
             ParsedGuidePage page,
             GuidePage compiledPage) {
 
@@ -39,9 +42,12 @@ public final class PageExportPostProcessor {
         // Strip unnecessary frontmatter nodes.
         astRoot.removeChildren(mdAstNode -> mdAstNode instanceof MdAstYamlFrontmatter, true);
 
+        // Let elements modify themselves first, so that the content they unwrap is exported as well
+        new PageExportProcessing(exporter, page.getId(), extensions, exporter::addCleanupCallback,
+                node -> List.copyOf(nodeMapping.get(node))).process(astRoot);
+
         astRoot.visit(new SceneExportVisitor(exporter, nodeMapping));
         astRoot.visit(new ImageExportVisitor(exporter));
-        astRoot.visit(new KeyBindExportVisitor(exporter));
 
         astRoot.visit(new RemovePositionVisitor());
     }
