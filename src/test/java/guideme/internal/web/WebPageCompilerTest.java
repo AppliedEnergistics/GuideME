@@ -173,6 +173,18 @@ class WebPageCompilerTest {
     }
 
     @Test
+    void testFlowElementsUsedAsBlocksAreParagraphs() throws Exception {
+        var html = compile("""
+                <ItemLink id="minecraft:stick" />
+
+                <ItemLink id="not_installed:doesnt_exist" fallback="Fallback text" />""");
+
+        // Like in-game, each is its own paragraph instead of ending up on the same line
+        assertThat(html).contains("<p><span class=\"minecraft-tooltip\"");
+        assertThat(html).contains("<p><em>Fallback text</em></p>");
+    }
+
+    @Test
     void testUnknownItemsAreErrors() throws Exception {
         assertThat(compile("<ItemImage id=\"missing\" />")).contains("Missing item missing");
         assertThat(compile("<ItemIcon id=\"missing\" />")).contains("Missing item missing");

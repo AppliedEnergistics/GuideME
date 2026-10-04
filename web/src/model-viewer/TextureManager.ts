@@ -41,9 +41,12 @@ export default class TextureManager {
       const fullUrl = builtIn ? url : this.getFullUrl(url);
       console.debug("Loading image %s", fullUrl);
       try {
+        // setOptions replaces all options, including the premultiplyAlpha default of three.js.
+        // Premultiplied textures would be darkened twice by the alpha blending of translucent materials.
         this.loader.setOptions({
           // Normal PNGs need to be flipped if they weren't exported from textures
           imageOrientation: builtIn ? "flipY" : "none",
+          premultiplyAlpha: "none",
         } satisfies ImageBitmapOptions);
         image = await this.loader.loadAsync(fullUrl);
       } catch (e) {

@@ -63,6 +63,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -216,11 +217,13 @@ public class SceneExporter {
             frameCount = interpResult.frameCount();
 
             // We've simplified frames here. They all have frame time 1
-            ExpAnimatedTexturePart.startFramesVector(builder, interpResult.indices().length);
-            for (var frameIndex : interpResult.indices()) {
+            // FlatBuffers builds vectors back to front, so the frames have to be added in reverse
+            var indices = interpResult.indices();
+            ExpAnimatedTexturePart.startFramesVector(builder, indices.length);
+            for (int i = indices.length - 1; i >= 0; i--) {
                 ExpAnimatedTexturePartFrame.createExpAnimatedTexturePartFrame(
                         builder,
-                        frameIndex,
+                        indices[i],
                         1);
             }
             framesOffset = builder.endVector();
@@ -234,8 +237,11 @@ public class SceneExporter {
             frameCount = animatedTexture.getUniqueFrames().size();
             frameRowSize = animatedTexture.frameRowSize;
 
-            ExpAnimatedTexturePart.startFramesVector(builder, animatedTexture.frames.size());
-            for (var frame : animatedTexture.frames) {
+            // FlatBuffers builds vectors back to front, so the frames have to be added in reverse
+            var frames = animatedTexture.frames;
+            ExpAnimatedTexturePart.startFramesVector(builder, frames.size());
+            for (int i = frames.size() - 1; i >= 0; i--) {
+                var frame = frames.get(i);
                 ExpAnimatedTexturePartFrame.createExpAnimatedTexturePartFrame(
                         builder,
                         frame.index(),
@@ -258,11 +264,20 @@ public class SceneExporter {
         var textureIdOffset = builder.createSharedString(sprite.atlasLocation().toString());
         var spritePath = builder.createString(relativePath);
 
+        // Sprites are padded in the atlas, so their position does not point at their content
+        int contentX = sprite.getX();
+        int contentY = sprite.getY();
+        if (Minecraft.getInstance().getTextureManager()
+                .getTexture(sprite.atlasLocation()) instanceof TextureAtlas atlas) {
+            contentX = Math.round(sprite.getU0() * atlas.getWidth());
+            contentY = Math.round(sprite.getV0() * atlas.getHeight());
+        }
+
         return ExpAnimatedTexturePart.createExpAnimatedTexturePart(
                 builder,
                 textureIdOffset,
-                sprite.getX(),
-                sprite.getY(),
+                contentX,
+                contentY,
                 contents.width(),
                 contents.height(),
                 spritePath,
@@ -410,15 +425,17 @@ public class SceneExporter {
         var samplersOffset = 0;
         var samplers = RenderTypeIntrospection.getSamplers(type);
         if (!samplers.isEmpty()) {
-            var sampler = samplers.get(0);
+            var samplerOffsets = new int[samplers.size()];
+            for (int i = 0; i < samplers.size(); i++) {
+                var sampler = samplers.get(i);
+                var texturePath = resourceExporter.exportTexture(sampler.texture());
+                var textureOffset = builder.createSharedString(texturePath);
+                var textureIdOffset = builder.createSharedString(sampler.texture().toString());
 
-            var texturePath = resourceExporter.exportTexture(sampler.texture());
-            var textureOffset = builder.createSharedString(texturePath);
-            var textureIdOffset = builder.createSharedString(sampler.texture().toString());
-
-            var samplerOffset = ExpSampler.createExpSampler(builder, textureIdOffset, textureOffset, sampler.blur(),
-                    sampler.blur());
-            samplersOffset = ExpMaterial.createSamplersVector(builder, new int[] { samplerOffset });
+                samplerOffsets[i] = ExpSampler.createExpSampler(builder, textureIdOffset, textureOffset,
+                        sampler.blur(), sampler.blur());
+            }
+            samplersOffset = ExpMaterial.createSamplersVector(builder, samplerOffsets);
         }
 
         return ExpMaterial.createExpMaterial(

@@ -47,6 +47,7 @@ import guideme.siteexport.web.CustomElementWebRenderer;
 import guideme.siteexport.web.HtmlFragment;
 import guideme.siteexport.web.HtmlNode;
 import guideme.siteexport.web.HtmlTag;
+import guideme.siteexport.web.HtmlText;
 import guideme.siteexport.web.RecipeWebRenderer;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -60,6 +61,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import net.minecraft.util.StringRepresentable;
@@ -547,8 +549,31 @@ class WebPageCompiler {
         if (tagName.toLowerCase(Locale.ROOT).equals(tagName)) {
             compileHtmlTag(context, tagName, node, node, output);
         } else {
-            compileCustomElement(context, node, node, output);
+            // Like in-game (see FlowTagCompiler), elements that produce flow content are wrapped in a paragraph when
+            // used as blocks. Otherwise, they'd end up on the same line as adjacent elements.
+            var content = new ArrayList<HtmlNode>();
+            compileCustomElement(context, node, node, content::add);
+            if (!content.isEmpty() && content.stream().allMatch(WebPageCompiler::isInlineContent)) {
+                output.accept(HtmlNode.tag("p", content));
+            } else {
+                content.forEach(output);
+            }
         }
+    }
+
+    private static final Set<String> INLINE_ELEMENTS = Set.of("a", "abbr", "b", "br", "code", "del", "em", "i",
+            "img", "kbd", "mark", "s", "small", "span", "strong", "sub", "sup", "u");
+
+    private static boolean isInlineContent(HtmlNode node) {
+        if (node instanceof HtmlText) {
+            return true;
+        }
+        // Block images and game scenes are images that are displayed as blocks
+        if (node.name().equals("img")) {
+            var className = Objects.requireNonNullElse(node.attribute("class"), "");
+            return !className.contains("game-scene") && !className.contains("block-image");
+        }
+        return INLINE_ELEMENTS.contains(node.name());
     }
 
     private void compileCustomElement(WebPageCompileContext context, MdxJsxTextElement node,
@@ -683,6 +708,7 @@ class WebPageCompiler {
             srcset.append(", ").append(context.resolveAssetPath(src8x)).append(" 4x");
         }
         return HtmlNode.tag("img")
+                .setClassName("block-image")
                 .setAttribute("srcset", srcset.toString())
                 .setAttribute("src", asset2x)
                 .setAttribute("alt", "")
@@ -699,6 +725,12 @@ class WebPageCompiler {
 
         // Markdown Formatting can insert whitespace into MDX attributes
         id = id.replaceAll("\\s+", "");
+
+        // Like in-game, show the fallback text in italics if the item doesn't exist
+        var fallback = MdxAttrs.getString(jsxElement, "fallback", null);
+        if (fallback != null && guide.tryGetItemInfo(id) == null) {
+            return HtmlNode.tag("em").append(fallback);
+        }
 
         // Without explicit content, the item name will be used
         HtmlFragment innerContent = null;

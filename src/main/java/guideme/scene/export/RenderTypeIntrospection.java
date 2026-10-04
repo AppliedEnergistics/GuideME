@@ -1,6 +1,7 @@
 package guideme.scene.export;
 
 import com.mojang.renderpearl.api.textures.FilterMode;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -14,10 +15,17 @@ final class RenderTypeIntrospection {
     private RenderTypeIntrospection() {
     }
 
+    /**
+     * {@return the textures bound to Sampler0, Sampler1 and so on, in order} Most shaders only use Sampler0, but some
+     * use more (i.e. the end portal uses Sampler1 for its layers).
+     */
     public static List<Sampler> getSamplers(RenderType type) {
-
-        var binding = type.state.textures.get("Sampler0");
-        if (binding != null) {
+        var result = new ArrayList<Sampler>();
+        for (int i = 0;; i++) {
+            var binding = type.state.textures.get("Sampler" + i);
+            if (binding == null) {
+                break;
+            }
             var textureId = binding.location();
             var texture = Minecraft.getInstance().getTextureManager().getTexture(textureId).getTexture();
             var sampler = binding.sampler().get();
@@ -26,10 +34,9 @@ final class RenderTypeIntrospection {
             var blur = sampler != null && sampler.getMagFilter() != FilterMode.NEAREST;
             var useMipmaps = texture.getMipLevels() > 1;
 
-            return List.of(new Sampler(textureId, blur, useMipmaps));
+            result.add(new Sampler(textureId, blur, useMipmaps));
         }
-
-        return List.of();
+        return result;
     }
 
     public record Sampler(Identifier texture, boolean blur, boolean mipmap) {

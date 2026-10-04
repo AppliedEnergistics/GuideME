@@ -162,12 +162,14 @@ export default async function loadScene(
         animatedTexture.height();
 
       sourceFramePromises.push(
+        // Decode the frames like the texture they're copied into (see TextureManager)
         createImageBitmap(
           sourceData,
           frameX,
           frameY,
           animatedTexture.width(),
           animatedTexture.height(),
+          { imageOrientation: "none", premultiplyAlpha: "none" },
         ),
       );
     }

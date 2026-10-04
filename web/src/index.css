@@ -265,3 +265,8 @@ kbd {
   border: 1px solid currentColor;
   border-radius: 3px;
 }
+
+/* Block images are block elements like in-game */
+.block-image {
+  display: block;
+}
