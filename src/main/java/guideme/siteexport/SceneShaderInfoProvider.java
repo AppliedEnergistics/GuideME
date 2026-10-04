@@ -1,6 +1,6 @@
 package guideme.siteexport;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import guideme.extensions.Extension;
 import guideme.extensions.ExtensionPoint;
 import org.jetbrains.annotations.Nullable;

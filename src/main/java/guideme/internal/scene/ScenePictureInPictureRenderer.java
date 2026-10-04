@@ -3,6 +3,7 @@ package guideme.internal.scene;
 import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.color.LightDarkMode;
 import guideme.scene.LytGuidebookScene;
+import java.util.Objects;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -19,7 +20,11 @@ public class ScenePictureInPictureRenderer extends PictureInPictureRenderer<Scen
 
     @Override
     protected void renderToTexture(State state, PoseStack pose, SubmitNodeCollector submitNodeCollector) {
-        state.renderer.render(state.lightDarkMode, pose, submitNodeCollector);
+        // The scene renders itself immediately, so it needs to know which texture the PIP renderer is targeting
+        try (var ignored = SceneRenderTarget.push(Objects.requireNonNull(textureView),
+                Objects.requireNonNull(depthTextureView))) {
+            state.renderer.render(state.lightDarkMode, pose, submitNodeCollector);
+        }
     }
 
     @Override

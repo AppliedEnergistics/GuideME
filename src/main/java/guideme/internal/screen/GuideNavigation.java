@@ -1,5 +1,6 @@
 package guideme.internal.screen;
 
+import com.mojang.blaze3d.Blaze3D;
 import guideme.Guide;
 import guideme.PageAnchor;
 import java.net.URI;
@@ -7,7 +8,6 @@ import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,12 +97,12 @@ public final class GuideNavigation {
             if (minecraft.options.chatLinksPrompt().get().booleanValue()) {
                 minecraft.gui.setScreen(new ConfirmLinkScreen(doOpen -> {
                     if (doOpen) {
-                        Util.getPlatform().openUri(uri);
+                        Blaze3D.openUri(uri);
                     }
                     minecraft.gui.setScreen(previousScreen);
-                }, href, false));
+                }, uri, false));
             } else {
-                Util.getPlatform().openUri(uri);
+                Blaze3D.openUri(uri);
             }
         } else {
             LOG.debug("Can't open relative URL: '{}'", href);

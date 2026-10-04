@@ -11,6 +11,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.CommonListenerCookie;
 import net.minecraft.client.multiplayer.LevelLoadTracker;
+import net.minecraft.client.player.ItemActivation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.telemetry.TelemetryEventSender;
 import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
@@ -93,7 +94,8 @@ public class FakeRenderEnvironment implements AutoCloseable {
                 new ClientRecipeBook(),
                 Input.EMPTY,
                 false,
-                minecraft.computeChatAbilities());
+                minecraft.computeChatAbilities(),
+                new ItemActivation());
     }
 
     @Override

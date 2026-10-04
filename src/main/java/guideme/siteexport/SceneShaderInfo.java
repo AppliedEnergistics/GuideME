@@ -1,9 +1,10 @@
 package guideme.siteexport;
 
-import com.mojang.blaze3d.pipeline.BindGroupLayout;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import java.util.Arrays;
+import com.mojang.renderpearl.api.pipeline.BindGroupLayout;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.ShaderType;
+import com.mojang.renderpearl.api.pipeline.UniformType;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.resources.Identifier;
@@ -55,8 +56,11 @@ public record SceneShaderInfo(Lighting lighting, float alphaTest, boolean vertex
      */
     public static SceneShaderInfo fromPipeline(RenderPipeline pipeline) {
         var defines = pipeline.getShaderDefines();
-        var samplers = BindGroupLayout.flattenSamplers(pipeline.getBindGroupLayouts());
         var uniforms = BindGroupLayout.flattenUniforms(pipeline.getBindGroupLayouts());
+        var samplers = uniforms.stream()
+                .filter(u -> u.type() == UniformType.COMBINED_IMAGE_SAMPLER)
+                .map(BindGroupLayout.UniformDescription::name)
+                .toList();
 
         // Entity and item shaders apply directional lighting based on the Lighting uniform
         var usesDirectionalLight = uniforms.stream().anyMatch(u -> u.name().equals("Lighting"))
@@ -73,7 +77,7 @@ public record SceneShaderInfo(Lighting lighting, float alphaTest, boolean vertex
         return new SceneShaderInfo(
                 lighting,
                 getAlphaTest(pipeline),
-                Arrays.stream(pipeline.getVertexFormatBindings())
+                pipeline.getVertexFormatBindings().stream()
                         .filter(Objects::nonNull)
                         .anyMatch(format -> format.contains(DefaultVertexFormat.COLOR_SEMANTIC_NAME)),
                 samplers.contains("Sampler0"));
@@ -90,8 +94,8 @@ public record SceneShaderInfo(Lighting lighting, float alphaTest, boolean vertex
         }
 
         // Some vanilla fragment shaders discard with a hardcoded threshold
-        var fragmentShader = pipeline.getFragmentShader();
-        if (fragmentShader.getNamespace().equals(Identifier.DEFAULT_NAMESPACE)
+        var fragmentShader = pipeline.getShaders().get(ShaderType.FRAGMENT);
+        if (fragmentShader != null && fragmentShader.getNamespace().equals(Identifier.DEFAULT_NAMESPACE)
                 && HARDCODED_ALPHA_TEST_SHADERS.stream().anyMatch(fragmentShader.getPath()::startsWith)) {
             return 0.1f;
         }

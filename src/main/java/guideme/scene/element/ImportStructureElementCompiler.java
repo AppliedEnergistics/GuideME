@@ -18,6 +18,8 @@ import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -74,7 +76,10 @@ public class ImportStructureElementCompiler implements SceneElementTagCompiler {
 
         var template = new StructureTemplate();
         var blocks = scene.getLevel().registryAccess().lookupOrThrow(Registries.BLOCK);
-        template.load(blocks, compoundTag);
+        // Structures may have been saved by older versions, which use a different NBT format for block states
+        var dataVersion = NbtUtils.getDataVersion(compoundTag, 500);
+        template.load(blocks,
+                DataFixTypes.STRUCTURE.updateToCurrentVersion(DataFixers.getDataFixer(), compoundTag, dataVersion));
         var random = new SingleThreadedRandomSource(0L);
         var settings = new StructurePlaceSettings();
         settings.setIgnoreEntities(true); // Entities need a server level in structures

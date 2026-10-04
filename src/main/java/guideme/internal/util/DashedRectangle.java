@@ -1,7 +1,7 @@
 package guideme.internal.util;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import guideme.document.LytRect;
 import guideme.render.RenderContext;
 import net.minecraft.client.gui.navigation.ScreenRectangle;

@@ -45,9 +45,10 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.util.tinyfd.TinyFileDialogs;
+import org.lwjgl.sdl.SDLDialog;
+import org.lwjgl.sdl.SDL_DialogFileCallback;
+import org.lwjgl.sdl.SDL_DialogFileFilter;
+import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +67,7 @@ public final class StructureCommands {
     @Nullable
     private static String lastOpenedOrSavedPath;
 
-    private static final String[] FILE_PATTERNS = { "*.snbt", "*.nbt" };
+    private static final String FILE_PATTERNS = "snbt;nbt";
 
     private static final String FILE_PATTERN_DESC = "Structure NBT Files (*.snbt, *.nbt)";
 
@@ -265,6 +266,7 @@ public final class StructureCommands {
 
         CompletableFuture
                 .supplyAsync(StructureCommands::pickFileForOpen, minecraft)
+                .thenCompose(f -> f)
                 .thenApplyAsync(selectedPath -> {
                     if (selectedPath == null) {
                         return null;
@@ -349,6 +351,7 @@ public final class StructureCommands {
 
         CompletableFuture
                 .supplyAsync(StructureCommands::pickFileForSave, minecraft)
+                .thenCompose(f -> f)
                 .thenApplyAsync(selectedPath -> {
                     if (selectedPath == null) {
                         return null;
@@ -404,40 +407,57 @@ public final class StructureCommands {
                 }, minecraft);
     }
 
-    private static String pickFileForOpen() {
-        setDefaultFolder();
-
-        try (var stack = MemoryStack.stackPush()) {
-
-            return TinyFileDialogs.tinyfd_openFileDialog(
-                    "Load Structure",
-                    lastOpenedOrSavedPath,
-                    createFilterPatterns(stack),
-                    FILE_PATTERN_DESC,
-                    false);
-        }
+    private static CompletableFuture<String> pickFileForOpen() {
+        return showFileDialog(false);
     }
 
-    private static String pickFileForSave() {
-        setDefaultFolder();
-
-        try (var stack = MemoryStack.stackPush()) {
-
-            return TinyFileDialogs.tinyfd_saveFileDialog(
-                    "Save Structure",
-                    lastOpenedOrSavedPath,
-                    createFilterPatterns(stack),
-                    FILE_PATTERN_DESC);
-        }
+    private static CompletableFuture<String> pickFileForSave() {
+        return showFileDialog(true);
     }
 
-    private static PointerBuffer createFilterPatterns(MemoryStack stack) {
-        PointerBuffer filterPatternsBuffer = stack.mallocPointer(FILE_PATTERNS.length);
-        for (var pattern : FILE_PATTERNS) {
-            filterPatternsBuffer.put(stack.UTF8(pattern));
+    /**
+     * SDL file dialogs are asynchronous. The filter and callback have to stay alive until the callback is invoked,
+     * which may happen on a different thread.
+     */
+    private static CompletableFuture<String> showFileDialog(boolean save) {
+        setDefaultFolder();
+
+        var result = new CompletableFuture<String>();
+        var name = MemoryUtil.memUTF8(FILE_PATTERN_DESC);
+        var pattern = MemoryUtil.memUTF8(FILE_PATTERNS);
+        var filters = SDL_DialogFileFilter.calloc(1);
+        filters.get(0).name(name).pattern(pattern);
+
+        var callbackHolder = new SDL_DialogFileCallback[1];
+        callbackHolder[0] = SDL_DialogFileCallback.create((userdata, filelist, filter) -> {
+            try {
+                String selectedPath = null;
+                if (filelist != MemoryUtil.NULL) {
+                    var firstFile = MemoryUtil.memGetAddress(filelist);
+                    if (firstFile != MemoryUtil.NULL) {
+                        selectedPath = MemoryUtil.memUTF8(firstFile);
+                    }
+                }
+                result.complete(selectedPath);
+            } catch (Throwable e) {
+                result.completeExceptionally(e);
+            } finally {
+                filters.free();
+                MemoryUtil.memFree(name);
+                MemoryUtil.memFree(pattern);
+                callbackHolder[0].free();
+            }
+        });
+
+        var window = Minecraft.getInstance().getWindow().handle();
+        if (save) {
+            SDLDialog.SDL_ShowSaveFileDialog(callbackHolder[0], MemoryUtil.NULL, window, filters,
+                    lastOpenedOrSavedPath);
+        } else {
+            SDLDialog.SDL_ShowOpenFileDialog(callbackHolder[0], MemoryUtil.NULL, window, filters,
+                    lastOpenedOrSavedPath, false);
         }
-        filterPatternsBuffer.flip();
-        return filterPatternsBuffer;
+        return result;
     }
 
     private static void setDefaultFolder() {

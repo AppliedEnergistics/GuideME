@@ -1,5 +1,6 @@
 package guideme.scene;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.color.ColorValue;
 import guideme.color.LightDarkMode;
@@ -29,7 +30,6 @@ import guideme.ui.GuideUiHost;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -226,7 +226,6 @@ public class LytGuidebookScene extends LytBox {
                 var sns = new SubmitNodeStorage();
                 renderer.render(scene.getLevel(), scene.getCameraSettings(), annotations,
                         LightDarkMode.LIGHT_MODE, sns, new PoseStack());
-                Minecraft.getInstance().gameRenderer.featureRenderDispatcher().renderAllFeatures(sns);
             });
         }
     }
@@ -419,7 +418,8 @@ public class LytGuidebookScene extends LytBox {
         @Override
         public boolean mouseClicked(GuideUiHost screen, int x, int y, MouseButtonInfo button, boolean doubleClick) {
             if (interactive) {
-                if (button.button() == 0 || button.button() == 1) {
+                if (button.button() == InputConstants.MOUSE_BUTTON_LEFT
+                        || button.button() == InputConstants.MOUSE_BUTTON_RIGHT) {
                     var cameraSettings = scene.getCameraSettings();
                     buttonDown = button.button();
                     pointDown = new Vector2i(x, y);
@@ -449,10 +449,10 @@ public class LytGuidebookScene extends LytBox {
             if (interactive && pointDown != null) {
                 var dx = x - pointDown.x;
                 var dy = y - pointDown.y;
-                if (buttonDown == 0) {
+                if (buttonDown == InputConstants.MOUSE_BUTTON_LEFT) {
                     scene.getCameraSettings().setRotationY(initialRotY + dx);
                     scene.getCameraSettings().setRotationX(initialRotX + dy);
-                } else if (buttonDown == 1) {
+                } else if (buttonDown == InputConstants.MOUSE_BUTTON_RIGHT) {
                     scene.getCameraSettings().setOffsetX(initialTransX + dx);
                     scene.getCameraSettings().setOffsetY(initialTransY - dy);
                 }

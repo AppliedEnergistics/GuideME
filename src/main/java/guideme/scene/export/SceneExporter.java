@@ -1,20 +1,20 @@
 package guideme.scene.export;
 
 import com.google.flatbuffers.FlatBufferBuilder;
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.IndexType;
-import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
+import com.mojang.renderpearl.api.pipeline.IndexType;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
+import com.mojang.renderpearl.api.vertex.VertexFormatElement;
 import guideme.extensions.ExtensionCollection;
 import guideme.flatbuffers.scene.ExpAnimatedTexturePart;
 import guideme.flatbuffers.scene.ExpAnimatedTexturePartFrame;
@@ -33,6 +33,7 @@ import guideme.flatbuffers.scene.ExpVertexElementType;
 import guideme.flatbuffers.scene.ExpVertexElementUsage;
 import guideme.flatbuffers.scene.ExpVertexFormat;
 import guideme.flatbuffers.scene.ExpVertexFormatElement;
+import guideme.internal.scene.SceneRenderTarget;
 import guideme.internal.siteexport.CacheBusting;
 import guideme.internal.util.Platform;
 import guideme.scene.CameraSettings;
@@ -64,6 +65,7 @@ import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
@@ -109,7 +111,8 @@ public class SceneExporter {
             var nodes = new SubmitNodeStorage();
             GuidebookLevelRenderer.getInstance().renderContent(level, nodes, new PoseStack());
             var featureRenderDispatcher = Minecraft.getInstance().gameRenderer.featureRenderDispatcher();
-            capture.captureDuring(() -> featureRenderDispatcher.renderAllFeatures(nodes));
+            capture.captureDuring(() -> SceneRenderTarget.renderAllFeatures(featureRenderDispatcher, nodes,
+                    () -> "GuideME scene export"));
             return capture.getMeshes();
         }
     }
@@ -344,6 +347,15 @@ public class SceneExporter {
         return result;
     }
 
+    @Nullable
+    private static BlendFunction getBlendFunction(RenderPipeline pipeline) {
+        var colorTargetStates = pipeline.getColorTargetStates();
+        if (colorTargetStates.isEmpty() || colorTargetStates.getFirst() == null) {
+            return null;
+        }
+        return colorTargetStates.getFirst().blendFunction().orElse(null);
+    }
+
     private int writeMaterial(RenderType type, FlatBufferBuilder builder) {
 
         var renderSetup = type.state;
@@ -357,7 +369,7 @@ public class SceneExporter {
         var disableCulling = !pipeline.isCull();
 
         // Handle transparency
-        var transparencyState = pipeline.getColorTargetState().blendFunction().orElse(null);
+        var transparencyState = getBlendFunction(pipeline);
         int transparency;
         if (transparencyState == null) {
             transparency = ExpTransparency.DISABLED;
@@ -368,7 +380,7 @@ public class SceneExporter {
         } else if (transparencyState.equals(BlendFunction.GLINT)) {
             transparency = ExpTransparency.GLINT;
         } else if (transparencyState
-                .equals(RenderPipelines.CRUMBLING.getColorTargetState().blendFunction().orElse(null))) {
+                .equals(getBlendFunction(RenderPipelines.CRUMBLING))) {
             transparency = ExpTransparency.CRUMBLING;
         } else if (transparencyState.equals(BlendFunction.TRANSLUCENT)) {
             transparency = ExpTransparency.TRANSLUCENT;
