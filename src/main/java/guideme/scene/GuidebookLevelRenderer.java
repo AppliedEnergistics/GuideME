@@ -11,20 +11,14 @@ import guideme.internal.util.Platform;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import java.util.ArrayList;
 import java.util.Collection;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.TextureFilteringMethod;
-import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeStorage;
-import net.minecraft.client.renderer.block.BlockQuadOutput;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
@@ -32,22 +26,17 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
-import net.minecraft.util.LightCoordsUtil;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.NeoForgeRenderTypes;
-import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.neoforged.neoforge.client.submit.RenderPhaseKeys;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -197,31 +186,21 @@ public class GuidebookLevelRenderer {
     }
 
     /**
-     * Same mapping NeoForge uses for multi-layer block models submitted via
-     * {@link SubmitNodeCollector#submitMultiLayerBlockModel}.
+     * The render types Minecraft uses for moving blocks (i.e. pistons), which use the same pipelines as chunk sections.
+     * We do not use the entity / item block sheets, since they apply directional lighting on top of the shading that is
+     * already baked into the vertex colors by {@link ModelBlockRenderer}.
      */
-    static RenderType getEntityRenderType(ChunkSectionLayer layer) {
+    static RenderType getBlockRenderType(ChunkSectionLayer layer) {
         return switch (layer) {
-            case SOLID -> NeoForgeRenderTypes.SOLID_BLOCK_SHEET;
-            case CUTOUT -> Sheets.cutoutBlockItemSheet();
-            case TRANSLUCENT -> Sheets.translucentBlockItemSheet();
+            case SOLID -> RenderTypes.solidMovingBlock();
+            case CUTOUT -> RenderTypes.cutoutMovingBlock();
+            case TRANSLUCENT -> RenderTypes.translucentMovingBlock();
         };
     }
 
     private void renderBlocks(GuidebookLevel level, SubmitNodeCollector nodes, PoseStack poseStack) {
-        var minecraft = Minecraft.getInstance();
-        boolean ambientOcclusion = minecraft.options.ambientOcclusion().get();
-        var blockRenderer = new ModelBlockRenderer(ambientOcclusion, true, minecraft.getBlockColors());
-        var modelManager = minecraft.getModelManager();
+        var modelManager = Minecraft.getInstance().getModelManager();
         var fluidModelSet = modelManager.getFluidStateModelSet();
-
-        BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> {
-            // TODO 26.2 var layer = quad.materialInfo().layer();
-            // TODO 26.2 if (layer.translucent() == translucent) {
-            // TODO 26.2 var builder = buffers.getVertexBuilder(getEntityRenderType(layer));
-            // TODO 26.2 builder.putBakedQuad(poseStack.last(), quad, instance);
-            // TODO 26.2 }
-        };
 
         var it = level.getFilledBlocks().iterator();
         while (it.hasNext()) {
@@ -250,41 +229,21 @@ public class GuidebookLevelRenderer {
             }
 
             var model = modelManager.getBlockStateModelSet().get(blockState);
-            // Only decides whether the model is submitted for sorted translucent rendering. The render type is chosen
-            // per quad based on its chunk section layer.
-            var translucent = model.hasMaterialFlag(level, pos, blockState, BakedQuad.FLAG_TRANSLUCENT);
 
             poseStack.pushPose();
             poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
-            var modelParts = new ArrayList<BlockStateModelPart>();
-            model.collectParts(level, pos, blockState, RandomSource.create(blockState.getSeed(pos)), modelParts);
-            var tintLayers = computeTintLayers(minecraft.getBlockColors(), level, pos, blockState);
-            nodes.submitMultiLayerBlockModel(poseStack, modelParts, translucent, tintLayers,
-                    LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, -1);
-            // blockRenderer.tesselateBlock(quadOutput, 0, 0, 0, level, pos, blockState, model,
-            // blockState.getSeed(pos));
+            // Tessellation is deferred until the submits are rendered, so we cannot hold on to the mutable pos
+            var immutablePos = pos.immutable();
+            nodes.submitSpecial(RenderPhaseKeys.SOLID, new BlockModelFeatureRenderer.Submit(level, immutablePos,
+                    poseStack.last().copy(), blockState, false));
+            // Translucent quads have to be rendered after everything else, and are sorted back-to-front
+            if (model.hasMaterialFlag(level, pos, blockState, BakedQuad.FLAG_TRANSLUCENT)) {
+                nodes.submitSpecial(RenderPhaseKeys.TRANSLUCENT_BLOCKS_AND_ITEMS,
+                        new BlockModelFeatureRenderer.Submit(level, immutablePos, poseStack.last().copy(), blockState,
+                                true));
+            }
             poseStack.popPose();
         }
-    }
-
-    /**
-     * Computes the tint color for each tint index of the block model, in the same way as {@link ModelBlockRenderer}
-     * does it for terrain.
-     */
-    private static int[] computeTintLayers(BlockColors blockColors, GuidebookLevel level, BlockPos pos,
-            BlockState blockState) {
-        var tintSources = blockColors.getTintSources(blockState);
-        if (tintSources.isEmpty()) {
-            var dynamicTints = new IntArrayList();
-            IClientBlockExtensions.of(blockState).collectDynamicTintValues(blockState, level, pos, dynamicTints);
-            return dynamicTints.toIntArray();
-        }
-
-        var tintLayers = new int[tintSources.size()];
-        for (int i = 0; i < tintLayers.length; i++) {
-            tintLayers[i] = tintSources.get(i).colorInWorld(blockState, level, pos);
-        }
-        return tintLayers;
     }
 
     private void renderBlockEntities(GuidebookLevel level, float partialTick, PoseStack poseStack,
