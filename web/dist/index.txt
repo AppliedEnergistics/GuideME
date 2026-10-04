@@ -1,3 +1,9 @@
+assets/PixeloidMono-3KCHGQZV.woff
+assets/PixeloidMono-NQAXMAIO.woff2
+assets/PixeloidSans-Bold-7JWXYWBN.woff2
+assets/PixeloidSans-Bold-Q6ROW6NU.woff
+assets/PixeloidSans-LRDUD24B.woff
+assets/PixeloidSans-SG3QN3JO.woff2
 assets/background-YRAQ3RNF.png
 assets/bundle-463FLS67.js
 assets/bundle-T7KGTOA2.css
@@ -6,12 +12,6 @@ assets/decompressFallback-VGYIC7XH.js
 assets/diamond-7X2HHREI.png
 assets/diamond_colored-LGQLQFTB.png
 assets/modelViewer-AEF6JBTA.js
-assets/PixeloidMono-3KCHGQZV.woff
-assets/PixeloidMono-NQAXMAIO.woff2
-assets/PixeloidSans-Bold-7JWXYWBN.woff2
-assets/PixeloidSans-Bold-Q6ROW6NU.woff
-assets/PixeloidSans-LRDUD24B.woff
-assets/PixeloidSans-SG3QN3JO.woff2
 assets/search-PG5YQFOH.js
 assets/sky_stone_block-GPFGP7LQ.png
 assets/slot-RVUFXOMZ.png
