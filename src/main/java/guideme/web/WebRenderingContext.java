@@ -2,6 +2,9 @@ package guideme.web;
 
 import guideme.libs.mdast.model.MdAstNode;
 import guideme.libs.mdast.model.MdAstParent;
+import guideme.web.html.HtmlFragment;
+import guideme.web.html.HtmlNode;
+import guideme.web.html.HtmlTag;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
@@ -28,6 +31,24 @@ public interface WebRenderingContext {
      * @throws IllegalArgumentException If the resource does not exist.
      */
     String getAssetUrl(Identifier resource);
+
+    /**
+     * Includes a stylesheet from the classpath of the website generator on the current page, i.e. for the styles your
+     * renderer uses. Relative {@code url(...)} references in it are copied as well.
+     *
+     * @param resourcePath The path of the stylesheet on the classpath, i.e. {@code modid/web/recipes.css}.
+     * @throws IllegalArgumentException If the resource does not exist.
+     */
+    void requireStylesheet(String resourcePath);
+
+    /**
+     * Includes a script from the classpath of the website generator on the current page. It is loaded with the
+     * {@code defer} attribute.
+     *
+     * @param resourcePath The path of the script on the classpath, i.e. {@code modid/web/recipes.js}.
+     * @throws IllegalArgumentException If the resource does not exist.
+     */
+    void requireScript(String resourcePath);
 
     /**
      * Resolves the path from the current page to another page.

@@ -5,7 +5,7 @@ assets/PixeloidSans-Bold-Q6ROW6NU.woff
 assets/PixeloidSans-LRDUD24B.woff
 assets/PixeloidSans-SG3QN3JO.woff2
 assets/background-YRAQ3RNF.png
-assets/bundle-RMI7V6RG.js
+assets/bundle-3FJGBGUZ.js
 assets/bundle-Z3LRXRTO.css
 assets/buttons-6BF5FNW2.png
 assets/chunk-RXNPRUEY.js

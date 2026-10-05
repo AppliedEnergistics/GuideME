@@ -2,6 +2,7 @@ package guideme.web;
 
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.siteexport.DefaultValue;
+import guideme.web.html.HtmlFragment;
 import org.jetbrains.annotations.ApiStatus;
 
 /**

@@ -1,5 +1,6 @@
 package guideme.web;
 
+import guideme.internal.web.WebSiteGenerator;
 import guideme.siteexport.RecipeExporter;
 import java.util.Set;
 import org.jetbrains.annotations.ApiStatus;

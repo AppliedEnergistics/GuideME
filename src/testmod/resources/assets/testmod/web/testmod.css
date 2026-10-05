@@ -1,9 +1,0 @@
-/* Shows the test mod's guide item next to the guide title to verify that mod stylesheets are applied */
-.topLogoBar .logo::after {
-  content: "";
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  background: url("../textures/item/guide.png") center / contain no-repeat;
-  image-rendering: pixelated;
-}

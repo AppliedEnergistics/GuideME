@@ -1,6 +1,8 @@
 package guideme.web;
 
 import guideme.compiler.TagCompiler;
+import guideme.internal.web.WebSiteGenerator;
+import guideme.web.html.HtmlNode;
 import java.util.Set;
 import java.util.function.Consumer;
 import org.jetbrains.annotations.ApiStatus;

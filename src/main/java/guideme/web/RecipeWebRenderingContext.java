@@ -1,5 +1,6 @@
 package guideme.web;
 
+import guideme.web.html.HtmlNode;
 import java.util.List;
 import java.util.function.Consumer;
 import org.jetbrains.annotations.ApiStatus;

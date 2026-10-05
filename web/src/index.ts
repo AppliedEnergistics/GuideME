@@ -99,6 +99,45 @@ function updateActiveNavigationLink(pageUrl: string) {
   }
 }
 
+/**
+ * Pages only include the stylesheets and scripts that their content needs, so add the ones the new page needs
+ * that weren't loaded yet.
+ */
+function addMissingPageResources(newDocument: Document, pageUrl: string) {
+  const loadedStylesheets = new Set(
+    Array.from(
+      document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]'),
+      (link) => link.href,
+    ),
+  );
+  for (const link of newDocument.head.querySelectorAll(
+    'link[rel="stylesheet"]',
+  )) {
+    const href = new URL(link.getAttribute("href") ?? "", pageUrl).href;
+    if (!loadedStylesheets.has(href)) {
+      const stylesheet = document.createElement("link");
+      stylesheet.rel = "stylesheet";
+      stylesheet.href = href;
+      document.head.append(stylesheet);
+    }
+  }
+
+  const loadedScripts = new Set(
+    Array.from(
+      document.querySelectorAll<HTMLScriptElement>("script[src]"),
+      (script) => script.src,
+    ),
+  );
+  for (const script of newDocument.head.querySelectorAll("script[src]")) {
+    const src = new URL(script.getAttribute("src") ?? "", pageUrl).href;
+    if (!loadedScripts.has(src)) {
+      const newScript = document.createElement("script");
+      newScript.src = src;
+      document.head.append(newScript);
+    }
+  }
+}
+
 async function handleNavigationAsync(
   targetUrl: URL,
   pushState: boolean = true,
@@ -132,6 +171,7 @@ async function handleNavigationAsync(
 
   // Use response.url to follow redirects
   const pageUrl = response.url;
+  addMissingPageResources(newDocument, pageUrl);
   resolveRelativeUrls(newPageContent, pageUrl);
   document.adoptNode(newPageContent);
   currentPageContent.replaceWith(newPageContent);

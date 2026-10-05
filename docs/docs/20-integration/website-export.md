@@ -55,7 +55,7 @@ tasks.register('createGuideWebsite', JavaExec) {
     outputs.dir(websiteFolder)
 
     classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'guideme.siteexport.web.WebSiteGenerator'
+    mainClass = 'guideme.web.WebSiteGenerator'
     args '--data', exportFolder.absolutePath,
          '--output', websiteFolder.absolutePath,
          '--clean'
@@ -68,8 +68,10 @@ tasks.register('createGuideWebsite', JavaExec) {
 | `--output <folder>` | The folder the website is written to (required). |
 | `--clean` | Deletes the content of the output folder first, so pages that no longer exist are removed. |
 | `--title <title>` | The title of the guide, shown in the header and the browser title. |
-| `--logo <id>` | The logo, either as a resource id (`yourmod:textures/guide/logo.png`) or a path on the classpath (`logo.png`). Defaults to the GuideME logo. |
-| `--favicon <id>` | The favicon, given like the logo. Defaults to the logo. |
+| `--logo <file>` | An image file to use as the logo. Defaults to the GuideME logo. |
+| `--favicon <file>` | An image file to use as the favicon. Defaults to the logo. |
+| `--stylesheet <file>` | A stylesheet to include on every page, to change the look of the website. Can be repeated. |
+| `--script <file>` | A script to include on every page. Can be repeated. |
 | `--site-url <url>` | The URL the website is published at, i.e. `https://guide.example.com`. Enables canonical links, `sitemap.xml` and `robots.txt`. |
 | `--base-path <path>` | The URL path the website is served from, i.e. `/1.21.1/` when publishing several versions side by side. Defaults to `/`. |
 | `--clean-urls` | Writes pages as `page/index.html` so they can be linked without the `.html` extension on any web host. |
@@ -88,7 +90,7 @@ GuideME includes a small server that serves a folder on a random local port:
 tasks.register('serveGuideWebsite', JavaExec) {
     mustRunAfter 'createGuideWebsite'
     classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'guideme.siteexport.web.WebSiteServer'
+    mainClass = 'guideme.web.WebSiteServer'
     args file('build/guideWebsite').absolutePath
 }
 ```
@@ -103,9 +105,8 @@ Java `ServiceLoader`, so register your implementations in `META-INF/services/<in
 
 | Interface | Purpose |
 |---|---|
-| `guideme.siteexport.web.CustomElementWebRenderer` | Renders custom tags to HTML. |
-| `guideme.siteexport.web.RecipeWebRenderer` | Renders custom recipe types. Use `RecipeExporter` to export the recipe data. |
-| `guideme.siteexport.web.WebSiteContribution` | Adds stylesheets and scripts to every page. |
+| `guideme.web.CustomElementWebRenderer` | Renders custom tags to HTML. |
+| `guideme.web.RecipeWebRenderer` | Renders custom recipe types. Use `RecipeExporter` to export the recipe data. |
 
 :::note
 These run in the website generator, **not in the game**. They may use Minecraft and mod classes, but must not access
@@ -144,6 +145,15 @@ public class ConfigValueWebRenderer implements CustomElementWebRenderer {
 }
 ```
 
+If your renderers need styles, include a stylesheet from your mod with `requireStylesheet` (or a script with
+`requireScript`). It's only included on pages where your renderer was used, so the styles of your mod don't affect
+the websites of other mods that have your mod on their classpath. Relative `url(...)` references in stylesheets are
+copied into the website as well.
+
+```java
+context.requireStylesheet("assets/yourmod/web/recipes.css");
+```
+
 ### Resolving In-Game Information During Export
 
 Some tags depend on information that is only available in-game, such as whether a mod is loaded. A
@@ -177,8 +187,16 @@ public class OptionalSectionExportProcessor implements PageExportProcessor {
 }
 ```
 
-Stylesheets added through `WebSiteContribution` are loaded from `assets/<namespace>/<path>` on the classpath.
-Relative `url(...)` references in them are copied into the website as well.
-
 Keep in mind that renderers may be given data exported by older versions of your mod, if you regenerate the website
 for older guide exports.
+
+## Styling the Website
+
+To change the look of the whole website, pass your own stylesheets to the generator with `--stylesheet`. They are
+included after all other stylesheets, so they can override them.
+
+```gradle
+    args '--stylesheet', file('src/main/web/guide.css').absolutePath
+    // Declare it, so the website is regenerated when it changes
+    inputs.file('src/main/web/guide.css')
+```
