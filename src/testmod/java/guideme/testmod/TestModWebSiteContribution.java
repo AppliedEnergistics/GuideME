@@ -1,6 +1,6 @@
 package guideme.testmod;
 
-import guideme.siteexport.web.WebSiteContribution;
+import guideme.web.WebSiteContribution;
 import java.util.List;
 import net.minecraft.resources.Identifier;
 

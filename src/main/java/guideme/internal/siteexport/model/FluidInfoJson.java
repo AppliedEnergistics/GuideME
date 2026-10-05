@@ -1,6 +1,6 @@
 package guideme.internal.siteexport.model;
 
-import guideme.siteexport.web.ExportedFluidInfo;
+import guideme.web.ExportedFluidInfo;
 
 public class FluidInfoJson implements ExportedFluidInfo {
     public String id;
