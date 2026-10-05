@@ -8,6 +8,7 @@ import {
   MathUtils,
   Raycaster,
   Scene,
+  Sprite,
   Vector2,
   Vector3,
 } from "three";
@@ -22,6 +23,16 @@ import TextureManager from "./TextureManager.ts";
 import tippy, { followCursor, type Instance } from "tippy.js";
 
 const DEBUG = false;
+
+/**
+ * The size of a GUI pixel in CSS pixels, matching --gui-scale of the page.
+ */
+const GUI_SCALE = 3;
+
+/**
+ * Overlay annotations have a fixed size on screen, like in-game (see DiamondAnnotation).
+ */
+const OVERLAY_ANNOTATION_SIZE = 16;
 
 interface ControlInterface {
   zoomIn(): void;
@@ -150,15 +161,25 @@ async function initialize(
     );
   }
 
+  const overlaySprites: Sprite[] = [];
+  annotationGroup.traverse((object) => {
+    if (object instanceof Sprite) {
+      overlaySprites.push(object);
+    }
+  });
+
   const camera = new THREE.OrthographicCamera();
   camera.near = 0;
   camera.far = 30000;
 
+  // The size of a GUI pixel in CSS pixels, taking into account that scenes are scaled down to fit
+  let guiPixelSize = GUI_SCALE;
   const updateViewportSize = (width: number, height: number) => {
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     // We only scale down, not up
-    const scaling = Math.min(1, width / (originalWidth * 3));
+    const scaling = Math.min(1, width / (originalWidth * GUI_SCALE));
+    guiPixelSize = GUI_SCALE * scaling;
     camera.zoom = (1 / 0.625) * 16 * cameraProps.zoom * scaling;
     camera.left = -width / 2;
     camera.right = width / 2;
@@ -263,6 +284,12 @@ async function initialize(
           );
         }
       }
+    }
+
+    // With an orthographic camera, a world unit is camera.zoom CSS pixels on screen
+    const overlaySize = (OVERLAY_ANNOTATION_SIZE * guiPixelSize) / camera.zoom;
+    for (const sprite of overlaySprites) {
+      sprite.scale.set(overlaySize, overlaySize, 1);
     }
 
     renderer.render(scene, camera);

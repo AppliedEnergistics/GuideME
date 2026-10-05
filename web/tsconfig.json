@@ -1,7 +1,9 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    "module": "nodenext",
+    // The code is bundled by esbuild
+    "module": "preserve",
+    "moduleResolution": "bundler",
     "target": "esnext",
     "types": [],
     "noEmit": true,

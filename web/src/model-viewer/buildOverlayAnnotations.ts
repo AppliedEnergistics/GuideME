@@ -6,13 +6,20 @@ import diamondColored from "@assets/diamond_colored.png";
 import { OverlayAnnotation } from "./modelViewer.ts";
 import { parseAnnotationColor } from "./annotationColor.ts";
 
+/**
+ * Bundled assets are relative to the bundle, not the page.
+ */
+function bundledAssetUrl(url: string): string {
+  return new URL(url, import.meta.url).href;
+}
+
 export default async function buildOverlayAnnotation(
   textureManager: TextureManager,
   annotation: OverlayAnnotation,
 ): Promise<Object3D> {
   // Add "diamond overlays"
   const diamondTexture = await textureManager.get(
-    diamond.src,
+    bundledAssetUrl(diamond),
     false,
     false,
     true,
@@ -21,7 +28,7 @@ export default async function buildOverlayAnnotation(
   diamondTexture.wrapT = THREE.ClampToEdgeWrapping;
 
   const diamondColoredTexture = await textureManager.get(
-    diamondColored.src,
+    bundledAssetUrl(diamondColored),
     false,
     false,
     true,
@@ -37,9 +44,8 @@ export default async function buildOverlayAnnotation(
     fog: false,
   });
 
+  // The size of the sprites is updated for every frame, to keep it constant on screen (see modelViewer.ts)
   const group = new Group();
-
-  const spriteScale = 1 / 4;
 
   const annotationNodeBottom = new Sprite(diamondMaterial);
   annotationNodeBottom.position.set(
@@ -47,7 +53,6 @@ export default async function buildOverlayAnnotation(
     annotation.position[1],
     annotation.position[2],
   );
-  annotationNodeBottom.scale.set(spriteScale, spriteScale, 1);
   annotationNodeBottom.userData.annotation = annotation;
   annotationNodeBottom.renderOrder = 999999;
   group.add(annotationNodeBottom);
@@ -67,7 +72,6 @@ export default async function buildOverlayAnnotation(
     annotation.position[2],
   );
   annotationNodeTop.renderOrder = 999999;
-  annotationNodeTop.scale.set(spriteScale, spriteScale, 1);
   annotationNodeTop.userData.annotation = annotation;
   group.add(annotationNodeTop);
   return group;
