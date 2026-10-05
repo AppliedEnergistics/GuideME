@@ -1,11 +1,7 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
 import guideme.internal.siteexport.model.ItemInfoJson;
 import guideme.libs.mdast.model.MdAstParent;
-import guideme.siteexport.web.HtmlFragment;
-import guideme.siteexport.web.HtmlNode;
-import guideme.siteexport.web.HtmlTag;
-import guideme.siteexport.web.RecipeWebRenderingContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,13 +13,13 @@ class RecipeWebRenderingContextImpl extends WebRenderingContextImpl implements R
     private final WebPageCompiler webPageCompiler;
     private final WebPageCompileContext context;
     private final MdAstParent<?> node;
-    private final ExportedRecipe recipe;
+    private final ExportedRecipeImpl recipe;
     private final Consumer<HtmlNode> output;
 
-    public RecipeWebRenderingContextImpl(WebPageCompiler webPageCompiler,
+    RecipeWebRenderingContextImpl(WebPageCompiler webPageCompiler,
             WebPageCompileContext context,
             MdAstParent<?> node,
-            ExportedRecipe recipe,
+            ExportedRecipeImpl recipe,
             Consumer<HtmlNode> output) {
         super(context, webPageCompiler, node);
         this.webPageCompiler = webPageCompiler;
@@ -154,7 +150,7 @@ class RecipeWebRenderingContextImpl extends WebRenderingContextImpl implements R
     }
 
     private HtmlTag createRecipeIngredientGrid(WebPageCompileContext context, MdAstParent<?> node,
-            ExportedRecipe recipe) {
+            ExportedRecipeImpl recipe) {
         var shapeless = recipe.recipe().has("shapeless") && recipe.recipe().get("shapeless").getAsBoolean();
         var ingredientsJson = recipe.recipe().getAsJsonArray("ingredients");
 

@@ -1,4 +1,4 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
 import guideme.internal.siteexport.model.ExportedPageJson;
 import java.io.IOException;
@@ -11,7 +11,7 @@ import java.nio.file.Path;
  *                  may be served from any URL, such as the 404 page.
  */
 record WebPageCompileContext(
-        StaticSiteGenerator.Options options,
+        WebSiteGenerator.Options options,
         ExportedGuideImpl guide,
         SitePaths paths,
         String pageId,
@@ -22,7 +22,7 @@ record WebPageCompileContext(
     /**
      * {@return the URL to link to the given path relative to the root of the website from this page}
      */
-    public String url(String pathFromRoot) {
+    String url(String pathFromRoot) {
         while (pathFromRoot.startsWith("/")) {
             pathFromRoot = pathFromRoot.substring(1);
         }
@@ -30,7 +30,7 @@ record WebPageCompileContext(
         return url.isEmpty() ? "./" : url;
     }
 
-    public String resolveAssetPath(String absoluteAssetPath) {
+    String resolveAssetPath(String absoluteAssetPath) {
         var relativeAssetPath = absoluteAssetPath;
         while (relativeAssetPath.startsWith("/")) {
             relativeAssetPath = relativeAssetPath.substring(1);
@@ -44,7 +44,7 @@ record WebPageCompileContext(
         return url(relativeAssetPath);
     }
 
-    public Path resolveOutputPath(String relativePath) throws IOException {
+    Path resolveOutputPath(String relativePath) throws IOException {
         while (relativePath.startsWith("/")) {
             relativePath = relativePath.substring(1);
         }
@@ -57,11 +57,11 @@ record WebPageCompileContext(
         return result;
     }
 
-    public String getRelativePagePath(String pageId) {
+    String getRelativePagePath(String pageId) {
         return url(paths.pageUrl(pageId));
     }
 
-    public String getUrlPrefixToRoot() {
+    String getUrlPrefixToRoot() {
         return urlPrefix;
     }
 }

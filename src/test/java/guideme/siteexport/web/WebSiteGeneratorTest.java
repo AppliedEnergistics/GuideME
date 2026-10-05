@@ -1,6 +1,7 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -22,7 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class StaticSiteGeneratorTest {
+class WebSiteGeneratorTest {
     @TempDir
     Path dataFolder;
 
@@ -57,7 +58,7 @@ class StaticSiteGeneratorTest {
     @Test
     void testDefaultUrls() throws Exception {
         writeExport(toJson());
-        new StaticSiteGenerator(new StaticSiteGenerator.Options(dataFolder, outputFolder, webDist(), null))
+        new WebSiteGenerator(new WebSiteGenerator.Options(dataFolder, outputFolder, webDist(), null))
                 .generate();
 
         assertThat(outputFolder.resolve("start.html")).exists();
@@ -111,20 +112,48 @@ class StaticSiteGeneratorTest {
         guideJson.add("defaultConfigValues", configValues);
         writeExport(guideJson);
 
-        var generator = new StaticSiteGenerator(options(false, "/"));
-        var guide = generator.readGuide(generator.readIndex());
+        var guide = GuideExportReader.readGuide(dataFolder, GuideExportReader.readIndex(dataFolder));
 
         assertThat(guide.getExtraData("ae2:default-config-values")).isEqualTo(java.util.Map.of("someValue", "42"));
     }
 
-    private void generate(boolean cleanUrls, String basePath) throws IOException {
+    @Test
+    void testCleanRemovesStaleFiles() throws Exception {
+        var staleFile = outputFolder.resolve("removed/page.html");
+        Files.createDirectories(staleFile.getParent());
+        Files.writeString(staleFile, "stale");
+
         writeExport(toJson());
-        new StaticSiteGenerator(options(cleanUrls, basePath)).generate();
+        new WebSiteGenerator(options(false, "/", true)).generate();
+
+        assertThat(staleFile).doesNotExist();
+        assertThat(outputFolder.resolve("removed")).doesNotExist();
+        assertThat(outputFolder.resolve("start.html")).exists();
     }
 
-    private StaticSiteGenerator.Options options(boolean cleanUrls, String basePath) {
-        return new StaticSiteGenerator.Options(dataFolder, outputFolder, webDist(), null, "Test Guide", null, null,
-                "https://guide.example.com", basePath, cleanUrls);
+    @Test
+    void testCleanRefusesToDeleteTheExport(@TempDir Path folder) throws Exception {
+        // The export is inside of the output folder
+        dataFolder = folder.resolve("export");
+        Files.createDirectories(dataFolder);
+        writeExport(toJson());
+        var options = new WebSiteGenerator.Options(dataFolder, folder, webDist(), null, "Test Guide", null, null,
+                null, "/", false, true);
+
+        assertThatThrownBy(() -> new WebSiteGenerator(options).generate())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Refusing to clean");
+        assertThat(dataFolder.resolve("index.json")).exists();
+    }
+
+    private void generate(boolean cleanUrls, String basePath) throws IOException {
+        writeExport(toJson());
+        new WebSiteGenerator(options(cleanUrls, basePath, false)).generate();
+    }
+
+    private WebSiteGenerator.Options options(boolean cleanUrls, String basePath, boolean clean) {
+        return new WebSiteGenerator.Options(dataFolder, outputFolder, webDist(), null, "Test Guide", null, null,
+                "https://guide.example.com", basePath, cleanUrls, clean);
     }
 
     private static Path webDist() {

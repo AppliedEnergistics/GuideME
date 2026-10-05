@@ -1,6 +1,6 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
-import static guideme.internal.web.HtmlUtils.guiScaledDimension;
+import static guideme.siteexport.web.HtmlUtils.guiScaledDimension;
 
 import com.google.gson.Gson;
 import guideme.color.LightDarkMode;
@@ -43,12 +43,6 @@ import guideme.libs.micromark.extensions.gfm.Align;
 import guideme.scene.annotation.InWorldBoxAnnotation;
 import guideme.scene.annotation.InWorldLineAnnotation;
 import guideme.siteexport.DefaultValue;
-import guideme.siteexport.web.CustomElementWebRenderer;
-import guideme.siteexport.web.HtmlFragment;
-import guideme.siteexport.web.HtmlNode;
-import guideme.siteexport.web.HtmlTag;
-import guideme.siteexport.web.HtmlText;
-import guideme.siteexport.web.RecipeWebRenderer;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -76,15 +70,15 @@ class WebPageCompiler {
 
     private final ExportedGuideImpl guide;
     private final WebAssetsBundle webAssetsBundle;
-    private final StaticSiteGenerator.Options options;
+    private final WebSiteGenerator.Options options;
     private final Map<String, RecipeWebRenderer> recipeRenderersByType = new HashMap<>();
     private final Map<String, CustomElementWebRenderer> customRendererByName = new HashMap<>();
     private final WebResourceCopier resourceCopier;
     private final SitePaths paths;
     private final SearchIndex searchIndex = new SearchIndex();
 
-    public WebPageCompiler(ExportedGuideImpl guide, WebAssetsBundle webAssetsBundle,
-            StaticSiteGenerator.Options options, WebResourceCopier resourceCopier, SitePaths paths) {
+    WebPageCompiler(ExportedGuideImpl guide, WebAssetsBundle webAssetsBundle,
+            WebSiteGenerator.Options options, WebResourceCopier resourceCopier, SitePaths paths) {
         this.guide = guide;
         this.webAssetsBundle = webAssetsBundle;
         this.options = options;
@@ -134,7 +128,7 @@ class WebPageCompiler {
         return resourceCopier;
     }
 
-    public void compile(String pageId) {
+    void compile(String pageId) {
         try {
             var page = guide.getRequiredPage(pageId);
             var pageFile = paths.pageFile(pageId);
@@ -153,7 +147,7 @@ class WebPageCompiler {
      * Writes a 404.html page, which web hosts serve for any URL that does not exist. It has to use absolute links,
      * since the URL it will be served from is unknown.
      */
-    public void compileNotFoundPage() {
+    void compileNotFoundPage() {
         var page = new ExportedPageJson();
         page.title = "Page Not Found";
         page.astRoot = MdAst.fromMarkdown("""
@@ -202,7 +196,7 @@ class WebPageCompiler {
 
     // ==================== Compilation Methods ====================
 
-    public record CompiledPage(@Nullable String title, HtmlFragment content) {
+    record CompiledPage(@Nullable String title, HtmlFragment content) {
     }
 
     HtmlFragment compileChildren(WebPageCompileContext context, MdAstParent<?> parent) {
@@ -900,7 +894,7 @@ class WebPageCompiler {
         }
     }
 
-    private void compileRecipeInner(WebPageCompileContext context, MdAstParent<?> node, ExportedRecipe recipe,
+    private void compileRecipeInner(WebPageCompileContext context, MdAstParent<?> node, ExportedRecipeImpl recipe,
             Consumer<HtmlNode> output) {
         var renderer = recipeRenderersByType.get(recipe.type());
         if (renderer == null) {
@@ -1262,11 +1256,11 @@ class WebPageCompiler {
         private final List<HtmlTag> templates = new ArrayList<>();
         private final Map<String, String> templateContent = new HashMap<>();
 
-        public String create(HtmlNode content) {
+        String create(HtmlNode content) {
             return create(new HtmlFragment(content));
         }
 
-        public String create(HtmlFragment content) {
+        String create(HtmlFragment content) {
             // De-duplicate based on the resulting HTML
             var htmlContent = content.outerHtml();
             var existingId = templateContent.get(htmlContent);

@@ -1,4 +1,4 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
 import guideme.internal.siteexport.CacheBusting;
 import java.io.IOException;
@@ -44,7 +44,7 @@ final class WebResourceCopier {
      * @return The path of the copied resource relative to the root of the website, without a leading slash.
      * @throws IllegalArgumentException If the resource does not exist.
      */
-    public synchronized String copy(Identifier resourceId) {
+    synchronized String copy(Identifier resourceId) {
         var existing = copiedResources.get(resourceId);
         if (existing != null) {
             return existing;
@@ -70,7 +70,7 @@ final class WebResourceCopier {
      *                     cache-busting suffix is added to the filename.
      * @return The path of the copied resource relative to the root of the website, without a leading slash.
      */
-    public synchronized String copyClasspathResource(String resourcePath, String targetPath) {
+    synchronized String copyClasspathResource(String resourcePath, String targetPath) {
         return writeAsset(outputFolder.resolve(OUTPUT_FOLDER).resolve(targetPath), readResource(resourcePath));
     }
 

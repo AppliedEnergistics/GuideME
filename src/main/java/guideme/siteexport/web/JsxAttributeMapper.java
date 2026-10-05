@@ -1,4 +1,4 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
 import guideme.libs.mdast.mdx.model.MdxJsxAttribute;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
  * Maps from attributes on a JSX tag to a Java model class.
  */
 final class JsxAttributeMapper {
-    public static <T extends Record> T map(MdxJsxElementFields fields, Class<T> modelClass) {
+    static <T extends Record> T map(MdxJsxElementFields fields, Class<T> modelClass) {
         var components = modelClass.getRecordComponents();
         Constructor<T> recordConstructor;
         try {

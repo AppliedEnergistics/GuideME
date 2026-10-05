@@ -1,4 +1,4 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
 /**
  * Determines where pages are written to and how they are linked to. All paths are relative to the root of the website
@@ -11,7 +11,7 @@ record SitePaths(ExportedGuideImpl guide, boolean cleanUrls) {
     /**
      * {@return the path of the HTML file a page is written to}
      */
-    public String pageFile(String pageId) {
+    String pageFile(String pageId) {
         var basePath = guide.getPageBasePath(pageId);
         return cleanUrls ? basePath + "/index.html" : basePath + ".html";
     }
@@ -19,7 +19,7 @@ record SitePaths(ExportedGuideImpl guide, boolean cleanUrls) {
     /**
      * {@return the path used to link to a page}
      */
-    public String pageUrl(String pageId) {
+    String pageUrl(String pageId) {
         var basePath = guide.getPageBasePath(pageId);
         return cleanUrls ? basePath + "/" : basePath + ".html";
     }
@@ -27,7 +27,7 @@ record SitePaths(ExportedGuideImpl guide, boolean cleanUrls) {
     /**
      * {@return the relative URL from a file to the root of the website, i.e. "../" for files in a sub-folder}
      */
-    public static String relativePathToRoot(String file) {
+    static String relativePathToRoot(String file) {
         var depth = (int) file.chars().filter(c -> c == '/').count();
         return "../".repeat(depth);
     }

@@ -1,9 +1,6 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
 import com.google.gson.Gson;
-import guideme.siteexport.web.HtmlFragment;
-import guideme.siteexport.web.HtmlNode;
-import guideme.siteexport.web.HtmlText;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -16,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Collects the text of all pages for the search function of the website.
  */
 final class SearchIndex {
-    public static final String FILENAME = "search-index.json";
+    static final String FILENAME = "search-index.json";
 
     /**
      * Text in these elements continues the surrounding text. All other elements are separated from their surroundings
@@ -38,7 +35,7 @@ final class SearchIndex {
 
     private final ConcurrentHashMap<String, Entry> entries = new ConcurrentHashMap<>();
 
-    public void add(String pageId, String url, String title, HtmlFragment content) {
+    void add(String pageId, String url, String title, HtmlFragment content) {
         var text = new StringBuilder();
         for (var node : content.nodes()) {
             appendText(node, text);
@@ -68,7 +65,7 @@ final class SearchIndex {
         }
     }
 
-    public void write(Path outputFolder) throws IOException {
+    void write(Path outputFolder) throws IOException {
         var sortedEntries = entries.values().stream()
                 .sorted(Comparator.comparing(Entry::url))
                 .toList();

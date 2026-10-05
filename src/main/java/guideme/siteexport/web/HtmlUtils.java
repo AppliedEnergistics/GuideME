@@ -1,4 +1,4 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -17,7 +17,7 @@ final class HtmlUtils {
                 .replace("'", "&#39;");
     }
 
-    public static String escapeAttribute(String text) {
+    static String escapeAttribute(String text) {
         if (text == null) {
             return "";
         }

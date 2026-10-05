@@ -1,6 +1,5 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
-import guideme.siteexport.web.HtmlFragment;
 import org.jspecify.annotations.Nullable;
 
 /**

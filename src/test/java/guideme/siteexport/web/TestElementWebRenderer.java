@@ -1,9 +1,5 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
-import guideme.siteexport.web.CustomElementWebRenderer;
-import guideme.siteexport.web.CustomElementWebRenderingContext;
-import guideme.siteexport.web.HtmlFragment;
-import guideme.siteexport.web.HtmlNode;
 import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.resources.Identifier;

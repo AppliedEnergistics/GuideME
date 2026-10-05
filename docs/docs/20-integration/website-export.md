@@ -29,6 +29,11 @@ neoForge {
         }
     }
 }
+
+// Declare the output, so that tasks using the export know where it comes from
+tasks.named('runExportGuide') {
+    outputs.dir('build/exportedGuide')
+}
 ```
 
 In a running game, you can also use `/guidemec <guide> export`, which writes the export to
@@ -40,11 +45,20 @@ Add a `JavaExec` task that runs the website generator with the runtime classpath
 
 ```gradle
 tasks.register('createGuideWebsite', JavaExec) {
+    def exportFolder = file('build/exportedGuide')
+    def websiteFolder = file('build/guideWebsite')
+
     dependsOn 'runExportGuide'
+    // The classpath and arguments are tracked automatically, but the folders have to be declared, so Gradle can
+    // skip the task if nothing changed
+    inputs.dir(exportFolder)
+    outputs.dir(websiteFolder)
+
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'guideme.siteexport.web.WebSiteGenerator'
-    args '--data', file('build/exportedGuide').absolutePath,
-         '--output', file('build/guideWebsite').absolutePath
+    args '--data', exportFolder.absolutePath,
+         '--output', websiteFolder.absolutePath,
+         '--clean'
 }
 ```
 
@@ -52,6 +66,7 @@ tasks.register('createGuideWebsite', JavaExec) {
 |---|---|
 | `--data <folder>` | The folder containing the guide export (required). |
 | `--output <folder>` | The folder the website is written to (required). |
+| `--clean` | Deletes the content of the output folder first, so pages that no longer exist are removed. |
 | `--title <title>` | The title of the guide, shown in the header and the browser title. |
 | `--logo <id>` | The logo, either as a resource id (`yourmod:textures/guide/logo.png`) or a path on the classpath (`logo.png`). Defaults to the GuideME logo. |
 | `--favicon <id>` | The favicon, given like the logo. Defaults to the logo. |
@@ -82,8 +97,7 @@ Running `./gradlew createGuideWebsite serveGuideWebsite` prints the URL to open.
 
 ## Rendering Custom Content
 
-The tags built into GuideME are rendered automatically, with two exceptions: `BlockAnnotationTemplate` in game
-scenes, and `Color` with a symbolic color added by a mod. If your guide uses custom tags or custom recipe types, you
+The tags built into GuideME are rendered automatically. If your guide uses custom tags or custom recipe types, you
 need to tell the website generator how to render them. The following interfaces are discovered using the
 Java `ServiceLoader`, so register your implementations in `META-INF/services/<interface name>` in your mod.
 

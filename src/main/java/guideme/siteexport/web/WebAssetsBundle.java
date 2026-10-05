@@ -1,10 +1,7 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
-import static guideme.internal.web.HtmlUtils.escapeHtml;
+import static guideme.siteexport.web.HtmlUtils.escapeHtml;
 
-import guideme.siteexport.web.HtmlFragment;
-import guideme.siteexport.web.HtmlNode;
-import guideme.siteexport.web.HtmlTag;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -63,7 +60,7 @@ final class WebAssetsBundle {
     @Nullable
     private String favicon;
 
-    public WebAssetsBundle(StaticSiteGenerator.Options options) {
+    WebAssetsBundle(WebSiteGenerator.Options options) {
         this.folder = options.webAssetsPath();
         this.outputFolder = options.outputFolder();
         this.layoutTemplate = loadTemplate(
@@ -81,19 +78,19 @@ final class WebAssetsBundle {
                 PLACEHOLDER_BASE_PATH);
     }
 
-    public void setLogo(String pathInOutputFolder) {
+    void setLogo(String pathInOutputFolder) {
         this.logo = pathInOutputFolder;
     }
 
-    public void setFavicon(String pathInOutputFolder) {
+    void setFavicon(String pathInOutputFolder) {
         this.favicon = pathInOutputFolder;
     }
 
-    public void addStylesheet(String pathInOutputFolder) {
+    void addStylesheet(String pathInOutputFolder) {
         extraStylesheets.add(pathInOutputFolder);
     }
 
-    public void addScript(String pathInOutputFolder) {
+    void addScript(String pathInOutputFolder) {
         extraScripts.add(pathInOutputFolder);
     }
 
@@ -141,7 +138,7 @@ final class WebAssetsBundle {
         return content;
     }
 
-    public String realizeLayoutTemplate(WebPageCompileContext context, LayoutPlaceholders placeholders) {
+    String realizeLayoutTemplate(WebPageCompileContext context, LayoutPlaceholders placeholders) {
         var options = context.options();
 
         // The page title is plain text
@@ -213,7 +210,7 @@ final class WebAssetsBundle {
                 .setClassName("version-picker");
     }
 
-    public void copyToOutputFolder() throws IOException {
+    void copyToOutputFolder() throws IOException {
         var filesCreated = new HashSet<Path>();
         if (this.folder != null) {
             Path templatesFolder = folder.resolve("templates");

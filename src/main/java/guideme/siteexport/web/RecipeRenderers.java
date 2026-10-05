@@ -1,9 +1,5 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
-import guideme.siteexport.web.ExportedRecipe;
-import guideme.siteexport.web.HtmlNode;
-import guideme.siteexport.web.RecipeWebRenderer;
-import guideme.siteexport.web.RecipeWebRenderingContext;
 import java.util.List;
 import java.util.Set;
 

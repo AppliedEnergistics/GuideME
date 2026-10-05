@@ -1,4 +1,4 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -323,7 +323,7 @@ class WebPageCompilerTest {
 
         var index = new IndexModel(1, 0, "26.3", "26.3", "26.3", true, "1.0.0", "1.0.0", "guide.json.gz");
         var webDist = Path.of(System.getProperty("guideme.web.dist", "web/dist"));
-        var options = new StaticSiteGenerator.Options(outputFolder, outputFolder, webDist, null);
+        var options = new WebSiteGenerator.Options(outputFolder, outputFolder, webDist, null);
         var guide = new ExportedGuideImpl(index, json);
         var compiler = new WebPageCompiler(guide, new WebAssetsBundle(options), options,
                 new WebResourceCopier(outputFolder), new SitePaths(guide, false));

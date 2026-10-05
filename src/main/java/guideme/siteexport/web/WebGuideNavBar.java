@@ -1,9 +1,6 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
 import guideme.internal.siteexport.model.NavigationNodeJson;
-import guideme.siteexport.web.HtmlFragment;
-import guideme.siteexport.web.HtmlNode;
-import guideme.siteexport.web.HtmlTag;
 import java.util.List;
 
 class WebGuideNavBar {
@@ -68,7 +65,7 @@ class WebGuideNavBar {
         return fragment;
     }
 
-    public static HtmlTag generate(WebPageCompileContext context) {
+    static HtmlTag generate(WebPageCompileContext context) {
         var navbar = new WebGuideNavBar(context);
         return HtmlNode.tag("div")
                 .setClassName("navbar")

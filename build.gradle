@@ -414,7 +414,7 @@ def configureStaticSiteTask = { JavaExec task, String dataFolder, String outputF
     task.classpath.from(proguardFile)
     task.classpath.from(sourceSets.testmod.output)
     task.mainClass = 'guideme.siteexport.web.WebSiteGenerator'
-    task.args '--data', dataFolder, '--output', outputFolder
+    task.args '--data', dataFolder, '--output', outputFolder, '--clean'
     // Additional generator arguments, i.e. -PwebsiteArgs="--clean-urls --base-path /test/"
     def extraArgs = findProperty('websiteArgs')?.toString()?.trim()
     if (extraArgs) {

@@ -1,12 +1,8 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
 import guideme.libs.mdast.model.MdAstNode;
 import guideme.libs.mdast.model.MdAstParent;
 import guideme.siteexport.WebRenderingContext;
-import guideme.siteexport.web.ExportedGuide;
-import guideme.siteexport.web.HtmlFragment;
-import guideme.siteexport.web.HtmlNode;
-import guideme.siteexport.web.HtmlTag;
 import java.util.List;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
@@ -16,7 +12,7 @@ class WebRenderingContextImpl implements WebRenderingContext {
     private final WebPageCompiler compiler;
     private final MdAstParent<?> node;
 
-    public WebRenderingContextImpl(WebPageCompileContext context, WebPageCompiler compiler, MdAstParent<?> node) {
+    WebRenderingContextImpl(WebPageCompileContext context, WebPageCompiler compiler, MdAstParent<?> node) {
         this.context = context;
         this.compiler = compiler;
         this.node = node;

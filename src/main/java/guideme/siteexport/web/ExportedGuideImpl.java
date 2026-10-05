@@ -1,4 +1,4 @@
-package guideme.internal.web;
+package guideme.siteexport.web;
 
 import com.google.gson.JsonElement;
 import guideme.internal.siteexport.model.ExportedPageJson;
@@ -7,7 +7,6 @@ import guideme.internal.siteexport.model.IndexModel;
 import guideme.internal.siteexport.model.ItemInfoJson;
 import guideme.internal.siteexport.model.NavigationNodeJson;
 import guideme.internal.siteexport.model.SiteExportJson;
-import guideme.siteexport.web.ExportedGuide;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,17 +26,17 @@ class ExportedGuideImpl implements ExportedGuide {
      */
     private final Map<String, List<String>> pagesByCategoryIndex = new HashMap<>();
 
-    private final Map<String, ExportedRecipe> recipes = new HashMap<>();
+    private final Map<String, ExportedRecipeImpl> recipes = new HashMap<>();
 
-    private final Map<String, List<ExportedRecipe>> recipesByResult = new HashMap<>();
+    private final Map<String, List<ExportedRecipeImpl>> recipesByResult = new HashMap<>();
 
-    public ExportedGuideImpl(IndexModel index, SiteExportJson json) {
+    ExportedGuideImpl(IndexModel index, SiteExportJson json) {
         this.index = index;
         this.json = json;
 
         // Wrap recipes first
         for (var entry : json.recipes.entrySet()) {
-            recipes.put(entry.getKey(), new ExportedRecipe(entry.getKey(), entry.getValue()));
+            recipes.put(entry.getKey(), new ExportedRecipeImpl(entry.getKey(), entry.getValue()));
         }
         // Then index by result. Some recipe types (i.e. AE2 entropy) have no result item.
         for (var exportedRecipe : recipes.values()) {
@@ -90,7 +89,7 @@ class ExportedGuideImpl implements ExportedGuide {
         return json.defaultNamespace;
     }
 
-    public ExportedPageJson getRequiredPage(String pageId) {
+    ExportedPageJson getRequiredPage(String pageId) {
         var page = json.pages.get(pageId);
         if (page == null) {
             throw new IllegalArgumentException("Missing page: " + pageId);
@@ -98,16 +97,16 @@ class ExportedGuideImpl implements ExportedGuide {
         return page;
     }
 
-    public Map<String, ExportedPageJson> getPages() {
+    Map<String, ExportedPageJson> getPages() {
         return json.pages;
     }
 
-    public String getPageBasePath(String pageId) {
+    String getPageBasePath(String pageId) {
         var pagePath = getSlugsFromPageId(pageId);
         return String.join("/", pagePath);
     }
 
-    public String[] getSlugsFromPageId(String pageId) {
+    String[] getSlugsFromPageId(String pageId) {
         String[] parts = pageId.split(":", 2);
         String namespace = parts[0];
         String resource = parts[1];
@@ -129,7 +128,7 @@ class ExportedGuideImpl implements ExportedGuide {
      * This needs to apply a reverse-mapping from the user-visible path for a page to the internal page-id it originated
      * from.
      */
-    public String getPageIdFromSlugs(String[] pagePath) {
+    String getPageIdFromSlugs(String[] pagePath) {
         // We strip the default namespace prefix from page IDs by default, so try with the default namespace first
         String pageId = getDefaultNamespace() + ":" + String.join("/", pagePath) + ".md";
 
@@ -156,7 +155,7 @@ class ExportedGuideImpl implements ExportedGuide {
      * location. Relative locations must not be namespaced since we would otherwise run into the problem if namespaced
      * locations potentially having a different namespace than the anchor.
      */
-    public String resolveLink(String idText, String anchor) {
+    String resolveLink(String idText, String anchor) {
         if (!idText.contains(":")) {
             var anchorParts = anchor.split(":", 2);
             var anchorNs = anchorParts[0];
@@ -175,7 +174,7 @@ class ExportedGuideImpl implements ExportedGuide {
     }
 
     @Nullable
-    public List<String> getPagesByCategory(String category) {
+    List<String> getPagesByCategory(String category) {
         return pagesByCategoryIndex.get(category);
     }
 
@@ -231,16 +230,16 @@ class ExportedGuideImpl implements ExportedGuide {
         return json.modData.get(identifier);
     }
 
-    public List<NavigationNodeJson> getRootNavigationNodes() {
+    List<NavigationNodeJson> getRootNavigationNodes() {
         return json.navigationRootNodes;
     }
 
-    public String getGameMajorVersion() {
+    String getGameMajorVersion() {
         return Objects.requireNonNullElse(index.gameMajorVersion(), index.gameVersion());
     }
 
     @Override
-    public List<ExportedRecipe> getRecipesForItem(String id) {
+    public List<ExportedRecipeImpl> getRecipesForItem(String id) {
         id = resolveId(id);
 
         return recipesByResult.getOrDefault(id, List.of());
@@ -248,14 +247,14 @@ class ExportedGuideImpl implements ExportedGuide {
 
     @Override
     @Nullable
-    public ExportedRecipe getRecipeById(String id) {
+    public ExportedRecipeImpl getRecipeById(String id) {
         id = resolveId(id);
 
         return recipes.get(id);
     }
 
     @Nullable
-    public NavigationNodeJson findNavigationNodeForPage(String pageId) {
+    NavigationNodeJson findNavigationNodeForPage(String pageId) {
         return findNavigationNodeForPage(pageId, getRootNavigationNodes());
     }
 
