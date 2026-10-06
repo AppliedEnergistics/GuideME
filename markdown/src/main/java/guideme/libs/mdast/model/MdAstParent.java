@@ -30,6 +30,13 @@ public abstract class MdAstParent<T extends MdAstAnyContent> extends MdAstNode i
 
     protected abstract Class<T> childClass();
 
+    /**
+     * {@return true if the given node can be a child of this node}
+     */
+    public boolean canContain(MdAstNode node) {
+        return childClass().isInstance(node);
+    }
+
     public void addChild(MdAstNode node) {
         if (!childClass().isInstance(node)) {
             throw new IllegalArgumentException("Cannot add a node of type " + node.getClass() + " to " + this);
