@@ -79,7 +79,6 @@ class WebSiteGeneratorTest {
         var start = read("start/index.html");
         assertThat(start).contains("<a href=\"../sub/other/\">Other</a>");
         assertThat(start).contains("<link rel=\"canonical\" href=\"https://guide.example.com/1.21.1/start/\"/>");
-        assertThat(start).contains("data-base-path=\"/1.21.1/\"");
         assertThat(start).contains("<title>Start Page - Test Guide for Minecraft 26.3</title>");
         assertThat(read("sub/other/index.html")).contains("<a href=\"../../start/\">Back</a>");
         assertThat(read("index.html")).contains("url=start/");
@@ -89,6 +88,7 @@ class WebSiteGeneratorTest {
         assertThat(notFound).contains("<h1>Page Not Found</h1>");
         assertThat(notFound).contains("href=\"/1.21.1/start/\"");
         assertThat(notFound).doesNotContain("href=\"../");
+        assertThat(notFound).contains("data-path-to-root=\"/1.21.1/\"");
 
         assertThat(read("sitemap.xml"))
                 .contains("<loc>https://guide.example.com/1.21.1/start/</loc>")

@@ -41,7 +41,6 @@ final class WebAssetsBundle {
     private static final String PLACEHOLDER_EXTRA_HEAD = "{{EXTRA_HEAD}}";
     private static final String PLACEHOLDER_LOGO_URL = "{{LOGO_URL}}";
     private static final String PLACEHOLDER_HOME_URL = "{{HOME_URL}}";
-    private static final String PLACEHOLDER_BASE_PATH = "{{BASE_PATH}}";
 
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{[A-Z0-9_]+}}");
 
@@ -78,8 +77,7 @@ final class WebAssetsBundle {
                 PLACEHOLDER_FOOTER,
                 PLACEHOLDER_EXTRA_HEAD,
                 PLACEHOLDER_LOGO_URL,
-                PLACEHOLDER_HOME_URL,
-                PLACEHOLDER_BASE_PATH);
+                PLACEHOLDER_HOME_URL);
     }
 
     void setLogo(String pathInOutputFolder) {
@@ -191,7 +189,6 @@ final class WebAssetsBundle {
         values.put(PLACEHOLDER_EXTRA_HEAD, extraHead.outerHtml());
         values.put(PLACEHOLDER_LOGO_URL, escapeHtml(context.url(logo)));
         values.put(PLACEHOLDER_HOME_URL, escapeHtml(context.url("")));
-        values.put(PLACEHOLDER_BASE_PATH, escapeHtml(options.basePath()));
 
         // Replace in a single pass, so that placeholders in the inserted content are not replaced
         return PLACEHOLDER_PATTERN.matcher(layoutTemplate)
