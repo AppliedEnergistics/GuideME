@@ -32,7 +32,7 @@ public final class KeyBindExportProcessor implements PageExportProcessor {
         for (var keyMapping : Minecraft.getInstance().options.keyMappings) {
             if (id.equals(keyMapping.getName())) {
                 // Use the default key, since the website should not reflect the bindings of whoever exported it
-                context.setAttribute(element, KEY_NAME_ATTRIBUTE,
+                element.setAttribute(KEY_NAME_ATTRIBUTE,
                         keyMapping.getDefaultKey().getDisplayName().getString());
                 return;
             }

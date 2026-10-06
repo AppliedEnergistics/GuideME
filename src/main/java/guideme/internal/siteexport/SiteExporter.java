@@ -22,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -109,8 +108,6 @@ public class SiteExporter implements ResourceExporter {
     private final Set<Fluid> fluids = new HashSet<>();
 
     private final Map<Identifier, Object> extraData = new HashMap<>();
-
-    private final List<Runnable> cleanupCallbacks = new ArrayList<>();
 
     public SiteExporter(Minecraft client, Path outputFolder, Guide guide) {
         this.client = client;
@@ -407,10 +404,14 @@ public class SiteExporter implements ResourceExporter {
         for (var page : guide.getPages()) {
             currentPage = page;
 
-            LOG.debug("Compiling {}", page);
-            var compiledPage = PageCompiler.compile(guide, guide.getExtensions(), page);
+            // Export a copy of the page, so the export can modify it without affecting the in-game guide.
+            // The copy is compiled, so that the compiled page refers to the nodes of the copy.
+            var exportedPage = page.deepCopy();
 
-            processPage(indexWriter, page, compiledPage);
+            LOG.debug("Compiling {}", page);
+            var compiledPage = PageCompiler.compile(guide, guide.getExtensions(), exportedPage);
+
+            processPage(indexWriter, exportedPage, compiledPage);
 
             // Post-Process the parsed Markdown AST and export it as JSON into the index directly
             ExportableResourceProvider.visit(compiledPage.document(), SiteExporter.this);
@@ -439,9 +440,6 @@ public class SiteExporter implements ResourceExporter {
 
         // Write an uncompressed summary
         writeSummary(guideContent.getFileName().toString());
-
-        cleanupCallbacks.forEach(Runnable::run);
-        cleanupCallbacks.clear();
     }
 
     private void visitNavigationNodeIcons(NavigationNode navigationNode) {
@@ -680,11 +678,6 @@ public class SiteExporter implements ResourceExporter {
 
     private static Identifier getFluidId(Fluid fluid) {
         return BuiltInRegistries.FLUID.getKey(fluid);
-    }
-
-    @Override
-    public void addCleanupCallback(Runnable runnable) {
-        cleanupCallbacks.add(runnable);
     }
 
     /**

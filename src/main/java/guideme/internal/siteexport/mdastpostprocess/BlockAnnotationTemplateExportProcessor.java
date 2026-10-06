@@ -1,7 +1,5 @@
 package guideme.internal.siteexport.mdastpostprocess;
 
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonWriter;
 import guideme.color.ColorValue;
 import guideme.color.LightDarkMode;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
@@ -15,9 +13,6 @@ import guideme.scene.annotation.SceneAnnotation;
 import guideme.siteexport.NodeSelector;
 import guideme.siteexport.PageExportContext;
 import guideme.siteexport.PageExportProcessor;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.stream.Stream;
@@ -66,7 +61,7 @@ public final class BlockAnnotationTemplateExportProcessor implements PageExportP
                     if (element != null) {
                         // Every instance needs its own copy, since later export steps modify the content
                         for (var contentNode : templateElement.children()) {
-                            element.addChild(copy((MdAstNode) contentNode));
+                            element.addChild(((MdAstNode) contentNode).deepCopy());
                         }
                         replacement.add(element);
                     }
@@ -116,15 +111,5 @@ public final class BlockAnnotationTemplateExportProcessor implements PageExportP
     private static String toString(ColorValue color) {
         // The website uses a dark theme
         return String.format(Locale.ROOT, "#%08X", color.resolve(LightDarkMode.DARK_MODE));
-    }
-
-    private static MdAstNode copy(MdAstNode node) {
-        try {
-            var writer = new StringWriter();
-            node.toJson(new JsonWriter(writer));
-            return MdAstNode.fromJson(JsonParser.parseString(writer.toString()).getAsJsonObject());
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to copy " + node, e);
-        }
     }
 }

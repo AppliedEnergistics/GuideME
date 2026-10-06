@@ -18,6 +18,9 @@ import java.util.List;
  */
 public final class PageExportPostProcessor {
 
+    /**
+     * Modifies the page for the export. The page must be a copy of the page used by the in-game guide.
+     */
     public static void postprocess(ResourceExporter exporter,
             ExtensionCollection extensions,
             ParsedGuidePage page,
@@ -43,7 +46,7 @@ public final class PageExportPostProcessor {
         astRoot.removeChildren(mdAstNode -> mdAstNode instanceof MdAstYamlFrontmatter, true);
 
         // Let elements modify themselves first, so that the content they unwrap is exported as well
-        new PageExportProcessing(exporter, page.getId(), extensions, exporter::addCleanupCallback,
+        new PageExportProcessing(exporter, page.getId(), extensions,
                 node -> List.copyOf(nodeMapping.get(node))).process(astRoot);
 
         astRoot.visit(new SceneExportVisitor(exporter, nodeMapping));

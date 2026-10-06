@@ -37,7 +37,7 @@ public final class ColorExportProcessor implements PageExportProcessor {
 
         // The website uses a dark theme
         var argb = color.resolve(LightDarkMode.DARK_MODE);
-        context.removeAttribute(element, "id");
-        context.setAttribute(element, "color", String.format(Locale.ROOT, "#%08X", argb));
+        element.removeAttribute("id");
+        element.setAttribute("color", String.format(Locale.ROOT, "#%08X", argb));
     }
 }

@@ -27,14 +27,11 @@ import org.junit.jupiter.api.Test;
 class PageExportProcessingTest {
     private static final Identifier PAGE_ID = Identifier.fromNamespaceAndPath("testmod", "page.md");
 
-    private final List<Runnable> cleanupCallbacks = new ArrayList<>();
-
     private Function<MdAstNode, List<LytNode>> layoutNodes = node -> List.of();
 
     @Test
     void testSymbolicColorIsResolved() throws Exception {
         var root = parse("<Color id=\"link\">text</Color>");
-        var original = toJson(root);
 
         process(root, new ColorExportProcessor());
 
@@ -42,9 +39,6 @@ class PageExportProcessingTest {
         var color = (MdxJsxElementFields) paragraph.children().getFirst();
         assertThat(color.getAttributeString("color", null)).isEqualTo("#FF00D5FF");
         assertThat(color.hasAttribute("id")).isFalse();
-
-        undo();
-        assertThat(toJson(root)).isEqualTo(original);
     }
 
     @Test
@@ -71,7 +65,6 @@ class PageExportProcessingTest {
                 </OptionalSection>
 
                 After""");
-        var original = toJson(root);
 
         process(root, optionalSection(), new ColorExportProcessor());
 
@@ -82,9 +75,6 @@ class PageExportProcessingTest {
         assertThat(textOf(children.get(2))).isEqualTo("After");
         // The color inside of the unwrapped section was processed as well
         assertThat(toJson(root)).contains("#FF00D5FF");
-
-        undo();
-        assertThat(toJson(root)).isEqualTo(original);
     }
 
     @Test
@@ -153,12 +143,7 @@ class PageExportProcessingTest {
         for (var processor : processors) {
             extensions.add(PageExportProcessor.EXTENSION_POINT, processor);
         }
-        new PageExportProcessing(null, PAGE_ID, extensions.build(), cleanupCallbacks::add, layoutNodes)
-                .process(root);
-    }
-
-    private void undo() {
-        cleanupCallbacks.forEach(Runnable::run);
+        new PageExportProcessing(null, PAGE_ID, extensions.build(), layoutNodes).process(root);
     }
 
     private static MdAstRoot parse(String markdown) {

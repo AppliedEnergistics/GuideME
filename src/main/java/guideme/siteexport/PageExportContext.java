@@ -3,7 +3,6 @@ package guideme.siteexport;
 import guideme.document.block.LytNode;
 import guideme.extensions.Extension;
 import guideme.extensions.ExtensionPoint;
-import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstNode;
 import java.util.List;
 import net.minecraft.resources.Identifier;
@@ -11,8 +10,8 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Gives {@link PageExportProcessor} access to the page being exported. All modifications made through this context are
- * undone after the export.
+ * Gives {@link PageExportProcessor} access to the page being exported. Processors work on a copy of the page, so they
+ * can modify it freely without affecting the in-game guide.
  */
 @ApiStatus.Experimental
 @ApiStatus.NonExtendable
@@ -42,13 +41,6 @@ public interface PageExportContext {
      * that is only known after compiling the page, such as the scene of a {@code <GameScene>}.
      */
     List<LytNode> getLayoutNodes(MdAstNode node);
-
-    /**
-     * Sets the string value of an attribute, adding it if it doesn't exist.
-     */
-    void setAttribute(MdxJsxElementFields element, String name, String value);
-
-    void removeAttribute(MdxJsxElementFields element, String name);
 
     /**
      * Replaces the node with the given nodes.

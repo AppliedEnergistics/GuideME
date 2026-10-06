@@ -48,6 +48,14 @@ public class ParsedGuidePage {
         return language;
     }
 
+    /**
+     * {@return a copy of this page with its own copy of the Markdown AST, which can be modified without affecting this
+     * page}
+     */
+    public ParsedGuidePage deepCopy() {
+        return new ParsedGuidePage(sourcePack, id, source, (MdAstRoot) astRoot.deepCopy(), frontmatter, language);
+    }
+
     @Override
     public String toString() {
         if (id.getNamespace().equals(sourcePack)) {

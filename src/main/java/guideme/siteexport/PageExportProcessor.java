@@ -9,9 +9,9 @@ import org.jetbrains.annotations.ApiStatus;
  * Modifies the Markdown AST of pages before they are exported for the website. This allows elements to resolve
  * information that is only available in-game, such as symbolic colors or whether a mod is loaded.
  * <p>
- * Processors can change the attributes of elements or replace elements entirely (i.e. with their own children), using
- * the methods of {@link PageExportContext}. These modifications are undone after the export, since the AST is shared
- * with the in-game guide.
+ * Processors can change the attributes of elements directly, or replace elements entirely (i.e. with their own
+ * children) using the methods of {@link PageExportContext}. They work on a copy of the page, so these modifications
+ * don't affect the in-game guide.
  * <p>
  * Processors run before images and scenes are exported, so content that is unwrapped by a processor is exported
  * normally, and content that is removed is not exported at all.

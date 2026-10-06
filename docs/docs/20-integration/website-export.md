@@ -161,7 +161,7 @@ Some tags depend on information that is only available in-game, such as whether 
 generator only sees the result. Register it on your guide like any other extension.
 
 A processor selects the nodes it applies to and can change their attributes, or replace them, for example with their
-own content. All changes are undone after the export. GuideME uses this itself to resolve symbolic colors of `<Color>`
+own content. Processors work on a copy of the page, so their changes don't affect the in-game guide. GuideME uses this itself to resolve symbolic colors of `<Color>`
 and the keys of `<KeyBind>`.
 
 Processors can also access the result of compiling the page for the in-game guide: `PageExportContext#getLayoutNodes`
