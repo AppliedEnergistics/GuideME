@@ -257,14 +257,28 @@ final proguardConfig = tasks.register('generateProguardConfig', GenerateProGuard
 }
 
 
+// Newer JDK distributions no longer ship jmods, extract the JDK classes from the runtime image instead
+final javaHome = System.getProperty('java.home')
+final hasJmods = file("${javaHome}/jmods").isDirectory()
+final extractJdkClasses = tasks.register('extractJdkClasses', ExtractJdkClasses) {
+    group = 'build'
+    description = 'Extracts the JDK classes for ProGuard if the JDK does not ship jmods.'
+    enabled = !hasJmods
+    it.javaHome = javaHome
+    output = layout.buildDirectory.file("jdk-classes/jdk-${JavaLanguageVersion.current().asInt()}.jar")
+}
+
 final proguardJar = tasks.register('proguardJar', proguard.gradle.ProGuardTask) {
     dependsOn shadowJar
     outputs.upToDateWhen { false }
 
     if (JavaLanguageVersion.current().asInt() <= 8) {
-        libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
+        libraryjars "${javaHome}/lib/rt.jar"
+    } else if (hasJmods) {
+        libraryjars "${javaHome}/jmods"
     } else {
-        libraryjars "${System.getProperty('java.home')}/jmods"
+        dependsOn extractJdkClasses
+        libraryjars extractJdkClasses.flatMap { it.output }
     }
     libraryjars(configurations.compileClasspath)
 
