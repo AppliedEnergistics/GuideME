@@ -1,5 +1,7 @@
 package guideme.libs.mdast.model;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonWriter;
 import guideme.libs.unist.UnistPoint;
 import guideme.libs.unist.UnistPosition;
@@ -70,6 +72,19 @@ public class MdAstPosition implements UnistPosition {
         writer.name("end");
         end.writeJson(writer);
         writer.endObject();
+    }
+
+    public static MdAstPosition fromJson(JsonObject jsonObject) {
+        return new MdAstPosition(pointFromJson(jsonObject.getAsJsonObject("start")),
+                pointFromJson(jsonObject.getAsJsonObject("end")));
+    }
+
+    private static UnistPoint pointFromJson(JsonObject jsonObject) {
+        if (jsonObject == null) {
+            throw new JsonSyntaxException("Missing start or end of position");
+        }
+        return new MdAstPoint(jsonObject.get("line").getAsInt(), jsonObject.get("column").getAsInt(),
+                jsonObject.get("offset").getAsInt());
     }
 
     @Override

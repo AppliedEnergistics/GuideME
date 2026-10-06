@@ -1,6 +1,7 @@
 package guideme.libs.mdast.model;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonWriter;
 import guideme.libs.mdast.MdAstVisitor;
@@ -17,6 +18,8 @@ import guideme.libs.mdast.mdx.model.MdxJsxTextElement;
 import guideme.libs.unist.UnistNode;
 import guideme.libs.unist.UnistPosition;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.util.function.Predicate;
 import org.jetbrains.annotations.Nullable;
 
@@ -111,11 +114,28 @@ public abstract class MdAstNode implements UnistNode {
         };
 
         node.readJson(jsonObject);
+        var position = jsonObject.getAsJsonObject("position");
+        if (position != null) {
+            node.position = MdAstPosition.fromJson(position);
+        }
 
         return node;
     }
 
     protected void readJson(JsonObject jsonObject) throws IOException {
+    }
+
+    /**
+     * {@return a deep copy of this node and its descendants} The {@link #data} of nodes is not copied.
+     */
+    public final MdAstNode deepCopy() {
+        try {
+            var writer = new StringWriter();
+            toJson(new JsonWriter(writer));
+            return fromJson(JsonParser.parseString(writer.toString()).getAsJsonObject());
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to copy " + this, e);
+        }
     }
 
     public final MdAstVisitor.Result visit(MdAstVisitor visitor) {
