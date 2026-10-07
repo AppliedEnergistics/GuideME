@@ -185,8 +185,8 @@ public class LytSlotGrid extends LytBox {
                     var index = getSlotIndex(x, y);
                     if (index >= slots.length || slots[index] == null) {
                         context.drawIcon(
-                                bounds.x() + guideme.document.block.LytSlot.OUTER_SIZE * x,
-                                bounds.y() + guideme.document.block.LytSlot.OUTER_SIZE * y,
+                                bounds.x() + LytSlot.OUTER_SIZE * x,
+                                bounds.y() + LytSlot.OUTER_SIZE * y,
                                 GuiAssets.SLOT_BACKGROUND);
                     }
                 }
@@ -201,6 +201,6 @@ public class LytSlotGrid extends LytBox {
     }
 
     private static boolean isEmpty(SlotDisplay d) {
-        return d.type() == net.minecraft.world.item.crafting.display.SlotDisplay.Empty.TYPE;
+        return d.type() == SlotDisplay.Empty.TYPE;
     }
 }

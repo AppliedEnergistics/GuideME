@@ -3,6 +3,7 @@ package guideme.internal.web;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -18,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 import net.minecraft.resources.Identifier;
@@ -46,7 +48,7 @@ class WebSiteGeneratorTest {
 
     private void addPage(String pageId, String markdown) {
         var page = new ExportedPageJson();
-        page.astRoot = PageCompiler.parse("testmod", Identifier.parse(pageId), markdown).getAstRoot();
+        page.astRoot = PageCompiler.parse("testmod", "en_us", Identifier.parse(pageId), markdown).getAstRoot();
         json.pages.put(pageId, page);
 
         var node = new NavigationNodeJson();
@@ -116,7 +118,7 @@ class WebSiteGeneratorTest {
 
         var guide = GuideExportReader.readGuide(dataFolder, GuideExportReader.readIndex(dataFolder));
 
-        assertThat(guide.getExtraData("ae2:default-config-values")).isEqualTo(java.util.Map.of("someValue", "42"));
+        assertThat(guide.getExtraData("ae2:default-config-values")).isEqualTo(Map.of("someValue", "42"));
     }
 
     @Test
@@ -206,7 +208,7 @@ class WebSiteGeneratorTest {
         }
     }
 
-    private static com.google.gson.Gson gson() {
+    private static Gson gson() {
         return new GsonBuilder().registerTypeHierarchyAdapter(MdAstNode.class, new MdAstNodeAdapter()).create();
     }
 

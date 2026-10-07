@@ -3,10 +3,12 @@ package guideme.internal.siteexport.mdastpostprocess;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.google.gson.stream.JsonWriter;
 import guideme.compiler.PageCompiler;
 import guideme.document.block.LytNode;
 import guideme.document.block.LytParagraph;
 import guideme.extensions.ExtensionCollection;
+import guideme.libs.mdast.MdAstVisitor;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import guideme.libs.mdast.model.MdAstNode;
 import guideme.libs.mdast.model.MdAstParent;
@@ -152,7 +154,7 @@ class PageExportProcessingTest {
 
     private static String textOf(Object node) {
         var text = new StringBuilder();
-        ((MdAstNode) node).visit(new guideme.libs.mdast.MdAstVisitor() {
+        ((MdAstNode) node).visit(new MdAstVisitor() {
             @Override
             public Result beforeNode(MdAstNode node) {
                 if (node instanceof MdAstText textNode) {
@@ -166,7 +168,7 @@ class PageExportProcessingTest {
 
     private static String toJson(MdAstNode node) throws IOException {
         var writer = new StringWriter();
-        var jsonWriter = new com.google.gson.stream.JsonWriter(writer);
+        var jsonWriter = new JsonWriter(writer);
         node.toJson(jsonWriter);
         return writer.toString();
     }
