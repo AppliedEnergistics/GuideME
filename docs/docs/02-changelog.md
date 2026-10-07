@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.3.2-alpha (Minecraft 26.3)
+
+- Fix light and dark mode colors of `custom_colors` in data-driven guides being swapped
+
 ## 26.3.1-alpha (Minecraft 26.3)
 
 - Update to Minecraft 26.3
