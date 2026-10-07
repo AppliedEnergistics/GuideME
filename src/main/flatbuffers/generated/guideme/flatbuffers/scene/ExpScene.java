@@ -115,8 +115,17 @@ public final class ExpScene extends Table {
         return o != 0 ? obj.__assign(__vector(o), 4, bb) : null;
     }
 
+    public guideme.flatbuffers.scene.ExpVec3 cameraCenter() {
+        return cameraCenter(new guideme.flatbuffers.scene.ExpVec3());
+    }
+
+    public guideme.flatbuffers.scene.ExpVec3 cameraCenter(guideme.flatbuffers.scene.ExpVec3 obj) {
+        int o = __offset(12);
+        return o != 0 ? obj.__assign(o + bb_pos, bb) : null;
+    }
+
     public static void startExpScene(FlatBufferBuilder builder) {
-        builder.startTable(4);
+        builder.startTable(5);
     }
 
     public static void addCamera(FlatBufferBuilder builder, int cameraOffset) {
@@ -166,6 +175,10 @@ public final class ExpScene extends Table {
 
     public static void startShadersVector(FlatBufferBuilder builder, int numElems) {
         builder.startVector(4, numElems, 4);
+    }
+
+    public static void addCameraCenter(FlatBufferBuilder builder, int cameraCenterOffset) {
+        builder.addStruct(4, cameraCenterOffset, 0);
     }
 
     public static int endExpScene(FlatBufferBuilder builder) {

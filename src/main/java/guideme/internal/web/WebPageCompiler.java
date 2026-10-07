@@ -56,6 +56,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1175,11 +1176,18 @@ class WebPageCompiler {
             }
         }
 
+        var placeholderStyles = new LinkedHashMap<String, String>();
+        placeholderStyles.put("width", guiScaledDimension(attributes.width()));
+        placeholderStyles.put("height", guiScaledDimension(attributes.height()));
+        // Mirror the background of the loaded scene so the placeholder doesn't visibly change when it's replaced
+        if (attributes.background() != null) {
+            placeholderStyles.put("background", attributes.background());
+        }
+
         var placeholderImage = HtmlNode.tag("img")
-                .setClassName("game-scene")
-                .setStyles(Map.of(
-                        "width", guiScaledDimension(attributes.width()),
-                        "height", guiScaledDimension(attributes.height())))
+                // The interactive class reserves space for the controls that are added once the scene is loaded
+                .setClassName(attributes.interactive() ? "game-scene interactive" : "game-scene")
+                .setStyles(placeholderStyles)
                 .setAttribute("src", context.resolveAssetPath(attributes.placeholder()))
                 .setAttribute("data-scene-src", context.resolveAssetPath(attributes.src()))
                 .setAttribute("data-scene-width", attributes.width())

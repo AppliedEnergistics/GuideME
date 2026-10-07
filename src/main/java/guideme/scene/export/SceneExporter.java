@@ -29,6 +29,7 @@ import guideme.flatbuffers.scene.ExpScene;
 import guideme.flatbuffers.scene.ExpShaderInfo;
 import guideme.flatbuffers.scene.ExpShaderLighting;
 import guideme.flatbuffers.scene.ExpTransparency;
+import guideme.flatbuffers.scene.ExpVec3;
 import guideme.flatbuffers.scene.ExpVertexElementType;
 import guideme.flatbuffers.scene.ExpVertexElementUsage;
 import guideme.flatbuffers.scene.ExpVertexFormat;
@@ -68,6 +69,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,6 +165,9 @@ public class SceneExporter {
         ExpScene.addShaders(builder, shadersOffset);
         var cameraOffset = createCameraModel(scene.getCameraSettings(), builder);
         ExpScene.addCamera(builder, cameraOffset);
+        var cameraCenter = getCameraCenter(scene);
+        ExpScene.addCameraCenter(builder,
+                ExpVec3.createExpVec3(builder, cameraCenter.x, cameraCenter.y, cameraCenter.z));
         ExpScene.addAnimatedTextures(builder, animatedTexturesOffset);
 
         builder.finish(ExpScene.endExpScene(builder));
@@ -707,6 +712,20 @@ public class SceneExporter {
                 cameraSettings.getRotationX(),
                 cameraSettings.getRotationZ(),
                 cameraSettings.getZoom());
+    }
+
+    /**
+     * Finds the world position shown at the center of the viewport, so the web viewer can frame the scene exactly like
+     * the in-game renderer, including the offset applied by {@link GuidebookScene#centerScene()}.
+     */
+    private static Vector3f getCameraCenter(GuidebookScene scene) {
+        var inverseViewMatrix = scene.getCameraSettings().getViewMatrix().invert();
+        var center = inverseViewMatrix.transformPosition(new Vector3f());
+        // Any point along the view axis is shown at the viewport center, so move it to the depth of the scene
+        // to keep the scene within the clipping range of the web viewer's camera, which orbits around it.
+        var viewAxis = inverseViewMatrix.transformDirection(new Vector3f(0, 0, 1)).normalize();
+        var depth = new Vector3f(scene.getWorldCenter()).sub(center).dot(viewAxis);
+        return center.fma(depth, viewAxis);
     }
 
 }

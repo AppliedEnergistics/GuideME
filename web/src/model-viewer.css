@@ -1,9 +1,17 @@
 /*
  This is the placeholder image that is shown before the actual scene is loaded.
+ It must take up the same space as .game-scene-wrapper, which replaces it.
  */
 img.game-scene {
   display: block;
-  padding: 16px;
+  box-sizing: content-box;
+  background-color: var(--color--scene-background);
+  border-radius: 16px;
+}
+
+/* Reserve space for the .controls column of the loaded scene */
+img.game-scene.interactive {
+  padding-right: 32px;
 }
 
 /* Scenes are block elements like in-game, but only take up the width they need */

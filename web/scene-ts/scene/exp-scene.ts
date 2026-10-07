@@ -6,6 +6,7 @@ import { ExpAnimatedTexturePart } from '../scene/exp-animated-texture-part.js';
 import { ExpCameraSettings } from '../scene/exp-camera-settings.js';
 import { ExpMesh } from '../scene/exp-mesh.js';
 import { ExpShaderInfo } from '../scene/exp-shader-info.js';
+import { ExpVec3 } from '../scene/exp-vec3.js';
 
 
 export class ExpScene {
@@ -61,8 +62,13 @@ shadersLength():number {
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
+cameraCenter(obj?:ExpVec3):ExpVec3|null {
+  const offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? (obj || new ExpVec3()).__init(this.bb_pos + offset, this.bb!) : null;
+}
+
 static startExpScene(builder:flatbuffers.Builder) {
-  builder.startObject(4);
+  builder.startObject(5);
 }
 
 static addCamera(builder:flatbuffers.Builder, cameraOffset:flatbuffers.Offset) {
@@ -117,6 +123,10 @@ static startShadersVector(builder:flatbuffers.Builder, numElems:number) {
   builder.startVector(4, numElems, 4);
 }
 
+static addCameraCenter(builder:flatbuffers.Builder, cameraCenterOffset:flatbuffers.Offset) {
+  builder.addFieldStruct(4, cameraCenterOffset, 0);
+}
+
 static endExpScene(builder:flatbuffers.Builder):flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
@@ -130,12 +140,4 @@ static finishSizePrefixedExpSceneBuffer(builder:flatbuffers.Builder, offset:flat
   builder.finish(offset, undefined, true);
 }
 
-static createExpScene(builder:flatbuffers.Builder, cameraOffset:flatbuffers.Offset, meshesOffset:flatbuffers.Offset, animatedTexturesOffset:flatbuffers.Offset, shadersOffset:flatbuffers.Offset):flatbuffers.Offset {
-  ExpScene.startExpScene(builder);
-  ExpScene.addCamera(builder, cameraOffset);
-  ExpScene.addMeshes(builder, meshesOffset);
-  ExpScene.addAnimatedTextures(builder, animatedTexturesOffset);
-  ExpScene.addShaders(builder, shadersOffset);
-  return ExpScene.endExpScene(builder);
-}
 }

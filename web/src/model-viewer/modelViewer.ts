@@ -123,11 +123,13 @@ async function initialize(
     abortSignal,
   );
 
-  // Center the scene
+  // Move the point the in-game camera is centered on to the origin, which the camera looks at.
+  // Older scenes don't include it, so we fall back to the center of the scene's bounding box.
   const sceneBounds = new Box3();
   sceneBounds.expandByObject(group);
   const sceneCenter = sceneBounds.getCenter(new Vector3());
-  group.position.copy(sceneCenter.clone().negate());
+  const cameraCenter = cameraProps.center ?? sceneCenter;
+  group.position.copy(cameraCenter.clone().negate());
 
   // Add a plane for orientation if camera controls are enabled
   if (cameraControls) {
@@ -180,7 +182,9 @@ async function initialize(
     // We only scale down, not up
     const scaling = Math.min(1, width / (originalWidth * GUI_SCALE));
     guiPixelSize = GUI_SCALE * scaling;
-    camera.zoom = (1 / 0.625) * 16 * cameraProps.zoom * scaling;
+    // Matches the view matrix scale in CameraSettings (0.625 comes from the default block model GUI transform),
+    // converted from GUI pixels to CSS pixels
+    camera.zoom = 0.625 * 16 * cameraProps.zoom * guiPixelSize;
     camera.left = -width / 2;
     camera.right = width / 2;
     camera.top = height / 2;
