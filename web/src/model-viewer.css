@@ -29,55 +29,49 @@ img.game-scene {
     flex-direction: column;
   }
 
-  /* The same icons and colors as the in-game scene toolbar (see GuideIconButton) */
+  /* The same buttons as the AE2 website */
   .controls button {
-    --icon-x: 0;
-    --icon-y: 0;
     appearance: none;
     border: none;
     padding: 0;
     cursor: pointer;
-    width: calc(16px * var(--gui-scale));
-    height: calc(16px * var(--gui-scale));
-    background-color: var(--color--icon-button-normal);
-    mask-image: url("../../src/main/resources/assets/guideme/textures/guide/buttons.png");
-    mask-size: calc(64px * var(--gui-scale)) calc(64px * var(--gui-scale));
-    mask-position: calc(var(--icon-x) * -1px * var(--gui-scale))
-      calc(var(--icon-y) * -1px * var(--gui-scale));
+    width: 32px;
+    height: 32px;
+    background: none no-repeat center / contain;
     image-rendering: pixelated;
+    opacity: 0.8;
   }
 
   .controls button:hover {
-    background-color: var(--color--icon-button-hover);
+    opacity: 1;
+  }
+
+  .controls button:active {
+    opacity: 0.6;
   }
 
   .controls button:disabled {
-    background-color: var(--color--icon-button-disabled);
+    opacity: 0.2;
   }
 
   .controls .icon-hide-annotations {
-    --icon-x: 0;
-    --icon-y: 16;
+    background-image: url("../assets/button_visible.png");
   }
 
   .controls .icon-show-annotations {
-    --icon-x: 16;
-    --icon-y: 16;
+    background-image: url("../assets/button_invisible.png");
   }
 
   .controls .icon-zoom-out {
-    --icon-x: 32;
-    --icon-y: 16;
+    background-image: url("../assets/button_minus.png");
   }
 
   .controls .icon-zoom-in {
-    --icon-x: 48;
-    --icon-y: 16;
+    background-image: url("../assets/button_plus.png");
   }
 
   .controls .icon-reset-view {
-    --icon-x: 0;
-    --icon-y: 32;
+    background-image: url("../assets/button_reset.png");
   }
 
   .root {

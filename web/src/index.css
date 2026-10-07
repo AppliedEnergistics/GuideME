@@ -69,9 +69,6 @@ hr {
   --color--navbar-row-hover: rgb(33, 33, 33);
   --color--navbar-expand-arrow: rgb(238, 238, 238);
   --color--table-border: rgb(124, 124, 124);
-  --color--icon-button-normal: rgb(200, 200, 200);
-  --color--icon-button-disabled: rgb(64, 64, 64);
-  --color--icon-button-hover: rgb(0, 213, 255);
   --color--in-world-block-highlight: #999999cc;
   --color--scene-background: rgba(0, 0, 0, 0.2);
 

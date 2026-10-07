@@ -6,8 +6,12 @@ assets/PixeloidSans-LRDUD24B.woff
 assets/PixeloidSans-SG3QN3JO.woff2
 assets/background-YRAQ3RNF.png
 assets/bundle-3FJGBGUZ.js
-assets/bundle-Z3LRXRTO.css
-assets/buttons-6BF5FNW2.png
+assets/bundle-PUHFMNOV.css
+assets/button_invisible-OS4ECYQ6.png
+assets/button_minus-JEYKYAA5.png
+assets/button_plus-L7MAGMHM.png
+assets/button_reset-EBCJA4OO.png
+assets/button_visible-OY7MESBU.png
 assets/chunk-RXNPRUEY.js
 assets/decompressFallback-VGYIC7XH.js
 assets/diamond-7X2HHREI.png
