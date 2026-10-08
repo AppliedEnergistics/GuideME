@@ -1,6 +1,6 @@
 import "./index.css";
 import "tippy.js/dist/tippy.css";
-import tippy from "tippy.js";
+import tippy, { inlinePositioning } from "tippy.js";
 
 // All tooltips, including those of game scenes, use the look of Minecraft tooltips (see tooltip.css)
 tippy.setDefaultProps({
@@ -350,6 +350,7 @@ function setupTooltips(root: Element) {
     },
     allowHTML: true,
     inlinePositioning: true,
+    plugins: [inlinePositioning],
   });
 }
 
