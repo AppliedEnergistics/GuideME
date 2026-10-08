@@ -75,7 +75,7 @@ class WebSiteGeneratorTest {
     }
 
     @Test
-    void testCleanUrlsAndBasePath() throws Exception {
+    void testPageSubdirectoriesAndBasePath() throws Exception {
         generate(true, "/1.21.1/");
 
         var start = read("start/index.html");
@@ -181,14 +181,14 @@ class WebSiteGeneratorTest {
         assertThat(dataFolder.resolve("index.json")).exists();
     }
 
-    private void generate(boolean cleanUrls, String basePath) throws IOException {
+    private void generate(boolean pageSubdirectories, String basePath) throws IOException {
         writeExport(toJson());
-        new WebSiteGenerator(options(cleanUrls, basePath, false)).generate();
+        new WebSiteGenerator(options(pageSubdirectories, basePath, false)).generate();
     }
 
-    private WebSiteGenerator.Options options(boolean cleanUrls, String basePath, boolean clean) {
+    private WebSiteGenerator.Options options(boolean pageSubdirectories, String basePath, boolean clean) {
         return new WebSiteGenerator.Options(dataFolder, outputFolder, webDist(), null, "Test Guide", null, null,
-                "https://guide.example.com", basePath, cleanUrls, clean, List.of(), List.of());
+                "https://guide.example.com", basePath, pageSubdirectories, clean, List.of(), List.of());
     }
 
     private static Path webDist() {

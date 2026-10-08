@@ -4,16 +4,16 @@ package guideme.internal.web;
  * Determines where pages are written to and how they are linked to. All paths are relative to the root of the website
  * and have no leading slash.
  *
- * @param cleanUrls If true, pages are written as {@code page/index.html} and linked to as {@code page/}, which allows
- *                  linking to pages without a file extension on any static web host.
+ * @param pageSubdirectories If true, pages are written as {@code page/index.html} and linked to as {@code page/}, which
+ *                           allows linking to pages without a file extension on any static web host.
  */
-record SitePaths(ExportedGuideImpl guide, boolean cleanUrls) {
+record SitePaths(ExportedGuideImpl guide, boolean pageSubdirectories) {
     /**
      * {@return the path of the HTML file a page is written to}
      */
     String pageFile(String pageId) {
         var basePath = guide.getPageBasePath(pageId);
-        return cleanUrls ? basePath + "/index.html" : basePath + ".html";
+        return pageSubdirectories ? basePath + "/index.html" : basePath + ".html";
     }
 
     /**
@@ -21,7 +21,7 @@ record SitePaths(ExportedGuideImpl guide, boolean cleanUrls) {
      */
     String pageUrl(String pageId) {
         var basePath = guide.getPageBasePath(pageId);
-        return cleanUrls ? basePath + "/" : basePath + ".html";
+        return pageSubdirectories ? basePath + "/" : basePath + ".html";
     }
 
     /**

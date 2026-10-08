@@ -62,21 +62,21 @@ tasks.register('createGuideWebsite', JavaExec) {
 }
 ```
 
-| Argument | Description |
-|---|---|
-| `--data <folder>` | The folder containing the guide export (required). |
-| `--output <folder>` | The folder the website is written to (required). |
-| `--clean` | Deletes the content of the output folder first, so pages that no longer exist are removed. |
-| `--title <title>` | The title of the guide, shown in the header and the browser title. |
-| `--logo <file>` | An image file to use as the logo. Defaults to the GuideME logo. |
-| `--favicon <file>` | An image file to use as the favicon. Defaults to the logo. |
-| `--stylesheet <file>` | A stylesheet to include on every page, to change the look of the website. Can be repeated. |
-| `--script <file>` | A script to include on every page. Can be repeated. |
-| `--site-url <url>` | The URL the website is published at, i.e. `https://guide.example.com`. Enables canonical links, `sitemap.xml` and `robots.txt`. |
-| `--base-path <path>` | The URL path the website is served from, i.e. `/1.21.1/` when publishing several versions side by side. Defaults to `/`. |
-| `--clean-urls` | Writes pages as `page/index.html` so they can be linked without the `.html` extension on any web host. |
-| `--web-assets <folder>` | A folder whose files override the default web assets, such as the page layout. |
-| `--change-version-url <url>` | A URL to link to for picking a different version of the guide. Defaults to `/` if a base path is set. |
+| Argument                     | Description                                                                                                                     |
+|------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `--data <folder>`            | The folder containing the guide export (required).                                                                              |
+| `--output <folder>`          | The folder the website is written to (required).                                                                                |
+| `--clean`                    | Deletes the content of the output folder first, so pages that no longer exist are removed.                                      |
+| `--title <title>`            | The title of the guide, shown in the header and the browser title.                                                              |
+| `--logo <file>`              | An image file to use as the logo. Defaults to the GuideME logo.                                                                 |
+| `--favicon <file>`           | An image file to use as the favicon. Defaults to the logo.                                                                      |
+| `--stylesheet <file>`        | A stylesheet to include on every page, to change the look of the website. Can be repeated.                                      |
+| `--script <file>`            | A script to include on every page. Can be repeated.                                                                             |
+| `--site-url <url>`           | The URL the website is published at, i.e. `https://guide.example.com`. Enables canonical links, `sitemap.xml` and `robots.txt`. |
+| `--base-path <path>`         | The URL path the website is served from, i.e. `/1.21.1/` when publishing several versions side by side. Defaults to `/`.        |
+| `--page-subdirectories`      | Writes pages as `[page]/index.html` so they can be linked without the `.html` extension on any web host.                        |
+| `--web-assets <folder>`      | A folder whose files override the default web assets, such as the page layout.                                                  |
+| `--change-version-url <url>` | A URL to link to for picking a different version of the guide. Defaults to `/` if a base path is set.                           |
 
 The website includes a search function, a `404.html` page, and an `index.html` that redirects to the start page
 of the guide if the guide has no `index.md`.

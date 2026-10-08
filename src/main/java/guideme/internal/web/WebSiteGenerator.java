@@ -31,20 +31,20 @@ public final class WebSiteGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(WebSiteGenerator.class);
 
     /**
-     * @param dataFolder       The folder containing the guide export.
-     * @param outputFolder     The folder the website is written to.
-     * @param webAssetsPath    A folder whose files override the default web assets.
-     * @param changeVersionUrl The URL to link to for changing the guide version.
-     * @param title            The title of the guide shown in the header and in the browser title.
-     * @param logo             Image file to use as the logo, or null to use the GuideME logo.
-     * @param favicon          Image file to use as the favicon, or null to use the logo.
-     * @param siteUrl          The URL of the website (scheme and host, i.e. {@code https://guide.example.com}).
-     *                         Required to generate canonical links and the sitemap.
-     * @param basePath         The URL path the website is served from, which always starts and ends with a slash.
-     * @param cleanUrls        Write pages as {@code page/index.html} to link to them without file extension.
-     * @param clean            Delete the content of the output folder before generating the website.
-     * @param stylesheets      Stylesheet files to include on every page, i.e. to change the look of the website.
-     * @param scripts          Script files to include on every page.
+     * @param dataFolder         The folder containing the guide export.
+     * @param outputFolder       The folder the website is written to.
+     * @param webAssetsPath      A folder whose files override the default web assets.
+     * @param changeVersionUrl   The URL to link to for changing the guide version.
+     * @param title              The title of the guide shown in the header and in the browser title.
+     * @param logo               Image file to use as the logo, or null to use the GuideME logo.
+     * @param favicon            Image file to use as the favicon, or null to use the logo.
+     * @param siteUrl            The URL of the website (scheme and host, i.e. {@code https://guide.example.com}).
+     *                           Required to generate canonical links and the sitemap.
+     * @param basePath           The URL path the website is served from, which always starts and ends with a slash.
+     * @param pageSubdirectories Write pages as {@code <page>/index.html} to link to them without file extension.
+     * @param clean              Delete the content of the output folder before generating the website.
+     * @param stylesheets        Stylesheet files to include on every page, i.e. to change the look of the website.
+     * @param scripts            Script files to include on every page.
      */
     public record Options(Path dataFolder,
             Path outputFolder,
@@ -55,7 +55,7 @@ public final class WebSiteGenerator {
             @Nullable Path favicon,
             @Nullable String siteUrl,
             String basePath,
-            boolean cleanUrls,
+            boolean pageSubdirectories,
             boolean clean,
             List<Path> stylesheets,
             List<Path> scripts) {
@@ -130,7 +130,7 @@ public final class WebSiteGenerator {
 
         // Load the guide
         var guide = GuideExportReader.readGuide(options.dataFolder, index);
-        var paths = new SitePaths(guide, options.cleanUrls);
+        var paths = new SitePaths(guide, options.pageSubdirectories);
 
         var compiler = new WebPageCompiler(guide, webAssetsBundle, options, resourceCopier, paths);
         var futures = new ArrayList<CompletableFuture<?>>();

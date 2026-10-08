@@ -417,7 +417,7 @@ def configureStaticSiteTask = { JavaExec task, String dataFolder, String outputF
     // Tests that the website can be styled by the mod
     task.inputs.dir('src/testmod/web')
     task.args '--stylesheet', file('src/testmod/web/testmod.css').absolutePath
-    // Additional generator arguments, i.e. -PwebsiteArgs="--clean-urls --base-path /test/"
+    // Additional generator arguments, i.e. -PwebsiteArgs="--page-subdirectories --base-path /test/"
     def extraArgs = findProperty('websiteArgs')?.toString()?.trim()
     if (extraArgs) {
         task.args extraArgs.split(/\s+/)

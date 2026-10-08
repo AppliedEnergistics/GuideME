@@ -29,15 +29,15 @@ public final class WebSiteGenerator {
         Path favicon = null;
         String siteUrl = null;
         String basePath = "/";
-        boolean cleanUrls = false;
+        boolean pageSubdirectories = false;
         boolean clean = false;
         var stylesheets = new ArrayList<Path>();
         var scripts = new ArrayList<Path>();
         for (int i = 0; i < args.length; i++) {
             var arg = args[i];
             // Flags without value
-            if (arg.equals("--clean-urls")) {
-                cleanUrls = true;
+            if (arg.equals("--page-subdirectories")) {
+                pageSubdirectories = true;
                 continue;
             } else if (arg.equals("--clean")) {
                 clean = true;
@@ -72,25 +72,26 @@ public final class WebSiteGenerator {
 
         new guideme.internal.web.WebSiteGenerator(new guideme.internal.web.WebSiteGenerator.Options(dataFolder,
                 outputFolder, webAssetsFolder, changeVersionUrl, title, logo,
-                favicon, siteUrl, basePath, cleanUrls, clean, stylesheets, scripts)).generate();
+                favicon, siteUrl, basePath, pageSubdirectories, clean, stylesheets, scripts)).generate();
     }
 
     private static void exitWithUsage(String error) {
         System.err.println(error);
-        System.err.println("""
-                Usage: --data <export-folder> --output <destination-folder> [options]
-                Options:
-                  --clean                     Delete the content of the output folder first
-                  --title <title>             The title of the guide
-                  --logo <file>               Image file to use as the logo
-                  --favicon <file>            Image file to use as the favicon (defaults to the logo)
-                  --stylesheet <file>         Stylesheet to include on every page (can be repeated)
-                  --script <file>             Script to include on every page (can be repeated)
-                  --site-url <url>            URL of the website, i.e. https://guide.example.com
-                  --base-path <path>          URL path the website is served from, i.e. /1.21.1/
-                  --clean-urls                Write pages as page/index.html to link to them without extension
-                  --change-version-url <url>  URL to link to for changing the guide version
-                  --web-assets <folder>       Folder with files overriding the default web assets""");
+        System.err.println(
+                """
+                        Usage: --data <export-folder> --output <destination-folder> [options]
+                        Options:
+                          --clean                     Delete the content of the output folder first
+                          --title <title>             The title of the guide
+                          --logo <file>               Image file to use as the logo
+                          --favicon <file>            Image file to use as the favicon (defaults to the logo)
+                          --stylesheet <file>         Stylesheet to include on every page (can be repeated)
+                          --script <file>             Script to include on every page (can be repeated)
+                          --site-url <url>            URL of the website, i.e. https://guide.example.com
+                          --base-path <path>          URL path the website is served from, i.e. /1.21.1/
+                          --page-subdirectories       Write pages as <page>/index.html to link to them without the .html extension
+                          --change-version-url <url>  URL to link to for changing the guide version
+                          --web-assets <folder>       Folder with files overriding the default web assets""");
         System.exit(1);
     }
 }
