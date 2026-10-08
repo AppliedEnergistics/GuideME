@@ -63,6 +63,11 @@ final class WebAssetsBundle {
     @Nullable
     private String favicon;
 
+    /**
+     * Path of the page the logo links to, relative to the output folder.
+     */
+    private String homePath = "";
+
     WebAssetsBundle(WebSiteGenerator.Options options) {
         this.folder = options.webAssetsPath();
         this.outputFolder = options.outputFolder();
@@ -86,6 +91,10 @@ final class WebAssetsBundle {
 
     void setFavicon(String pathInOutputFolder) {
         this.favicon = pathInOutputFolder;
+    }
+
+    void setHomePath(String pathInOutputFolder) {
+        this.homePath = pathInOutputFolder;
     }
 
     void addStylesheet(String pathInOutputFolder) {
@@ -188,7 +197,7 @@ final class WebAssetsBundle {
         values.put(PLACEHOLDER_FOOTER, footer.outerHtml());
         values.put(PLACEHOLDER_EXTRA_HEAD, extraHead.outerHtml());
         values.put(PLACEHOLDER_LOGO_URL, escapeHtml(context.url(logo)));
-        values.put(PLACEHOLDER_HOME_URL, escapeHtml(context.url("")));
+        values.put(PLACEHOLDER_HOME_URL, escapeHtml(context.url(homePath)));
 
         // Replace in a single pass, so that placeholders in the inserted content are not replaced
         return PLACEHOLDER_PATTERN.matcher(layoutTemplate)

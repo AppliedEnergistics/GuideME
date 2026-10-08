@@ -219,9 +219,21 @@ function hookNavigation() {
           const targetUrl = new URL(closestLink.href);
           if (
             targetUrl.host === location.host &&
-            targetUrl.pathname === location.pathname
+            targetUrl.pathname === location.pathname &&
+            targetUrl.search === location.search
           ) {
-            return; // Let anchor navigation handle it
+            if (targetUrl.hash) {
+              return; // Let anchor navigation handle it
+            }
+            // Without an anchor, the browser would reload the current page
+            e.preventDefault();
+            if (location.hash) {
+              history.pushState({ url: targetUrl.href }, "", targetUrl.href);
+            }
+            document
+              .querySelector("#page-content")
+              ?.parentElement?.scrollTo(0, 0);
+            return;
           }
 
           if (isInternalLink(targetUrl)) {

@@ -12,6 +12,11 @@ public class SiteExportJson {
 
     public String defaultNamespace;
 
+    /**
+     * ID of the page the guide opens on. Missing in exports from older versions.
+     */
+    public String startPage;
+
     public Map<String, ExportedPageJson> pages = new HashMap<>();
 
     public Map<String, JsonElement> pageIndices = new HashMap<>();

@@ -90,6 +90,14 @@ class ExportedGuideImpl implements ExportedGuide {
         return json.defaultNamespace;
     }
 
+    /**
+     * {@return the ID of the page the guide opens on, or null if the export doesn't specify one}
+     */
+    @Nullable
+    String getStartPage() {
+        return json.startPage;
+    }
+
     ExportedPageJson getRequiredPage(String pageId) {
         var page = json.pages.get(pageId);
         if (page == null) {

@@ -132,6 +132,12 @@ public final class WebSiteGenerator {
         var guide = GuideExportReader.readGuide(options.dataFolder, index);
         var paths = new SitePaths(guide, options.pageSubdirectories);
 
+        // Link the logo to the start page directly instead of the index.html that redirects to it
+        var startPageId = findStartPage(guide);
+        if (startPageId != null && !paths.pageFile(startPageId).equals("index.html")) {
+            webAssetsBundle.setHomePath(paths.pageUrl(startPageId));
+        }
+
         var compiler = new WebPageCompiler(guide, webAssetsBundle, options, resourceCopier, paths);
         var futures = new ArrayList<CompletableFuture<?>>();
         for (var pageId : guide.getPages().keySet()) {
@@ -143,7 +149,7 @@ public final class WebSiteGenerator {
 
         try {
             compiler.getSearchIndex().write(options.outputFolder);
-            writeIndexRedirect(guide, paths);
+            writeIndexRedirect(startPageId, paths);
             writeSitemap(guide, paths, index);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -212,14 +218,10 @@ public final class WebSiteGenerator {
      * Writes an index.html at the root of the website that redirects to the start page, unless the start page is
      * already written there.
      */
-    private void writeIndexRedirect(ExportedGuideImpl guide, SitePaths paths) throws IOException {
-        var startPageId = guide.getDefaultNamespace() + ":index.md";
-        if (!guide.pageExists(startPageId)) {
-            startPageId = findFirstPage(guide.getRootNavigationNodes());
-            if (startPageId == null) {
-                LOG.warn("Not writing index.html since the guide has no pages in its navigation.");
-                return;
-            }
+    private void writeIndexRedirect(@Nullable String startPageId, SitePaths paths) throws IOException {
+        if (startPageId == null) {
+            LOG.warn("Not writing index.html since the guide has no pages in its navigation.");
+            return;
         }
 
         if (paths.pageFile(startPageId).equals("index.html")) {
@@ -241,6 +243,22 @@ public final class WebSiteGenerator {
         var html = "<!DOCTYPE html>\n" + HtmlNode.tag("html").setAttribute("lang", "en")
                 .append(head).append(body).outerHtml();
         Files.writeString(options.outputFolder.resolve("index.html"), html, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * {@return the start page of the guide, falling back to its index page or the first page in its navigation}
+     */
+    @Nullable
+    private static String findStartPage(ExportedGuideImpl guide) {
+        var startPageId = guide.getStartPage();
+        if (startPageId != null && guide.pageExists(startPageId)) {
+            return startPageId;
+        }
+        startPageId = guide.getDefaultNamespace() + ":index.md";
+        if (guide.pageExists(startPageId)) {
+            return startPageId;
+        }
+        return findFirstPage(guide.getRootNavigationNodes());
     }
 
     @Nullable

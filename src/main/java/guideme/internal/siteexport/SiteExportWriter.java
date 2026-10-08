@@ -156,6 +156,7 @@ public class SiteExportWriter {
         extensions = guide.getExtensions();
 
         siteExport.defaultNamespace = guide.getDefaultNamespace();
+        siteExport.startPage = guide.getStartPage().toString();
         siteExport.navigationRootNodes = guide.getNavigationTree().getRootNodes()
                 .stream()
                 .map(NavigationNodeJson::of)
