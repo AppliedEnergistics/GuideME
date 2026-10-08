@@ -13,7 +13,6 @@ import guideme.scene.SceneTagCompiler;
 import guideme.scene.export.SceneExporter;
 import guideme.siteexport.ResourceExporter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,15 +78,11 @@ class SceneExportVisitor implements MdAstVisitor {
             if (isGameScene) {
                 var relativePath = exportScene(scene, exportName);
                 elFields.addAttribute("src", relativePath);
-                exporter.addCleanupCallback(() -> elFields.removeAttribute("src"));
             }
             if (isBlockImage) {
                 // Export animated scenes as full scenes instead of pre-rendered images.
                 // Convert the block image to a scene for this purpose. This saves a lot of bandwidth...
                 if (scene.getScene() != null && SceneExporter.isAnimated(scene.getScene())) {
-                    var previousName = elFields.name();
-                    var previousAttrs = new ArrayList<>(elFields.attributes());
-
                     elFields.setName("GameScene");
                     elFields.attributes().clear();
                     elFields.addAttribute("background", "transparent");
@@ -97,11 +92,6 @@ class SceneExportVisitor implements MdAstVisitor {
 
                     addPlaceholder(elFields, scene, exportName);
 
-                    exporter.addCleanupCallback(() -> {
-                        elFields.setName(previousName);
-                        elFields.attributes().clear();
-                        elFields.attributes().addAll(previousAttrs);
-                    });
                 } else {
                     // Since block images are non-interactive and have no annotations, we just render them
                     // ahead of time.
@@ -112,7 +102,6 @@ class SceneExportVisitor implements MdAstVisitor {
                             imagePath = CacheBusting.writeAsset(imagePath, imageContent);
                             var relativeImagePath = exporter.getPathRelativeFromOutputFolder(imagePath);
                             elFields.attributes().add(new MdxJsxAttribute("src@" + scale, relativeImagePath));
-                            exporter.addCleanupCallback(() -> elFields.removeAttribute("src@" + scale));
                         }
                     }
                 }
@@ -124,11 +113,9 @@ class SceneExportVisitor implements MdAstVisitor {
             var preferredSize = scene.getPreferredSize();
             if (!elFields.hasAttribute("width")) {
                 elFields.addAttribute("width", preferredSize.width());
-                exporter.addCleanupCallback(() -> elFields.removeAttribute("width"));
             }
             if (!elFields.hasAttribute("height")) {
                 elFields.addAttribute("height", preferredSize.height());
-                exporter.addCleanupCallback(() -> elFields.removeAttribute("height"));
             }
         }
     }
@@ -143,7 +130,6 @@ class SceneExportVisitor implements MdAstVisitor {
             imagePath = CacheBusting.writeAsset(imagePath, imageContent);
             var relativeImagePath = exporter.getPathRelativeFromOutputFolder(imagePath);
             elFields.attributes().add(new MdxJsxAttribute("placeholder", relativeImagePath));
-            exporter.addCleanupCallback(() -> elFields.removeAttribute("placeholder"));
         }
     }
 

@@ -13,6 +13,7 @@ import guideme.internal.GuideOnStartup;
 import guideme.internal.siteexport.mdastpostprocess.PageExportPostProcessor;
 import guideme.internal.util.Platform;
 import guideme.navigation.NavigationNode;
+import guideme.siteexport.AdditionalResourceExporter;
 import guideme.siteexport.ExportableResourceProvider;
 import guideme.siteexport.RecipeExporter;
 import guideme.siteexport.ResourceExporter;
@@ -21,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -108,8 +108,6 @@ public class SiteExporter implements ResourceExporter {
     private final Set<Fluid> fluids = new HashSet<>();
 
     private final Map<Identifier, Object> extraData = new HashMap<>();
-
-    private final List<Runnable> cleanupCallbacks = new ArrayList<>();
 
     public SiteExporter(Minecraft client, Path outputFolder, Guide guide) {
         this.client = client;
@@ -406,13 +404,25 @@ public class SiteExporter implements ResourceExporter {
         for (var page : guide.getPages()) {
             currentPage = page;
 
-            LOG.debug("Compiling {}", page);
-            var compiledPage = PageCompiler.compile(guide, guide.getExtensions(), page);
+            // Export a copy of the page, so the export can modify it without affecting the in-game guide.
+            // The copy is compiled, so that the compiled page refers to the nodes of the copy.
+            var exportedPage = page.deepCopy();
 
-            processPage(indexWriter, page, compiledPage);
+            LOG.debug("Compiling {}", page);
+            var compiledPage = PageCompiler.compile(guide, guide.getExtensions(), exportedPage);
+
+            processPage(indexWriter, exportedPage, compiledPage);
 
             // Post-Process the parsed Markdown AST and export it as JSON into the index directly
             ExportableResourceProvider.visit(compiledPage.document(), SiteExporter.this);
+        }
+
+        for (var additionalResourceExporter : guide.getExtensions().get(AdditionalResourceExporter.EXTENSION_POINT)) {
+            additionalResourceExporter.addResources(guide, this);
+        }
+
+        for (var entry : extraData.entrySet()) {
+            indexWriter.addModData(entry.getKey().toString(), entry.getValue());
         }
 
         dumpRecipes(indexWriter);
@@ -430,9 +440,6 @@ public class SiteExporter implements ResourceExporter {
 
         // Write an uncompressed summary
         writeSummary(guideContent.getFileName().toString());
-
-        cleanupCallbacks.forEach(Runnable::run);
-        cleanupCallbacks.clear();
     }
 
     private void visitNavigationNodeIcons(NavigationNode navigationNode) {
@@ -445,7 +452,7 @@ public class SiteExporter implements ResourceExporter {
             GuidePage compiledPage) {
 
         // Run post-processors on the AST
-        PageExportPostProcessor.postprocess(this, page, compiledPage);
+        PageExportPostProcessor.postprocess(this, guide.getExtensions(), page, compiledPage);
 
         exportWriter.addPage(page);
     }
@@ -671,11 +678,6 @@ public class SiteExporter implements ResourceExporter {
 
     private static Identifier getFluidId(Fluid fluid) {
         return BuiltInRegistries.FLUID.getKey(fluid);
-    }
-
-    @Override
-    public void addCleanupCallback(Runnable runnable) {
-        cleanupCallbacks.add(runnable);
     }
 
     /**

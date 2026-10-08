@@ -91,9 +91,4 @@ public interface ResourceExporter {
      * @param value The value to be serialized to JSON using GSON.
      */
     void addExtraData(Identifier key, Object value);
-
-    /**
-     * Add a runnable to run when the export concludes to perform cleanup.
-     */
-    void addCleanupCallback(Runnable runnable);
 }

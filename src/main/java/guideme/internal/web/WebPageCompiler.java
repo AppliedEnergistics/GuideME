@@ -1,15 +1,17 @@
 package guideme.internal.web;
 
-import static guideme.internal.web.HtmlUtils.createHtmlElement;
-import static guideme.internal.web.HtmlUtils.escapeAttribute;
-import static guideme.internal.web.HtmlUtils.escapeHtml;
 import static guideme.internal.web.HtmlUtils.guiScaledDimension;
 
 import com.google.gson.Gson;
+import guideme.color.LightDarkMode;
+import guideme.color.SymbolicColor;
 import guideme.compiler.tags.MdxAttrs;
+import guideme.internal.siteexport.model.ExportedPageJson;
 import guideme.internal.siteexport.model.ItemInfoJson;
 import guideme.internal.siteexport.model.NavigationNodeJson;
+import guideme.libs.mdast.MdAst;
 import guideme.libs.mdast.MdAstYamlFrontmatter;
+import guideme.libs.mdast.MdastOptions;
 import guideme.libs.mdast.gfm.model.GfmTable;
 import guideme.libs.mdast.gfm.model.GfmTableRow;
 import guideme.libs.mdast.gfmstrikethrough.MdAstDelete;
@@ -37,21 +39,32 @@ import guideme.libs.mdast.model.MdAstRoot;
 import guideme.libs.mdast.model.MdAstStrong;
 import guideme.libs.mdast.model.MdAstText;
 import guideme.libs.mdast.model.MdAstThematicBreak;
+import guideme.libs.micromark.extensions.gfm.Align;
 import guideme.scene.annotation.InWorldBoxAnnotation;
 import guideme.scene.annotation.InWorldLineAnnotation;
-import guideme.siteexport.RecipeWebRenderer;
+import guideme.siteexport.DefaultValue;
+import guideme.web.CustomElementWebRenderer;
+import guideme.web.RecipeWebRenderer;
+import guideme.web.html.HtmlFragment;
+import guideme.web.html.HtmlNode;
+import guideme.web.html.HtmlTag;
+import guideme.web.html.HtmlText;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import net.minecraft.util.StringRepresentable;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joml.Vector3f;
@@ -62,89 +75,149 @@ import org.slf4j.LoggerFactory;
 class WebPageCompiler {
     private static final Logger LOG = LoggerFactory.getLogger(WebPageCompiler.class);
 
-    private final ExportedGuide guide;
+    private final ExportedGuideImpl guide;
     private final WebAssetsBundle webAssetsBundle;
-    private final StaticSiteGenerator.Options options;
+    private final WebSiteGenerator.Options options;
     private final Map<String, RecipeWebRenderer> recipeRenderersByType = new HashMap<>();
+    private final Map<String, CustomElementWebRenderer> customRendererByName = new HashMap<>();
+    private final WebResourceCopier resourceCopier;
+    private final SitePaths paths;
+    private final SearchIndex searchIndex = new SearchIndex();
 
-    public WebPageCompiler(ExportedGuide guide, WebAssetsBundle webAssetsBundle, StaticSiteGenerator.Options options) {
+    WebPageCompiler(ExportedGuideImpl guide, WebAssetsBundle webAssetsBundle,
+            WebSiteGenerator.Options options, WebResourceCopier resourceCopier, SitePaths paths) {
         this.guide = guide;
         this.webAssetsBundle = webAssetsBundle;
         this.options = options;
+        this.resourceCopier = resourceCopier;
+        this.paths = paths;
 
+        // Built-in renderers can be replaced by mods
         registerRecipeRenderers(List.of(
                 new CraftingRecipeRenderer(),
                 new SmeltingRecipeRenderer(),
-                new SmithingRecipeRenderer()));
-        registerRecipeRenderers(ServiceLoader.load(RecipeWebRenderer.class));
-    }
+                new SmithingRecipeRenderer()), false);
+        registerRecipeRenderers(ServiceLoader.load(RecipeWebRenderer.class, RecipeWebRenderer.class.getClassLoader()),
+                true);
 
-    private void registerRecipeRenderers(Iterable<RecipeWebRenderer> renderers) {
-        for (var recipeWebRenderer : renderers) {
-            for (var type : recipeWebRenderer.getSupportedTypes()) {
-                var previous = recipeRenderersByType.put(type, recipeWebRenderer);
+        for (var renderer : ServiceLoader.load(CustomElementWebRenderer.class,
+                CustomElementWebRenderer.class.getClassLoader())) {
+            LOG.info("Using custom element renderer {} for tags {}", renderer.getClass().getName(),
+                    renderer.getTagNames());
+            for (var tagName : renderer.getTagNames()) {
+                var previous = customRendererByName.put(tagName, renderer);
                 if (previous != null) {
-                    LOG.warn("Duplicate web recipe renderer registration for type {}: {} was replaced by {}",
-                            type, previous, recipeWebRenderer);
+                    LOG.warn("Duplicate custom element renderer for tag {}: {} was replaced by {}",
+                            tagName, previous.getClass().getName(), renderer.getClass().getName());
                 }
             }
         }
     }
 
-    public void compile(String pageId) {
+    private void registerRecipeRenderers(Iterable<RecipeWebRenderer> renderers, boolean fromMods) {
+        var builtIn = new HashMap<>(recipeRenderersByType);
+        for (var recipeWebRenderer : renderers) {
+            if (fromMods) {
+                LOG.info("Using recipe renderer {} for recipe types {}", recipeWebRenderer.getClass().getName(),
+                        recipeWebRenderer.getSupportedTypes());
+            }
+            for (var type : recipeWebRenderer.getSupportedTypes()) {
+                var previous = recipeRenderersByType.put(type, recipeWebRenderer);
+                if (previous != null && builtIn.get(type) != previous) {
+                    LOG.warn("Duplicate recipe renderer for type {}: {} was replaced by {}",
+                            type, previous.getClass().getName(), recipeWebRenderer.getClass().getName());
+                }
+            }
+        }
+    }
+
+    WebResourceCopier getResourceCopier() {
+        return resourceCopier;
+    }
+
+    void compile(String pageId) {
         try {
             var page = guide.getRequiredPage(pageId);
+            var pageFile = paths.pageFile(pageId);
 
-            var templates = new TemplateContainer();
-            var context = new WebPageCompileContext(options, guide, pageId, page, templates);
-            var compiled = compilePage(context);
-
-            var pagePath = context.resolveOutputPath(guide.getPageBasePath(pageId) + ".html");
-            var pageHtml = webAssetsBundle.realizeLayoutTemplate(
-                    context,
-                    new LayoutPlaceholders(
-                            pagePath.getParent(),
-                            compiled.title,
-                            compiled.content));
-
-            // Append the page templates
-            pageHtml = pageHtml.replace("</body>", String.join("", context.templates().templates) + "</body>");
-
-            Files.writeString(pagePath, pageHtml, StandardCharsets.UTF_8);
-
+            var context = new WebPageCompileContext(options, guide, paths, pageId, page,
+                    SitePaths.relativePathToRoot(pageFile));
+            var compiled = writePage(context, pageFile, options.absoluteUrl(paths.pageUrl(pageId)));
+            searchIndex.add(pageId, paths.pageUrl(pageId), compiled.title(), compiled.content());
         } catch (Exception e) {
             LOG.error("Error while compiling web page for {}", pageId, e);
             throw new RuntimeException("Error while compiling web page for " + pageId, e);
         }
     }
 
-    // ==================== Compilation Methods ====================
+    /**
+     * Writes a 404.html page, which web hosts serve for any URL that does not exist. It has to use absolute links,
+     * since the URL it will be served from is unknown.
+     */
+    void compileNotFoundPage() {
+        var page = new ExportedPageJson();
+        page.title = "Page Not Found";
+        page.astRoot = MdAst.fromMarkdown("""
+                # Page Not Found
 
-    public record CompiledPage(@Nullable String title, String content) {
+                The page you are looking for does not exist. Use the navigation to find what you are looking for.
+                """, new MdastOptions());
+
+        var context = new WebPageCompileContext(options, guide, paths, "", page, options.basePath());
+        try {
+            writePage(context, "404.html", null);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to write 404 page", e);
+        }
     }
 
-    private String compileChildren(WebPageCompileContext context, MdAstParent<?> parent) {
+    SearchIndex getSearchIndex() {
+        return searchIndex;
+    }
+
+    /**
+     * @return The compiled page, without templates.
+     */
+    private CompiledPage writePage(WebPageCompileContext context, String pageFile, @Nullable String canonicalUrl)
+            throws IOException {
+        var compiled = compilePage(context);
+        // Pages without a level 1 heading fall back to the title from the navigation
+        var title = Objects.requireNonNullElse(compiled.title, Objects.requireNonNullElse(context.page().title, ""));
+
+        var content = new HtmlFragment();
+        content.append(compiled.content);
+
+        // Append the page templates
+        for (var template : context.templates().templates) {
+            content.append(template);
+        }
+
+        var pageHtml = webAssetsBundle.realizeLayoutTemplate(context,
+                new LayoutPlaceholders(title, content, canonicalUrl));
+
+        Files.writeString(context.resolveOutputPath(pageFile), pageHtml, StandardCharsets.UTF_8);
+
+        return new CompiledPage(title, compiled.content);
+    }
+
+    // ==================== Compilation Methods ====================
+
+    record CompiledPage(@Nullable String title, HtmlFragment content) {
+    }
+
+    HtmlFragment compileChildren(WebPageCompileContext context, MdAstParent<?> parent) {
         return compileChildren(context, parent.children(), parent);
     }
 
-    private String compileChildren(WebPageCompileContext context, List<?> children, MdAstParent<?> parent) {
-        List<String> elements = new ArrayList<>();
+    HtmlFragment compileChildren(WebPageCompileContext context, List<?> children, MdAstParent<?> parent) {
+        var elements = new HtmlFragment();
         for (Object child : children) {
             if (child instanceof MdAstNode node) {
-                String compiled = compileContent(context, node, parent);
-                if (compiled != null && !compiled.isEmpty()) {
-                    elements.add(compiled);
-                }
+                compileContent(context, node, parent, elements::append);
             }
         }
 
-        if (elements.isEmpty()) {
-            return "";
-        } else if (elements.size() == 1) {
-            return elements.get(0);
-        } else {
-            return String.join("", elements);
-        }
+        return elements;
     }
 
     private void assertNodeType(MdAstNode node, String expectedType) {
@@ -154,16 +227,14 @@ class WebPageCompiler {
         }
     }
 
-    private String compileHeading(WebPageCompileContext context, MdAstHeading node) {
-        String tag = "h" + node.depth;
-        String content = compileChildren(context, node);
-        return createElement(tag, null, content);
+    private HtmlTag compileHeading(WebPageCompileContext context, MdAstHeading node) {
+        return HtmlNode.tag("h" + node.depth, compileChildren(context, node));
     }
 
-    private final Pattern DOUBLE_QUOTE_STRING = Pattern.compile("^\\s*\"([^\"]+)\"\\s*$");
-    private final Pattern SINGLE_QUOTE_STRING = Pattern.compile("^\\s*'([^']+)'\\s*$");
+    private static final Pattern DOUBLE_QUOTE_STRING = Pattern.compile("^\\s*\"([^\"]+)\"\\s*$");
+    private static final Pattern SINGLE_QUOTE_STRING = Pattern.compile("^\\s*'([^']+)'\\s*$");
 
-    private String compileTextExpression(WebPageCompileContext context, MdAstNode node) {
+    private HtmlNode compileTextExpression(WebPageCompileContext context, MdAstNode node) {
         // We support simple strings, but not actual JS programs
         // This assumes the node has a 'value' field - we'll need to handle this carefully
         if (node instanceof MdAstLiteral literal) {
@@ -171,12 +242,12 @@ class WebPageCompiler {
 
             var m = DOUBLE_QUOTE_STRING.matcher(value);
             if (m.matches()) {
-                return escapeHtml(m.group(1));
+                return HtmlNode.text(m.group(1));
             }
 
             m = SINGLE_QUOTE_STRING.matcher(value);
             if (m.matches()) {
-                return escapeHtml(m.group(1));
+                return HtmlNode.text(m.group(1));
             }
 
             return compileError(node, "Unsupported JSX expression: " + value);
@@ -185,85 +256,58 @@ class WebPageCompiler {
         return compileError(node, "Unsupported JSX expression node type");
     }
 
-    private String compileContent(WebPageCompileContext context, MdAstNode node, MdAstParent<?> parent) {
+    private void compileContent(WebPageCompileContext context, MdAstNode node, MdAstParent<?> parent,
+            Consumer<HtmlNode> output) {
         String type = node.type();
 
         switch (type) {
             // We do not support definitions or footnote definitions
-            case MdAstDefinition.TYPE:
-            case "footnoteDefinition":
-            case MdAstYamlFrontmatter.TYPE:
+            case MdAstDefinition.TYPE, "footnoteDefinition", MdAstYamlFrontmatter.TYPE -> {
                 // ignore frontmatter, handled already in ExportedPage
-                return null;
+            }
+            case MdAstHeading.TYPE -> output.accept(compileHeading(context, (MdAstHeading) node));
 
-            case MdAstHeading.TYPE:
-                return compileHeading(context, (MdAstHeading) node);
-
-            ////////////////////////// Phrasing Content
-            case MdAstBreak.TYPE:
-                return "<br/>";
-
-            case MdAstImage.TYPE:
-                return compileImage(context, (MdAstImage) node);
-
-            case MdAstStrong.TYPE:
-                return createElement("strong", null, compileChildren(context, (MdAstStrong) node));
-
-            case MdAstLink.TYPE:
-                return compileLink(context, (MdAstLink) node);
-
-            case MdAstDelete.TYPE:
-                return createElement("del", null, compileChildren(context, (MdAstDelete) node));
-
-            case MdAstEmphasis.TYPE:
-                return createElement("em", null, compileChildren(context, (MdAstEmphasis) node));
-
-            case MdAstText.TYPE:
-                return escapeHtml(((MdAstText) node).value);
-
-            case MdAstInlineCode.TYPE:
+            // ====================== Phrasing Content
+            case MdAstBreak.TYPE -> output.accept(HtmlNode.tag("br"));
+            case MdAstImage.TYPE -> output.accept(compileImage(context, (MdAstImage) node));
+            case MdAstStrong.TYPE ->
+                output.accept(HtmlNode.tag("strong", compileChildren(context, (MdAstStrong) node)));
+            case MdAstLink.TYPE -> output.accept(compileLink(context, (MdAstLink) node));
+            case MdAstDelete.TYPE -> output.accept(HtmlNode.tag("del", compileChildren(context, (MdAstDelete) node)));
+            case MdAstEmphasis.TYPE ->
+                output.accept(HtmlNode.tag("em", compileChildren(context, (MdAstEmphasis) node)));
+            case MdAstText.TYPE -> output.accept(HtmlNode.text(((MdAstText) node).value));
+            case MdAstInlineCode.TYPE -> {
                 String codeValue = ((MdAstInlineCode) node).value.replaceAll("\r?\n|\r", " ");
-                return createElement("code", null, escapeHtml(codeValue));
+                output.accept(HtmlNode.tag("code").append(codeValue));
+            }
 
-            ////////////////////////// Block Content
-            case MdAstThematicBreak.TYPE:
-                return "<hr/>";
-
-            case MdAstParagraph.TYPE:
-                return createElement("p", null, compileChildren(context, (MdAstParagraph) node));
-
-            case MdAstBlockquote.TYPE:
-                return createElement("blockquote", null, compileChildren(context, (MdAstBlockquote) node));
-
-            case MdAstCode.TYPE:
+            // ====================== Block Content
+            case MdAstThematicBreak.TYPE -> output.accept(HtmlNode.tag("hr"));
+            case MdAstParagraph.TYPE ->
+                output.accept(HtmlNode.tag("p", compileChildren(context, (MdAstParagraph) node)));
+            case MdAstBlockquote.TYPE ->
+                output.accept(HtmlNode.tag("blockquote", compileChildren(context, (MdAstBlockquote) node)));
+            case MdAstCode.TYPE -> {
                 MdAstCode codeNode = (MdAstCode) node;
-                String className = codeNode.lang != null ? "language-" + codeNode.lang : null;
-                String codeElement = createElement("code", className, escapeHtml(codeNode.value));
-                return createElement("pre", null, codeElement);
-
-            case MdAstList.TYPE:
-                return compileList(context, (MdAstList) node);
-
-            case MdAstListItem.TYPE:
-                return compileListItem(context, (MdAstListItem) node, parent);
-
-            case GfmTable.TYPE:
-                return compileTable(context, (GfmTable) node);
+                var codeElement = HtmlNode.tag("code").append(codeNode.value);
+                if (codeNode.lang != null) {
+                    codeElement.setClassName("language-" + codeNode.lang);
+                }
+                output.accept(HtmlNode.tag("pre", codeElement));
+            }
+            case MdAstList.TYPE -> output.accept(compileList(context, (MdAstList) node));
+            case MdAstListItem.TYPE -> output.accept(compileListItem(context, (MdAstListItem) node, parent));
+            case GfmTable.TYPE -> output.accept(compileTable(context, (GfmTable) node));
 
             // Expressions like "{' '}"
-            case "mdxFlowExpression":
-            case "mdxTextExpression":
-                return compileTextExpression(context, node);
+            case "mdxFlowExpression", "mdxTextExpression" -> output.accept(compileTextExpression(context, node));
 
             // Text- and Block-Level JSX or HTML Element
-            case MdxJsxFlowElement.TYPE:
-                return compileCustomElement(context, (MdxJsxFlowElement) node);
+            case MdxJsxFlowElement.TYPE -> compileCustomElement(context, (MdxJsxFlowElement) node, output);
+            case MdxJsxTextElement.TYPE -> compileCustomElement(context, (MdxJsxTextElement) node, output);
 
-            case MdxJsxTextElement.TYPE:
-                return compileCustomElement(context, (MdxJsxTextElement) node);
-
-            default:
-                return compileError(node, "Unhandled node type");
+            default -> output.accept(compileError(node, "Unhandled node type"));
         }
     }
 
@@ -281,7 +325,7 @@ class WebPageCompiler {
             MdAstAnyContent child = clonedChildren.get(i);
             if (child instanceof MdAstHeading heading) {
                 if (heading.depth == 1) {
-                    title = compileHeading(context, heading);
+                    title = compileHeading(context, heading).textContent();
 
                     // Wrap the existing heading such that it can be re-enabled for mobile clients
                     MdxJsxFlowElement wrapper = new MdxJsxFlowElement();
@@ -304,37 +348,34 @@ class WebPageCompiler {
         MdAstRoot tempRoot = new MdAstRoot();
         tempRoot.children().addAll(clonedChildren);
 
-        String content = compileChildren(context, tempRoot);
+        var content = compileChildren(context, tempRoot);
 
         return new CompiledPage(title, content);
     }
 
     // ==================== Helper Methods ====================
 
-    private String createElement(String tag, @Nullable String className, String content) {
-        var attributes = new HashMap<String, Object>();
-        if (className != null) {
-            attributes.put("class", className);
-        }
-        return createHtmlElement(tag, attributes, content);
-    }
-
-    String compileError(MdAstNode node, String message) {
+    HtmlTag compileError(MdAstNode node, String message) {
         LOG.warn("Compilation error at {}: {}", node, message);
-        return "<span style=\"color: red; font-weight: bold;\">Error: " + escapeHtml(message) + "</span>";
+        return HtmlNode.tag("span")
+                .setStyles(Map.of(
+                        "color", "red",
+                        "font-weight", "bold"))
+                .append("Error: " + message);
     }
 
     // Placeholder methods - these need to be implemented based on the corresponding TypeScript files
-    private String compileLink(WebPageCompileContext context, MdAstLink node) {
+    private HtmlTag compileLink(WebPageCompileContext context, MdAstLink node) {
 
         var href = node.url;
-        var title = Objects.requireNonNullElse(node.title, "");
-        var content = compileChildren(context, node);
+        var link = HtmlNode.tag("a", compileChildren(context, node));
+        if (node.title != null) {
+            link.setAttribute("title", node.title);
+        }
 
         // Internal vs. external links
         if (href.indexOf("://") > 0 || href.indexOf("//") == 0) {
-            return "<a href=\"" + escapeAttribute(href) + " title=\"" + escapeAttribute(title) + "\"\">" + content
-                    + "</a>";
+            return link.setAttribute("href", href);
         }
 
         // Split fragment+url
@@ -348,63 +389,112 @@ class WebPageCompiler {
             return compileError(node, "Page does not exist");
         }
 
-        var url = guide.getRelativePagePath(pageId, context.pageId());
+        var url = context.getRelativePagePath(pageId);
         if (urlParts.length > 1) {
             url += "#" + urlParts[1];
         }
 
-        return "<a href=\"" + escapeAttribute(url) + "\" title=\"" + escapeAttribute(title) + "\">" + content + "</a>";
+        return link.setAttribute("href", url);
     }
 
-    private String compileImage(WebPageCompileContext context, MdAstImage node) {
-        // TODO: Implement based on image.tsx
-        String src = node.url;
-        String alt = node.alt != null ? node.alt : "";
-        return "<img src=\"" + escapeAttribute(context.resolveAssetPath(src)) + "\" alt=\"" + escapeAttribute(alt)
-                + "\"/>";
+    private HtmlTag compileImage(WebPageCompileContext context, MdAstImage node) {
+        var img = HtmlNode.tag("img")
+                .setAttribute("src", context.resolveAssetPath(node.url))
+                .setAttribute("alt", Objects.requireNonNullElse(node.alt, ""));
+        if (node.title != null) {
+            img.setAttribute("title", node.title);
+        }
+        return img;
     }
 
-    private String compileList(WebPageCompileContext context, MdAstList node) {
-        // TODO: Implement based on list.tsx
-        String tag = node.ordered ? "ol" : "ul";
-        String content = compileChildren(context, node);
-        return createElement(tag, null, content);
+    private HtmlTag compileList(WebPageCompileContext context, MdAstList node) {
+        var content = compileChildren(context, node);
+        if (node.ordered) {
+            var list = HtmlNode.tag("ol", content);
+            if (node.start != 1) {
+                list.setAttribute("start", node.start);
+            }
+            return list;
+        } else {
+            return HtmlNode.tag("ul", content);
+        }
     }
 
-    private String compileListItem(WebPageCompileContext context, MdAstListItem node, MdAstParent<?> parent) {
-        // TODO: Implement based on listItem.tsx
-        String content = compileChildren(context, node);
-        return createElement("li", null, content);
+    /**
+     * Port of the list item handling of mdast-util-to-hast. In tight lists, the paragraphs of list items are unwrapped.
+     */
+    private HtmlTag compileListItem(WebPageCompileContext context, MdAstListItem node, MdAstParent<?> parent) {
+        var content = compileChildren(context, node).nodes();
+
+        var loose = parent instanceof MdAstList list ? isLooseList(list) : node.spread;
+
+        var listItem = HtmlNode.tag("li");
+        for (int i = 0; i < content.size(); i++) {
+            var child = content.get(i);
+            var isParagraph = child.name().equals("p");
+
+            // Add line-breaks before nodes, except if this is a loose, first paragraph.
+            if (loose || i != 0 || !isParagraph) {
+                listItem.append("\n");
+            }
+
+            if (isParagraph && !loose) {
+                for (var paragraphChild : child.children()) {
+                    listItem.append(paragraphChild);
+                }
+            } else {
+                listItem.append(child);
+            }
+        }
+
+        // Add a final line-break.
+        if (!content.isEmpty() && (loose || !content.getLast().name().equals("p"))) {
+            listItem.append("\n");
+        }
+
+        return listItem;
     }
 
-    private String compileTable(WebPageCompileContext context, GfmTable table) {
+    private static boolean isLooseList(MdAstList list) {
+        if (list.spread) {
+            return true;
+        }
+        for (var child : list.children()) {
+            if (child instanceof MdAstListItem listItem && listItem.spread) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-        var errors = new StringBuilder();
+    private HtmlTag compileTable(WebPageCompileContext context, GfmTable table) {
 
-        var rows = getFilteredChildren(table, GfmTableRow.class, errors);
-        var tableContent = new StringBuilder();
+        var errors = new HtmlFragment();
+
+        var rows = getFilteredChildren(table, GfmTableRow.class, errors::append);
+
+        var tableTag = HtmlNode.tag("table");
+
         if (!rows.isEmpty()) {
             // Generate a one-row thead for the first table row
-            tableContent.append(
-                    createHtmlElement(
+            tableTag.append(
+                    HtmlNode.tag(
                             "thead",
-                            Map.of(),
                             compileTableRow(context, rows.removeFirst(), table)));
         }
 
         if (!rows.isEmpty()) {
-            tableContent.append(
-                    createHtmlElement(
-                            "tbody",
-                            Map.of(),
-                            rows.stream().map(row -> compileTableRow(context, row, table))
-                                    .collect(Collectors.joining("\n"))));
+            var tbody = HtmlNode.tag("tbody");
+            for (var row : rows) {
+                tbody.append(compileTableRow(context, row, table));
+            }
+            tableTag.append(tbody);
         }
 
-        return createHtmlElement("table", Map.of(), tableContent.toString());
+        return tableTag;
     }
 
-    private String compileTableRow(
+    private HtmlTag compileTableRow(
             WebPageCompileContext context,
             GfmTableRow node,
             GfmTable parent) {
@@ -413,31 +503,36 @@ class WebPageCompiler {
         // Generate a body row when without parent.
         var rowIndex = siblings != null ? siblings.indexOf(node) : 1;
         var tagName = rowIndex == 0 ? "th" : "td";
-        var align = parent != null && parent.type().equals("table") ? parent.align : null;
-        var length = align != null ? align.size() : node.children().size();
+        var cellAlignments = parent != null && parent.type().equals("table") ? parent.align : null;
+        var length = cellAlignments != null ? cellAlignments.size() : node.children().size();
         var cellIndex = -1;
-        var cells = new StringBuilder();
+        var row = HtmlNode.tag("tr");
 
         while (++cellIndex < length) {
-            // Note: can also be undefined.
-            var cell = cellIndex < node.children().size() ? node.children().get(cellIndex) : null;
-            var properties = new HashMap<String, Object>();
-            if (align != null) {
-                properties.put("align", align.get(cellIndex));
+            var cellTag = HtmlNode.tag(tagName);
+            if (cellAlignments != null) {
+                var align = cellAlignments.get(cellIndex);
+                if (align != Align.NONE) {
+                    cellTag.setAttribute("align", align.name().toLowerCase(Locale.ROOT));
+                }
             }
 
-            var cellContent = cell != null ? compileChildren(context, cell) : "";
-            cells.append(createHtmlElement(tagName, properties, cellContent));
+            // Note: can also be undefined.
+            var cellNodes = cellIndex < node.children().size() ? node.children().get(cellIndex) : null;
+            if (cellNodes != null) {
+                cellTag.append(compileChildren(context, cellNodes));
+            }
+            row.append(cellTag);
         }
 
-        return createHtmlElement("tr", Map.of(), cells.toString());
+        return row;
     }
 
-    private <T> List<T> getFilteredChildren(MdAstParent<?> parent, Class<T> childType, StringBuilder errors) {
+    private <T> List<T> getFilteredChildren(MdAstParent<?> parent, Class<T> childType, Consumer<HtmlNode> errors) {
         var rows = new ArrayList<T>();
         for (var child : parent.children()) {
             if (!childType.isInstance(child)) {
-                errors.append(
+                errors.accept(
                         compileError(parent, "Unsupported child-node for " + parent.type() + ": " + child.type()));
                 continue;
             }
@@ -446,73 +541,147 @@ class WebPageCompiler {
         return rows;
     }
 
-    private String compileCustomElement(WebPageCompileContext context, MdxJsxFlowElement node) {
-        String tag = node.name() != null && !node.name().isEmpty() ? node.name() : "div";
+    private void compileCustomElement(WebPageCompileContext context, MdxJsxFlowElement node,
+            Consumer<HtmlNode> output) {
+        String tagName = (node.name() != null && !node.name().isEmpty()) ? node.name() : "div";
 
-        if (tag.toLowerCase(Locale.ROOT).equals(tag)) {
-            String content = compileChildren(context, node);
-            return createElement(tag, null, content);
+        // Direct translation of html tags based on the heuristic that lowercase tags are HTML tags
+        if (tagName.toLowerCase(Locale.ROOT).equals(tagName)) {
+            compileHtmlTag(context, tagName, node, node, output);
+        } else {
+            // Like in-game (see FlowTagCompiler), elements that produce flow content are wrapped in a paragraph when
+            // used as blocks. Otherwise, they'd end up on the same line as adjacent elements.
+            var content = new ArrayList<HtmlNode>();
+            compileCustomElement(context, node, node, content::add);
+            if (!content.isEmpty() && content.stream().allMatch(WebPageCompiler::isInlineContent)) {
+                output.accept(HtmlNode.tag("p", content));
+            } else {
+                content.forEach(output);
+            }
         }
-
-        return compileCustomElement(context, node, node);
     }
 
-    private String compileCustomElement(WebPageCompileContext context, MdxJsxTextElement node) {
-        String tag = node.name() != null && !node.name().isEmpty() ? node.name() : "span";
+    private static final Set<String> INLINE_ELEMENTS = Set.of("a", "abbr", "b", "br", "code", "del", "em", "i",
+            "img", "kbd", "mark", "s", "small", "span", "strong", "sub", "sup", "u");
 
-        if (tag.toLowerCase(Locale.ROOT).equals(tag)) {
-            String content = compileChildren(context, node);
+    private static boolean isInlineContent(HtmlNode node) {
+        if (node instanceof HtmlText) {
+            return true;
+        }
+        // Block images and game scenes are images that are displayed as blocks
+        if (node.name().equals("img")) {
+            var className = Objects.requireNonNullElse(node.attribute("class"), "");
+            return !className.contains("game-scene") && !className.contains("block-image");
+        }
+        return INLINE_ELEMENTS.contains(node.name());
+    }
 
-            var attributes = new HashMap<String, Object>();
-            for (var attribute : node.attributes()) {
-                if (attribute instanceof MdxJsxAttribute jsxAttribute) {
-                    if (jsxAttribute.hasStringValue()) {
-                        attributes.put(jsxAttribute.name, jsxAttribute.getStringValue());
-                    } else if (jsxAttribute.getExpressionValue().isBlank()) {
-                        attributes.put(jsxAttribute.name, true); // for tags of the style <tag bool-attr />
-                    } else {
-                        return compileError(node, "Unsupported attribute type");
-                    }
-                } else {
-                    return compileError(node, "Unsupported attribute type");
-                }
+    private void compileCustomElement(WebPageCompileContext context, MdxJsxTextElement node,
+            Consumer<HtmlNode> output) {
+        String tagName = node.name() != null && !node.name().isEmpty() ? node.name() : "span";
+
+        if (tagName.toLowerCase(Locale.ROOT).equals(tagName)) {
+            compileHtmlTag(context, tagName, node, node, output);
+        } else {
+            compileCustomElement(context, node, node, output);
+        }
+    }
+
+    private void compileHtmlTag(WebPageCompileContext context,
+            String tagName,
+            MdxJsxElementFields jsxElement,
+            MdAstParent<?> node,
+            Consumer<HtmlNode> output) {
+        var tag = HtmlNode.tag(tagName).append(compileChildren(context, node));
+
+        var hasClass = false;
+        for (var attribute : jsxElement.attributes()) {
+            if (!(attribute instanceof MdxJsxAttribute jsxAttribute)) {
+                output.accept(compileError(node, "Unsupported attribute type"));
+                return;
             }
 
-            // Translate some source links automatically
-            if (tag.equals("video")) {
-                var src = attributes.get("src");
-                if (src != null) {
-                    attributes.put("src", context.resolveAssetPath(src.toString()));
+            // JSX uses className, while HTML uses class
+            var name = jsxAttribute.name;
+            if (name.equals("className") || name.equals("class")) {
+                if (hasClass) {
+                    output.accept(compileError(node, "Both class and className specified"));
+                    return;
                 }
+                hasClass = true;
+                name = "class";
             }
 
-            return createHtmlElement(tag, attributes, content);
+            if (jsxAttribute.hasStringValue()) {
+                tag.setAttribute(name, jsxAttribute.getStringValue());
+            } else if (!jsxAttribute.hasExpressionValue() || jsxAttribute.getExpressionValue().isBlank()) {
+                tag.setAttribute(name, null); // for tags of the style <tag bool-attr />
+            } else {
+                output.accept(compileError(node, "Unsupported attribute value"));
+                return;
+            }
         }
 
-        return compileCustomElement(context, node, node);
+        // Translate some source links automatically
+        if (tagName.equals("video")) {
+            var src = tag.attribute("src");
+            if (src != null) {
+                tag.setAttribute("src", context.resolveAssetPath(src));
+            }
+        }
+
+        output.accept(tag);
     }
 
-    private String compileCustomElement(WebPageCompileContext context, MdxJsxElementFields jsxElement,
-            MdAstParent<?> node) {
-        return switch (jsxElement.name()) {
-            case "BlockImage" -> compileBlockImage(context, jsxElement, node);
-            case "CategoryIndex" -> compileCategoryIndex(context, jsxElement, node);
-            case "SubPages" -> compileSubPages(context, jsxElement, node);
-            case "Column" -> compileColumn(context, jsxElement, node);
-            case "ItemLink" -> compileItemLink(context, jsxElement, node);
-            case "ItemImage" -> compileItemImage(context, jsxElement, node);
-            case "ItemIcon" -> compileItemIcon(context, jsxElement, node);
-            case "ItemGrid" -> compileItemGrid(context, jsxElement, node);
-            case "Recipe" -> compileRecipe(context, jsxElement, node);
-            case "RecipeFor" -> compileRecipeFor(context, jsxElement, node);
-            case "RecipesFor" -> compileRecipesFor(context, jsxElement, node);
-            case "Row" -> compileRow(context, jsxElement, node);
-            case "GameScene" -> compileGameScene(context, jsxElement, node);
-            default -> compileError(node, "Unhandled custom element: " + jsxElement.name());
-        };
+    private void compileCustomElement(WebPageCompileContext context,
+            MdxJsxElementFields jsxElement,
+            MdAstParent<?> node,
+            Consumer<HtmlNode> output) {
+        // Errors such as malformed attributes should only affect the element itself, not the whole page
+        var elementOutput = new ArrayList<HtmlNode>();
+        try {
+            compileCustomElementUnsafe(context, jsxElement, node, elementOutput::add);
+        } catch (RuntimeException e) {
+            LOG.debug("Failed to compile element {}", jsxElement.name(), e);
+            output.accept(compileError(node, "Failed to compile " + jsxElement.name() + ": " + e.getMessage()));
+            return;
+        }
+        elementOutput.forEach(output);
     }
 
-    private String compileBlockImage(WebPageCompileContext context, MdxJsxElementFields jsxElement,
+    private void compileCustomElementUnsafe(WebPageCompileContext context,
+            MdxJsxElementFields jsxElement,
+            MdAstParent<?> node,
+            Consumer<HtmlNode> output) {
+        var customRenderer = customRendererByName.get(jsxElement.name());
+        if (customRenderer != null) {
+            customRenderer.render(new CustomElementWebRenderingContextImpl(this, context, jsxElement, node), output);
+        } else {
+            switch (jsxElement.name()) {
+                case "BlockImage" -> output.accept(compileBlockImage(context, jsxElement, node));
+                case "CategoryIndex" -> output.accept(compileCategoryIndex(context, jsxElement, node));
+                case "SubPages" -> output.accept(compileSubPages(context, jsxElement, node));
+                case "Column" -> output.accept(compileColumn(context, jsxElement, node));
+                case "ItemLink" -> output.accept(compileItemLink(context, jsxElement, node));
+                case "ItemImage" -> output.accept(compileItemImage(context, jsxElement, node));
+                case "ItemIcon" -> output.accept(compileItemIcon(context, jsxElement, node));
+                case "ItemGrid" -> output.accept(compileItemGrid(context, jsxElement, node));
+                case "Recipe" -> compileRecipe(context, jsxElement, node, output);
+                case "RecipeFor" -> compileRecipeFor(context, jsxElement, node, output);
+                case "RecipesFor" -> compileRecipesFor(context, jsxElement, node, output);
+                case "Row" -> output.accept(compileRow(context, jsxElement, node));
+                case "GameScene" -> compileGameScene(context, jsxElement, node, output);
+                case "Color" -> output.accept(compileColor(context, jsxElement, node));
+                case "KeyBind" -> output.accept(compileKeyBind(jsxElement, node));
+                case "PlayerName" -> output.accept(HtmlNode.tag("span").setClassName("player-name").append("Player"));
+                case "CommandLink" -> output.accept(compileCommandLink(context, jsxElement, node));
+                case "FloatingImage" -> output.accept(compileFloatingImage(context, jsxElement, node));
+                default -> output.accept(compileError(node, "Unhandled custom element: " + jsxElement.name()));
+            }
+        }
+    }
+
+    private HtmlNode compileBlockImage(WebPageCompileContext context, MdxJsxElementFields jsxElement,
             MdAstParent<?> node) {
         // These are compiled during export
         var src2x = MdxAttrs.getString(jsxElement, "src@2", null);
@@ -531,22 +700,40 @@ class WebPageCompiler {
         }
 
         var asset2x = context.resolveAssetPath(src2x);
-        var asset4x = context.resolveAssetPath(src4x);
-        var asset8x = context.resolveAssetPath(src8x);
-        return createHtmlElement("img", Map.of(
-                "srcset", String.format(Locale.ROOT, "%s, %s 2x, %s 4x", asset2x, asset4x, asset8x),
-                "src", asset2x,
-                "style", "width: " + guiScaledDimension(width) + "; height: " + guiScaledDimension(height)));
+        var srcset = new StringBuilder(asset2x);
+        if (src4x != null) {
+            srcset.append(", ").append(context.resolveAssetPath(src4x)).append(" 2x");
+        }
+        if (src8x != null) {
+            srcset.append(", ").append(context.resolveAssetPath(src8x)).append(" 4x");
+        }
+        return HtmlNode.tag("img")
+                .setClassName("block-image")
+                .setAttribute("srcset", srcset.toString())
+                .setAttribute("src", asset2x)
+                .setAttribute("alt", "")
+                .setStyles(Map.of("width", guiScaledDimension(width), "height", guiScaledDimension(height)));
     }
 
-    private String compileItemLink(WebPageCompileContext context, MdxJsxElementFields jsxElement, MdAstParent<?> node) {
+    private HtmlNode compileItemLink(WebPageCompileContext context, MdxJsxElementFields jsxElement,
+            MdAstParent<?> node) {
         var tooltipMode = MdxAttrs.getEnum(jsxElement, "tooltip", TooltipMode.ICON);
         var id = MdxAttrs.getString(jsxElement, "id", null);
+        if (id == null) {
+            return compileError(node, "ItemLink is missing id property");
+        }
 
         // Markdown Formatting can insert whitespace into MDX attributes
         id = id.replaceAll("\\s+", "");
 
-        String innerContent = null;
+        // Like in-game, show the fallback text in italics if the item doesn't exist
+        var fallback = MdxAttrs.getString(jsxElement, "fallback", null);
+        if (fallback != null && guide.tryGetItemInfo(id) == null) {
+            return HtmlNode.tag("em").append(fallback);
+        }
+
+        // Without explicit content, the item name will be used
+        HtmlFragment innerContent = null;
         if (!node.children().isEmpty()) {
             innerContent = compileChildren(context, node);
         }
@@ -554,48 +741,58 @@ class WebPageCompiler {
         return createItemLink(context, node, id, tooltipMode, innerContent);
     }
 
-    private String createItemLink(WebPageCompileContext context, MdAstParent<?> node, String id,
-            TooltipMode tooltipMode, @Nullable String innerContent) {
+    HtmlNode createItemLink(WebPageCompileContext context, MdAstParent<?> node, String id,
+            TooltipMode tooltipMode, @Nullable HtmlFragment innerContent) {
 
         id = guide.resolveId(id);
 
-        var pageId = guide.getPageUrlForItem(id);
+        var pageId = guide.getPageIdForItem(id);
         var itemInfo = guide.tryGetItemInfo(id);
         if (itemInfo == null) {
             return compileError(node, "Missing item " + id);
         }
 
         if (innerContent == null) {
-            innerContent = itemInfo.displayName;
+            innerContent = new HtmlFragment();
+            innerContent.append(HtmlNode.text(itemInfo.displayName));
         }
 
         // Do not render a link if we're already on that page, or there is no link
-        String content;
+        HtmlTag content;
         if (pageId == null || context.pageId().equals(pageId)) {
-            content = createHtmlElement("span", Map.of("class", "item-link"), innerContent);
+            content = HtmlNode.tag("span").setClassName("item-link")
+                    .append(innerContent);
         } else {
-            content = createHtmlElement("a", Map.of("href", guide.getRelativePagePath(pageId, context.pageId())),
-                    innerContent);
+            content = HtmlNode.tag("a")
+                    .setAttribute("href", context.getRelativePagePath(pageId))
+                    .append(innerContent);
         }
 
         return makeItemTooltip(context, itemInfo, tooltipMode, content);
     }
 
-    private String compileItemImage(WebPageCompileContext context, MdxJsxElementFields jsxElement,
+    private HtmlNode compileItemImage(WebPageCompileContext context, MdxJsxElementFields jsxElement,
             MdAstParent<?> node) {
         var id = MdxAttrs.getString(jsxElement, "id", null);
+        if (id == null) {
+            return compileError(node, "ItemImage is missing id property");
+        }
         var scale = MdxAttrs.getFloat(jsxElement, "scale", 1.0f);
-        var itemInfo = guide.getItemInfo(id);
+        var itemInfo = guide.tryGetItemInfo(id);
+        if (itemInfo == null) {
+            return compileError(node, "Missing item " + id);
+        }
 
-        return createHtmlElement("img", Map.of(
-                "width", Math.round(32 * scale),
-                "height", Math.round(32 * scale),
-                "src", context.resolveAssetPath(itemInfo.icon),
-                "alt", "",
-                "aria-description", itemInfo.displayName));
+        return HtmlNode.tag("img")
+                .setAttribute("width", Math.round(32 * scale))
+                .setAttribute("height", Math.round(32 * scale))
+                .setAttribute("src", context.resolveAssetPath(itemInfo.icon))
+                .setAttribute("alt", "")
+                .setAttribute("aria-description", itemInfo.displayName);
     }
 
-    private String compileItemIcon(WebPageCompileContext context, MdxJsxElementFields jsxElement, MdAstParent<?> node) {
+    private HtmlNode compileItemIcon(WebPageCompileContext context, MdxJsxElementFields jsxElement,
+            MdAstParent<?> node) {
         var id = MdxAttrs.getString(jsxElement, "id", null);
         if (id == null) {
             return compileError(node, "ItemIcon is missing id property");
@@ -605,87 +802,117 @@ class WebPageCompiler {
         return createItemIcon(context, node, id, nolink);
     }
 
-    String createItemIcon(WebPageCompileContext context, MdAstParent<?> node, String id, boolean nolink) {
-        var itemInfo = guide.getItemInfo(id);
+    HtmlNode createItemIcon(WebPageCompileContext context, MdAstParent<?> node, String id, boolean nolink) {
+        var itemInfo = guide.tryGetItemInfo(id);
+        if (itemInfo == null) {
+            return compileError(node, "Missing item " + id);
+        }
 
-        var icon = createHtmlElement("img", Map.of(
-                "src", context.resolveAssetPath(itemInfo.icon),
-                "alt", "",
-                "aria-description", itemInfo.displayName,
-                "class", "item-icon"));
+        var icon = HtmlNode.tag("img")
+                .setClassName("item-icon")
+                .setAttribute("src", context.resolveAssetPath(itemInfo.icon))
+                .setAttribute("alt", "")
+                .setAttribute("aria-description", itemInfo.displayName);
 
         if (!nolink) {
-            return createItemLink(context, node, id, TooltipMode.TEXT, icon);
+            return createItemLink(context, node, id, TooltipMode.TEXT, new HtmlFragment(icon));
         } else {
             return icon;
         }
     }
 
-    private String compileItemGrid(WebPageCompileContext context, MdxJsxElementFields jsxElement, MdAstParent<?> node) {
-        return createHtmlElement("div", Map.of(
-                "class", "layout-item-grid"), compileChildren(context, node));
+    private HtmlNode compileItemGrid(WebPageCompileContext context, MdxJsxElementFields jsxElement,
+            MdAstParent<?> node) {
+        return HtmlNode.tag("div", compileChildren(context, node))
+                .setClassName("layout-item-grid");
     }
 
-    private String compileRecipe(WebPageCompileContext context, MdxJsxElementFields jsxElement, MdAstParent<?> node) {
+    private void compileRecipe(WebPageCompileContext context, MdxJsxElementFields jsxElement, MdAstParent<?> node,
+            Consumer<HtmlNode> output) {
         var id = MdxAttrs.getString(jsxElement, "id", null);
         if (id == null) {
-            return compileError(node, "Missing id");
+            output.accept(compileError(node, "Missing id"));
+            return;
         }
         var recipe = guide.getRecipeById(id);
         if (recipe == null) {
-            return compileError(node, "Missing recipe: " + id);
+            compileMissingRecipe(jsxElement, node, "Missing recipe: " + id, output);
+            return;
         }
 
-        return compileRecipe(context, node, recipe);
+        // The recipe box itself is already wrapped in a recipe container
+        compileRecipeInner(context, node, recipe, output);
     }
 
-    private String compileRecipeFor(WebPageCompileContext context, MdxJsxElementFields jsxElement,
-            MdAstParent<?> node) {
+    private void compileRecipeFor(WebPageCompileContext context, MdxJsxElementFields jsxElement,
+            MdAstParent<?> node, Consumer<HtmlNode> output) {
         var id = MdxAttrs.getString(jsxElement, "id", null);
         if (id == null) {
-            return compileError(node, "Missing id");
+            output.accept(compileError(node, "Missing id"));
+            return;
         }
 
         var recipes = context.guide().getRecipesForItem(id);
 
         if (recipes.isEmpty()) {
-            return compileError(node, "No recipes for " + id);
+            compileMissingRecipe(jsxElement, node, "No recipes for " + id, output);
+            return;
         }
 
-        return createHtmlElement("div", Map.of("class", "recipe-container"),
-                compileRecipe(context, node, recipes.getFirst()));
+        var container = HtmlNode.tag("div").setClassName("recipe-container");
+        compileRecipeInner(context, node, recipes.getFirst(), container::append);
+        output.accept(container);
     }
 
-    private String compileRecipesFor(WebPageCompileContext context, MdxJsxElementFields jsxElement,
-            MdAstParent<?> node) {
+    private void compileRecipesFor(WebPageCompileContext context, MdxJsxElementFields jsxElement,
+            MdAstParent<?> node, Consumer<HtmlNode> output) {
         var id = MdxAttrs.getString(jsxElement, "id", null);
         if (id == null) {
-            return compileError(node, "Missing id");
+            output.accept(compileError(node, "Missing id"));
+            return;
         }
 
         var recipes = context.guide().getRecipesForItem(id);
 
         if (recipes.isEmpty()) {
-            return compileError(node, "No recipes for " + id);
+            compileMissingRecipe(jsxElement, node, "No recipes for " + id, output);
+            return;
         }
 
-        return createHtmlElement("div", Map.of("class", "recipe-container"), recipes.stream().map(recipe -> {
-            return compileRecipe(context, node, recipe);
-        }).collect(Collectors.joining("\n")));
+        var container = HtmlNode.tag("div").setClassName("recipe-container");
+        for (var recipe : recipes) {
+            compileRecipeInner(context, node, recipe, container::append);
+        }
+        output.accept(container);
     }
 
-    private String compileRecipe(WebPageCompileContext context, MdAstParent<?> node, ExportedRecipe recipe) {
+    /**
+     * Mirrors the in-game behavior of the fallbackText attribute: when it's missing, an error is shown, when it's
+     * empty, nothing is shown.
+     */
+    private void compileMissingRecipe(MdxJsxElementFields jsxElement, MdAstParent<?> node, String error,
+            Consumer<HtmlNode> output) {
+        var fallbackText = MdxAttrs.getString(jsxElement, "fallbackText", null);
+        if (fallbackText == null) {
+            output.accept(compileError(node, error));
+        } else if (!fallbackText.isEmpty()) {
+            output.accept(HtmlNode.tag("p").append(fallbackText));
+        }
+    }
+
+    private void compileRecipeInner(WebPageCompileContext context, MdAstParent<?> node, ExportedRecipeImpl recipe,
+            Consumer<HtmlNode> output) {
         var renderer = recipeRenderersByType.get(recipe.type());
         if (renderer == null) {
-            return compileError(node, "Can't handle recipe type " + recipe.type());
+            output.accept(compileError(node, "Can't handle recipe type " + recipe.type()));
+            return;
         }
 
-        var recipeRenderContext = new RecipeWebRenderingContextImpl(this, context, node, recipe);
+        var recipeRenderContext = new RecipeWebRenderingContextImpl(this, context, node, recipe, output);
         renderer.render(recipeRenderContext, recipe);
-        return recipeRenderContext.getResult();
     }
 
-    private String compileCategoryIndex(WebPageCompileContext context, MdxJsxElementFields jsxElement,
+    private HtmlNode compileCategoryIndex(WebPageCompileContext context, MdxJsxElementFields jsxElement,
             MdAstParent<?> node) {
         var category = MdxAttrs.getString(jsxElement, "category", null);
         if (category == null) {
@@ -702,13 +929,18 @@ class WebPageCompiler {
                 .sorted(Comparator.comparing(p -> Objects.requireNonNullElse(p.getRight().title, "")))
                 .toList();
 
-        return createHtmlElement("ul", Map.of(), pages.stream().map(
-                page -> createHtmlElement("li", Map.of(), createHtmlElement("a",
-                        Map.of("href", context.getRelativePagePath(page.getKey())), escapeHtml(page.getValue().title))))
-                .collect(Collectors.joining("\n")));
+        var listTag = HtmlNode.tag("ul");
+        for (var page : pages) {
+            var pageLink = HtmlNode.tag("a")
+                    .setAttribute("href", context.getRelativePagePath(page.getKey()))
+                    .append(page.getValue().title);
+            listTag.append(HtmlNode.tag("li", pageLink));
+        }
+        return listTag;
     }
 
-    private String compileSubPages(WebPageCompileContext context, MdxJsxElementFields jsxElement, MdAstParent<?> node) {
+    private HtmlNode compileSubPages(WebPageCompileContext context, MdxJsxElementFields jsxElement,
+            MdAstParent<?> node) {
         record SubPagesAttributes(
                 @Nullable String id,
                 @DefaultValue("false") boolean icons,
@@ -718,7 +950,7 @@ class WebPageCompiler {
 
         var id = Objects.requireNonNullElse(attributes.id, context.pageId());
         List<NavigationNodeJson> navNodes;
-        if ("".equals(id)) {
+        if (id.isEmpty()) {
             navNodes = guide.getRootNavigationNodes();
         } else {
             var pageNode = guide.findNavigationNodeForPage(id);
@@ -736,81 +968,183 @@ class WebPageCompiler {
             navNodes.sort(Comparator.comparing(n -> n.title));
         }
 
-        return createHtmlElement("ul", Map.of("class", "sub-pages"), navNodes.stream().map(
-                n -> {
-                    var linkText = new StringBuilder();
-                    if (attributes.icons && n.icon != null) {
-                        var itemInfo = guide.getItemInfo(n.icon);
-                        linkText.append(createHtmlElement("img", Map.of(
-                                "alt", "",
-                                "src", context.resolveAssetPath(itemInfo.icon),
-                                "class", "page-icon")));
-                    }
-                    linkText.append(createHtmlElement("a", Map.of("href", context.getRelativePagePath(n.pageId)),
-                            escapeHtml(n.title)));
-                    return createHtmlElement("li", Map.of(), linkText.toString());
-                }).collect(Collectors.joining("\n")));
+        var list = HtmlNode.tag("ul").setClassName("sub-pages");
+        for (var n : navNodes) {
+            var listItem = HtmlNode.tag("li");
+
+            if (attributes.icons && n.icon != null) {
+                var itemInfo = guide.tryGetItemInfo(n.icon);
+                if (itemInfo != null) {
+                    listItem.append(HtmlNode.tag("img")
+                            .setClassName("page-icon")
+                            .setAttribute("alt", "")
+                            .setAttribute("src", context.resolveAssetPath(itemInfo.icon)));
+                }
+            }
+            listItem.append(HtmlNode.tag("a")
+                    .setAttribute("href", context.getRelativePagePath(n.pageId))
+                    .append(n.title));
+            list.append(listItem);
+        }
+        return list;
     }
 
-    private String compileColumn(WebPageCompileContext context, MdxJsxElementFields jsxElement, MdAstParent<?> node) {
-        return createHtmlElement("div", Map.of(
-                "class", "layout-column"), compileChildren(context, node));
+    private HtmlNode compileColor(WebPageCompileContext context, MdxJsxElementFields jsxElement, MdAstParent<?> node) {
+        var id = MdxAttrs.getString(jsxElement, "id", null);
+        String cssColor;
+        if (id != null) {
+            // Custom symbolic colors from mods are not available for the website
+            SymbolicColor symbolicColor;
+            try {
+                symbolicColor = SymbolicColor.valueOf(id.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                return compileError(node, "Cannot resolve symbolic color");
+            }
+            // The website uses a dark theme
+            cssColor = HtmlUtils.toCssColor(symbolicColor.resolve(LightDarkMode.DARK_MODE));
+        } else {
+            var color = MdxAttrs.getString(jsxElement, "color", null);
+            if (color == null) {
+                return compileError(node, "Must either specify 'id' or 'color' attribute");
+            }
+            cssColor = HtmlUtils.toCssColor(color);
+            if (cssColor == null) {
+                return compileError(node, "Malformed color value");
+            }
+        }
+
+        return HtmlNode.tag("span", compileChildren(context, node))
+                .setStyles(Map.of("color", cssColor));
     }
 
-    private String compileRow(WebPageCompileContext context, MdxJsxElementFields jsxElement, MdAstParent<?> node) {
-        return createHtmlElement("div", Map.of(
-                "class", "layout-row"), compileChildren(context, node));
+    private HtmlNode compileKeyBind(MdxJsxElementFields jsxElement, MdAstParent<?> node) {
+        var id = MdxAttrs.getString(jsxElement, "id", null);
+        if (id == null) {
+            return compileError(node, "Attribute id is required.");
+        }
+        // The key name is resolved during export. Fall back to the id for older exports.
+        var keyName = MdxAttrs.getString(jsxElement, "keyName", id);
+        return HtmlNode.tag("kbd").append(keyName);
     }
 
-    private String compileGameScene(WebPageCompileContext context, MdxJsxElementFields jsxElement,
+    private HtmlNode compileCommandLink(WebPageCompileContext context, MdxJsxElementFields jsxElement,
             MdAstParent<?> node) {
-        var errors = new StringBuilder();
+        var command = MdxAttrs.getString(jsxElement, "command", "");
+        if (!command.startsWith("/")) {
+            return compileError(node, "command must start with /");
+        }
+        var title = MdxAttrs.getString(jsxElement, "title", "");
+
+        // Commands can't be run from the website, so just show which command would be run
+        var tooltip = title.isEmpty() ? command : title + "\n" + command;
+        return HtmlNode.tag("span", compileChildren(context, node))
+                .setClassName("command-link")
+                .setAttribute("title", tooltip);
+    }
+
+    private HtmlNode compileFloatingImage(WebPageCompileContext context, MdxJsxElementFields jsxElement,
+            MdAstParent<?> node) {
+        // The src is rewritten during export
+        var src = MdxAttrs.getString(jsxElement, "src", null);
+        if (src == null) {
+            return compileError(node, "src is required");
+        }
+        var align = MdxAttrs.getString(jsxElement, "align", "left");
+        if (!align.equals("left") && !align.equals("right")) {
+            return compileError(node, "Invalid align. Must be left or right.");
+        }
+        var title = MdxAttrs.getString(jsxElement, "title", null);
+
+        var img = HtmlNode.tag("img")
+                .setClassName("floating-image-" + align)
+                .setAttribute("src", context.resolveAssetPath(src))
+                .setAttribute("alt", Objects.requireNonNullElse(title, ""));
+        if (title != null) {
+            img.setAttribute("title", title);
+        }
+        return img;
+    }
+
+    private HtmlNode compileColumn(WebPageCompileContext context, MdxJsxElementFields jsxElement, MdAstParent<?> node) {
+        return HtmlNode.tag("div")
+                .setClassName("layout-column")
+                .append(compileChildren(context, node));
+    }
+
+    private HtmlNode compileRow(WebPageCompileContext context, MdxJsxElementFields jsxElement, MdAstParent<?> node) {
+        return HtmlNode.tag("div")
+                .setClassName("layout-row")
+                .append(compileChildren(context, node));
+    }
+
+    // These have to match the types in web/src/model-viewer/modelViewer.ts
+    private record ExportedBoxAnnotation(String type, float[] minCorner, float[] maxCorner, String color,
+            float thickness, String contentTemplateId, boolean alwaysOnTop) {
+    }
+
+    private record ExportedLineAnnotation(String type, float[] from, float[] to, String color,
+            float thickness, String contentTemplateId, boolean alwaysOnTop) {
+    }
+
+    private record ExportedOverlayAnnotation(String type, float[] position, String color, String contentTemplateId) {
+    }
+
+    private void compileGameScene(WebPageCompileContext context, MdxJsxElementFields jsxElement,
+            MdAstParent<?> node, Consumer<HtmlNode> output) {
+        var errors = new ArrayList<HtmlNode>();
         var attributes = JsxAttributeMapper.map(jsxElement, GameSceneAttributes.class);
 
-        record ExportedInWorldAnnotation(String type, float[] minCorner, float[] maxCorner, String color,
-                float thickness, String contentTemplateId, boolean alwaysOnTop) {
-        }
-        record ExportedOverlayAnnotation(String type, float[] pos, String color, String contentTemplateId) {
-        }
-        var inWorldAnnotations = new ArrayList<ExportedInWorldAnnotation>();
+        var inWorldAnnotations = new ArrayList<Record>();
         var overlayAnnotations = new ArrayList<ExportedOverlayAnnotation>();
 
         // Process child elements of GameScene
         for (var child : node.children()) {
-            // We're only interested in JSX children
+            // Like the in-game compiler, we're only interested in JSX children
             if (!(child instanceof MdxJsxFlowElement flowElement)) {
-                if (child instanceof MdAstText textNode && textNode.value().isBlank()) {
-                    continue; // Ignore whitespace
-                }
-                errors.append(compileError(node, "Child node type " + child.type() + " is unsupported here"));
                 continue;
             }
 
             var childTagName = Objects.requireNonNullElse(flowElement.name(), "");
             switch (childTagName) {
-                // These tags are exported as part of the scene from the game
-                case "ImportStructure":
-                case "Block":
-                    break;
-                case "BoxAnnotation":
-                    record BoxAnnotationAttributes(
+                case "ImportStructure", "Block", "RemoveBlocks", "Entity", "IsometricCamera" -> {
+                    // These tags are exported as part of the scene from the game
+                }
+                case "BoxAnnotation" -> {
+                    record BoxAnnotation(
                             Vector3f min,
                             Vector3f max,
                             @DefaultValue("white") String color,
                             @DefaultValue(InWorldBoxAnnotation.DEFAULT_THICKNESS + "") float thickness,
                             @DefaultValue("false") boolean alwaysOnTop) {
                     }
-                    var boxAttributes = JsxAttributeMapper.map(flowElement, BoxAnnotationAttributes.class);
-                    inWorldAnnotations.add(new ExportedInWorldAnnotation(
+                    var boxAttributes = JsxAttributeMapper.map(flowElement, BoxAnnotation.class);
+                    inWorldAnnotations.add(new ExportedBoxAnnotation(
                             "box",
-                            new float[] { boxAttributes.min.x, boxAttributes.min.y, boxAttributes.min.z },
-                            new float[] { boxAttributes.max.x, boxAttributes.max.y, boxAttributes.max.z },
+                            toArray(boxAttributes.min),
+                            toArray(boxAttributes.max),
                             boxAttributes.color,
                             boxAttributes.thickness,
-                            context.templates().create(compileChildren(context, flowElement)),
+                            createAnnotationContent(context, flowElement),
                             boxAttributes.alwaysOnTop));
-                    break;
-                case "LineAnnotation":
+                }
+                case "BlockAnnotation" -> {
+                    record BlockAnnotation(
+                            Vector3f pos,
+                            @DefaultValue("white") String color,
+                            @DefaultValue("false") boolean alwaysOnTop) {
+                    }
+                    var blockAttributes = JsxAttributeMapper.map(flowElement, BlockAnnotation.class);
+                    // Same as InWorldBoxAnnotation.forBlock
+                    inWorldAnnotations.add(new ExportedBoxAnnotation(
+                            "box",
+                            toArray(blockAttributes.pos),
+                            toArray(new Vector3f(blockAttributes.pos).add(1, 1, 1)),
+                            blockAttributes.color,
+                            InWorldBoxAnnotation.DEFAULT_THICKNESS,
+                            createAnnotationContent(context, flowElement),
+                            blockAttributes.alwaysOnTop));
+                }
+                case "LineAnnotation" -> {
                     record LineAnnotation(
                             Vector3f from,
                             Vector3f to,
@@ -819,76 +1153,76 @@ class WebPageCompiler {
                             @DefaultValue("false") boolean alwaysOnTop) {
                     }
                     var lineAttributes = JsxAttributeMapper.map(flowElement, LineAnnotation.class);
-                    inWorldAnnotations.add(new ExportedInWorldAnnotation(
+                    inWorldAnnotations.add(new ExportedLineAnnotation(
                             "line",
-                            new float[] { lineAttributes.from.x, lineAttributes.from.y, lineAttributes.from.z },
-                            new float[] { lineAttributes.to.x, lineAttributes.to.y, lineAttributes.to.z },
+                            toArray(lineAttributes.from),
+                            toArray(lineAttributes.to),
                             lineAttributes.color,
                             lineAttributes.thickness,
-                            context.templates().create(compileChildren(context, flowElement)),
+                            createAnnotationContent(context, flowElement),
                             lineAttributes.alwaysOnTop));
-                    break;
-                case "DiamondAnnotation":
+                }
+                case "DiamondAnnotation" -> {
                     record DiamondAnnotation(Vector3f pos, @DefaultValue("transparent") String color) {
                     }
                     var diamondAttributes = JsxAttributeMapper.map(flowElement, DiamondAnnotation.class);
                     overlayAnnotations.add(new ExportedOverlayAnnotation(
                             "overlay",
-                            new float[] { diamondAttributes.pos.x, diamondAttributes.pos.y, diamondAttributes.pos.z },
+                            toArray(diamondAttributes.pos),
                             diamondAttributes.color,
-                            context.templates().create(compileChildren(context, flowElement))));
-                    break;
-                case "IsometricCamera":
-                    // Already saved as part of the scene
-                    break;
-                default:
-                    errors.append(compileError(node, "Unsupported child tag " + childTagName));
-                    break;
+                            createAnnotationContent(context, flowElement)));
+                }
+                default -> errors.add(compileError(node, "Unsupported child tag " + childTagName));
             }
         }
 
-        Map<String, Object> attrs = new HashMap<>(Map.of(
-                "class", "game-scene",
-                "style",
-                "width: " + guiScaledDimension(attributes.width()) + "; height: "
-                        + guiScaledDimension(attributes.height()),
-                "src", context.resolveAssetPath(attributes.placeholder()),
-                "data-scene-src", context.resolveAssetPath(attributes.src()),
-                "data-scene-width", attributes.width(),
-                "data-scene-height", attributes.height(),
-                "data-scene-zoom", attributes.zoom(),
-                "data-scene-interactive", attributes.interactive(),
-                "data-scene-in-world-annotations", new Gson().toJson(inWorldAnnotations),
-                "data-scene-overlay-annotations", new Gson().toJson(overlayAnnotations)));
-
-        // Compute the relative path to the output folder to fixup asset links
-        attrs.put("data-scene-asset-prefix", context.getUrlPrefixToRoot());
+        var placeholderStyles = new LinkedHashMap<String, String>();
+        placeholderStyles.put("width", guiScaledDimension(attributes.width()));
+        placeholderStyles.put("height", guiScaledDimension(attributes.height()));
+        // Mirror the background of the loaded scene so the placeholder doesn't visibly change when it's replaced
         if (attributes.background() != null) {
-            attrs.put("data-scene-background", attributes.background());
+            placeholderStyles.put("background", attributes.background());
         }
-        return errors + "\n" + createHtmlElement("img", attrs, null);
+
+        var placeholderImage = HtmlNode.tag("img")
+                // The interactive class reserves space for the controls that are added once the scene is loaded
+                .setClassName(attributes.interactive() ? "game-scene interactive" : "game-scene")
+                .setStyles(placeholderStyles)
+                .setAttribute("src", context.resolveAssetPath(attributes.placeholder()))
+                .setAttribute("data-scene-src", context.resolveAssetPath(attributes.src()))
+                .setAttribute("data-scene-width", attributes.width())
+                .setAttribute("data-scene-height", attributes.height())
+                .setAttribute("data-scene-zoom", attributes.zoom())
+                .setAttribute("data-scene-interactive", String.valueOf(attributes.interactive()))
+                .setAttribute("data-scene-in-world-annotations", new Gson().toJson(inWorldAnnotations))
+                .setAttribute("data-scene-overlay-annotations", new Gson().toJson(overlayAnnotations))
+                // The URL of the website root, which asset paths in the scene are relative to.
+                // This is never empty, since the empty URL would refer to the page itself.
+                .setAttribute("data-scene-asset-prefix", context.url(""));
+
+        if (attributes.background() != null) {
+            placeholderImage.setAttribute("data-scene-background", attributes.background());
+        }
+
+        output.accept(placeholderImage);
+        errors.forEach(output);
     }
 
-//
-//  const props = getAttributes(node) as ModelViewerProps;
-//  const errors: ReactNode[] = [];
-//  const extraProps: Partial<ModelViewerProps> = {};
+    private static float[] toArray(Vector3f vector) {
+        return new float[] { vector.x, vector.y, vector.z };
+    }
 
-//
-//  const result = (
-//    <GameScene
-//      {...props}
-//      {...extraProps}
-//      assetBaseUrl={context.guide.baseUrl}
-//      inWorldAnnotations={inWorldAnnotations}
-//      overlayAnnotations={overlayAnnotations}
-//    />
-//  );
-//  if (errors.length > 0) {
-//    return React.createElement(React.Fragment, null, ...errors, result);
-//  }
-//  return result;
-//}
+    /**
+     * Annotations show their children as tooltip content, which is only included once per page as a template.
+     */
+    @Nullable
+    private String createAnnotationContent(WebPageCompileContext context, MdxJsxFlowElement annotationElement) {
+        var content = compileChildren(context, annotationElement);
+        if (content.isEmpty()) {
+            return null;
+        }
+        return context.templates().create(content);
+    }
 
     enum TooltipMode implements StringRepresentable {
         TEXT,
@@ -900,26 +1234,30 @@ class WebPageCompiler {
         }
     }
 
-    private String makeItemTooltip(WebPageCompileContext context, ItemInfoJson itemInfo, @Nullable TooltipMode mode,
-            String content) {
+    private HtmlTag makeItemTooltip(WebPageCompileContext context,
+            ItemInfoJson itemInfo,
+            @Nullable TooltipMode mode,
+            HtmlTag content) {
         mode = Objects.requireNonNullElse(mode, TooltipMode.ICON);
 
-        String tooltipContent;
+        HtmlTag tooltipContent;
         if (mode == TooltipMode.ICON) {
-            tooltipContent = createHtmlElement("img", Map.of(
-                    "src", context.resolveAssetPath(itemInfo.icon),
-                    "alt", "",
-                    "aria-description", itemInfo.displayName,
-                    "class", "item-icon"), null);
+            tooltipContent = HtmlNode.tag("img")
+                    .setClassName("item-icon")
+                    .setAttribute("src", context.resolveAssetPath(itemInfo.icon))
+                    .setAttribute("alt", "")
+                    .setAttribute("aria-description", itemInfo.displayName);
         } else {
-            tooltipContent = createHtmlElement("span", Map.of("class", "item-name", "data-rarity", itemInfo.rarity),
-                    itemInfo.displayName);
+            tooltipContent = HtmlNode.tag("span")
+                    .setClassName("item-name")
+                    .setAttribute("data-rarity", itemInfo.rarity)
+                    .append(itemInfo.displayName);
         }
 
         var templateId = context.templates().create(tooltipContent);
-        return createHtmlElement("span", Map.of(
-                "class", "minecraft-tooltip",
-                "data-template", templateId), content);
+        return HtmlNode.tag("span", content)
+                .setClassName("minecraft-tooltip")
+                .setAttribute("data-template", templateId);
     }
 
     /**
@@ -928,18 +1266,24 @@ class WebPageCompiler {
      */
     static class TemplateContainer {
         private int counter = 1;
-        private final List<String> templates = new ArrayList<>();
+        private final List<HtmlTag> templates = new ArrayList<>();
         private final Map<String, String> templateContent = new HashMap<>();
 
-        public String create(String content) {
-            var existingId = templateContent.get(content);
+        String create(HtmlNode content) {
+            return create(new HtmlFragment(content));
+        }
+
+        String create(HtmlFragment content) {
+            // De-duplicate based on the resulting HTML
+            var htmlContent = content.outerHtml();
+            var existingId = templateContent.get(htmlContent);
             if (existingId != null) {
                 return existingId;
             }
 
             var id = "tmpl-" + (counter++);
-            templates.add(createHtmlElement("template", Map.of("id", id), content));
-            templateContent.put(content, id);
+            templates.add(HtmlNode.tag("template", content).setAttribute("id", id));
+            templateContent.put(htmlContent, id);
             return id;
         }
     }

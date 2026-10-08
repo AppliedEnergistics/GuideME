@@ -99,7 +99,10 @@ async function build() {
     fs.writeFileSync('dist/templates/layout.html', htmlOutput);
 
     // Write full assets file list
-    const assetList = fs.readdirSync('dist/assets', {recursive: true}).map(p => path.join('assets', p).replace("\\", "/"));
+    // Sort the list, since the order of directory listings depends on the OS and file system
+    const assetList = fs.readdirSync('dist/assets', {recursive: true})
+        .map(p => path.join('assets', p).replaceAll("\\", "/"))
+        .sort();
     fs.writeFileSync('dist/index.txt', assetList.join("\n"));
 }
 

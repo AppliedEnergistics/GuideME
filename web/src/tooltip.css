@@ -1,0 +1,52 @@
+/*
+ * Emulates the look of vanilla Minecraft tooltips (see TooltipRenderUtil and the tooltip/background and
+ * tooltip/frame sprites): A translucent dark background whose corners are notched by one pixel, a one pixel purple
+ * gradient frame inset by one pixel, and two pixels of padding around the content.
+ */
+.tippy-box[data-theme~="minecraft"] {
+  --mc-pixel: calc(1px * var(--gui-scale));
+  --mc-tooltip-background: rgba(16, 0, 16, 0.94);
+
+  position: relative;
+  border-radius: 0;
+  background-color: var(--mc-tooltip-background);
+  /* Extend the background by one pixel on each side, leaving out the corners. Outer shadows are not drawn below the
+     box itself, so these don't overlap the background. */
+  box-shadow:
+    0 calc(-1 * var(--mc-pixel)) 0 0 var(--mc-tooltip-background),
+    0 var(--mc-pixel) 0 0 var(--mc-tooltip-background),
+    calc(-1 * var(--mc-pixel)) 0 0 0 var(--mc-tooltip-background),
+    var(--mc-pixel) 0 0 0 var(--mc-tooltip-background);
+
+  color: white;
+  font-family: var(--minecraft-font);
+  font-size: calc(9px * var(--gui-scale));
+  line-height: calc(10px * var(--gui-scale));
+  text-shadow: var(--mc-pixel) var(--mc-pixel) 0 #3f3f3f;
+  image-rendering: pixelated;
+}
+
+.tippy-box[data-theme~="minecraft"] > .tippy-content {
+  border: var(--mc-pixel) solid transparent;
+  border-image: linear-gradient(rgba(80, 0, 255, 0.31), rgba(40, 0, 127, 0.31))
+    1;
+  padding: calc(2px * var(--gui-scale));
+}
+
+/* Strip the margins of paragraphs in tooltip content */
+.tippy-box[data-theme~="minecraft"] p {
+  margin: 0;
+}
+
+/* Like in-game, the first line (usually the title) is separated from the rest of the content */
+.tippy-box[data-theme~="minecraft"]
+  .tippy-content
+  > :first-child:not(:last-child) {
+  margin-bottom: calc(2px * var(--gui-scale));
+}
+
+.tippy-box[data-theme~="minecraft"] .item-icon {
+  width: calc(16px * var(--gui-scale));
+  height: calc(16px * var(--gui-scale));
+  vertical-align: middle;
+}

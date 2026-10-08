@@ -3,7 +3,9 @@ package guideme.color;
 import guideme.compiler.PageCompiler;
 import guideme.extensions.Extension;
 import guideme.extensions.ExtensionPoint;
+import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,6 +32,19 @@ public interface SymbolicColorResolver extends Extension {
      */
     @Nullable
     static ColorValue resolve(PageCompiler compiler, String id) {
+        return resolve(id, compiler::resolveId, compiler.getExtensions(EXTENSION_POINT));
+    }
+
+    /**
+     * Helper to resolve a symbolic color from both the pre-defined colors in {@link SymbolicColor}, as well as the
+     * given symbolic color resolvers.
+     *
+     * @param idResolver Resolves the id of the color, i.e. relative to the current page.
+     * @return null when the color cannot be resolved.
+     */
+    @Nullable
+    static ColorValue resolve(String id, Function<String, Identifier> idResolver,
+            List<SymbolicColorResolver> resolvers) {
         try {
             return SymbolicColor.valueOf(id.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException ignored) {
@@ -38,7 +53,7 @@ public interface SymbolicColorResolver extends Extension {
         // See if it's an identifier
         Identifier identifier;
         try {
-            identifier = compiler.resolveId(id);
+            identifier = idResolver.apply(id);
         } catch (Exception e) {
             return null; // Invalid identifier
         }
@@ -46,7 +61,7 @@ public interface SymbolicColorResolver extends Extension {
             return null;
         }
 
-        for (var resolver : compiler.getExtensions(EXTENSION_POINT)) {
+        for (var resolver : resolvers) {
             var color = resolver.resolve(identifier);
             if (color != null) {
                 return color;

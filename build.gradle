@@ -119,6 +119,7 @@ test {
     useJUnitPlatform()
 
     systemProperty 'guideme.testmod.guide.sources', testModGuidePath
+    systemProperty 'guideme.web.dist', file('web/dist').absolutePath
 }
 
 neoForge {
@@ -401,15 +402,52 @@ tasks.named('runExportTestGuide').configure {
     outputs.dir('build/exportedGuide')
 }
 
-tasks.register('createStaticSite', JavaExec) {
-    inputs.dir('build/exportedGuide')
-    outputs.dir('build/website')
+// Generates the website from a guide export, with GuideME, Minecraft and the test mod on the classpath,
+// which is the same setup mods use.
+def configureStaticSiteTask = { JavaExec task, String dataFolder, String outputFolder ->
+    task.group = 'mod development'
+    task.dependsOn proguardJar
+    task.inputs.dir(dataFolder)
+    task.outputs.dir(outputFolder)
+    task.classpath.from(configurations.runtimeClasspath)
+    task.classpath.from(proguardFile)
+    task.classpath.from(sourceSets.testmod.output)
+    task.mainClass = 'guideme.web.WebSiteGenerator'
+    task.args '--data', dataFolder, '--output', outputFolder, '--clean'
+    // Tests that the website can be styled by the mod
+    task.inputs.dir('src/testmod/web')
+    task.args '--stylesheet', file('src/testmod/web/testmod.css').absolutePath
+    // Additional generator arguments, i.e. -PwebsiteArgs="--page-subdirectories --base-path /test/"
+    def extraArgs = findProperty('websiteArgs')?.toString()?.trim()
+    if (extraArgs) {
+        task.args extraArgs.split(/\s+/)
+    }
+}
+
+tasks.register('renderStaticTestmodSite', JavaExec) {
+    description = 'Exports the test guide and generates a website from it.'
+    dependsOn runExportTestGuide
+    configureStaticSiteTask(it, 'build/exportedGuide', 'build/website')
+}
+
+// Generates the website from an existing guide export, i.e. one downloaded from a published guide:
+// ./gradlew renderStaticSite -PguideData=path/to/export [-PwebsiteOutput=path/to/website]
+tasks.register('renderStaticSite', JavaExec) {
+    description = 'Generates a website from an existing guide export given by -PguideData.'
+    def dataFolder = findProperty('guideData')?.toString() ?: 'build/exportedGuide'
+    def outputFolder = findProperty('websiteOutput')?.toString() ?: 'build/website'
+    configureStaticSiteTask(it, file(dataFolder).absolutePath, file(outputFolder).absolutePath)
+}
+
+// Serves the generated website on a random local port, i.e. ./gradlew renderStaticSite serveStaticSite
+tasks.register('serveStaticSite', JavaExec) {
     group = 'mod development'
-    dependsOn runExportTestGuide, proguardJar
-    classpath.from(configurations.runtimeClasspath)
-    classpath.from(proguardFile)
-    mainClass = 'guideme.internal.web.StaticSiteGenerator'
-    args '--data', 'build/exportedGuide', '--output', 'build/website'
+    description = 'Serves the generated website locally. Use -PwebsiteOutput to serve a different folder.'
+    mustRunAfter 'renderStaticTestmodSite', 'renderStaticSite'
+    // The server only uses the JDK, so we can avoid building the full jar
+    classpath = sourceSets.main.output
+    mainClass = 'guideme.web.WebSiteServer'
+    args file(findProperty('websiteOutput')?.toString() ?: 'build/website').absolutePath
 }
 
 afterEvaluate {

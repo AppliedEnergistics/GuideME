@@ -154,7 +154,7 @@ public final class MutableGuide implements Guide {
     public byte[] loadAsset(Identifier id) {
         // Try loading the language specific version first
         var language = LangUtil.getCurrentLanguage();
-        if (!GuideMEClient.instance().isIgnoreTranslatedGuides() && !Objects.equals(language, defaultLanguage)) {
+        if (!Objects.equals(language, defaultLanguage) && !GuideMEClient.instance().isIgnoreTranslatedGuides()) {
             var result = loadAssetInternal(id.withPrefix("_" + language + "/"));
             if (result != null) {
                 return result;

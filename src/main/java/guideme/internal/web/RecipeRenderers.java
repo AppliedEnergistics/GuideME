@@ -1,12 +1,10 @@
 package guideme.internal.web;
 
-import static guideme.internal.web.HtmlUtils.createHtmlElement;
-
-import guideme.siteexport.ExportedRecipe;
-import guideme.siteexport.RecipeWebRenderer;
-import guideme.siteexport.RecipeWebRenderingContext;
+import guideme.web.ExportedRecipe;
+import guideme.web.RecipeWebRenderer;
+import guideme.web.RecipeWebRenderingContext;
+import guideme.web.html.HtmlNode;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 final class CraftingRecipeRenderer implements RecipeWebRenderer {
@@ -17,7 +15,7 @@ final class CraftingRecipeRenderer implements RecipeWebRenderer {
 
     @Override
     public void render(RecipeWebRenderingContext builder, ExportedRecipe recipe) {
-        var shapeless = (boolean) recipe.fields().get("shapeless");
+        var shapeless = Boolean.TRUE.equals(recipe.fields().get("shapeless"));
 
         var type = "Crafting";
         if (shapeless) {
@@ -48,10 +46,10 @@ final class SmeltingRecipeRenderer implements RecipeWebRenderer {
         }
 
         builder.recipeBox(craftingStation, "Smelting", recipe.resultItem())
-                .rawHtml(createHtmlElement(
-                        "div",
-                        Map.of("class", "smelting-input-box"),
-                        builder.slotHtml(ingredient) + "\n" + createHtmlElement("div", Map.of("class", "fire"))))
+                .append(HtmlNode.tag("div")
+                        .setClassName("smelting-input-box")
+                        .append(builder.slotHtml(ingredient))
+                        .append(HtmlNode.tag("div").setClassName("fire")))
                 .arrow()
                 .slot(recipe.resultItem())
                 .build();
@@ -70,10 +68,17 @@ final class SmithingRecipeRenderer implements RecipeWebRenderer {
         var addition = recipe.getIngredient("addition");
         var template = recipe.getIngredient("template");
 
-        builder.recipeBox("minecraft:smithing_table", "Smithing", recipe.resultItem())
-                .shapelessSlots(List.of(base, addition, template))
+        // Trim recipes have no result item, since the result is the base item with the trim applied
+        var result = recipe.fields().containsKey("resultItem") ? List.of(recipe.resultItem()) : base;
+        if (result.isEmpty()) {
+            builder.recipeBox(builder.compileError("Smithing recipe without result")).build();
+            return;
+        }
+
+        builder.recipeBox("minecraft:smithing_table", "Smithing", result.getFirst())
+                .shapelessSlots(List.of(template, base, addition))
                 .arrow()
-                .slot(recipe.resultItem())
+                .slot(result)
                 .build();
     }
 }

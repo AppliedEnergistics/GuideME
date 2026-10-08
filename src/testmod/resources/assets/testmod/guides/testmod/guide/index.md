@@ -52,7 +52,7 @@ You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">do
 <RecipeFor id="minecraft:netherite_pickaxe" />
 <Recipe id="minecraft:shaper_armor_trim_smithing_template_smithing_trim" />
 
-<GameScene zoom={2}>
+<GameScene zoom={2}  interactive={true}>
   <ImportStructure src="test.nbt" />
 
   <BlockAnnotationTemplate id="minecraft:stripped_spruce_log" p:axis="x">

@@ -3,7 +3,6 @@ import {
   BoxGeometry,
   BufferAttribute,
   BufferGeometry,
-  Color,
   GreaterDepth,
   Group,
   Mesh,
@@ -13,6 +12,7 @@ import {
   Vector3,
 } from "three";
 import { InWorldAnnotation } from "./modelViewer.ts";
+import { parseAnnotationColor } from "./annotationColor.ts";
 
 const DEFAULT_THICKNESS = 0.5 / 16;
 
@@ -350,7 +350,7 @@ export function buildInWorldAnnotation(annotation: InWorldAnnotation) {
 
   // Don't render occlusion for always-on-top annotations
   if (!annotation.alwaysOnTop) {
-    const color = new Color(annotation.color);
+    const color = parseAnnotationColor(annotation.color);
     color.multiplyScalar(0.5);
 
     const occludedMaterial = new MeshLambertMaterial({
@@ -366,7 +366,7 @@ export function buildInWorldAnnotation(annotation: InWorldAnnotation) {
   }
 
   const material = new MeshLambertMaterial({
-    color: annotation.color,
+    color: parseAnnotationColor(annotation.color),
     transparent: true,
     vertexColors: false,
     depthTest: !annotation.alwaysOnTop,

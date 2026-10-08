@@ -3,6 +3,29 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.3.2-alpha (Minecraft 26.3)
+
+- Guides can now be turned into a static website, including search, recipes and interactive 3D scenes.
+  The website is generated from the guide export by a Gradle task outside the game, so websites for previously exported
+  guides can be regenerated with newer versions of GuideME. See [website export](./20-integration/website-export.md) for details.
+- Java API (experimental): Added [WebSiteGenerator](https://guideme.appliedenergistics.org/javadoc/guideme/web/WebSiteGenerator.html)
+  to generate the website from an export, and [WebSiteServer](https://guideme.appliedenergistics.org/javadoc/guideme/web/WebSiteServer.html)
+  to preview it locally.
+- Java API (experimental): Added [CustomElementWebRenderer](https://guideme.appliedenergistics.org/javadoc/guideme/web/CustomElementWebRenderer.html)
+  to render custom tags on the website, and [PageExportProcessor](https://guideme.appliedenergistics.org/javadoc/guideme/siteexport/PageExportProcessor.html)
+  to modify pages before they are exported (i.e. to resolve information only available in-game).
+- Java API (experimental): Added [HtmlNode](https://guideme.appliedenergistics.org/javadoc/guideme/web/html/HtmlNode.html)
+  and related classes in [guideme.web.html](https://guideme.appliedenergistics.org/javadoc/guideme/web/html/package-summary.html)
+  for renderers to produce HTML.
+- Java API: Added [ParsedGuidePage#deepCopy](https://guideme.appliedenergistics.org/javadoc/guideme/compiler/ParsedGuidePage.html#deepCopy())
+  and [SceneAnnotation#getSourceNode](https://guideme.appliedenergistics.org/javadoc/guideme/scene/annotation/SceneAnnotation.html#getSourceNode()).
+- Java API (breaking): [RecipeWebRenderer](https://guideme.appliedenergistics.org/javadoc/guideme/web/RecipeWebRenderer.html),
+  [RecipeWebRenderingContext](https://guideme.appliedenergistics.org/javadoc/guideme/web/RecipeWebRenderingContext.html),
+  [ExportedRecipe](https://guideme.appliedenergistics.org/javadoc/guideme/web/ExportedRecipe.html) and
+  [ExportedItemInfo](https://guideme.appliedenergistics.org/javadoc/guideme/web/ExportedItemInfo.html) moved from
+  `guideme.siteexport` to `guideme.web`.
+  `ResourceExporter#addCleanupCallback` was removed from [ResourceExporter](https://guideme.appliedenergistics.org/javadoc/guideme/siteexport/ResourceExporter.html).
+
 ## 26.3.1-alpha (Minecraft 26.3)
 
 - Update to Minecraft 26.3

@@ -3,7 +3,8 @@ declare module "*.css" {
   export default content;
 }
 
+// esbuild's file loader exports the URL of the file relative to the bundle
 declare module "*.png" {
-  const src: string;
-  export { src };
+  const url: string;
+  export default url;
 }

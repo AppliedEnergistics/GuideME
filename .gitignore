@@ -7,3 +7,4 @@ out
 /run
 *-autosave.kra
 /web/node_modules
+/logs

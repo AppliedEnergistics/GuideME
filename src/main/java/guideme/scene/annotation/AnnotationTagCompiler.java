@@ -5,6 +5,7 @@ import guideme.document.LytErrorSink;
 import guideme.document.block.LytBlock;
 import guideme.document.block.LytVBox;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
+import guideme.libs.mdast.model.MdAstNode;
 import guideme.scene.GuidebookScene;
 import guideme.scene.element.SceneElementTagCompiler;
 import net.minecraft.core.BlockPos;
@@ -23,6 +24,9 @@ public abstract class AnnotationTagCompiler implements SceneElementTagCompiler {
         var annotation = createAnnotation(scene, compiler, errorSink, el, instancePosition);
         if (annotation == null) {
             return; // Likely parsing error
+        }
+        if (annotation.getSourceNode() == null && el instanceof MdAstNode sourceNode) {
+            annotation.setSourceNode(sourceNode);
         }
 
         var contentBox = new LytVBox();

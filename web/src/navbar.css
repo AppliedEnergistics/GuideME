@@ -63,3 +63,64 @@
     content: none;
   }
 }
+
+.search-slot {
+  display: block;
+  position: relative;
+  margin-bottom: 0.5rem;
+
+  .search-input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.25rem 0.5rem;
+    font: inherit;
+    color: var(--color-body-text);
+    background-color: var(--color--navbar-row-hover);
+    border: 1px solid var(--color--table-border);
+  }
+
+  .search-results {
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    right: 0;
+    max-height: 70vh;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background-color: rgb(16, 16, 16);
+    border: 1px solid var(--color--table-border);
+  }
+
+  .search-results a {
+    display: block;
+    padding: 0.25rem 0.5rem;
+    color: var(--color-body-text);
+  }
+
+  .search-results a:hover,
+  .search-results a:focus {
+    background-color: var(--color--navbar-row-hover);
+    text-decoration: none;
+  }
+
+  .search-results .title {
+    display: block;
+    color: var(--color-link);
+  }
+
+  .search-results .snippet {
+    display: block;
+    font-size: 0.85em;
+  }
+
+  .search-results mark {
+    color: inherit;
+    background-color: rgba(0, 213, 255, 0.3);
+  }
+
+  .search-results .no-results {
+    padding: 0.25rem 0.5rem;
+  }
+}

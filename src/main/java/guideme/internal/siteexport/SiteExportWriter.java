@@ -56,6 +56,7 @@ import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.item.crafting.SmithingTransformRecipe;
+import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -219,8 +220,15 @@ public class SiteExportWriter {
                     "base", recipe.baseIngredient(),
                     "addition", unwrapIngredient(recipe.additionIngredient()),
                     "template", unwrapIngredient(recipe.templateIngredient())));
+        } else if (recipe instanceof SmithingTrimRecipe) {
+            // The result is the base item with the trim applied, which we can't export as a separate item.
+            // It's also not exported as resultItem, since this is not a recipe for obtaining the base items.
+            addRecipe(id, recipe, Map.of(
+                    "base", recipe.baseIngredient(),
+                    "addition", unwrapIngredient(recipe.additionIngredient()),
+                    "template", unwrapIngredient(recipe.templateIngredient())));
         } else {
-            LOG.warn("Currently can't handle smithing trim recipe {}", id.identifier());
+            LOG.warn("Cannot handle smithing recipe {} of type {}", id.identifier(), recipe.getClass());
         }
     }
 

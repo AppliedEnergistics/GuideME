@@ -2,17 +2,47 @@ package guideme.internal.web;
 
 import guideme.internal.siteexport.model.ExportedPageJson;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
+/**
+ * @param urlPrefix           The prefix to add to paths relative to the root of the website to link to them from this
+ *                            page. This is a relative path such as "../" for normal pages, or the base path of the
+ *                            website for pages that may be served from any URL, such as the 404 page.
+ * @param requiredStylesheets Stylesheets required by the content of this page, relative to the root of the website.
+ * @param requiredScripts     Scripts required by the content of this page, relative to the root of the website.
+ */
 record WebPageCompileContext(
-        StaticSiteGenerator.Options options,
-        ExportedGuide guide,
+        WebSiteGenerator.Options options,
+        ExportedGuideImpl guide,
+        SitePaths paths,
         String pageId,
         ExportedPageJson page,
-        WebPageCompiler.TemplateContainer templates) {
-    public String resolveAssetPath(String absoluteAssetPath) {
+        String urlPrefix,
+        WebPageCompiler.TemplateContainer templates,
+        Set<String> requiredStylesheets,
+        Set<String> requiredScripts) {
+
+    WebPageCompileContext(WebSiteGenerator.Options options, ExportedGuideImpl guide, SitePaths paths, String pageId,
+            ExportedPageJson page, String urlPrefix) {
+        this(options, guide, paths, pageId, page, urlPrefix, new WebPageCompiler.TemplateContainer(),
+                new LinkedHashSet<>(), new LinkedHashSet<>());
+    }
+
+    /**
+     * {@return the URL to link to the given path relative to the root of the website from this page}
+     */
+    String url(String pathFromRoot) {
+        while (pathFromRoot.startsWith("/")) {
+            pathFromRoot = pathFromRoot.substring(1);
+        }
+        var url = urlPrefix + pathFromRoot;
+        return url.isEmpty() ? "./" : url;
+    }
+
+    String resolveAssetPath(String absoluteAssetPath) {
         var relativeAssetPath = absoluteAssetPath;
         while (relativeAssetPath.startsWith("/")) {
             relativeAssetPath = relativeAssetPath.substring(1);
@@ -23,15 +53,10 @@ record WebPageCompileContext(
             throw new IllegalArgumentException("Missing asset: " + assetPath);
         }
 
-        try {
-            return resolveOutputPath(guide.getPageBasePath(pageId)).getParent().relativize(assetPath).toString()
-                    .replace('\\', '/');
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to resolve asset path from " + pageId + " to " + assetPath, e);
-        }
+        return url(relativeAssetPath);
     }
 
-    public Path resolveOutputPath(String relativePath) throws IOException {
+    Path resolveOutputPath(String relativePath) throws IOException {
         while (relativePath.startsWith("/")) {
             relativePath = relativePath.substring(1);
         }
@@ -44,16 +69,11 @@ record WebPageCompileContext(
         return result;
     }
 
-    public String getRelativePagePath(String pageId) {
-        return guide.getRelativePagePath(pageId, this.pageId);
+    String getRelativePagePath(String pageId) {
+        return url(paths.pageUrl(pageId));
     }
 
-    public String getUrlPrefixToRoot() {
-        var relativePathToRoot = "";
-        var pageFolder = options().outputFolder().resolve(guide.getPagePath(pageId())).getParent();
-        if (!options().outputFolder().equals(pageFolder)) {
-            relativePathToRoot = pageFolder.relativize(options().outputFolder()).toString().replace('\\', '/') + "/";
-        }
-        return relativePathToRoot;
+    String getUrlPrefixToRoot() {
+        return urlPrefix;
     }
 }
