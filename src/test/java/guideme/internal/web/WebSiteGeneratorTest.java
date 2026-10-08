@@ -99,6 +99,28 @@ class WebSiteGeneratorTest {
     }
 
     @Test
+    void testRootIndexPageIsNotMovedToSubdirectory() throws Exception {
+        addPage("testmod:index.md", "# Home\n\n[Other](sub/other.md)");
+        addPage("testmod:sub/index.md", "# Sub Index\n\n[Home](../index.md)");
+        generate(true, "/");
+
+        assertThat(read("index.html")).contains("<a href=\"sub/other/\">Other</a>");
+        assertThat(outputFolder.resolve("index/index.html")).doesNotExist();
+        // Only the index page at the root is special
+        assertThat(read("sub/index/index.html")).contains("<a href=\"../../\">Home</a>");
+        assertThat(read("sitemap.xml")).contains("<loc>https://guide.example.com/</loc>");
+    }
+
+    @Test
+    void testLogoLinksToStartPage() throws Exception {
+        json.startPage = "testmod:sub/other.md";
+        generate(true, "/");
+
+        assertThat(read("index.html")).contains("url=sub/other/");
+        assertThat(read("start/index.html")).contains("<a href=\"../sub/other/\" class=\"logo\">");
+    }
+
+    @Test
     void testSearchIndex() throws Exception {
         generate(false, "/");
 

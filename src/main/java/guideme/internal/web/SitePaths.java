@@ -5,15 +5,21 @@ package guideme.internal.web;
  * and have no leading slash.
  *
  * @param pageSubdirectories If true, pages are written as {@code page/index.html} and linked to as {@code page/}, which
- *                           allows linking to pages without a file extension on any static web host.
+ *                           allows linking to pages without a file extension on any static web host. The index page at
+ *                           the root is still written as {@code index.html}, since no page can conflict with it.
  */
 record SitePaths(ExportedGuideImpl guide, boolean pageSubdirectories) {
+    private static final String ROOT_INDEX = "index";
+
     /**
      * {@return the path of the HTML file a page is written to}
      */
     String pageFile(String pageId) {
         var basePath = guide.getPageBasePath(pageId);
-        return pageSubdirectories ? basePath + "/index.html" : basePath + ".html";
+        if (pageSubdirectories && !basePath.equals(ROOT_INDEX)) {
+            return basePath + "/index.html";
+        }
+        return basePath + ".html";
     }
 
     /**
@@ -21,7 +27,10 @@ record SitePaths(ExportedGuideImpl guide, boolean pageSubdirectories) {
      */
     String pageUrl(String pageId) {
         var basePath = guide.getPageBasePath(pageId);
-        return pageSubdirectories ? basePath + "/" : basePath + ".html";
+        if (!pageSubdirectories) {
+            return basePath + ".html";
+        }
+        return basePath.equals(ROOT_INDEX) ? "" : basePath + "/";
     }
 
     /**
