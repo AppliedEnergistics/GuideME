@@ -1,6 +1,6 @@
 import "./index.css";
 import "tippy.js/dist/tippy.css";
-import tippy, { inlinePositioning } from "tippy.js";
+import tippy, { inlinePositioning, type ReferenceElement } from "tippy.js";
 
 // All tooltips, including those of game scenes, use the look of Minecraft tooltips (see tooltip.css)
 tippy.setDefaultProps({
@@ -174,6 +174,7 @@ async function handleNavigationAsync(
   addMissingPageResources(newDocument, pageUrl);
   resolveRelativeUrls(newPageContent, pageUrl);
   document.adoptNode(newPageContent);
+  destroyTooltips(currentPageContent);
   currentPageContent.replaceWith(newPageContent);
   document.title = newDocument.title;
 
@@ -316,6 +317,16 @@ function setupMenuBarToggle() {
       e.preventDefault();
       mainElement?.classList.toggle("menu-expanded");
     });
+}
+
+/**
+ * Tooltips are appended to the body, so they'd outlive their reference elements when the page content is replaced
+ * while one of them is shown (i.e. the mouse never leaves the reference element).
+ */
+function destroyTooltips(root: Element) {
+  for (const element of [root, ...root.querySelectorAll("*")]) {
+    (element as ReferenceElement)._tippy?.destroy();
+  }
 }
 
 function setupTooltips(root: Element) {
