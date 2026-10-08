@@ -1,6 +1,6 @@
 import Conversion from "@site/src/components/patchouli/Conversion";
-import {FileWithPath, useDropzone} from "react-dropzone";
-import {useCallback, useMemo, useState} from "react";
+import {useDropzone} from "react-dropzone";
+import {useCallback, useState} from "react";
 import css from './PatchouliConverter.module.css';
 import Video from "@site/src/components/Video";
 
@@ -8,7 +8,7 @@ const rootClasses = 'card ' + css.dragInactive;
 const rootClassesDragActive = 'card ' + css.dragActive;
 
 function PatchouliConverter() {
-    const [file, setFile] = useState<FileWithPath | null>(null);
+    const [file, setFile] = useState<File | null>(null);
     const {getRootProps, getInputProps, open, isDragActive} = useDropzone({
         accept: {
             "application/*": [".jar", ".zip"],

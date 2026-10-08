@@ -6,7 +6,7 @@
 export function cropPngTo200x200(imageData: Uint8Array): Promise<Uint8Array> {
     return new Promise((resolve, reject) => {
         // Create blob and object URL
-        const blob = new Blob([imageData], { type: 'image/png' });
+        const blob = new Blob([imageData as Uint8Array<ArrayBuffer>], { type: 'image/png' });
         const imageUrl = URL.createObjectURL(blob);
 
         // Create image element to load the PNG
