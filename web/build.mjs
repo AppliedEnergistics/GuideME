@@ -51,52 +51,54 @@ async function build() {
         throw new Error("Missing expected CSS output: " + JSON.stringify(buildResult.metafile.outputs));
     }
 
-    // Read and process HTML
-    let htmlTemplate = fs.readFileSync('src/layout.html', 'utf-8');
+    // Read and process the HTML templates
+    for (const template of ['layout.html', 'versions.html']) {
+        let htmlTemplate = fs.readFileSync(path.join('src', template), 'utf-8');
 
-    // Find all desired assets to copy
-    let htmlOutput = htmlTemplate.replaceAll(/\{\{asset:([^}]+)}}/g, (substring, assetPath) => {
-        const sourceAssetPath = path.join(dirname, assetPath);
+        // Find all desired assets to copy
+        let htmlOutput = htmlTemplate.replaceAll(/\{\{asset:([^}]+)}}/g, (substring, assetPath) => {
+            const sourceAssetPath = path.join(dirname, assetPath);
 
-        // Read the asset content
-        const assetContent = fs.readFileSync(sourceAssetPath);
+            // Read the asset content
+            const assetContent = fs.readFileSync(sourceAssetPath);
 
-        // Hash the content for cache busting
-        const hash = crypto.createHash('sha256').update(assetContent).digest('hex').substring(0, 12);
+            // Hash the content for cache busting
+            const hash = crypto.createHash('sha256').update(assetContent).digest('hex').substring(0, 12);
 
-        // Parse the path to insert hash before extension
-        const assetDir = path.dirname(assetPath);
-        const assetFilename = path.basename(assetPath);
-        const dotIndex = assetFilename.lastIndexOf('.');
+            // Parse the path to insert hash before extension
+            const assetDir = path.dirname(assetPath);
+            const assetFilename = path.basename(assetPath);
+            const dotIndex = assetFilename.lastIndexOf('.');
 
-        let cacheBustedFilename;
-        if (dotIndex === -1) {
-            cacheBustedFilename = `${assetFilename}.${hash}`;
-        } else {
-            const name = assetFilename.substring(0, dotIndex);
-            const ext = assetFilename.substring(dotIndex);
-            cacheBustedFilename = `${name}.${hash}${ext}`;
-        }
+            let cacheBustedFilename;
+            if (dotIndex === -1) {
+                cacheBustedFilename = `${assetFilename}.${hash}`;
+            } else {
+                const name = assetFilename.substring(0, dotIndex);
+                const ext = assetFilename.substring(dotIndex);
+                cacheBustedFilename = `${name}.${hash}${ext}`;
+            }
 
-        // Construct output path maintaining relative directory structure
-        const outputPath = path.join(distDir, assetDir, cacheBustedFilename);
+            // Construct output path maintaining relative directory structure
+            const outputPath = path.join(distDir, assetDir, cacheBustedFilename);
 
-        // Ensure output directory exists
-        fs.mkdirSync(path.dirname(outputPath), {recursive: true});
+            // Ensure output directory exists
+            fs.mkdirSync(path.dirname(outputPath), {recursive: true});
 
-        // Copy the asset to output directory
-        fs.writeFileSync(outputPath, assetContent);
+            // Copy the asset to output directory
+            fs.writeFileSync(outputPath, assetContent);
 
-        // Return the relative path from output root
-        return path.join(assetDir, cacheBustedFilename).replace(/\\/g, '/');
-    });
+            // Return the relative path from output root
+            return path.join(assetDir, cacheBustedFilename).replace(/\\/g, '/');
+        });
 
-    htmlOutput = htmlOutput
-        .replace(/\{\{JS_BUNDLE\}\}/g, 'assets/' + jsFile)
-        .replace(/\{\{CSS_BUNDLE\}\}/g, 'assets/' + cssFile);
+        htmlOutput = htmlOutput
+            .replace(/\{\{JS_BUNDLE\}\}/g, 'assets/' + jsFile)
+            .replace(/\{\{CSS_BUNDLE\}\}/g, 'assets/' + cssFile);
 
-    // Write processed HTML
-    fs.writeFileSync('dist/templates/layout.html', htmlOutput);
+        // Write processed HTML
+        fs.writeFileSync(path.join('dist/templates', template), htmlOutput);
+    }
 
     // Write full assets file list
     // Sort the list, since the order of directory listings depends on the OS and file system

@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,6 +50,13 @@ final class WebAssetsBundle {
     private final Path outputFolder;
 
     private final String layoutTemplate;
+
+    /**
+     * Template for the pages at the root of websites with multiple guide versions. Loaded on demand, since websites
+     * with a single version don't need it.
+     */
+    @Nullable
+    private String versionsTemplate;
 
     /**
      * Paths of stylesheets and scripts relative to the output folder, which are added to the head of every page.
@@ -199,8 +207,62 @@ final class WebAssetsBundle {
         values.put(PLACEHOLDER_LOGO_URL, escapeHtml(context.url(logo)));
         values.put(PLACEHOLDER_HOME_URL, escapeHtml(context.url(homePath)));
 
+        return replacePlaceholders(layoutTemplate, values);
+    }
+
+    /**
+     * Realizes the template of a page at the root of a website with multiple guide versions, which doesn't belong to
+     * any of the versions.
+     *
+     * @param urlPrefix The prefix of URLs relative to the root of the website.
+     */
+    String realizeVersionsTemplate(String guideTitle, String urlPrefix, String pageTitle, String pageTitleText,
+            HtmlFragment content, @Nullable String canonicalUrl) {
+        if (versionsTemplate == null) {
+            versionsTemplate = loadTemplate(
+                    "versions",
+                    PLACEHOLDER_PAGE_TITLE,
+                    PLACEHOLDER_PAGE_TITLE_TEXT,
+                    PLACEHOLDER_PAGE_CONTENT,
+                    PLACEHOLDER_RELATIVE_PATH_TO_ROOT,
+                    PLACEHOLDER_GUIDE_TITLE,
+                    PLACEHOLDER_EXTRA_HEAD,
+                    PLACEHOLDER_LOGO_URL,
+                    PLACEHOLDER_HOME_URL);
+        }
+
+        var extraHead = new HtmlFragment();
+        if (canonicalUrl != null) {
+            extraHead.append(HtmlNode.tag("link")
+                    .setAttribute("rel", "canonical")
+                    .setAttribute("href", canonicalUrl));
+        }
+        if (favicon != null) {
+            extraHead.append(HtmlNode.tag("link")
+                    .setAttribute("rel", "icon")
+                    .setAttribute("href", urlPrefix + favicon));
+        }
+        for (var stylesheet : extraStylesheets) {
+            extraHead.append(HtmlNode.tag("link")
+                    .setAttribute("rel", "stylesheet")
+                    .setAttribute("href", urlPrefix + stylesheet));
+        }
+
+        var values = new HashMap<String, String>();
+        values.put(PLACEHOLDER_PAGE_CONTENT, content.outerHtml());
+        values.put(PLACEHOLDER_PAGE_TITLE, escapeHtml(pageTitle));
+        values.put(PLACEHOLDER_PAGE_TITLE_TEXT, escapeHtml(pageTitleText));
+        values.put(PLACEHOLDER_RELATIVE_PATH_TO_ROOT, urlPrefix);
+        values.put(PLACEHOLDER_GUIDE_TITLE, escapeHtml(guideTitle));
+        values.put(PLACEHOLDER_EXTRA_HEAD, extraHead.outerHtml());
+        values.put(PLACEHOLDER_LOGO_URL, escapeHtml(urlPrefix + logo));
+        values.put(PLACEHOLDER_HOME_URL, escapeHtml(urlPrefix));
+        return replacePlaceholders(versionsTemplate, values);
+    }
+
+    private static String replacePlaceholders(String template, Map<String, String> values) {
         // Replace in a single pass, so that placeholders in the inserted content are not replaced
-        return PLACEHOLDER_PATTERN.matcher(layoutTemplate)
+        return PLACEHOLDER_PATTERN.matcher(template)
                 .replaceAll(m -> Matcher.quoteReplacement(values.getOrDefault(m.group(), m.group())));
     }
 
