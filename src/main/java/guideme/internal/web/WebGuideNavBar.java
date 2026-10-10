@@ -21,15 +21,17 @@ class WebGuideNavBar {
     }
 
     private HtmlNode generateLink(NavigationNodeJson node) {
-        if (!node.hasPage) {
-            return HtmlNode.text(node.title);
+        HtmlTag link;
+        if (node.hasPage) {
+            link = HtmlNode.tag("a");
+            if (node.pageId.equals(context.pageId())) {
+                link.setClassName("active");
+            }
+            link.setAttribute("href", context.getRelativePagePath(node.pageId));
+        } else {
+            // Used when there's a header but no link
+            link = HtmlNode.tag("span").setClassName("expandableHeader");
         }
-
-        var link = HtmlNode.tag("a");
-        if (node.pageId.equals(context.pageId())) {
-            link.setClassName("active");
-        }
-        link.setAttribute("href", context.getRelativePagePath(node.pageId));
 
         if (node.icon != null) {
             var itemInfo = context.guide().getItemInfo(node.icon);
