@@ -203,6 +203,69 @@ class WebSiteGeneratorTest {
         assertThat(dataFolder.resolve("index.json")).exists();
     }
 
+    @Test
+    void testVersionedWebSite() throws Exception {
+        writeExport(dataFolder.resolve("minecraft-1.21.1"), "1.21.1", toJson());
+        writeExport(dataFolder.resolve("minecraft-26.3"), "26.3", toJson());
+        // Folders without an export are ignored
+        Files.createDirectories(dataFolder.resolve("unrelated"));
+        generateVersioned("https://dev.example.com/");
+
+        var start = read("26.3/start/index.html");
+        assertThat(start).contains("<link rel=\"canonical\" href=\"https://guide.example.com/26.3/start/\"/>");
+        assertThat(start).contains("<a href=\"/\">change</a>");
+        assertThat(read("1.21.1/sub/other/index.html")).contains("<a href=\"../../start/\">Back</a>");
+        assertThat(outputFolder.resolve("unrelated")).doesNotExist();
+
+        // Crawlers find the sitemaps of all versions through the root
+        assertThat(outputFolder.resolve("26.3/robots.txt")).doesNotExist();
+        assertThat(read("26.3/sitemap.xml")).contains("<loc>https://guide.example.com/26.3/start/</loc>");
+        assertThat(read("robots.txt")).contains("Sitemap: https://guide.example.com/sitemap.xml");
+        assertThat(read("sitemap.xml"))
+                .contains("<sitemapindex")
+                .containsSubsequence("<loc>https://guide.example.com/26.3/sitemap.xml</loc>",
+                        "<loc>https://guide.example.com/1.21.1/sitemap.xml</loc>");
+
+        // The newest version comes first
+        var index = read("index.html");
+        assertThat(index).containsSubsequence("href=\"/26.3/\"", "Latest", "href=\"/1.21.1/\"");
+        assertThat(index).contains("<a href=\"https://dev.example.com/\">development version</a>");
+        assertThat(index).contains("<link rel=\"canonical\" href=\"https://guide.example.com/\"/>");
+
+        var notFound = read("404.html");
+        assertThat(notFound).contains("<h1>Page Not Found</h1>");
+        assertThat(notFound).contains("href=\"/26.3/\"");
+        assertThat(notFound).doesNotContain("development version");
+    }
+
+    @Test
+    void testVersionedWebSiteSortsVersionsNumerically() throws Exception {
+        for (var version : List.of("1.20.9", "1.20.10", "1.9", "26.1")) {
+            writeExport(dataFolder.resolve(version), version, toJson());
+        }
+        var options = new VersionedWebSiteGenerator.Options(options(true, "/", false), null);
+
+        var versions = new VersionedWebSiteGenerator(options).findVersions();
+
+        assertThat(versions).extracting(VersionedWebSiteGenerator.Version::path)
+                .containsExactly("26.1", "1.20.10", "1.20.9", "1.9");
+    }
+
+    @Test
+    void testVersionedWebSiteRejectsDuplicateVersions() throws Exception {
+        writeExport(dataFolder.resolve("a"), "26.3", toJson());
+        writeExport(dataFolder.resolve("b"), "26.3", toJson());
+
+        assertThatThrownBy(() -> generateVersioned(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("are both for Minecraft 26.3");
+    }
+
+    private void generateVersioned(String developmentUrl) {
+        new VersionedWebSiteGenerator(new VersionedWebSiteGenerator.Options(options(true, "/", false),
+                developmentUrl)).generate();
+    }
+
     private void generate(boolean pageSubdirectories, String basePath) throws IOException {
         writeExport(toJson());
         new WebSiteGenerator(options(pageSubdirectories, basePath, false)).generate();
@@ -222,10 +285,16 @@ class WebSiteGeneratorTest {
     }
 
     private void writeExport(JsonObject guideJson) throws IOException {
-        Files.writeString(dataFolder.resolve("index.json"), """
-                {"format": 1, "generated": 0, "gameMajorVersion": "26.3", "gameVersion": "26.3",
-                 "modVersion": "1.0.0", "guideMeVersion": "1.0.0", "guideDataPath": "guide.json.gz"}""");
-        try (var out = new GZIPOutputStream(Files.newOutputStream(dataFolder.resolve("guide.json.gz")))) {
+        writeExport(dataFolder, "26.3", guideJson);
+    }
+
+    private static void writeExport(Path folder, String gameVersion, JsonObject guideJson) throws IOException {
+        Files.createDirectories(folder);
+        Files.writeString(folder.resolve("index.json"), """
+                {"format": 1, "generated": 0, "gameMajorVersion": "%s", "gameVersion": "%s",
+                 "modVersion": "1.0.0", "guideMeVersion": "1.0.0", "guideDataPath": "guide.json.gz"}"""
+                .formatted(gameVersion, gameVersion));
+        try (var out = new GZIPOutputStream(Files.newOutputStream(folder.resolve("guide.json.gz")))) {
             out.write(gson().toJson(guideJson).getBytes(StandardCharsets.UTF_8));
         }
     }

@@ -8,6 +8,8 @@ import Video from '@site/src/components/Video';
 - Guides can now be turned into a static website, including search, recipes and interactive 3D scenes.
   The website is generated from the guide export by a Gradle task outside the game, so websites for previously exported
   guides can be regenerated with newer versions of GuideME. See [website export](./20-integration/website-export.md) for details.
+- The website generator can combine the exports for several Minecraft versions into a single website with a
+  version selection page (`--versions`). See [publishing multiple versions](./20-integration/website-export.md#publishing-multiple-versions).
 - Java API (experimental): Added [WebSiteGenerator](https://guideme.appliedenergistics.org/javadoc/guideme/web/WebSiteGenerator.html)
   to generate the website from an export, and [WebSiteServer](https://guideme.appliedenergistics.org/javadoc/guideme/web/WebSiteServer.html)
   to preview it locally.

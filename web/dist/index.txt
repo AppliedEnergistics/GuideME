@@ -6,7 +6,7 @@ assets/PixeloidSans-LRDUD24B.woff
 assets/PixeloidSans-SG3QN3JO.woff2
 assets/background-YRAQ3RNF.png
 assets/bundle-FDDI7XLT.js
-assets/bundle-V7RWNPNB.css
+assets/bundle-JW35B5C5.css
 assets/button_invisible-OS4ECYQ6.png
 assets/button_minus-JEYKYAA5.png
 assets/button_plus-L7MAGMHM.png

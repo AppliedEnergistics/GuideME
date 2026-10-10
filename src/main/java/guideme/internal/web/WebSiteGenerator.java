@@ -112,7 +112,7 @@ public final class WebSiteGenerator {
 
         try {
             if (options.clean) {
-                cleanOutputFolder();
+                cleanOutputFolder(options);
             }
 
             // Copy all content over
@@ -125,8 +125,8 @@ public final class WebSiteGenerator {
         }
 
         var resourceCopier = new WebResourceCopier(options.outputFolder);
-        addBranding(resourceCopier);
-        addSiteResources(resourceCopier);
+        addBranding(options, webAssetsBundle, resourceCopier);
+        addSiteResources(options, webAssetsBundle, resourceCopier);
 
         // Load the guide
         var guide = GuideExportReader.readGuide(options.dataFolder, index);
@@ -159,7 +159,7 @@ public final class WebSiteGenerator {
     /**
      * Deletes everything in the output folder, so that pages that no longer exist in the export are removed.
      */
-    private void cleanOutputFolder() throws IOException {
+    static void cleanOutputFolder(Options options) throws IOException {
         var outputFolder = options.outputFolder.toAbsolutePath().normalize();
         if (!Files.isDirectory(outputFolder)) {
             return;
@@ -194,7 +194,7 @@ public final class WebSiteGenerator {
         });
     }
 
-    private void addBranding(WebResourceCopier resourceCopier) {
+    static void addBranding(Options options, WebAssetsBundle webAssetsBundle, WebResourceCopier resourceCopier) {
         var logo = options.logo != null
                 ? resourceCopier.copyFile(options.logo)
                 : resourceCopier.copy(Identifier.fromNamespaceAndPath("guideme", "logo.png"));
@@ -205,7 +205,8 @@ public final class WebSiteGenerator {
     /**
      * Adds the stylesheets and scripts of the website, which are included on every page.
      */
-    private void addSiteResources(WebResourceCopier resourceCopier) {
+    static void addSiteResources(Options options, WebAssetsBundle webAssetsBundle,
+            WebResourceCopier resourceCopier) {
         for (var stylesheet : options.stylesheets) {
             webAssetsBundle.addStylesheet(resourceCopier.copyFile(stylesheet));
         }

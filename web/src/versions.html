@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{PAGE_TITLE_TEXT}}</title>
+    <link rel="stylesheet" href="{{RELATIVE_PATH_TO_ROOT}}{{CSS_BUNDLE}}" />
+    {{EXTRA_HEAD}}
+  </head>
+  <body data-path-to-root="{{RELATIVE_PATH_TO_ROOT}}">
+    <main class="version-selection">
+      <div class="topLogoBar">
+        <a href="{{HOME_URL}}" class="logo">
+          <img src="{{LOGO_URL}}" alt="" />
+          {{GUIDE_TITLE}}
+        </a>
+      </div>
+      <article>
+        <div id="page-content">
+          <h1>{{PAGE_TITLE}}</h1>
+          {{PAGE_CONTENT}}
+        </div>
+      </article>
+    </main>
+  </body>
+</html>

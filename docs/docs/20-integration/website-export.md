@@ -64,7 +64,8 @@ tasks.register('createGuideWebsite', JavaExec) {
 
 | Argument                     | Description                                                                                                                     |
 |------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
-| `--data <folder>`            | The folder containing the guide export (required).                                                                              |
+| `--data <folder>`            | The folder containing the guide export (required, unless `--versions` is used).                                                 |
+| `--versions <folder>`        | A folder containing one guide export per Minecraft version. See [multiple versions](#publishing-multiple-versions).             |
 | `--output <folder>`          | The folder the website is written to (required).                                                                                |
 | `--clean`                    | Deletes the content of the output folder first, so pages that no longer exist are removed.                                      |
 | `--title <title>`            | The title of the guide, shown in the header and the browser title.                                                              |
@@ -77,9 +78,54 @@ tasks.register('createGuideWebsite', JavaExec) {
 | `--page-subdirectories`      | Writes pages as `[page]/index.html` so they can be linked without the `.html` extension on any web host.                        |
 | `--web-assets <folder>`      | A folder whose files override the default web assets, such as the page layout.                                                  |
 | `--change-version-url <url>` | A URL to link to for picking a different version of the guide. Defaults to `/` if a base path is set.                           |
+| `--development-url <url>`    | With `--versions`, a separately published development version of the guide to link to from the version selection page.          |
 
 The website includes a search function, a `404.html` page, and an `index.html` that redirects to the start page
 of the guide if the guide has no `index.md`.
+
+## Publishing Multiple Versions
+
+If your mod supports several Minecraft versions, the generator can combine the guide exports of all of them into a
+single website. Put the exports into subfolders of one folder (the names of the subfolders don't matter), and pass
+that folder with `--versions` instead of `--data`:
+
+```
+guideExports/
+├── minecraft-1.21.1/
+│   ├── index.json
+│   └── ...
+└── minecraft-26.3/
+    ├── index.json
+    └── ...
+```
+
+```gradle
+    args '--versions', file('build/guideExports').absolutePath,
+         '--output', file('build/guideWebsite').absolutePath,
+         '--site-url', 'https://guide.example.com',
+         '--clean'
+```
+
+Each version is generated into a folder named after the Minecraft version it was exported from (i.e. `26.3/` or
+`1.21.1/`), using the major version for snapshots and pre-releases. Subfolders without an `index.json` are ignored, and
+having two exports for the same Minecraft version is an error.
+
+At the root of the website, the generator writes:
+
+- An `index.html` that lists all versions, newest first, with the date each one was exported. Use
+  `--development-url` to also link to a separately published development version of the guide.
+- A `404.html` that lets visitors choose the guide for their Minecraft version.
+- If `--site-url` is set, a `sitemap.xml` that points to the sitemaps of all versions, and a `robots.txt` that points
+  to it.
+
+All other options apply to every version. `--base-path` is the path of the root of the website, the versions are served
+from folders below it. The "change version" link on the pages of each version leads back to the version list, unless
+`--change-version-url` is set.
+
+Since the website is generated from the exports, you can keep the exports of older Minecraft versions around (or
+download them, i.e. from your CI) and regenerate the website for all of them with the current version of GuideME
+and your renderers. All versions are rendered with the classpath of the task (i.e. your mod for the current Minecraft
+version), so your renderers have to handle data exported by older versions of your mod.
 
 ## Previewing the Website
 
