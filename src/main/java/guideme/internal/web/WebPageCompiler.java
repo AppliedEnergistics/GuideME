@@ -171,6 +171,25 @@ class WebPageCompiler {
         }
     }
 
+    /**
+     * Compiles Markdown that is not a page of the guide, such as the introduction on the root page of a website with
+     * multiple versions. Relative links resolve against the start of the guide.
+     *
+     * @param urlPrefix The absolute URL path of the root of this guide's website, since the content is shown elsewhere.
+     */
+    HtmlFragment compileFragment(MdAstRoot astRoot, String urlPrefix) {
+        var page = new ExportedPageJson();
+        page.astRoot = astRoot;
+
+        var pageId = guide.getDefaultNamespace() + ":index.md";
+        var context = new WebPageCompileContext(options, guide, paths, pageId, page, urlPrefix);
+        var content = compileChildren(context, astRoot);
+        for (var template : context.templates().templates) {
+            content.append(template);
+        }
+        return content;
+    }
+
     SearchIndex getSearchIndex() {
         return searchIndex;
     }

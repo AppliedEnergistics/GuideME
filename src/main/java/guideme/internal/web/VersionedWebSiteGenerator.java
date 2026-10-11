@@ -1,6 +1,8 @@
 package guideme.internal.web;
 
+import guideme.compiler.PageCompiler;
 import guideme.internal.siteexport.model.IndexModel;
+import guideme.libs.mdast.model.MdAstRoot;
 import guideme.web.html.HtmlFragment;
 import guideme.web.html.HtmlNode;
 import java.io.IOException;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,8 +50,19 @@ public final class VersionedWebSiteGenerator {
      * @param site           The options for the whole website. The data folder contains a folder with an export for
      *                       each version. The change version URL defaults to the root of the website.
      * @param developmentUrl URL of a separately published development version of the guide to link to.
+     * @param introduction   Markdown file with an introduction to show above the list of versions. A
+     *                       {@code description} in its frontmatter is used as the description of the page.
      */
-    public record Options(WebSiteGenerator.Options site, @Nullable String developmentUrl) {
+    public record Options(WebSiteGenerator.Options site, @Nullable String developmentUrl,
+            @Nullable Path introduction) {
+    }
+
+    /**
+     * The introduction of the version list.
+     *
+     * @param description Summary of the page for search engines.
+     */
+    record Introduction(MdAstRoot astRoot, @Nullable String description) {
     }
 
     /**
@@ -73,16 +87,18 @@ public final class VersionedWebSiteGenerator {
         if (versions.isEmpty()) {
             throw new IllegalArgumentException("Found no guide exports in the folders of " + site.dataFolder());
         }
+        var introduction = options.introduction() != null ? readIntroduction(options.introduction()) : null;
 
         try {
             if (site.clean()) {
                 WebSiteGenerator.cleanOutputFolder(site);
             }
 
+            HtmlFragment introductionHtml = null;
             for (var version : versions) {
                 LOG.info("Generating guide version {} from {}", version.path(), version.dataFolder());
                 var versionOutputFolder = site.outputFolder().resolve(version.path());
-                new WebSiteGenerator(new WebSiteGenerator.Options(
+                var generator = new WebSiteGenerator(new WebSiteGenerator.Options(
                         version.dataFolder(),
                         versionOutputFolder,
                         site.webAssetsPath(),
@@ -95,12 +111,18 @@ public final class VersionedWebSiteGenerator {
                         site.pageSubdirectories(),
                         false,
                         site.stylesheets(),
-                        site.scripts())).generate();
+                        site.scripts()));
+                generator.generate();
                 // Crawlers only look for robots.txt at the root of the website
                 Files.deleteIfExists(versionOutputFolder.resolve("robots.txt"));
+
+                // Links in the introduction lead to the latest version
+                if (introduction != null && introductionHtml == null) {
+                    introductionHtml = generator.compileMarkdown(introduction.astRoot());
+                }
             }
 
-            writeRootPages(versions);
+            writeRootPages(versions, introduction, introductionHtml);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to generate the website in " + site.outputFolder(), e);
         }
@@ -133,7 +155,25 @@ public final class VersionedWebSiteGenerator {
         return versions;
     }
 
-    private void writeRootPages(List<Version> versions) throws IOException {
+    private static Introduction readIntroduction(Path file) {
+        String markdown;
+        try {
+            markdown = Files.readString(file, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to read the introduction " + file, e);
+        }
+
+        var parsed = PageCompiler.parse(file.toString(), "en",
+                Identifier.fromNamespaceAndPath("guideme", "versions_introduction.md"), markdown);
+        var description = parsed.getFrontmatter().additionalProperties().get("description");
+        if (description != null && !(description instanceof String)) {
+            throw new IllegalArgumentException("The description in the frontmatter of " + file + " has to be a string");
+        }
+        return new Introduction(parsed.getAstRoot(), (String) description);
+    }
+
+    private void writeRootPages(List<Version> versions, @Nullable Introduction introduction,
+            @Nullable HtmlFragment introductionHtml) throws IOException {
         var webAssetsBundle = new WebAssetsBundle(site);
         webAssetsBundle.copyToOutputFolder();
         var resourceCopier = new WebResourceCopier(site.outputFolder());
@@ -144,6 +184,9 @@ public final class VersionedWebSiteGenerator {
         var urlPrefix = site.basePath();
 
         var index = new HtmlFragment();
+        if (introductionHtml != null) {
+            index.append(HtmlNode.tag("div").setClassName("introduction").append(introductionHtml));
+        }
         index.append(versionList(versions, urlPrefix));
         if (options.developmentUrl() != null) {
             index.append(HtmlNode.tag("p")
@@ -154,14 +197,16 @@ public final class VersionedWebSiteGenerator {
                     .append("."));
         }
         writeFile("index.html", webAssetsBundle.realizeVersionsTemplate(site.title(), urlPrefix,
-                "Choose a Minecraft Version", site.title(), index, site.absoluteUrl("")));
+                new VersionsPlaceholders(site.title(), site.title(),
+                        introduction != null ? introduction.description() : null, index, site.absoluteUrl(""))));
 
         var notFound = new HtmlFragment();
         notFound.append(HtmlNode.tag("p").append(
                 "The page you are looking for does not exist. Choose the guide for your Minecraft version:"));
         notFound.append(versionList(versions, urlPrefix));
         writeFile("404.html", webAssetsBundle.realizeVersionsTemplate(site.title(), urlPrefix,
-                "Page Not Found", "Page Not Found - " + site.title(), notFound, null));
+                new VersionsPlaceholders("Page Not Found", "Page Not Found - " + site.title(), null,
+                        notFound, null)));
 
         writeSitemapIndex(versions);
     }

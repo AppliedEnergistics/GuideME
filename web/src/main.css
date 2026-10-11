@@ -137,6 +137,10 @@ body > main.version-selection {
     grid-row: auto;
   }
 
+  .introduction {
+    max-width: 40rem;
+  }
+
   .version-list {
     list-style: none;
     margin: 0 0 1rem;

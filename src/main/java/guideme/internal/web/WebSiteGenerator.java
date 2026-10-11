@@ -2,6 +2,8 @@ package guideme.internal.web;
 
 import guideme.internal.siteexport.model.IndexModel;
 import guideme.internal.siteexport.model.NavigationNodeJson;
+import guideme.libs.mdast.model.MdAstRoot;
+import guideme.web.html.HtmlFragment;
 import guideme.web.html.HtmlNode;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -95,6 +97,8 @@ public final class WebSiteGenerator {
 
     private final Options options;
     private final WebAssetsBundle webAssetsBundle;
+    @Nullable
+    private WebPageCompiler compiler;
 
     public WebSiteGenerator(Options options) {
         this.options = options;
@@ -139,6 +143,7 @@ public final class WebSiteGenerator {
         }
 
         var compiler = new WebPageCompiler(guide, webAssetsBundle, options, resourceCopier, paths);
+        this.compiler = compiler;
         var futures = new ArrayList<CompletableFuture<?>>();
         for (var pageId : guide.getPages().keySet()) {
             futures.add(CompletableFuture.runAsync(() -> compiler.compile(pageId)));
@@ -154,6 +159,17 @@ public final class WebSiteGenerator {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /**
+     * Compiles Markdown that is shown outside of this guide's website, but links to its pages. Requires that the
+     * website has been generated.
+     */
+    HtmlFragment compileMarkdown(MdAstRoot astRoot) {
+        if (compiler == null) {
+            throw new IllegalStateException("The website has to be generated first");
+        }
+        return compiler.compileFragment(astRoot, options.basePath);
     }
 
     /**

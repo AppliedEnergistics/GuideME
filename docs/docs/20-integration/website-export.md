@@ -79,6 +79,7 @@ tasks.register('createGuideWebsite', JavaExec) {
 | `--web-assets <folder>`      | A folder whose files override the default web assets, such as the page layout.                                                  |
 | `--change-version-url <url>` | A URL to link to for picking a different version of the guide. Defaults to `/` if a base path is set.                           |
 | `--development-url <url>`    | With `--versions`, a separately published development version of the guide to link to from the version selection page.          |
+| `--versions-intro <file>`    | With `--versions`, a Markdown file to show above the list of versions. See [introduction](#introducing-your-mod).               |
 
 The website includes a search function, a `404.html` page, and an `index.html` that redirects to the start page
 of the guide if the guide has no `index.md`.
@@ -112,8 +113,8 @@ having two exports for the same Minecraft version is an error.
 
 At the root of the website, the generator writes:
 
-- An `index.html` that lists all versions, newest first, with the date each one was exported. Use
-  `--development-url` to also link to a separately published development version of the guide.
+- An `index.html` titled after the guide that lists all versions, newest first, with the date each one was exported.
+  Use `--development-url` to also link to a separately published development version of the guide.
 - A `404.html` that lets visitors choose the guide for their Minecraft version.
 - If `--site-url` is set, a `sitemap.xml` that points to the sitemaps of all versions, and a `robots.txt` that points
   to it.
@@ -121,6 +122,25 @@ At the root of the website, the generator writes:
 All other options apply to every version. `--base-path` is the path of the root of the website, the versions are served
 from folders below it. The "change version" link on the pages of each version leads back to the version list, unless
 `--change-version-url` is set.
+
+### Introducing Your Mod
+
+Search engines and visitors who arrive at the root of the website only see the list of versions. Use
+`--versions-intro` to describe your mod above it with a Markdown file. A `description` in its frontmatter becomes the
+description of the page that search engines show in their results:
+
+```markdown
+---
+description: The guide for Example Mod, a Minecraft mod that adds examples.
+---
+
+Example Mod adds examples to Minecraft. This guide explains all of its blocks and items, starting with
+[getting started](getting-started.md).
+```
+
+The introduction is compiled like a page of the newest version of the guide, so links to its pages (relative to the
+guide's start, or with a namespace) lead to that version. The page already has a level 1 heading with the title of the
+guide, so start your own headings at level 2 or 3.
 
 Since the website is generated from the exports, you can keep the exports of older Minecraft versions around (or
 download them, i.e. from your CI) and regenerate the website for all of them with the current version of GuideME

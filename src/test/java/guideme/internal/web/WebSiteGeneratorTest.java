@@ -231,11 +231,40 @@ class WebSiteGeneratorTest {
         assertThat(index).containsSubsequence("href=\"/26.3/\"", "Latest", "href=\"/1.21.1/\"");
         assertThat(index).contains("<a href=\"https://dev.example.com/\">development version</a>");
         assertThat(index).contains("<link rel=\"canonical\" href=\"https://guide.example.com/\"/>");
+        assertThat(index).containsSubsequence("<h1>Test Guide</h1>", "version-list");
+        assertThat(index).doesNotContain("introduction").doesNotContain("name=\"description\"");
 
         var notFound = read("404.html");
         assertThat(notFound).contains("<h1>Page Not Found</h1>");
+        assertThat(notFound).doesNotContain("<h2>");
         assertThat(notFound).contains("href=\"/26.3/\"");
         assertThat(notFound).doesNotContain("development version");
+    }
+
+    @Test
+    void testVersionedWebSiteIntroduction(@TempDir Path sourceFolder) throws Exception {
+        writeExport(dataFolder.resolve("minecraft-1.21.1"), "1.21.1", toJson());
+        writeExport(dataFolder.resolve("minecraft-26.3"), "26.3", toJson());
+        var introduction = sourceFolder.resolve("intro.md");
+        Files.writeString(introduction, """
+                ---
+                description: The guide for "Test Mod".
+                ---
+
+                Test Mod adds **tests**. Start [here](start.md) or at [the other page](testmod:sub/other.md).
+                """);
+        generateVersioned(null, introduction);
+
+        var index = read("index.html");
+        assertThat(index).contains("<meta name=\"description\" content=\"The guide for &quot;Test Mod&quot;.\"/>");
+        // Links lead to the latest version, and the introduction comes before the version list
+        assertThat(index).containsSubsequence("<div class=\"introduction\"><p>Test Mod adds <strong>tests</strong>.",
+                "<a href=\"/26.3/start/\">here</a>", "<a href=\"/26.3/sub/other/\">the other page</a>",
+                "version-list");
+        assertThat(index).doesNotContain("description:");
+
+        var notFound = read("404.html");
+        assertThat(notFound).doesNotContain("Test Mod");
     }
 
     @Test
@@ -243,7 +272,7 @@ class WebSiteGeneratorTest {
         for (var version : List.of("1.20.9", "1.20.10", "1.9", "26.1")) {
             writeExport(dataFolder.resolve(version), version, toJson());
         }
-        var options = new VersionedWebSiteGenerator.Options(options(true, "/", false), null);
+        var options = new VersionedWebSiteGenerator.Options(options(true, "/", false), null, null);
 
         var versions = new VersionedWebSiteGenerator(options).findVersions();
 
@@ -262,8 +291,12 @@ class WebSiteGeneratorTest {
     }
 
     private void generateVersioned(String developmentUrl) {
+        generateVersioned(developmentUrl, null);
+    }
+
+    private void generateVersioned(String developmentUrl, Path introduction) {
         new VersionedWebSiteGenerator(new VersionedWebSiteGenerator.Options(options(true, "/", false),
-                developmentUrl)).generate();
+                developmentUrl, introduction)).generate();
     }
 
     private void generate(boolean pageSubdirectories, String basePath) throws IOException {

@@ -216,8 +216,7 @@ final class WebAssetsBundle {
      *
      * @param urlPrefix The prefix of URLs relative to the root of the website.
      */
-    String realizeVersionsTemplate(String guideTitle, String urlPrefix, String pageTitle, String pageTitleText,
-            HtmlFragment content, @Nullable String canonicalUrl) {
+    String realizeVersionsTemplate(String guideTitle, String urlPrefix, VersionsPlaceholders placeholders) {
         if (versionsTemplate == null) {
             versionsTemplate = loadTemplate(
                     "versions",
@@ -232,10 +231,15 @@ final class WebAssetsBundle {
         }
 
         var extraHead = new HtmlFragment();
-        if (canonicalUrl != null) {
+        if (placeholders.description() != null) {
+            extraHead.append(HtmlNode.tag("meta")
+                    .setAttribute("name", "description")
+                    .setAttribute("content", placeholders.description()));
+        }
+        if (placeholders.canonicalUrl() != null) {
             extraHead.append(HtmlNode.tag("link")
                     .setAttribute("rel", "canonical")
-                    .setAttribute("href", canonicalUrl));
+                    .setAttribute("href", placeholders.canonicalUrl()));
         }
         if (favicon != null) {
             extraHead.append(HtmlNode.tag("link")
@@ -249,9 +253,9 @@ final class WebAssetsBundle {
         }
 
         var values = new HashMap<String, String>();
-        values.put(PLACEHOLDER_PAGE_CONTENT, content.outerHtml());
-        values.put(PLACEHOLDER_PAGE_TITLE, escapeHtml(pageTitle));
-        values.put(PLACEHOLDER_PAGE_TITLE_TEXT, escapeHtml(pageTitleText));
+        values.put(PLACEHOLDER_PAGE_CONTENT, placeholders.pageContent().outerHtml());
+        values.put(PLACEHOLDER_PAGE_TITLE, escapeHtml(placeholders.pageTitle()));
+        values.put(PLACEHOLDER_PAGE_TITLE_TEXT, escapeHtml(placeholders.pageTitleText()));
         values.put(PLACEHOLDER_RELATIVE_PATH_TO_ROOT, urlPrefix);
         values.put(PLACEHOLDER_GUIDE_TITLE, escapeHtml(guideTitle));
         values.put(PLACEHOLDER_EXTRA_HEAD, extraHead.outerHtml());

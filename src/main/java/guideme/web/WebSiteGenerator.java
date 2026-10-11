@@ -27,6 +27,7 @@ public final class WebSiteGenerator {
         Path dataFolder = null;
         Path versionsFolder = null;
         String developmentUrl = null;
+        Path versionsIntro = null;
         Path outputFolder = null;
         Path webAssetsFolder = null;
         String changeVersionUrl = null;
@@ -58,6 +59,7 @@ public final class WebSiteGenerator {
                 case "--data" -> dataFolder = Path.of(value);
                 case "--versions" -> versionsFolder = Path.of(value);
                 case "--development-url" -> developmentUrl = value;
+                case "--versions-intro" -> versionsIntro = Path.of(value);
                 case "-o", "--output" -> outputFolder = Path.of(value);
                 case "--web-assets" -> webAssetsFolder = Path.of(value);
                 case "--change-version-url" -> changeVersionUrl = value;
@@ -80,13 +82,18 @@ public final class WebSiteGenerator {
         if (developmentUrl != null && versionsFolder == null) {
             exitWithUsage("--development-url requires --versions");
         }
+        if (versionsIntro != null && versionsFolder == null) {
+            exitWithUsage("--versions-intro requires --versions");
+        }
 
         var options = new guideme.internal.web.WebSiteGenerator.Options(
                 versionsFolder != null ? versionsFolder : dataFolder, outputFolder, webAssetsFolder, changeVersionUrl,
                 title, logo, favicon, siteUrl, basePath, pageSubdirectories, clean, stylesheets, scripts);
         if (versionsFolder != null) {
             new guideme.internal.web.VersionedWebSiteGenerator(
-                    new guideme.internal.web.VersionedWebSiteGenerator.Options(options, developmentUrl)).generate();
+                    new guideme.internal.web.VersionedWebSiteGenerator.Options(options, developmentUrl,
+                            versionsIntro))
+                    .generate();
         } else {
             new guideme.internal.web.WebSiteGenerator(options).generate();
         }
@@ -110,6 +117,7 @@ public final class WebSiteGenerator {
                           --page-subdirectories       Write pages as <page>/index.html to link to them without the .html extension
                           --change-version-url <url>  URL to link to for changing the guide version (with --versions, defaults to the root)
                           --development-url <url>     With --versions, URL of a separately published development version to link to
+                          --versions-intro <file>     With --versions, Markdown file to show above the list of versions
                           --web-assets <folder>       Folder with files overriding the default web assets""");
         System.exit(1);
     }
