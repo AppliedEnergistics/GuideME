@@ -450,6 +450,72 @@ tasks.register('serveStaticSite', JavaExec) {
     args file(findProperty('websiteOutput')?.toString() ?: 'build/website').absolutePath
 }
 
+// Generates a multi-version website for Applied Energistics 2 to test the website generator with a real mod:
+// ./gradlew serveAe2Site [-Pae2GuideVersions=26.2,1.21.1] [-PwebsiteArgs=...]
+// The latest AE2 snapshot for our Minecraft version provides the renderers, while the guide exports of older
+// versions are downloaded from https://github.com/AppliedEnergistics/guide/releases/tag/guide-data
+final ae2MinecraftVersion = project.minecraft_version.replaceFirst(/\.0$/, '')
+final ae2GuideVersions = (findProperty('ae2GuideVersions')?.toString() ?: '26.2,1.21.1').split(',')*.trim()
+final ae2SiteFolder = layout.buildDirectory.dir('ae2Site')
+configurations {
+    ae2Mod
+    ae2GuideData
+}
+dependencies {
+    ae2Mod("org.appliedenergistics:appliedenergistics2:${ae2MinecraftVersion}.+@jar") {
+        changing = true
+    }
+    for (version in ae2GuideVersions) {
+        ae2GuideData("org.appliedenergistics.guide:minecraft-${version}:guide-data@zip") {
+            // The guide data is replaced with every release of AE2
+            changing = true
+        }
+    }
+}
+
+final extractAe2GuideData = tasks.register('extractAe2GuideData', Sync) {
+    group = 'mod development'
+    description = 'Downloads and extracts the AE2 guide exports given by -Pae2GuideVersions.'
+    into ae2SiteFolder.map { it.dir('versions') }
+    for (version in ae2GuideVersions) {
+        def guideVersion = version
+        from({ zipTree(configurations.ae2GuideData.find { it.name.startsWith("minecraft-${guideVersion}-") }) }) {
+            into "minecraft-${guideVersion}"
+        }
+    }
+}
+
+final renderAe2Site = tasks.register('renderAe2Site', JavaExec) {
+    group = 'mod development'
+    description = 'Generates a multi-version website from AE2 guide exports, using the latest AE2 snapshot.'
+    dependsOn proguardJar
+    inputs.files(configurations.ae2Mod)
+    inputs.files(extractAe2GuideData)
+    outputs.dir(ae2SiteFolder.map { it.dir('website') })
+    classpath.from(configurations.runtimeClasspath)
+    classpath.from(proguardFile)
+    classpath.from(configurations.ae2Mod)
+    mainClass = 'guideme.web.WebSiteGenerator'
+    args '--versions', ae2SiteFolder.get().dir('versions').asFile.absolutePath,
+            '--output', ae2SiteFolder.get().dir('website').asFile.absolutePath,
+            '--title', 'Applied Energistics 2',
+            '--page-subdirectories',
+            '--clean'
+    def extraArgs = findProperty('websiteArgs')?.toString()?.trim()
+    if (extraArgs) {
+        args extraArgs.split(/\s+/)
+    }
+}
+
+tasks.register('serveAe2Site', JavaExec) {
+    group = 'mod development'
+    description = 'Generates the AE2 website (see renderAe2Site) and serves it locally.'
+    dependsOn renderAe2Site
+    classpath = sourceSets.main.output
+    mainClass = 'guideme.web.WebSiteServer'
+    args ae2SiteFolder.get().dir('website').asFile.absolutePath
+}
+
 afterEvaluate {
     println('Version: ' + project.version)
 }

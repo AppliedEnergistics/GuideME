@@ -20,6 +20,29 @@ dependencyResolutionManagement {
     rulesMode = RulesMode.FAIL_ON_PROJECT_RULES
     repositories {
         mavenCentral()
+        // Snapshots of Applied Energistics 2 to test the website generator with (see renderAe2Site)
+        maven {
+            name = 'Maven Central Snapshots'
+            url = 'https://central.sonatype.com/repository/maven-snapshots/'
+            mavenContent {
+                snapshotsOnly()
+                includeModule 'org.appliedenergistics', 'appliedenergistics2'
+            }
+        }
+        // Guide exports of Applied Energistics 2, which are attached to a release of the guide repository
+        ivy {
+            name = 'Applied Energistics 2 Guide Data'
+            url = 'https://github.com/AppliedEnergistics/guide/releases/download/'
+            patternLayout {
+                artifact '[revision]/[module].[ext]'
+            }
+            metadataSources {
+                artifact()
+            }
+            content {
+                includeGroup 'org.appliedenergistics.guide'
+            }
+        }
     }
 }
 
