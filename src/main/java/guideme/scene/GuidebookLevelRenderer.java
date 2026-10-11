@@ -5,12 +5,15 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import guideme.color.LightDarkMode;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -19,11 +22,13 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.model.data.ModelData;
@@ -116,7 +121,7 @@ public class GuidebookLevelRenderer {
      */
     public void renderContent(GuidebookLevel level, MultiBufferSource.BufferSource buffers) {
         RenderSystem.runAsFancy(() -> {
-            renderBlocks(level, buffers, false);
+            var translucentBlocks = renderBlocks(level, buffers);
             renderBlockEntities(level, buffers, level.getPartialTick());
             renderEntities(level, buffers, level.getPartialTick());
 
@@ -145,56 +150,112 @@ public class GuidebookLevelRenderer {
             buffers.endBatch(Sheets.chestSheet());
             buffers.endLastBatch();
 
-            renderBlocks(level, buffers, true);
+            renderTranslucentBlocks(level, buffers, translucentBlocks);
             buffers.endBatch(RenderType.translucent());
         });
     }
 
-    private void renderBlocks(GuidebookLevel level, MultiBufferSource buffers, boolean translucent) {
+    /**
+     * Renders all non-translucent block and fluid geometry
+     * 
+     * @return the blocks that still have translucent geometry to render, so that the translucent pass can reuse the
+     *         model data computed here.
+     */
+    private List<DeferredBlock> renderBlocks(GuidebookLevel level, MultiBufferSource buffers) {
         var randomSource = level.random;
         var blockRenderDispatcher = Minecraft.getInstance().getBlockRenderer();
         var poseStack = new PoseStack();
+        var translucentBlocks = new ArrayList<DeferredBlock>();
 
         level.getFilledBlocks().forEach(pos -> {
             var blockState = level.getBlockState(pos);
             var fluidState = blockState.getFluidState();
+            boolean translucentFluid = false;
             if (!fluidState.isEmpty()) {
                 var renderType = ItemBlockRenderTypes.getRenderLayer(fluidState);
-                if (renderType != RenderType.translucent() || translucent) {
-                    var bufferBuilder = buffers.getBuffer(renderType);
-
-                    var sectionPos = SectionPos.of(pos);
-                    var liquidVertexConsumer = new LiquidVertexConsumer(bufferBuilder, sectionPos);
-                    blockRenderDispatcher.renderLiquid(pos, level, liquidVertexConsumer, blockState, fluidState);
-
-                    markFluidSpritesActive(fluidState);
+                if (renderType != RenderType.translucent()) {
+                    renderFluid(level, pos, blockState, fluidState, buffers.getBuffer(renderType));
+                } else {
+                    translucentFluid = true;
                 }
             }
 
+            ModelData modelData = ModelData.EMPTY;
+            boolean translucentBlock = false;
             if (blockState.getRenderShape() != RenderShape.INVISIBLE) {
-                var be = level.getBlockEntity(pos);
-                ModelData modelData = ModelData.EMPTY;
-                if (be != null) {
-                    modelData = be.getModelData();
-                }
-
                 var model = blockRenderDispatcher.getBlockModel(blockState);
-                modelData = model.getModelData(level, pos, blockState, modelData);
+                modelData = getModelData(level, pos, blockState, model);
                 var renderTypes = model.getRenderTypes(blockState, randomSource, modelData);
 
                 for (var renderType : renderTypes) {
-                    if (renderType != RenderType.translucent() || translucent) {
-                        var bufferBuilder = buffers.getBuffer(renderType);
-
-                        poseStack.pushPose();
-                        poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
-                        blockRenderDispatcher.renderBatched(blockState, pos, level, poseStack, bufferBuilder, true,
-                                randomSource, modelData, renderType);
-                        poseStack.popPose();
+                    if (renderType != RenderType.translucent()) {
+                        renderBlock(level, pos, blockState, modelData, renderType, poseStack,
+                                buffers.getBuffer(renderType));
+                    } else {
+                        translucentBlock = true;
                     }
                 }
             }
+
+            if (translucentFluid || translucentBlock) {
+                translucentBlocks.add(new DeferredBlock(pos.immutable(), blockState, translucentFluid,
+                        translucentBlock, modelData));
+            }
         });
+
+        return translucentBlocks;
+    }
+
+    private void renderTranslucentBlocks(GuidebookLevel level, MultiBufferSource buffers,
+            List<DeferredBlock> translucentBlocks) {
+        var poseStack = new PoseStack();
+        var renderType = RenderType.translucent();
+
+        for (var block : translucentBlocks) {
+            if (block.fluid()) {
+                renderFluid(level, block.pos(), block.state(), block.state().getFluidState(),
+                        buffers.getBuffer(renderType));
+            }
+            if (block.block()) {
+                renderBlock(level, block.pos(), block.state(), block.modelData(), renderType, poseStack,
+                        buffers.getBuffer(renderType));
+            }
+        }
+    }
+
+    private static ModelData getModelData(GuidebookLevel level, BlockPos pos, BlockState blockState,
+            BakedModel model) {
+        var be = level.getBlockEntity(pos);
+        ModelData modelData = (be != null) ? be.getModelData() : ModelData.EMPTY;
+        return model.getModelData(level, pos, blockState, modelData);
+    }
+
+    private static void renderFluid(GuidebookLevel level, BlockPos pos, BlockState blockState,
+            FluidState fluidState, VertexConsumer consumer) {
+        var sectionPos = SectionPos.of(pos);
+        var liquidVertexConsumer = new LiquidVertexConsumer(consumer, sectionPos);
+        Minecraft.getInstance().getBlockRenderer().renderLiquid(pos, level, liquidVertexConsumer, blockState,
+                fluidState);
+
+        markFluidSpritesActive(fluidState);
+    }
+
+    private static void renderBlock(GuidebookLevel level, BlockPos pos, BlockState blockState, ModelData modelData,
+            RenderType renderType, PoseStack poseStack, VertexConsumer consumer) {
+        poseStack.pushPose();
+        poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
+        Minecraft.getInstance().getBlockRenderer().renderBatched(blockState, pos, level, poseStack, consumer, true,
+                level.random, modelData, renderType);
+        poseStack.popPose();
+    }
+
+    /**
+     * A block whose translucent geometry is rendered in a later pass than its other geometry.
+     *
+     * @param fluid Whether the block has a translucent fluid.
+     * @param block Whether the block model has translucent geometry.
+     */
+    private record DeferredBlock(BlockPos pos, BlockState state, boolean fluid, boolean block, ModelData modelData) {
     }
 
     private void renderBlockEntities(GuidebookLevel level, MultiBufferSource buffers, float partialTick) {
