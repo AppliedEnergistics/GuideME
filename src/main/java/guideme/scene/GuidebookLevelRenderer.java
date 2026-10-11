@@ -20,6 +20,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
@@ -167,41 +168,47 @@ public class GuidebookLevelRenderer {
         var poseStack = new PoseStack();
         var translucentBlocks = new ArrayList<DeferredBlock>();
 
-        level.getFilledBlocks().forEach(pos -> {
-            var blockState = level.getBlockState(pos);
-            var fluidState = blockState.getFluidState();
-            boolean translucentFluid = false;
-            if (!fluidState.isEmpty()) {
-                var renderType = ItemBlockRenderTypes.getRenderLayer(fluidState);
-                if (renderType != RenderType.translucent()) {
-                    renderFluid(level, pos, blockState, fluidState, buffers.getBuffer(renderType));
-                } else {
-                    translucentFluid = true;
-                }
-            }
-
-            ModelData modelData = ModelData.EMPTY;
-            boolean translucentBlock = false;
-            if (blockState.getRenderShape() != RenderShape.INVISIBLE) {
-                var model = blockRenderDispatcher.getBlockModel(blockState);
-                modelData = getModelData(level, pos, blockState, model);
-                var renderTypes = model.getRenderTypes(blockState, randomSource, modelData);
-
-                for (var renderType : renderTypes) {
+        // Normally only enabled while compiling chunk sections, this caches light values for ambient occlusion
+        ModelBlockRenderer.enableCaching();
+        try {
+            level.getFilledBlocks().forEach(pos -> {
+                var blockState = level.getBlockState(pos);
+                var fluidState = blockState.getFluidState();
+                boolean translucentFluid = false;
+                if (!fluidState.isEmpty()) {
+                    var renderType = ItemBlockRenderTypes.getRenderLayer(fluidState);
                     if (renderType != RenderType.translucent()) {
-                        renderBlock(level, pos, blockState, modelData, renderType, poseStack,
-                                buffers.getBuffer(renderType));
+                        renderFluid(level, pos, blockState, fluidState, buffers.getBuffer(renderType));
                     } else {
-                        translucentBlock = true;
+                        translucentFluid = true;
                     }
                 }
-            }
 
-            if (translucentFluid || translucentBlock) {
-                translucentBlocks.add(new DeferredBlock(pos.immutable(), blockState, translucentFluid,
-                        translucentBlock, modelData));
-            }
-        });
+                ModelData modelData = ModelData.EMPTY;
+                boolean translucentBlock = false;
+                if (blockState.getRenderShape() != RenderShape.INVISIBLE) {
+                    var model = blockRenderDispatcher.getBlockModel(blockState);
+                    modelData = getModelData(level, pos, blockState, model);
+                    var renderTypes = model.getRenderTypes(blockState, randomSource, modelData);
+
+                    for (var renderType : renderTypes) {
+                        if (renderType != RenderType.translucent()) {
+                            renderBlock(level, pos, blockState, modelData, renderType, poseStack,
+                                    buffers.getBuffer(renderType));
+                        } else {
+                            translucentBlock = true;
+                        }
+                    }
+                }
+
+                if (translucentFluid || translucentBlock) {
+                    translucentBlocks.add(new DeferredBlock(pos.immutable(), blockState, translucentFluid,
+                            translucentBlock, modelData));
+                }
+            });
+        } finally {
+            ModelBlockRenderer.clearCache();
+        }
 
         return translucentBlocks;
     }
@@ -211,15 +218,20 @@ public class GuidebookLevelRenderer {
         var poseStack = new PoseStack();
         var renderType = RenderType.translucent();
 
-        for (var block : translucentBlocks) {
-            if (block.fluid()) {
-                renderFluid(level, block.pos(), block.state(), block.state().getFluidState(),
-                        buffers.getBuffer(renderType));
+        ModelBlockRenderer.enableCaching();
+        try {
+            for (var block : translucentBlocks) {
+                if (block.fluid()) {
+                    renderFluid(level, block.pos(), block.state(), block.state().getFluidState(),
+                            buffers.getBuffer(renderType));
+                }
+                if (block.block()) {
+                    renderBlock(level, block.pos(), block.state(), block.modelData(), renderType, poseStack,
+                            buffers.getBuffer(renderType));
+                }
             }
-            if (block.block()) {
-                renderBlock(level, block.pos(), block.state(), block.modelData(), renderType, poseStack,
-                        buffers.getBuffer(renderType));
-            }
+        } finally {
+            ModelBlockRenderer.clearCache();
         }
     }
 
