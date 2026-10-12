@@ -8,12 +8,16 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import guideme.color.LightDarkMode;
+import guideme.internal.GuideMEClient;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -33,6 +37,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.model.data.ModelData;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
@@ -40,7 +46,14 @@ public class GuidebookLevelRenderer {
 
     private static GuidebookLevelRenderer instance;
 
+    /**
+     * Cached scene geometry is freed when the scene hasn't been rendered for this long.
+     */
+    private static final long MESH_CACHE_EXPIRY_MS = 30_000;
+
     private final GuidebookLightmap lightmap = new GuidebookLightmap();
+
+    private final Map<GuidebookLevel, SceneMeshCache> meshCaches = new IdentityHashMap<>();
 
     public static GuidebookLevelRenderer getInstance() {
         RenderSystem.assertOnRenderThread();
@@ -54,6 +67,14 @@ public class GuidebookLevelRenderer {
             CameraSettings cameraSettings,
             Collection<InWorldAnnotation> annotations,
             LightDarkMode lightDarkMode) {
+        render(level, cameraSettings, annotations, lightDarkMode, GuideMEClient.instance().isCacheSceneMeshes());
+    }
+
+    void render(GuidebookLevel level,
+            CameraSettings cameraSettings,
+            Collection<InWorldAnnotation> annotations,
+            LightDarkMode lightDarkMode,
+            boolean cacheMeshes) {
 
         lightmap.update(level);
 
@@ -63,8 +84,14 @@ public class GuidebookLevelRenderer {
 
         RenderSystem.setShaderGameTime(level.getGameTime(), level.getPartialTick());
 
+        SceneMeshCache meshCache = null;
+        if (cacheMeshes) {
+            meshCache = meshCaches.computeIfAbsent(level, ignored -> new SceneMeshCache());
+            meshCache.lastUsed = Util.getMillis();
+        }
+
         var buffers = Minecraft.getInstance().renderBuffers().bufferSource();
-        render(level, cameraSettings, buffers, annotations, lightDarkMode);
+        render(level, cameraSettings, buffers, annotations, lightDarkMode, meshCache);
         buffers.endBatch();
 
         // Do not clear depth here anymore, since we clear it after rendering the document
@@ -75,6 +102,15 @@ public class GuidebookLevelRenderer {
             MultiBufferSource.BufferSource buffers,
             Collection<InWorldAnnotation> annotations,
             LightDarkMode lightDarkMode) {
+        render(level, cameraSettings, buffers, annotations, lightDarkMode, null);
+    }
+
+    private void render(GuidebookLevel level,
+            CameraSettings cameraSettings,
+            MultiBufferSource.BufferSource buffers,
+            Collection<InWorldAnnotation> annotations,
+            LightDarkMode lightDarkMode,
+            @Nullable SceneMeshCache meshCache) {
         lightmap.update(level);
 
         var lightEngine = level.getLightEngine();
@@ -106,7 +142,7 @@ public class GuidebookLevelRenderer {
 
         Lighting.setupLevel();
 
-        renderContent(level, buffers);
+        renderContent(level, buffers, meshCache);
 
         InWorldAnnotationRenderer.render(buffers, annotations, lightDarkMode);
 
@@ -121,8 +157,23 @@ public class GuidebookLevelRenderer {
      * Render without any setup.
      */
     public void renderContent(GuidebookLevel level, MultiBufferSource.BufferSource buffers) {
+        renderContent(level, buffers, null);
+    }
+
+    /**
+     * @param meshCache If given, block and fluid geometry is drawn from this cache instead of being tessellated.
+     */
+    private void renderContent(GuidebookLevel level, MultiBufferSource.BufferSource buffers,
+            @Nullable SceneMeshCache meshCache) {
         RenderSystem.runAsFancy(() -> {
-            var translucentBlocks = renderBlocks(level, buffers);
+            List<DeferredBlock> translucentBlocks;
+            if (meshCache != null) {
+                meshCache.prepare(level);
+                meshCache.markSpritesActive();
+                translucentBlocks = List.of();
+            } else {
+                translucentBlocks = renderBlocks(level, buffers);
+            }
             renderBlockEntities(level, buffers, level.getPartialTick());
             renderEntities(level, buffers, level.getPartialTick());
 
@@ -135,6 +186,9 @@ public class GuidebookLevelRenderer {
             // These would normally be pre-baked, but they are not for us
             for (var layer : RenderType.chunkBufferLayers()) {
                 if (layer != RenderType.translucent()) {
+                    if (meshCache != null) {
+                        meshCache.draw(layer);
+                    }
                     buffers.endBatch(layer);
                 }
             }
@@ -151,9 +205,49 @@ public class GuidebookLevelRenderer {
             buffers.endBatch(Sheets.chestSheet());
             buffers.endLastBatch();
 
-            renderTranslucentBlocks(level, buffers, translucentBlocks);
+            if (meshCache != null) {
+                meshCache.draw(RenderType.translucent());
+            } else {
+                renderTranslucentBlocks(level, buffers, translucentBlocks);
+            }
             buffers.endBatch(RenderType.translucent());
         });
+    }
+
+    /**
+     * Frees all cached scene geometry. Scenes that are still shown rebuild it the next time they are rendered.
+     */
+    @ApiStatus.Internal
+    public static void freeMeshCaches() {
+        if (instance == null) {
+            return;
+        }
+
+        for (var meshCache : instance.meshCaches.values()) {
+            meshCache.close();
+        }
+        instance.meshCaches.clear();
+    }
+
+    /**
+     * Frees cached scene geometry that hasn't been used recently. The guide screen frees all cached geometry when it
+     * changes pages or closes, so this is for scenes rendered elsewhere.
+     */
+    @ApiStatus.Internal
+    public static void freeUnusedMeshCaches() {
+        if (instance == null) {
+            return;
+        }
+
+        var now = Util.getMillis();
+        var it = instance.meshCaches.values().iterator();
+        while (it.hasNext()) {
+            var meshCache = it.next();
+            if (now - meshCache.lastUsed > MESH_CACHE_EXPIRY_MS) {
+                meshCache.close();
+                it.remove();
+            }
+        }
     }
 
     /**
@@ -162,7 +256,7 @@ public class GuidebookLevelRenderer {
      * @return the blocks that still have translucent geometry to render, so that the translucent pass can reuse the
      *         model data computed here.
      */
-    private List<DeferredBlock> renderBlocks(GuidebookLevel level, MultiBufferSource buffers) {
+    static List<DeferredBlock> renderBlocks(GuidebookLevel level, MultiBufferSource buffers) {
         var randomSource = level.random;
         var blockRenderDispatcher = Minecraft.getInstance().getBlockRenderer();
         var poseStack = new PoseStack();
@@ -213,7 +307,7 @@ public class GuidebookLevelRenderer {
         return translucentBlocks;
     }
 
-    private void renderTranslucentBlocks(GuidebookLevel level, MultiBufferSource buffers,
+    static void renderTranslucentBlocks(GuidebookLevel level, MultiBufferSource buffers,
             List<DeferredBlock> translucentBlocks) {
         var poseStack = new PoseStack();
         var renderType = RenderType.translucent();
@@ -267,7 +361,7 @@ public class GuidebookLevelRenderer {
      * @param fluid Whether the block has a translucent fluid.
      * @param block Whether the block model has translucent geometry.
      */
-    private record DeferredBlock(BlockPos pos, BlockState state, boolean fluid, boolean block, ModelData modelData) {
+    record DeferredBlock(BlockPos pos, BlockState state, boolean fluid, boolean block, ModelData modelData) {
     }
 
     private void renderBlockEntities(GuidebookLevel level, MultiBufferSource buffers, float partialTick) {
@@ -284,7 +378,7 @@ public class GuidebookLevelRenderer {
         });
     }
 
-    private static void markFluidSpritesActive(FluidState fluidState) {
+    static void markFluidSpritesActive(FluidState fluidState) {
         // For Sodium compatibility, ensure the sprites actually animate even if no block is on-screen
         // that would cause them to, otherwise.
         var props = IClientFluidTypeExtensions.of(fluidState);

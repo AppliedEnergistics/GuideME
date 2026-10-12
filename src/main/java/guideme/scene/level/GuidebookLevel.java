@@ -79,6 +79,7 @@ public class GuidebookLevel extends Level {
     private final ClientLevel.ClientLevelData clientLevelData;
     private final DeltaTracker.Timer tracker = new DeltaTracker.Timer(20.0F, 0L, def -> def);
     private float partialTick;
+    private int revision;
 
     public GuidebookLevel() {
         this(Platform.getClientRegistryAccess());
@@ -157,6 +158,18 @@ public class GuidebookLevel extends Level {
         filledBlocks.add(pos.asLong());
     }
 
+    void onBlockChanged() {
+        revision++;
+    }
+
+    /**
+     * @return A number that changes whenever a block in this level changes or lighting is set up for a new chunk.
+     *         Renderers can use it to detect when cached block geometry is out of date.
+     */
+    public int getRevision() {
+        return revision;
+    }
+
     /**
      * Ensures lighting is set to skylight level 15 in the entire chunk and adjacent chunks whenever a block is first
      * changed in that chunk.
@@ -166,6 +179,7 @@ public class GuidebookLevel extends Level {
         var maxChunk = new ChunkPos(pos.offset(1, 1, 1));
         ChunkPos.rangeClosed(minChunk, maxChunk).forEach(chunkPos -> {
             if (litSections.add(chunkPos.toLong())) {
+                revision++;
                 var lightEngine = getLightEngine();
                 for (int i = 0; i < getSectionsCount(); ++i) {
                     int y = getSectionYFromSectionIndex(i);

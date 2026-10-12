@@ -26,6 +26,7 @@ class GuidebookChunk extends LevelChunk {
         } else {
             getGuidebookLevel().addFilledBlock(pos);
         }
+        getGuidebookLevel().onBlockChanged();
         return result;
     }
 
