@@ -66,7 +66,9 @@ class WebSiteGeneratorTest {
                 .generate();
 
         assertThat(outputFolder.resolve("start.html")).exists();
-        assertThat(read("sub/other.html")).contains("<a href=\"../start.html\">Back</a>");
+        assertThat(read("sub/other.html")).contains("<a href=\"../start.html\">Back</a>")
+                .containsPattern("<link rel=\"stylesheet\" href=\"\\.\\./assets/bundle-[A-Z0-9]+\\.css\"/>")
+                .containsPattern("<script src=\"\\.\\./assets/bundle-[A-Z0-9]+\\.js\" defer type=\"module\">");
         // There's no index page, so the root redirects to the first page
         assertThat(read("index.html")).contains("<meta http-equiv=\"refresh\" content=\"0; url=start.html\"/>");
         // Without a site URL, there's no sitemap
@@ -233,6 +235,7 @@ class WebSiteGeneratorTest {
         assertThat(index).contains("<link rel=\"canonical\" href=\"https://guide.example.com/\"/>");
         assertThat(index).containsSubsequence("<h1>Test Guide</h1>", "version-list");
         assertThat(index).doesNotContain("introduction").doesNotContain("name=\"description\"");
+        assertThat(index).containsPattern("<link rel=\"stylesheet\" href=\"/assets/bundle-[A-Z0-9]+\\.css\"/>");
 
         var notFound = read("404.html");
         assertThat(notFound).contains("<h1>Page Not Found</h1>");
