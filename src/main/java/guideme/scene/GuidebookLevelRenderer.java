@@ -234,13 +234,15 @@ public class GuidebookLevelRenderer {
             poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
             // Tessellation is deferred until the submits are rendered, so we cannot hold on to the mutable pos
             var immutablePos = pos.immutable();
-            nodes.submitSpecial(RenderPhaseKeys.SOLID, new BlockModelFeatureRenderer.Submit(level, immutablePos,
-                    poseStack.last().copy(), blockState, false));
             // Translucent quads have to be rendered after everything else, and are sorted back-to-front
-            if (model.hasMaterialFlag(level, pos, blockState, BakedQuad.FLAG_TRANSLUCENT)) {
+            var translucent = model.hasMaterialFlag(level, pos, blockState, BakedQuad.FLAG_TRANSLUCENT);
+            var sharedTessellation = translucent ? new BlockModelFeatureRenderer.SharedTessellation() : null;
+            nodes.submitSpecial(RenderPhaseKeys.SOLID, new BlockModelFeatureRenderer.Submit(level, immutablePos,
+                    poseStack.last().copy(), blockState, false, sharedTessellation));
+            if (translucent) {
                 nodes.submitSpecial(RenderPhaseKeys.TRANSLUCENT_BLOCKS_AND_ITEMS,
                         new BlockModelFeatureRenderer.Submit(level, immutablePos, poseStack.last().copy(), blockState,
-                                true));
+                                true, sharedTessellation));
             }
             poseStack.popPose();
         }
