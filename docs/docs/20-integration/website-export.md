@@ -266,3 +266,9 @@ included after all other stylesheets, so they can override them.
     // Declare it, so the website is regenerated when it changes
     inputs.file('src/main/web/guide.css')
 ```
+
+To change the structure of the pages, copy the templates from `web/dist/templates` in the GuideME repository into
+`templates` in your `--web-assets` folder and edit them. `layout.html` is used for the pages of the guide, and
+`versions.html` for the pages listing the versions. Keep the `{{GUIDEME_STYLESHEETS}}` and `{{GUIDEME_SCRIPTS}}`
+placeholders (the latter only exists in `layout.html`), which add the stylesheets and scripts of GuideME. Their names
+change with every release of GuideME, so your templates don't have to reference them.

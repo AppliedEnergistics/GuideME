@@ -17,8 +17,9 @@ async function build() {
     fs.mkdirSync(path.join(distDir, 'templates'), {recursive: true});
 
     // Bundle JavaScript
+    const entryPoint = 'src/index.ts';
     const buildResult = await esbuild.build({
-        entryPoints: ['src/index.ts'],
+        entryPoints: [entryPoint],
         bundle: true,
         splitting: true,
         outdir: 'dist/assets/',
@@ -38,18 +39,20 @@ async function build() {
         },
     });
 
-    // Extract output filenames
-    const jsOutputs = Object.keys(buildResult.metafile.outputs).filter(f => f.endsWith('.js'));
-    const cssOutputs = Object.keys(buildResult.metafile.outputs).filter(f => f.endsWith('.css'));
-
-    const jsFile = path.basename(jsOutputs[0]);
-    if (!jsFile) {
-        throw new Error("Missing expected JS output: " + JSON.stringify(buildResult.metafile.outputs));
+    // Find the bundles of the entry point. Code splitting creates other JS outputs, i.e. for chunks shared by dynamic
+    // imports, which must not be loaded directly.
+    const outputs = buildResult.metafile.outputs;
+    const jsOutput = Object.keys(outputs).find(f => outputs[f].entryPoint === entryPoint);
+    if (!jsOutput) {
+        throw new Error(`Missing JS output for ${entryPoint}: ${JSON.stringify(outputs)}`);
     }
-    const cssFile = path.basename(cssOutputs[0]);
-    if (!cssFile) {
-        throw new Error("Missing expected CSS output: " + JSON.stringify(buildResult.metafile.outputs));
+    // The CSS imported by the entry point is bundled separately
+    const cssOutput = outputs[jsOutput].cssBundle;
+    if (!cssOutput) {
+        throw new Error(`Missing CSS output for ${entryPoint}: ${JSON.stringify(outputs)}`);
     }
+    const jsFile = path.basename(jsOutput);
+    const cssFile = path.basename(cssOutput);
 
     // Read and process the HTML templates
     for (const template of ['layout.html', 'versions.html']) {
@@ -92,13 +95,13 @@ async function build() {
             return path.join(assetDir, cacheBustedFilename).replace(/\\/g, '/');
         });
 
-        htmlOutput = htmlOutput
-            .replace(/\{\{JS_BUNDLE\}\}/g, 'assets/' + jsFile)
-            .replace(/\{\{CSS_BUNDLE\}\}/g, 'assets/' + cssFile);
-
         // Write processed HTML
         fs.writeFileSync(path.join('dist/templates', template), htmlOutput);
     }
+
+    // Write the hashed names of the bundles, which GuideME adds to the templates with placeholders
+    fs.writeFileSync(path.join('dist/templates', 'bundles.properties'),
+        `stylesheet=assets/${cssFile}\nscript=assets/${jsFile}\n`);
 
     // Write full assets file list
     // Sort the list, since the order of directory listings depends on the OS and file system

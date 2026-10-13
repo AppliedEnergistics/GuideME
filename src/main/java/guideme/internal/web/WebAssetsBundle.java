@@ -7,6 +7,7 @@ import guideme.web.html.HtmlNode;
 import guideme.web.html.HtmlTag;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -20,6 +21,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,6 +44,8 @@ final class WebAssetsBundle {
     private static final String PLACEHOLDER_EXTRA_HEAD = "{{EXTRA_HEAD}}";
     private static final String PLACEHOLDER_LOGO_URL = "{{LOGO_URL}}";
     private static final String PLACEHOLDER_HOME_URL = "{{HOME_URL}}";
+    private static final String PLACEHOLDER_GUIDEME_STYLESHEETS = "{{GUIDEME_STYLESHEETS}}";
+    private static final String PLACEHOLDER_GUIDEME_SCRIPTS = "{{GUIDEME_SCRIPTS}}";
 
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{[A-Z0-9_]+}}");
 
@@ -50,6 +54,13 @@ final class WebAssetsBundle {
     private final Path outputFolder;
 
     private final String layoutTemplate;
+
+    /**
+     * Paths of the stylesheet and script bundles of GuideME relative to the output folder. Their names contain a hash
+     * of their content, so templates reference them with placeholders.
+     */
+    private final String stylesheetBundle;
+    private final String scriptBundle;
 
     /**
      * Template for the pages at the root of websites with multiple guide versions. Loaded on demand, since websites
@@ -90,7 +101,22 @@ final class WebAssetsBundle {
                 PLACEHOLDER_FOOTER,
                 PLACEHOLDER_EXTRA_HEAD,
                 PLACEHOLDER_LOGO_URL,
-                PLACEHOLDER_HOME_URL);
+                PLACEHOLDER_HOME_URL,
+                PLACEHOLDER_GUIDEME_STYLESHEETS,
+                PLACEHOLDER_GUIDEME_SCRIPTS);
+
+        var bundles = new Properties();
+        try {
+            bundles.load(new StringReader(new String(loadAsset("templates/bundles.properties"),
+                    StandardCharsets.UTF_8)));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load the names of the bundles", e);
+        }
+        this.stylesheetBundle = bundles.getProperty("stylesheet");
+        this.scriptBundle = bundles.getProperty("script");
+        if (stylesheetBundle == null || scriptBundle == null) {
+            throw new IllegalStateException("Missing stylesheet or script in bundles.properties: " + bundles);
+        }
     }
 
     void setLogo(String pathInOutputFolder) {
@@ -206,6 +232,12 @@ final class WebAssetsBundle {
         values.put(PLACEHOLDER_EXTRA_HEAD, extraHead.outerHtml());
         values.put(PLACEHOLDER_LOGO_URL, escapeHtml(context.url(logo)));
         values.put(PLACEHOLDER_HOME_URL, escapeHtml(context.url(homePath)));
+        values.put(PLACEHOLDER_GUIDEME_STYLESHEETS, stylesheetTag(context.url(stylesheetBundle)).outerHtml());
+        values.put(PLACEHOLDER_GUIDEME_SCRIPTS, HtmlNode.tag("script")
+                .setAttribute("src", context.url(scriptBundle))
+                .setAttribute("defer", null)
+                .setAttribute("type", "module")
+                .outerHtml());
 
         return replacePlaceholders(layoutTemplate, values);
     }
@@ -227,7 +259,8 @@ final class WebAssetsBundle {
                     PLACEHOLDER_GUIDE_TITLE,
                     PLACEHOLDER_EXTRA_HEAD,
                     PLACEHOLDER_LOGO_URL,
-                    PLACEHOLDER_HOME_URL);
+                    PLACEHOLDER_HOME_URL,
+                    PLACEHOLDER_GUIDEME_STYLESHEETS);
         }
 
         var extraHead = new HtmlFragment();
@@ -261,7 +294,14 @@ final class WebAssetsBundle {
         values.put(PLACEHOLDER_EXTRA_HEAD, extraHead.outerHtml());
         values.put(PLACEHOLDER_LOGO_URL, escapeHtml(urlPrefix + logo));
         values.put(PLACEHOLDER_HOME_URL, escapeHtml(urlPrefix));
+        values.put(PLACEHOLDER_GUIDEME_STYLESHEETS, stylesheetTag(urlPrefix + stylesheetBundle).outerHtml());
         return replacePlaceholders(versionsTemplate, values);
+    }
+
+    private static HtmlTag stylesheetTag(String href) {
+        return HtmlNode.tag("link")
+                .setAttribute("rel", "stylesheet")
+                .setAttribute("href", href);
     }
 
     private static String replacePlaceholders(String template, Map<String, String> values) {
