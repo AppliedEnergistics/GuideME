@@ -21,6 +21,7 @@ import guideme.render.GuiAssets;
 import guideme.scene.BlockModelFeatureRenderer;
 import guideme.scene.FluidModelFeatureRenderer;
 import guideme.scene.GuidebookLevelRenderer;
+import guideme.scene.SceneMeshFeatureRenderer;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import java.util.List;
 import java.util.Objects;
@@ -109,6 +110,7 @@ public class GuideMEClient {
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre evt) -> {
             search.processWork();
             processDevWatchers();
+            GuidebookLevelRenderer.freeUnusedMeshCaches();
         });
 
         GuideOnStartup.init();
@@ -124,6 +126,7 @@ public class GuideMEClient {
     private void registerCustomFeatureRenderer(RegisterFeatureRenderersEvent event) {
         event.register(FluidModelFeatureRenderer.TYPE, new FluidModelFeatureRenderer());
         event.register(BlockModelFeatureRenderer.TYPE, new BlockModelFeatureRenderer());
+        event.register(SceneMeshFeatureRenderer.TYPE, new SceneMeshFeatureRenderer());
     }
 
     private void onReceiveRecipes(RecipesReceivedEvent event) {
@@ -224,6 +227,17 @@ public class GuideMEClient {
         return clientConfig.showDebugGuiOverlays.getAsBoolean();
     }
 
+    public boolean isCacheSceneMeshes() {
+        return clientConfig.cacheSceneMeshes.getAsBoolean();
+    }
+
+    public void setCacheSceneMeshes(boolean cacheSceneMeshes) {
+        if (cacheSceneMeshes != isCacheSceneMeshes()) {
+            clientConfig.cacheSceneMeshes.set(cacheSceneMeshes);
+            clientConfig.spec.save();
+        }
+    }
+
     public boolean isAdaptiveScalingEnabled() {
         return clientConfig.adaptiveScaling.getAsBoolean();
     }
@@ -295,6 +309,7 @@ public class GuideMEClient {
         final ModConfigSpec spec;
         final ModConfigSpec.BooleanValue adaptiveScaling;
         final ModConfigSpec.BooleanValue showDebugGuiOverlays;
+        final ModConfigSpec.BooleanValue cacheSceneMeshes;
         final ModConfigSpec.BooleanValue fullWidthLayout;
         final ModConfigSpec.BooleanValue ignoreTranslatedGuides;
         final ModConfigSpec.BooleanValue hideMissingRecipeErrors;
@@ -327,6 +342,10 @@ public class GuideMEClient {
             showDebugGuiOverlays = builder
                     .comment("Show debugging overlays in GUI on mouse-over.")
                     .define("showDebugGuiOverlays", false);
+            cacheSceneMeshes = builder
+                    .comment(
+                            "Keep the tessellated block geometry of 3D scenes instead of rebuilding it every frame. Turn this off to compare against or work around rendering issues.")
+                    .define("cacheSceneMeshes", true);
             builder.pop();
 
             spec = builder.build();

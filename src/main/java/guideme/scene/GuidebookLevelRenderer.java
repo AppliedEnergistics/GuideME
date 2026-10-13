@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.color.LightDarkMode;
+import guideme.internal.GuideMEClient;
 import guideme.internal.scene.FakeRenderEnvironment;
 import guideme.internal.scene.SceneRenderTarget;
 import guideme.internal.util.Platform;
@@ -12,6 +13,8 @@ import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
 import java.util.Collection;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.TextureFilteringMethod;
 import net.minecraft.client.player.LocalPlayer;
@@ -32,6 +35,7 @@ import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.block.RenderShape;
@@ -44,6 +48,13 @@ import org.jetbrains.annotations.Nullable;
 public class GuidebookLevelRenderer {
 
     private static GuidebookLevelRenderer instance;
+
+    /**
+     * Cached scene geometry is freed when the scene hasn't been rendered for this long.
+     */
+    private static final long MESH_CACHE_EXPIRY_MS = 30_000;
+
+    private final Map<GuidebookLevel, SceneMeshCache> meshCaches = new IdentityHashMap<>();
 
     private final ProjectionMatrixBuffer projMatBuffer = new ProjectionMatrixBuffer(
             "GuideME level renderer proj mat UBO");
@@ -82,6 +93,19 @@ public class GuidebookLevelRenderer {
             Collection<InWorldAnnotation> annotations,
             LightDarkMode lightDarkMode,
             SubmitNodeCollector nodes, PoseStack poseStack) {
+        render(level, cameraSettings, annotations, lightDarkMode, nodes, poseStack,
+                GuideMEClient.instance().isCacheSceneMeshes());
+    }
+
+    /**
+     * @param cacheMeshes Whether to draw the block and fluid geometry from a cache that is kept for the level.
+     */
+    void render(GuidebookLevel level,
+            CameraSettings cameraSettings,
+            Collection<InWorldAnnotation> annotations,
+            LightDarkMode lightDarkMode,
+            SubmitNodeCollector nodes, PoseStack poseStack,
+            boolean cacheMeshes) {
 
         level.onRenderFrame();
 
@@ -127,8 +151,14 @@ public class GuidebookLevelRenderer {
         var previousUseUiLightmap = gameRenderer.useUiLightmap;
         gameRenderer.useUiLightmap = true;
         try {
+            SceneMeshCache meshCache = null;
+            if (cacheMeshes) {
+                meshCache = meshCaches.computeIfAbsent(level, ignored -> new SceneMeshCache());
+                meshCache.lastUsed = Util.getMillis();
+            }
+
             var ns = new SubmitNodeStorage();
-            renderContent(level, ns, new PoseStack());
+            renderContent(level, ns, new PoseStack(), meshCache);
 
             SceneRenderTarget.renderAllFeatures(gameRenderer.featureRenderDispatcher(), ns, () -> "GuideME scene");
 
@@ -150,10 +180,30 @@ public class GuidebookLevelRenderer {
      */
     public void renderContent(GuidebookLevel level, SubmitNodeCollector nodes,
             PoseStack poseStack) {
+        renderContent(level, nodes, poseStack, null);
+    }
+
+    /**
+     * @param meshCache If given, block and fluid geometry is submitted from this cache instead of being tessellated.
+     *                  Requires {@code poseStack} to be an identity transform, which the cached geometry assumes.
+     */
+    private void renderContent(GuidebookLevel level, SubmitNodeCollector nodes, PoseStack poseStack,
+            @Nullable SceneMeshCache meshCache) {
         var featureRenderDispatcher = Minecraft.getInstance().gameRenderer.featureRenderDispatcher();
 
+        if (meshCache != null) {
+            // Without the cache, blocks are tessellated while the features are rendered, which is also outside of the
+            // fake render environment
+            meshCache.prepare(level);
+            meshCache.markSpritesActive();
+        }
+
         try (var fake = FakeRenderEnvironment.create(getFakePlayer())) {
-            renderBlocks(level, nodes, poseStack);
+            if (meshCache != null) {
+                meshCache.submit(nodes);
+            } else {
+                renderBlocks(level, nodes, poseStack);
+            }
             renderBlockEntities(level, level.getPartialTick(), poseStack, nodes);
             renderEntities(level, level.getPartialTick(), poseStack, nodes);
         }
@@ -183,6 +233,29 @@ public class GuidebookLevelRenderer {
     public void clearCache() {
         fakePlayer = null;
         fakePlayerRegistries = null;
+        meshCaches.clear();
+    }
+
+    /**
+     * Frees all cached scene geometry. Scenes that are still shown rebuild it the next time they are rendered.
+     */
+    @ApiStatus.Internal
+    public static void freeMeshCaches() {
+        if (instance != null) {
+            instance.meshCaches.clear();
+        }
+    }
+
+    /**
+     * Frees cached scene geometry that hasn't been used recently. The guide screen frees all cached geometry when it
+     * changes pages or closes, so this is for scenes rendered elsewhere.
+     */
+    @ApiStatus.Internal
+    public static void freeUnusedMeshCaches() {
+        if (instance != null) {
+            var now = Util.getMillis();
+            instance.meshCaches.values().removeIf(meshCache -> now - meshCache.lastUsed > MESH_CACHE_EXPIRY_MS);
+        }
     }
 
     /**
