@@ -5,7 +5,6 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.color.LightDarkMode;
-import guideme.internal.GuideMEClient;
 import guideme.internal.scene.FakeRenderEnvironment;
 import guideme.internal.scene.SceneRenderTarget;
 import guideme.internal.util.Platform;
@@ -31,17 +30,13 @@ import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.SectionPos;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.CardinalLighting;
-import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.submit.RenderPhaseKeys;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -93,19 +88,20 @@ public class GuidebookLevelRenderer {
             Collection<InWorldAnnotation> annotations,
             LightDarkMode lightDarkMode,
             SubmitNodeCollector nodes, PoseStack poseStack) {
-        render(level, cameraSettings, annotations, lightDarkMode, nodes, poseStack,
-                GuideMEClient.instance().isCacheSceneMeshes());
+        var meshCache = meshCaches.computeIfAbsent(level, ignored -> new SceneMeshCache());
+        meshCache.lastUsed = Util.getMillis();
+        render(level, cameraSettings, annotations, lightDarkMode, nodes, poseStack, meshCache);
     }
 
     /**
-     * @param cacheMeshes Whether to draw the block and fluid geometry from a cache that is kept for the level.
+     * @param meshCache The cache to draw the block and fluid geometry from. It's rebuilt if it's out of date.
      */
     void render(GuidebookLevel level,
             CameraSettings cameraSettings,
             Collection<InWorldAnnotation> annotations,
             LightDarkMode lightDarkMode,
             SubmitNodeCollector nodes, PoseStack poseStack,
-            boolean cacheMeshes) {
+            SceneMeshCache meshCache) {
 
         level.onRenderFrame();
 
@@ -151,12 +147,6 @@ public class GuidebookLevelRenderer {
         var previousUseUiLightmap = gameRenderer.useUiLightmap;
         gameRenderer.useUiLightmap = true;
         try {
-            SceneMeshCache meshCache = null;
-            if (cacheMeshes) {
-                meshCache = meshCaches.computeIfAbsent(level, ignored -> new SceneMeshCache());
-                meshCache.lastUsed = Util.getMillis();
-            }
-
             var ns = new SubmitNodeStorage();
             renderContent(level, ns, new PoseStack(), meshCache);
 
@@ -176,34 +166,23 @@ public class GuidebookLevelRenderer {
     }
 
     /**
-     * Render without any setup.
+     * Render without any setup. Unlike {@link #render}, this tessellates the blocks and fluids of the level on every
+     * call, since their geometry isn't kept.
      */
     public void renderContent(GuidebookLevel level, SubmitNodeCollector nodes,
             PoseStack poseStack) {
-        renderContent(level, nodes, poseStack, null);
+        renderContent(level, nodes, poseStack, new SceneMeshCache());
     }
 
-    /**
-     * @param meshCache If given, block and fluid geometry is submitted from this cache instead of being tessellated.
-     *                  Requires {@code poseStack} to be an identity transform, which the cached geometry assumes.
-     */
     private void renderContent(GuidebookLevel level, SubmitNodeCollector nodes, PoseStack poseStack,
-            @Nullable SceneMeshCache meshCache) {
-        var featureRenderDispatcher = Minecraft.getInstance().gameRenderer.featureRenderDispatcher();
-
-        if (meshCache != null) {
-            // Without the cache, blocks are tessellated while the features are rendered, which is also outside of the
-            // fake render environment
-            meshCache.prepare(level);
-            meshCache.markSpritesActive();
-        }
+            SceneMeshCache meshCache) {
+        // Tessellate outside of the fake render environment, so block models see the real player
+        meshCache.prepare(level);
+        meshCache.markSpritesActive();
 
         try (var fake = FakeRenderEnvironment.create(getFakePlayer())) {
-            if (meshCache != null) {
-                meshCache.submit(nodes);
-            } else {
-                renderBlocks(level, nodes, poseStack);
-            }
+            // The submits are rendered later, so we cannot hold on to the caller's pose
+            meshCache.submit(nodes, poseStack.last().copy());
             renderBlockEntities(level, level.getPartialTick(), poseStack, nodes);
             renderEntities(level, level.getPartialTick(), poseStack, nodes);
         }
@@ -269,56 +248,6 @@ public class GuidebookLevelRenderer {
             case CUTOUT -> RenderTypes.cutoutMovingBlock();
             case TRANSLUCENT -> RenderTypes.translucentMovingBlock();
         };
-    }
-
-    private void renderBlocks(GuidebookLevel level, SubmitNodeCollector nodes, PoseStack poseStack) {
-        var modelManager = Minecraft.getInstance().getModelManager();
-        var fluidModelSet = modelManager.getFluidStateModelSet();
-
-        var it = level.getFilledBlocks().iterator();
-        while (it.hasNext()) {
-            var pos = it.next();
-            var blockState = level.getBlockState(pos);
-            var fluidState = blockState.getFluidState();
-            if (!fluidState.isEmpty()) {
-                // The fluid renderer emits vertices relative to the chunk section origin
-                var sectionPos = SectionPos.of(pos);
-                poseStack.pushPose();
-                poseStack.translate(sectionPos.minBlockX(), sectionPos.minBlockY(), sectionPos.minBlockZ());
-                // Tessellation is deferred until the submits are rendered, so we cannot hold on to the mutable pos
-                var submit = new FluidModelFeatureRenderer.Submit(level, pos.immutable(), poseStack.last().copy(),
-                        blockState, fluidState);
-                poseStack.popPose();
-
-                if (fluidModelSet.get(fluidState).layer().translucent()) {
-                    nodes.submitSpecial(RenderPhaseKeys.TRANSLUCENT_BLOCKS_AND_ITEMS, submit);
-                } else {
-                    nodes.submitSpecial(RenderPhaseKeys.SOLID, submit);
-                }
-            }
-
-            if (blockState.getRenderShape() == RenderShape.INVISIBLE) {
-                continue;
-            }
-
-            var model = modelManager.getBlockStateModelSet().get(blockState);
-
-            poseStack.pushPose();
-            poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
-            // Tessellation is deferred until the submits are rendered, so we cannot hold on to the mutable pos
-            var immutablePos = pos.immutable();
-            // Translucent quads have to be rendered after everything else, and are sorted back-to-front
-            var translucent = model.hasMaterialFlag(level, pos, blockState, BakedQuad.FLAG_TRANSLUCENT);
-            var sharedTessellation = translucent ? new BlockModelFeatureRenderer.SharedTessellation() : null;
-            nodes.submitSpecial(RenderPhaseKeys.SOLID, new BlockModelFeatureRenderer.Submit(level, immutablePos,
-                    poseStack.last().copy(), blockState, false, sharedTessellation));
-            if (translucent) {
-                nodes.submitSpecial(RenderPhaseKeys.TRANSLUCENT_BLOCKS_AND_ITEMS,
-                        new BlockModelFeatureRenderer.Submit(level, immutablePos, poseStack.last().copy(), blockState,
-                                true, sharedTessellation));
-            }
-            poseStack.popPose();
-        }
     }
 
     private void renderBlockEntities(GuidebookLevel level, float partialTick, PoseStack poseStack,

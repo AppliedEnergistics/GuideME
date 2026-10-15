@@ -35,8 +35,7 @@ public final class GuideMELanguageProvider extends LanguageProvider {
                 Map.entry("debug.tooltip", "Advanced Debugging Settings for Guide development"),
                 Map.entry("adaptiveScaling", "Adaptive UI Scaling"),
                 Map.entry("fullWidthLayout", "Full Width Layout"),
-                Map.entry("showDebugGuiOverlays", "Debug GUI Overlays"),
-                Map.entry("cacheSceneMeshes", "Cache Scene Geometry"));
+                Map.entry("showDebugGuiOverlays", "Debug GUI Overlays"));
         for (var entry : translations.entrySet()) {
             add("guideme.configuration." + entry.getKey(), entry.getValue());
         }

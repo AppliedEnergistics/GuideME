@@ -31,12 +31,12 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Holds the tessellated block and fluid geometry of a {@link GuidebookLevel}, so that it doesn't have to be tessellated
- * again on every frame. The geometry is recorded the same way {@link BlockModelFeatureRenderer} and
- * {@link FluidModelFeatureRenderer} write it, and replayed by {@link SceneMeshFeatureRenderer}.
+ * again on every frame. Blocks are tessellated with the vanilla {@link ModelBlockRenderer} and fluids with the vanilla
+ * {@link FluidRenderer}, the same way they would be tessellated for a chunk section, and the geometry is replayed by
+ * {@link SceneMeshFeatureRenderer}.
  * <p>
- * Non-translucent geometry is kept per chunk layer for the whole scene. Translucent geometry is kept per block, and
- * submitted per block like it is without the cache, so it is still sorted together with the translucent geometry of
- * block entities and entities.
+ * Non-translucent geometry is kept per chunk layer for the whole scene. Translucent geometry is kept per block and
+ * submitted per block, so it is sorted together with the translucent geometry of block entities and entities.
  * <p>
  * The geometry is rebuilt when the level's {@linkplain GuidebookLevel#getRevision() revision} changes, when smooth
  * lighting, cutout leaves or NeoForge's per-part ambient occlusion setting changes, or when the block or fluid model
@@ -46,7 +46,7 @@ import org.jetbrains.annotations.Nullable;
  */
 final class SceneMeshCache {
     private final Map<ChunkSectionLayer, RecordingVertexConsumer> opaqueLayers = new EnumMap<>(ChunkSectionLayer.class);
-    private final List<SceneMeshFeatureRenderer.Submit> translucentBlocks = new ArrayList<>();
+    private final List<TranslucentBlock> translucentBlocks = new ArrayList<>();
     /**
      * Animated sprites used by the cached geometry. Since the geometry is not tessellated every frame, they have to be
      * marked as active explicitly for Sodium to keep animating them.
@@ -63,7 +63,6 @@ final class SceneMeshCache {
         RenderSystem.assertOnRenderThread();
 
         var minecraft = Minecraft.getInstance();
-        // The same options the feature renderers use when tessellating without the cache
         var options = minecraft.gameRenderer.gameRenderState().optionsRenderState;
         var modelManager = minecraft.getModelManager();
         var currentKey = new Key(
@@ -80,21 +79,23 @@ final class SceneMeshCache {
     }
 
     /**
-     * Submits the cached geometry for rendering. The geometry was recorded in level coordinates, so this is only
-     * correct where blocks would otherwise be submitted with an identity pose, like {@link GuidebookLevelRenderer} does
-     * when rendering a scene.
+     * Submits the cached geometry for rendering.
+     *
+     * @param pose Transforms from level coordinates, which the geometry was recorded in.
      */
-    void submit(SubmitNodeCollector nodes) {
+    void submit(SubmitNodeCollector nodes, PoseStack.Pose pose) {
         if (!opaqueLayers.isEmpty()) {
             var layers = new ArrayList<SceneMeshFeatureRenderer.Layer>(opaqueLayers.size());
             for (var entry : opaqueLayers.entrySet()) {
                 layers.add(new SceneMeshFeatureRenderer.Layer(entry.getKey(), entry.getValue()));
             }
             nodes.submitSpecial(RenderPhaseKeys.SOLID,
-                    new SceneMeshFeatureRenderer.Submit(new PoseStack().last(), layers));
+                    new SceneMeshFeatureRenderer.Submit(pose, BlockPos.ZERO, layers));
         }
         for (var translucentBlock : translucentBlocks) {
-            nodes.submitSpecial(RenderPhaseKeys.TRANSLUCENT_BLOCKS_AND_ITEMS, translucentBlock);
+            nodes.submitSpecial(RenderPhaseKeys.TRANSLUCENT_BLOCKS_AND_ITEMS, new SceneMeshFeatureRenderer.Submit(pose,
+                    translucentBlock.pos(), List.of(new SceneMeshFeatureRenderer.Layer(ChunkSectionLayer.TRANSLUCENT,
+                            translucentBlock.geometry()))));
         }
     }
 
@@ -122,7 +123,6 @@ final class SceneMeshCache {
             var blockState = level.getBlockState(pos);
             block.start(pos);
 
-            // Mirrors GuidebookLevelRenderer#renderBlocks and the feature renderers it submits to
             var fluidState = blockState.getFluidState();
             if (!fluidState.isEmpty()) {
                 var fluidModel = fluidModels.get(fluidState);
@@ -147,7 +147,7 @@ final class SceneMeshCache {
             if (blockState.getRenderShape() != RenderShape.INVISIBLE) {
                 var model = blockModels.get(blockState);
                 var forceOpaque = ModelBlockRenderer.forceOpaque(options.cutoutLeaves, blockState);
-                // Without the cache, translucent quads are only drawn for models with this flag
+                // Translucent quads are only drawn for models with this flag
                 var hasTranslucent = model.hasMaterialFlag(level, pos, blockState, BakedQuad.FLAG_TRANSLUCENT);
 
                 poseStack.pushPose();
@@ -211,12 +211,12 @@ final class SceneMeshCache {
 
         void finish() {
             if (translucent != null && !translucent.isEmpty()) {
-                var pose = new PoseStack();
-                pose.translate(pos.getX(), pos.getY(), pos.getZ());
-                translucentBlocks.add(new SceneMeshFeatureRenderer.Submit(pose.last(), List.of(
-                        new SceneMeshFeatureRenderer.Layer(ChunkSectionLayer.TRANSLUCENT, translucent))));
+                translucentBlocks.add(new TranslucentBlock(pos, translucent));
             }
         }
+    }
+
+    private record TranslucentBlock(BlockPos pos, RecordingVertexConsumer geometry) {
     }
 
     private record Key(int levelRevision,

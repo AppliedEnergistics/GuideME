@@ -4,10 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 /**
- * The only purpose of this vertex consumer proxy is to transform vertex positions emitted by the
- * {@link net.minecraft.client.renderer.block.FluidRenderer} using a pose. The renderer assumes it is being called in
- * the context of tessellating a chunk section (16x16x16) and emits coordinates relative to the section origin, while we
- * render all visible chunks in the guidebook together. The pose is expected to translate to the section origin.
+ * Transforms the vertex positions and normals written to it using a pose. It's used for the
+ * {@link net.minecraft.client.renderer.block.FluidRenderer}, which assumes it is being called in the context of
+ * tessellating a chunk section (16x16x16) and emits coordinates relative to the section origin, while we render all
+ * visible chunks in the guidebook together. There, the pose is expected to translate to the section origin. It's also
+ * used to replay cached scene geometry with a pose.
  */
 public class LiquidVertexConsumer implements VertexConsumer {
     private final VertexConsumer delegate;

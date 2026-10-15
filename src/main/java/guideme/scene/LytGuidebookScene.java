@@ -224,10 +224,10 @@ public class LytGuidebookScene extends LytBox {
                 var annotations = hideAnnotations ? Collections.<InWorldAnnotation>emptyList()
                         : scene.getInWorldAnnotations();
                 var sns = new SubmitNodeStorage();
-                // Site exports capture all scenes of a guide without a client tick in between, so unused caches
-                // couldn't expire
+                // Don't keep the geometry: site exports capture all scenes of a guide without a client tick in
+                // between, so unused geometry wouldn't be freed during the export
                 renderer.render(scene.getLevel(), scene.getCameraSettings(), annotations,
-                        LightDarkMode.LIGHT_MODE, sns, new PoseStack(), false);
+                        LightDarkMode.LIGHT_MODE, sns, new PoseStack(), new SceneMeshCache());
             });
         }
     }
