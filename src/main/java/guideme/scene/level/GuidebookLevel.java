@@ -213,9 +213,9 @@ public class GuidebookLevel extends Level implements BlockAndTintGetter {
     }
 
     /**
-     * @return A number that changes whenever a block in this level changes, lighting is set up for a new chunk, or a
-     *         block entity requests a model data update. Renderers can use it to detect when cached block geometry is
-     *         out of date.
+     * @return A number that changes whenever a block in this level changes, lighting is set up for a new chunk, a block
+     *         entity requests a model data update, or a block is marked for redrawing. Renderers can use it to detect
+     *         when cached block geometry is out of date.
      */
     public int getRevision() {
         return revision;
@@ -352,8 +352,23 @@ public class GuidebookLevel extends Level implements BlockAndTintGetter {
         return tickRateManager;
     }
 
+    /**
+     * Like {@link net.minecraft.client.multiplayer.ClientLevel}, treats this as a request to redraw the block.
+     * {@link Level#setBlock} calls this after {@link GuidebookChunk#setBlockState}, which already counts as a block
+     * change. Otherwise, we don't expect this to be called once a scene is built: block entities in scenes don't tick
+     * or receive data from a server, so a mod would have to change their data while they're being rendered.
+     */
     @Override
     public void sendBlockUpdated(BlockPos pos, BlockState oldState, BlockState newState, int flags) {
+        revision++;
+    }
+
+    /**
+     * Treated the same as {@link #sendBlockUpdated}.
+     */
+    @Override
+    public void setBlocksDirty(BlockPos pos, BlockState oldState, BlockState newState) {
+        revision++;
     }
 
     @Override
