@@ -18,12 +18,15 @@ public class SodiumCompat {
     static {
         MethodHandle handle = null;
         try {
-            handle = MethodHandles.lookup().findStatic(
-                    Class.forName("me.jellysquid.mods.sodium.client.render.texture.SpriteUtil"),
+            var spriteUtil = Class.forName("net.caffeinemc.mods.sodium.api.texture.SpriteUtil");
+            var instance = spriteUtil.getField("INSTANCE").get(null);
+            handle = MethodHandles.lookup().findVirtual(
+                    spriteUtil,
                     "markSpriteActive",
-                    MethodType.methodType(void.class, TextureAtlasSprite.class));
+                    MethodType.methodType(void.class, TextureAtlasSprite.class))
+                    .bindTo(instance);
             LOG.info("Loaded Sodium active sprite compat.");
-        } catch (NoSuchMethodException | IllegalAccessException | ClassNotFoundException e) {
+        } catch (ReflectiveOperationException | LinkageError e) {
             if (ModList.get().getModContainerById("sodium").isPresent()) {
                 LOG.error("Failed to load Sodium active sprite compat.", e);
             }
