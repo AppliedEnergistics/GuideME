@@ -108,7 +108,6 @@ public class GuideMEClient {
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre evt) -> {
             search.processWork();
             processDevWatchers();
-            GuidebookLevelRenderer.freeUnusedMeshCaches();
         });
 
         GuideOnStartup.init();

@@ -159,6 +159,8 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
         toolbar.update();
 
         processPendingScrollTo();
+
+        GuidebookLevelRenderer.freeUnusedMeshCaches();
     }
 
     @Override
