@@ -219,10 +219,8 @@ public class GuidebookLevelRenderer {
      * Frees all cached scene geometry. Scenes that are still shown rebuild it the next time they are rendered.
      */
     @ApiStatus.Internal
-    public static void freeMeshCaches() {
-        if (instance != null) {
-            instance.meshCaches.clear();
-        }
+    public void freeMeshCaches() {
+        meshCaches.clear();
     }
 
     /**
@@ -230,11 +228,9 @@ public class GuidebookLevelRenderer {
      * changes pages or closes, so this is for scenes rendered elsewhere.
      */
     @ApiStatus.Internal
-    public static void freeUnusedMeshCaches() {
-        if (instance != null) {
-            var now = Util.getMillis();
-            instance.meshCaches.values().removeIf(meshCache -> now - meshCache.lastUsed > MESH_CACHE_EXPIRY_MS);
-        }
+    public void freeUnusedMeshCaches() {
+        var now = Util.getMillis();
+        instance.meshCaches.values().removeIf(meshCache -> now - meshCache.lastUsed > MESH_CACHE_EXPIRY_MS);
     }
 
     /**

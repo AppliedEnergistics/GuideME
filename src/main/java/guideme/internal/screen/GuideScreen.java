@@ -160,7 +160,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
         processPendingScrollTo();
 
-        GuidebookLevelRenderer.freeUnusedMeshCaches();
+        GuidebookLevelRenderer.getInstance().freeUnusedMeshCaches();
     }
 
     @Override
@@ -323,7 +323,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
     private void loadPage(Identifier pageId) {
         GuidePageTexture.releaseUsedTextures();
-        GuidebookLevelRenderer.freeMeshCaches();
+        GuidebookLevelRenderer.getInstance().freeMeshCaches();
         var page = guide.getParsedPage(pageId);
 
         if (page == null) {
@@ -372,7 +372,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     public void removed() {
         super.removed();
         GuidePageTexture.releaseUsedTextures();
-        GuidebookLevelRenderer.freeMeshCaches();
+        GuidebookLevelRenderer.getInstance().freeMeshCaches();
     }
 
     /**
