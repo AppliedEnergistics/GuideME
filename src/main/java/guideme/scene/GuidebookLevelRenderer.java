@@ -11,8 +11,10 @@ import guideme.internal.util.Platform;
 import guideme.scene.annotation.InWorldAnnotation;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import guideme.scene.level.GuidebookLevel;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.TextureFilteringMethod;
@@ -20,6 +22,9 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
+import net.minecraft.client.renderer.block.FluidRenderer;
+import net.minecraft.client.renderer.block.FluidStateModelSet;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
@@ -29,14 +34,21 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.OptionsRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.SectionPos;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.CardinalLighting;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.config.NeoForgeClientConfig;
+import net.neoforged.neoforge.client.submit.RenderPhaseKeys;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -176,14 +188,175 @@ public class GuidebookLevelRenderer {
     private void renderContent(GuidebookLevel level, SubmitNodeCollector nodes, PoseStack poseStack,
             SceneMeshCache meshCache) {
         // Tessellate outside of the fake render environment, so block models see the real player
-        meshCache.prepare(level);
-        meshCache.markSpritesActive();
+        prepareMeshCache(level, meshCache);
+        for (var sprite : meshCache.getAnimatedSprites()) {
+            SodiumCompat.markSpriteActive(sprite);
+        }
 
         try (var fake = FakeRenderEnvironment.create(getFakePlayer())) {
             // The submits are rendered later, so we cannot hold on to the caller's pose
-            meshCache.submit(nodes, poseStack.last().copy());
+            submitMeshCache(meshCache, nodes, poseStack.last().copy());
             renderBlockEntities(level, level.getPartialTick(), poseStack, nodes);
             renderEntities(level, level.getPartialTick(), poseStack, nodes);
+        }
+    }
+
+    /**
+     * Rebuilds the cached block and fluid geometry if it is out of date.
+     */
+    private void prepareMeshCache(GuidebookLevel level, SceneMeshCache meshCache) {
+        RenderSystem.assertOnRenderThread();
+
+        var minecraft = Minecraft.getInstance();
+        var options = minecraft.gameRenderer.gameRenderState().optionsRenderState;
+        var modelManager = minecraft.getModelManager();
+        var key = new SceneMeshCache.Key(
+                level.getRevision(),
+                options.ambientOcclusion,
+                options.cutoutLeaves,
+                NeoForgeClientConfig.INSTANCE.handleAmbientOcclusionPerPart.getAsBoolean(),
+                modelManager.getBlockStateModelSet(),
+                modelManager.getFluidStateModelSet());
+        if (!meshCache.isUpToDate(key)) {
+            meshCache.clear();
+            buildMeshCache(level, meshCache, options, key.blockModels(), key.fluidModels());
+            meshCache.markBuilt(key);
+        }
+    }
+
+    /**
+     * Tessellates blocks with the vanilla {@link ModelBlockRenderer} and fluids with the vanilla {@link FluidRenderer},
+     * the same way they would be tessellated for a chunk section.
+     */
+    private void buildMeshCache(GuidebookLevel level, SceneMeshCache meshCache, OptionsRenderState options,
+            BlockStateModelSet blockModels, FluidStateModelSet fluidModels) {
+        var blockRenderer = new ModelBlockRenderer(options.ambientOcclusion, true,
+                Minecraft.getInstance().getBlockColors());
+        var fluidRenderer = new FluidRenderer(fluidModels);
+        var poseStack = new PoseStack();
+        var block = new BlockGeometry(meshCache);
+
+        var it = level.getFilledBlocks().iterator();
+        while (it.hasNext()) {
+            var pos = it.next().immutable();
+            var blockState = level.getBlockState(pos);
+            block.start(pos);
+
+            var fluidState = blockState.getFluidState();
+            if (!fluidState.isEmpty()) {
+                var fluidModel = fluidModels.get(fluidState);
+                addAnimatedSprite(meshCache, fluidModel.stillMaterial());
+                addAnimatedSprite(meshCache, fluidModel.flowingMaterial());
+                addAnimatedSprite(meshCache, fluidModel.overlayMaterial());
+
+                // The fluid renderer emits vertices relative to the chunk section origin
+                var sectionPos = SectionPos.of(pos);
+                poseStack.pushPose();
+                poseStack.translate(sectionPos.minBlockX(), sectionPos.minBlockY(), sectionPos.minBlockZ());
+                var sectionPose = poseStack.last().copy();
+                poseStack.popPose();
+                FluidRenderer.Output fluidOutput = layer -> new LiquidVertexConsumer(block.consumer(layer),
+                        sectionPose);
+
+                var customRenderer = fluidModel.customRenderer();
+                if (customRenderer == null || !customRenderer.renderFluid(fluidRenderer, fluidState, level, pos,
+                        fluidOutput, blockState)) {
+                    fluidRenderer.tesselate(level, pos, fluidOutput, blockState, fluidState);
+                }
+            }
+
+            if (blockState.getRenderShape() != RenderShape.INVISIBLE) {
+                var model = blockModels.get(blockState);
+                var forceOpaque = ModelBlockRenderer.forceOpaque(options.cutoutLeaves, blockState);
+                // Translucent quads are only drawn for models with this flag
+                var hasTranslucent = model.hasMaterialFlag(level, pos, blockState, BakedQuad.FLAG_TRANSLUCENT);
+
+                poseStack.pushPose();
+                poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
+                blockRenderer.tesselateBlock((x, y, z, quad, instance) -> {
+                    var layer = forceOpaque ? ChunkSectionLayer.SOLID : quad.materialInfo().layer();
+                    if (layer.translucent() && !hasTranslucent) {
+                        return;
+                    }
+                    var sprite = quad.materialInfo().sprite();
+                    if (sprite.isAnimated()) {
+                        meshCache.addAnimatedSprite(sprite);
+                    }
+                    poseStack.pushPose();
+                    poseStack.translate(x, y, z);
+                    block.consumer(layer).putBakedQuad(poseStack.last(), quad, instance);
+                    poseStack.popPose();
+                }, 0, 0, 0, level, pos, blockState, model, blockState.getSeed(pos));
+                poseStack.popPose();
+            }
+
+            block.finish();
+        }
+    }
+
+    private static void addAnimatedSprite(SceneMeshCache meshCache, Material.@Nullable Baked material) {
+        if (material != null && material.sprite().isAnimated()) {
+            meshCache.addAnimatedSprite(material.sprite());
+        }
+    }
+
+    /**
+     * Submits the cached geometry for rendering. Non-translucent geometry is submitted for the whole scene at once,
+     * translucent geometry per block, so it is sorted together with the translucent geometry of block entities and
+     * entities.
+     *
+     * @param pose Transforms from level coordinates, which the geometry was recorded in.
+     */
+    private static void submitMeshCache(SceneMeshCache meshCache, SubmitNodeCollector nodes, PoseStack.Pose pose) {
+        var opaqueLayers = meshCache.getOpaqueLayers();
+        if (!opaqueLayers.isEmpty()) {
+            var layers = new ArrayList<SceneMeshFeatureRenderer.Layer>(opaqueLayers.size());
+            for (var entry : opaqueLayers.entrySet()) {
+                layers.add(new SceneMeshFeatureRenderer.Layer(entry.getKey(), entry.getValue()));
+            }
+            nodes.submitSpecial(RenderPhaseKeys.SOLID,
+                    new SceneMeshFeatureRenderer.Submit(pose, BlockPos.ZERO, layers));
+        }
+        for (var translucentBlock : meshCache.getTranslucentBlocks()) {
+            nodes.submitSpecial(RenderPhaseKeys.TRANSLUCENT_BLOCKS_AND_ITEMS, new SceneMeshFeatureRenderer.Submit(pose,
+                    translucentBlock.pos(), List.of(new SceneMeshFeatureRenderer.Layer(ChunkSectionLayer.TRANSLUCENT,
+                            translucentBlock.geometry()))));
+        }
+    }
+
+    /**
+     * Collects the geometry of one block: non-translucent geometry goes to the scene-wide layers, translucent geometry
+     * is kept for the block.
+     */
+    private static final class BlockGeometry {
+        private final SceneMeshCache meshCache;
+        private BlockPos pos = BlockPos.ZERO;
+        @Nullable
+        private RecordingVertexConsumer translucent;
+
+        BlockGeometry(SceneMeshCache meshCache) {
+            this.meshCache = meshCache;
+        }
+
+        void start(BlockPos pos) {
+            this.pos = pos;
+            this.translucent = null;
+        }
+
+        RecordingVertexConsumer consumer(ChunkSectionLayer layer) {
+            if (layer.translucent()) {
+                if (translucent == null) {
+                    translucent = new RecordingVertexConsumer();
+                }
+                return translucent;
+            }
+            return meshCache.getOpaqueLayer(layer);
+        }
+
+        void finish() {
+            if (translucent != null && !translucent.isEmpty()) {
+                meshCache.addTranslucentBlock(pos, translucent);
+            }
         }
     }
 

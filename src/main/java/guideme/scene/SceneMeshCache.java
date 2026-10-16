@@ -1,7 +1,5 @@
 package guideme.scene;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import guideme.scene.level.GuidebookLevel;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,37 +8,20 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockStateModelSet;
-import net.minecraft.client.renderer.block.FluidModel;
-import net.minecraft.client.renderer.block.FluidRenderer;
 import net.minecraft.client.renderer.block.FluidStateModelSet;
-import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
-import net.minecraft.client.renderer.state.OptionsRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
-import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
-import net.minecraft.world.level.block.RenderShape;
-import net.neoforged.neoforge.client.config.NeoForgeClientConfig;
-import net.neoforged.neoforge.client.submit.RenderPhaseKeys;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Holds the tessellated block and fluid geometry of a {@link GuidebookLevel}, so that it doesn't have to be tessellated
- * again on every frame. Blocks are tessellated with the vanilla {@link ModelBlockRenderer} and fluids with the vanilla
- * {@link FluidRenderer}, the same way they would be tessellated for a chunk section, and the geometry is replayed by
+ * again on every frame. The geometry is built and submitted by {@link GuidebookLevelRenderer}, and replayed by
  * {@link SceneMeshFeatureRenderer}.
  * <p>
- * Non-translucent geometry is kept per chunk layer for the whole scene. Translucent geometry is kept per block and
- * submitted per block, so it is sorted together with the translucent geometry of block entities and entities.
- * <p>
- * The geometry is rebuilt when the level's {@linkplain GuidebookLevel#getRevision() revision} changes, when smooth
- * lighting, cutout leaves or NeoForge's per-part ambient occlusion setting changes, or when the block or fluid model
- * sets are replaced by a resource reload.
+ * Non-translucent geometry is kept per chunk layer for the whole scene. Translucent geometry is kept per block, so it
+ * can be sorted together with the translucent geometry of block entities and entities.
  * <p>
  * Must only be used on the render thread.
  */
@@ -52,174 +33,65 @@ final class SceneMeshCache {
      * marked as active explicitly for Sodium to keep animating them.
      */
     private final Set<TextureAtlasSprite> animatedSprites = Collections.newSetFromMap(new IdentityHashMap<>());
+    /**
+     * What the cached geometry was built for, or null if it was never completely built.
+     */
     @Nullable
     private Key key;
     long lastUsed;
 
-    /**
-     * Rebuilds the cached geometry if it is out of date.
-     */
-    void prepare(GuidebookLevel level) {
-        RenderSystem.assertOnRenderThread();
-
-        var minecraft = Minecraft.getInstance();
-        var options = minecraft.gameRenderer.gameRenderState().optionsRenderState;
-        var modelManager = minecraft.getModelManager();
-        var currentKey = new Key(
-                level.getRevision(),
-                options.ambientOcclusion,
-                options.cutoutLeaves,
-                NeoForgeClientConfig.INSTANCE.handleAmbientOcclusionPerPart.getAsBoolean(),
-                modelManager.getBlockStateModelSet(),
-                modelManager.getFluidStateModelSet());
-        if (!currentKey.equals(key)) {
-            build(level, options, currentKey.blockModels(), currentKey.fluidModels());
-            key = currentKey;
-        }
+    boolean isUpToDate(Key key) {
+        return key.equals(this.key);
     }
 
     /**
-     * Submits the cached geometry for rendering.
-     *
-     * @param pose Transforms from level coordinates, which the geometry was recorded in.
+     * Discards the cached geometry before it is built again. The cache is out of date until {@link #markBuilt} is
+     * called, so that a build that fails halfway isn't used.
      */
-    void submit(SubmitNodeCollector nodes, PoseStack.Pose pose) {
-        if (!opaqueLayers.isEmpty()) {
-            var layers = new ArrayList<SceneMeshFeatureRenderer.Layer>(opaqueLayers.size());
-            for (var entry : opaqueLayers.entrySet()) {
-                layers.add(new SceneMeshFeatureRenderer.Layer(entry.getKey(), entry.getValue()));
-            }
-            nodes.submitSpecial(RenderPhaseKeys.SOLID,
-                    new SceneMeshFeatureRenderer.Submit(pose, BlockPos.ZERO, layers));
-        }
-        for (var translucentBlock : translucentBlocks) {
-            nodes.submitSpecial(RenderPhaseKeys.TRANSLUCENT_BLOCKS_AND_ITEMS, new SceneMeshFeatureRenderer.Submit(pose,
-                    translucentBlock.pos(), List.of(new SceneMeshFeatureRenderer.Layer(ChunkSectionLayer.TRANSLUCENT,
-                            translucentBlock.geometry()))));
-        }
-    }
-
-    void markSpritesActive() {
-        for (var sprite : animatedSprites) {
-            SodiumCompat.markSpriteActive(sprite);
-        }
-    }
-
-    private void build(GuidebookLevel level, OptionsRenderState options, BlockStateModelSet blockModels,
-            FluidStateModelSet fluidModels) {
+    void clear() {
         opaqueLayers.clear();
         translucentBlocks.clear();
         animatedSprites.clear();
-
-        var blockRenderer = new ModelBlockRenderer(options.ambientOcclusion, true,
-                Minecraft.getInstance().getBlockColors());
-        var fluidRenderer = new FluidRenderer(fluidModels);
-        var poseStack = new PoseStack();
-        var block = new BlockGeometry();
-
-        var it = level.getFilledBlocks().iterator();
-        while (it.hasNext()) {
-            var pos = it.next().immutable();
-            var blockState = level.getBlockState(pos);
-            block.start(pos);
-
-            var fluidState = blockState.getFluidState();
-            if (!fluidState.isEmpty()) {
-                var fluidModel = fluidModels.get(fluidState);
-                addAnimatedSprites(fluidModel);
-
-                // The fluid renderer emits vertices relative to the chunk section origin
-                var sectionPos = SectionPos.of(pos);
-                poseStack.pushPose();
-                poseStack.translate(sectionPos.minBlockX(), sectionPos.minBlockY(), sectionPos.minBlockZ());
-                var sectionPose = poseStack.last().copy();
-                poseStack.popPose();
-                FluidRenderer.Output fluidOutput = layer -> new LiquidVertexConsumer(block.consumer(layer),
-                        sectionPose);
-
-                var customRenderer = fluidModel.customRenderer();
-                if (customRenderer == null || !customRenderer.renderFluid(fluidRenderer, fluidState, level, pos,
-                        fluidOutput, blockState)) {
-                    fluidRenderer.tesselate(level, pos, fluidOutput, blockState, fluidState);
-                }
-            }
-
-            if (blockState.getRenderShape() != RenderShape.INVISIBLE) {
-                var model = blockModels.get(blockState);
-                var forceOpaque = ModelBlockRenderer.forceOpaque(options.cutoutLeaves, blockState);
-                // Translucent quads are only drawn for models with this flag
-                var hasTranslucent = model.hasMaterialFlag(level, pos, blockState, BakedQuad.FLAG_TRANSLUCENT);
-
-                poseStack.pushPose();
-                poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
-                blockRenderer.tesselateBlock((x, y, z, quad, instance) -> {
-                    var layer = forceOpaque ? ChunkSectionLayer.SOLID : quad.materialInfo().layer();
-                    if (layer.translucent() && !hasTranslucent) {
-                        return;
-                    }
-                    var sprite = quad.materialInfo().sprite();
-                    if (sprite.isAnimated()) {
-                        animatedSprites.add(sprite);
-                    }
-                    poseStack.pushPose();
-                    poseStack.translate(x, y, z);
-                    block.consumer(layer).putBakedQuad(poseStack.last(), quad, instance);
-                    poseStack.popPose();
-                }, 0, 0, 0, level, pos, blockState, model, blockState.getSeed(pos));
-                poseStack.popPose();
-            }
-
-            block.finish();
-        }
+        key = null;
     }
 
-    private void addAnimatedSprites(FluidModel fluidModel) {
-        addAnimatedSprite(fluidModel.stillMaterial());
-        addAnimatedSprite(fluidModel.flowingMaterial());
-        addAnimatedSprite(fluidModel.overlayMaterial());
+    void markBuilt(Key key) {
+        this.key = key;
     }
 
-    private void addAnimatedSprite(Material.@Nullable Baked material) {
-        if (material != null && material.sprite().isAnimated()) {
-            animatedSprites.add(material.sprite());
-        }
+    RecordingVertexConsumer getOpaqueLayer(ChunkSectionLayer layer) {
+        return opaqueLayers.computeIfAbsent(layer, ignored -> new RecordingVertexConsumer());
+    }
+
+    Map<ChunkSectionLayer, RecordingVertexConsumer> getOpaqueLayers() {
+        return opaqueLayers;
+    }
+
+    void addTranslucentBlock(BlockPos pos, RecordingVertexConsumer geometry) {
+        translucentBlocks.add(new TranslucentBlock(pos, geometry));
+    }
+
+    List<TranslucentBlock> getTranslucentBlocks() {
+        return translucentBlocks;
+    }
+
+    void addAnimatedSprite(TextureAtlasSprite sprite) {
+        animatedSprites.add(sprite);
+    }
+
+    Set<TextureAtlasSprite> getAnimatedSprites() {
+        return animatedSprites;
+    }
+
+    record TranslucentBlock(BlockPos pos, RecordingVertexConsumer geometry) {
     }
 
     /**
-     * Collects the geometry of one block: non-translucent geometry goes to the scene-wide layers, translucent geometry
-     * is kept for the block.
+     * The geometry is rebuilt when the level's {@linkplain GuidebookLevel#getRevision() revision} changes, when smooth
+     * lighting, cutout leaves or NeoForge's per-part ambient occlusion setting changes, or when the block or fluid
+     * model sets are replaced by a resource reload.
      */
-    private final class BlockGeometry {
-        private BlockPos pos = BlockPos.ZERO;
-        @Nullable
-        private RecordingVertexConsumer translucent;
-
-        void start(BlockPos pos) {
-            this.pos = pos;
-            this.translucent = null;
-        }
-
-        RecordingVertexConsumer consumer(ChunkSectionLayer layer) {
-            if (layer.translucent()) {
-                if (translucent == null) {
-                    translucent = new RecordingVertexConsumer();
-                }
-                return translucent;
-            }
-            return opaqueLayers.computeIfAbsent(layer, ignored -> new RecordingVertexConsumer());
-        }
-
-        void finish() {
-            if (translucent != null && !translucent.isEmpty()) {
-                translucentBlocks.add(new TranslucentBlock(pos, translucent));
-            }
-        }
-    }
-
-    private record TranslucentBlock(BlockPos pos, RecordingVertexConsumer geometry) {
-    }
-
-    private record Key(int levelRevision,
+    record Key(int levelRevision,
             boolean ambientOcclusion,
             boolean cutoutLeaves,
             boolean ambientOcclusionPerPart,

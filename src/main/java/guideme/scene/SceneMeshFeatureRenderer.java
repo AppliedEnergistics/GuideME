@@ -15,7 +15,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.joml.Matrix4fc;
 
 /**
- * Writes block and fluid geometry recorded by {@link SceneMeshCache} to the draws of the chunk layers, instead of
+ * Writes block and fluid geometry recorded in a {@link SceneMeshCache} to the draws of the chunk layers, instead of
  * tessellating it again.
  */
 @ApiStatus.Internal
