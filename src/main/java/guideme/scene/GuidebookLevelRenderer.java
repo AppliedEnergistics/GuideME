@@ -45,7 +45,8 @@ public class GuidebookLevelRenderer {
     private static GuidebookLevelRenderer instance;
 
     /**
-     * Cached scene geometry is freed when the scene hasn't been rendered for this long.
+     * When a user scrolls away from a scene in a long page, its cached mesh will be kept for this long. If it comes
+     * back into view, the cache can then be reused.
      */
     private static final long MESH_CACHE_EXPIRY_MS = 30_000;
 
@@ -86,11 +87,10 @@ public class GuidebookLevelRenderer {
     public void render(GuidebookLevel level,
             CameraSettings cameraSettings,
             Collection<InWorldAnnotation> annotations,
-            LightDarkMode lightDarkMode,
-            SubmitNodeCollector nodes, PoseStack poseStack) {
+            LightDarkMode lightDarkMode) {
         var meshCache = meshCaches.computeIfAbsent(level, ignored -> new SceneMeshCache());
         meshCache.lastUsed = Util.getMillis();
-        render(level, cameraSettings, annotations, lightDarkMode, nodes, poseStack, meshCache);
+        render(level, cameraSettings, annotations, lightDarkMode, meshCache);
     }
 
     /**
@@ -100,7 +100,6 @@ public class GuidebookLevelRenderer {
             CameraSettings cameraSettings,
             Collection<InWorldAnnotation> annotations,
             LightDarkMode lightDarkMode,
-            SubmitNodeCollector nodes, PoseStack poseStack,
             SceneMeshCache meshCache) {
 
         level.onRenderFrame();
