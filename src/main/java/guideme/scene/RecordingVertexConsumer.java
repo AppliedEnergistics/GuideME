@@ -12,9 +12,12 @@ import net.minecraft.util.ARGB;
  * also how they are replayed.
  */
 final class RecordingVertexConsumer implements VertexConsumer {
-    private static final int INTS_PER_VERTEX = 11;
+    /**
+     * This is the number of method parameters to the longest overload of {@link VertexConsumer#addVertex}.
+     */
+    private static final int PARAMS_PER_VERTEX = 11;
 
-    private int[] data = new int[INTS_PER_VERTEX * 4];
+    private int[] data = new int[PARAMS_PER_VERTEX * 4];
     private int size;
 
     // The vertex being built with the chained methods
@@ -103,6 +106,7 @@ final class RecordingVertexConsumer implements VertexConsumer {
 
     @Override
     public VertexConsumer setLineWidth(float width) {
+        // Not used by the block vertex formats
         return this;
     }
 
@@ -116,7 +120,7 @@ final class RecordingVertexConsumer implements VertexConsumer {
     void replay(VertexConsumer consumer) {
         endVertex();
         var data = this.data;
-        for (int i = 0; i < size; i += INTS_PER_VERTEX) {
+        for (int i = 0; i < size; i += PARAMS_PER_VERTEX) {
             consumer.addVertex(
                     Float.intBitsToFloat(data[i]),
                     Float.intBitsToFloat(data[i + 1]),
@@ -141,7 +145,7 @@ final class RecordingVertexConsumer implements VertexConsumer {
 
     private void append(float x, float y, float z, int color, float u, float v, int overlayCoords, int lightCoords,
             float normalX, float normalY, float normalZ) {
-        if (size + INTS_PER_VERTEX > data.length) {
+        if (size + PARAMS_PER_VERTEX > data.length) {
             data = Arrays.copyOf(data, data.length * 2);
         }
         var data = this.data;
@@ -157,6 +161,6 @@ final class RecordingVertexConsumer implements VertexConsumer {
         data[i + 8] = Float.floatToRawIntBits(normalX);
         data[i + 9] = Float.floatToRawIntBits(normalY);
         data[i + 10] = Float.floatToRawIntBits(normalZ);
-        size += INTS_PER_VERTEX;
+        size += PARAMS_PER_VERTEX;
     }
 }

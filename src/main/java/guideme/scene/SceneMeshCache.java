@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.client.renderer.block.FluidStateModelSet;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
@@ -73,6 +74,12 @@ final class SceneMeshCache {
 
     List<TranslucentBlock> getTranslucentBlocks() {
         return translucentBlocks;
+    }
+
+    void addAnimatedMaterial(Material.@Nullable Baked material) {
+        if (material != null && material.sprite().isAnimated()) {
+            addAnimatedSprite(material.sprite());
+        }
     }
 
     void addAnimatedSprite(TextureAtlasSprite sprite) {

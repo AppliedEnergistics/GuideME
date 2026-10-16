@@ -37,7 +37,6 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.OptionsRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
-import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
@@ -187,13 +186,12 @@ public class GuidebookLevelRenderer {
 
     private void renderContent(GuidebookLevel level, SubmitNodeCollector nodes, PoseStack poseStack,
             SceneMeshCache meshCache) {
-        // Tessellate outside of the fake render environment, so block models see the real player
-        prepareMeshCache(level, meshCache);
-        for (var sprite : meshCache.getAnimatedSprites()) {
-            SodiumCompat.markSpriteActive(sprite);
-        }
-
         try (var fake = FakeRenderEnvironment.create(getFakePlayer())) {
+            prepareMeshCache(level, meshCache);
+            for (var sprite : meshCache.getAnimatedSprites()) {
+                SodiumCompat.markSpriteActive(sprite);
+            }
+
             // The submits are rendered later, so we cannot hold on to the caller's pose
             submitMeshCache(meshCache, nodes, poseStack.last().copy());
             renderBlockEntities(level, level.getPartialTick(), poseStack, nodes);
@@ -219,84 +217,8 @@ public class GuidebookLevelRenderer {
                 modelManager.getFluidStateModelSet());
         if (!meshCache.isUpToDate(key)) {
             meshCache.clear();
-            buildMeshCache(level, meshCache, options, key.blockModels(), key.fluidModels());
+            renderBlocks(level, meshCache, options, key.blockModels(), key.fluidModels());
             meshCache.markBuilt(key);
-        }
-    }
-
-    /**
-     * Tessellates blocks with the vanilla {@link ModelBlockRenderer} and fluids with the vanilla {@link FluidRenderer},
-     * the same way they would be tessellated for a chunk section.
-     */
-    private void buildMeshCache(GuidebookLevel level, SceneMeshCache meshCache, OptionsRenderState options,
-            BlockStateModelSet blockModels, FluidStateModelSet fluidModels) {
-        var blockRenderer = new ModelBlockRenderer(options.ambientOcclusion, true,
-                Minecraft.getInstance().getBlockColors());
-        var fluidRenderer = new FluidRenderer(fluidModels);
-        var poseStack = new PoseStack();
-        var block = new BlockGeometry(meshCache);
-
-        var it = level.getFilledBlocks().iterator();
-        while (it.hasNext()) {
-            var pos = it.next().immutable();
-            var blockState = level.getBlockState(pos);
-            block.start(pos);
-
-            var fluidState = blockState.getFluidState();
-            if (!fluidState.isEmpty()) {
-                var fluidModel = fluidModels.get(fluidState);
-                addAnimatedSprite(meshCache, fluidModel.stillMaterial());
-                addAnimatedSprite(meshCache, fluidModel.flowingMaterial());
-                addAnimatedSprite(meshCache, fluidModel.overlayMaterial());
-
-                // The fluid renderer emits vertices relative to the chunk section origin
-                var sectionPos = SectionPos.of(pos);
-                poseStack.pushPose();
-                poseStack.translate(sectionPos.minBlockX(), sectionPos.minBlockY(), sectionPos.minBlockZ());
-                var sectionPose = poseStack.last().copy();
-                poseStack.popPose();
-                FluidRenderer.Output fluidOutput = layer -> new LiquidVertexConsumer(block.consumer(layer),
-                        sectionPose);
-
-                var customRenderer = fluidModel.customRenderer();
-                if (customRenderer == null || !customRenderer.renderFluid(fluidRenderer, fluidState, level, pos,
-                        fluidOutput, blockState)) {
-                    fluidRenderer.tesselate(level, pos, fluidOutput, blockState, fluidState);
-                }
-            }
-
-            if (blockState.getRenderShape() != RenderShape.INVISIBLE) {
-                var model = blockModels.get(blockState);
-                var forceOpaque = ModelBlockRenderer.forceOpaque(options.cutoutLeaves, blockState);
-                // Translucent quads are only drawn for models with this flag
-                var hasTranslucent = model.hasMaterialFlag(level, pos, blockState, BakedQuad.FLAG_TRANSLUCENT);
-
-                poseStack.pushPose();
-                poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
-                blockRenderer.tesselateBlock((x, y, z, quad, instance) -> {
-                    var layer = forceOpaque ? ChunkSectionLayer.SOLID : quad.materialInfo().layer();
-                    if (layer.translucent() && !hasTranslucent) {
-                        return;
-                    }
-                    var sprite = quad.materialInfo().sprite();
-                    if (sprite.isAnimated()) {
-                        meshCache.addAnimatedSprite(sprite);
-                    }
-                    poseStack.pushPose();
-                    poseStack.translate(x, y, z);
-                    block.consumer(layer).putBakedQuad(poseStack.last(), quad, instance);
-                    poseStack.popPose();
-                }, 0, 0, 0, level, pos, blockState, model, blockState.getSeed(pos));
-                poseStack.popPose();
-            }
-
-            block.finish();
-        }
-    }
-
-    private static void addAnimatedSprite(SceneMeshCache meshCache, Material.@Nullable Baked material) {
-        if (material != null && material.sprite().isAnimated()) {
-            meshCache.addAnimatedSprite(material.sprite());
         }
     }
 
@@ -416,6 +338,76 @@ public class GuidebookLevelRenderer {
             case CUTOUT -> RenderTypes.cutoutMovingBlock();
             case TRANSLUCENT -> RenderTypes.translucentMovingBlock();
         };
+    }
+
+    /**
+     * Tessellates blocks with the vanilla {@link ModelBlockRenderer} and fluids with the vanilla {@link FluidRenderer},
+     * the same way they would be tessellated for a chunk section.
+     */
+    private void renderBlocks(GuidebookLevel level, SceneMeshCache meshCache, OptionsRenderState options,
+            BlockStateModelSet blockModels, FluidStateModelSet fluidModels) {
+        var blockRenderer = new ModelBlockRenderer(options.ambientOcclusion, true,
+                Minecraft.getInstance().getBlockColors());
+        var fluidRenderer = new FluidRenderer(fluidModels);
+        var poseStack = new PoseStack();
+        var block = new BlockGeometry(meshCache);
+
+        var it = level.getFilledBlocks().iterator();
+        while (it.hasNext()) {
+            var pos = it.next().immutable();
+            var blockState = level.getBlockState(pos);
+            block.start(pos);
+
+            var fluidState = blockState.getFluidState();
+            if (!fluidState.isEmpty()) {
+                var fluidModel = fluidModels.get(fluidState);
+                meshCache.addAnimatedMaterial(fluidModel.stillMaterial());
+                meshCache.addAnimatedMaterial(fluidModel.flowingMaterial());
+                meshCache.addAnimatedMaterial(fluidModel.overlayMaterial());
+
+                // The fluid renderer emits vertices relative to the chunk section origin
+                var sectionPos = SectionPos.of(pos);
+                poseStack.pushPose();
+                poseStack.translate(sectionPos.minBlockX(), sectionPos.minBlockY(), sectionPos.minBlockZ());
+                var sectionPose = poseStack.last().copy();
+                poseStack.popPose();
+                FluidRenderer.Output fluidOutput = layer -> new LiquidVertexConsumer(block.consumer(layer),
+                        sectionPose);
+
+                var customRenderer = fluidModel.customRenderer();
+                if (customRenderer == null || !customRenderer.renderFluid(fluidRenderer, fluidState, level, pos,
+                        fluidOutput, blockState)) {
+                    fluidRenderer.tesselate(level, pos, fluidOutput, blockState, fluidState);
+                }
+            }
+
+            if (blockState.getRenderShape() != RenderShape.INVISIBLE) {
+                var model = blockModels.get(blockState);
+                var forceOpaque = ModelBlockRenderer.forceOpaque(options.cutoutLeaves, blockState);
+                // Translucent quads are only drawn for models with this flag
+                var hasTranslucent = model.hasMaterialFlag(level, pos, blockState, BakedQuad.FLAG_TRANSLUCENT);
+
+                poseStack.pushPose();
+                poseStack.translate(pos.getX(), pos.getY(), pos.getZ());
+                blockRenderer.tesselateBlock((x, y, z, quad, instance) -> {
+                    var layer = forceOpaque ? ChunkSectionLayer.SOLID : quad.materialInfo().layer();
+                    if (layer.translucent() && !hasTranslucent) {
+                        return;
+                    }
+                    var sprite = quad.materialInfo().sprite();
+                    if (sprite.isAnimated()) {
+                        meshCache.addAnimatedSprite(sprite);
+                    }
+                    poseStack.pushPose();
+                    poseStack.translate(x, y, z);
+                    block.consumer(layer).putBakedQuad(poseStack.last(), quad, instance);
+                    poseStack.popPose();
+                }, 0, 0, 0, level, pos, blockState, model, blockState.getSeed(pos));
+                poseStack.popPose();
+            }
+
+            block.finish();
+        }
     }
 
     private void renderBlockEntities(GuidebookLevel level, float partialTick, PoseStack poseStack,
