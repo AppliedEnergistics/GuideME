@@ -33,7 +33,6 @@ import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.HitResult;
@@ -223,9 +222,10 @@ public class LytGuidebookScene extends LytBox {
                 scene.getCameraSettings().setViewportSize(prefSize);
                 var annotations = hideAnnotations ? Collections.<InWorldAnnotation>emptyList()
                         : scene.getInWorldAnnotations();
-                var sns = new SubmitNodeStorage();
+                // Don't keep the geometry: site exports capture all scenes of a guide without a client tick in
+                // between, so unused geometry wouldn't be freed during the export
                 renderer.render(scene.getLevel(), scene.getCameraSettings(), annotations,
-                        LightDarkMode.LIGHT_MODE, sns, new PoseStack());
+                        LightDarkMode.LIGHT_MODE, new SceneMeshCache());
             });
         }
     }
@@ -340,8 +340,7 @@ public class LytGuidebookScene extends LytBox {
             } else {
                 inWorldAnnotations = scene.getInWorldAnnotations();
             }
-            renderer.render(scene.getLevel(), scene.getCameraSettings(), inWorldAnnotations,
-                    lightDarkMode, nodes, poseStack);
+            renderer.render(scene.getLevel(), scene.getCameraSettings(), inWorldAnnotations, lightDarkMode);
 
             renderDebugCrosshairs();
         }

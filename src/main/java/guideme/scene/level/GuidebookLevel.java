@@ -98,7 +98,15 @@ public class GuidebookLevel extends Level implements BlockAndTintGetter {
     private final ClientLevel.ClientLevelData clientLevelData;
     private final DeltaTracker.Timer tracker = new DeltaTracker.Timer(20.0F, 0L, def -> def);
     private float partialTick;
-    private final ModelDataManager modelDataManager = new ModelDataManager(this);
+    private final ModelDataManager modelDataManager = new ModelDataManager(this) {
+        @Override
+        public void requestRefresh(BlockEntity blockEntity) {
+            super.requestRefresh(blockEntity);
+            // The block entity's model data changed, which can change the geometry of its block
+            revision++;
+        }
+    };
+    private int revision;
     private final EnvironmentAttributeSystem environmentAttributes = EnvironmentAttributeSystem.builder().build();
 
     // set time of day to noon (from TimeCommand noon)
@@ -200,6 +208,19 @@ public class GuidebookLevel extends Level implements BlockAndTintGetter {
         filledBlocks.add(pos.asLong());
     }
 
+    void onBlockChanged() {
+        revision++;
+    }
+
+    /**
+     * @return A number that changes whenever a block in this level changes, lighting is set up for a new chunk, a block
+     *         entity requests a model data update, or a block is marked for redrawing. Renderers can use it to detect
+     *         when cached block geometry is out of date.
+     */
+    public int getRevision() {
+        return revision;
+    }
+
     /**
      * Ensures lighting is set to skylight level 15 in the entire chunk and adjacent chunks whenever a block is first
      * changed in that chunk.
@@ -209,6 +230,7 @@ public class GuidebookLevel extends Level implements BlockAndTintGetter {
         var maxChunk = ChunkPos.containing(pos.offset(1, 1, 1));
         ChunkPos.rangeClosed(minChunk, maxChunk).forEach(chunkPos -> {
             if (litSections.add(chunkPos.pack())) {
+                revision++;
                 var lightEngine = getLightEngine();
                 for (int i = 0; i < getSectionsCount(); ++i) {
                     int y = getSectionYFromSectionIndex(i);
@@ -330,8 +352,23 @@ public class GuidebookLevel extends Level implements BlockAndTintGetter {
         return tickRateManager;
     }
 
+    /**
+     * Like {@link net.minecraft.client.multiplayer.ClientLevel}, treats this as a request to redraw the block.
+     * {@link Level#setBlock} calls this after {@link GuidebookChunk#setBlockState}, which already counts as a block
+     * change. Otherwise, we don't expect this to be called once a scene is built: block entities in scenes don't tick
+     * or receive data from a server, so a mod would have to change their data while they're being rendered.
+     */
     @Override
     public void sendBlockUpdated(BlockPos pos, BlockState oldState, BlockState newState, int flags) {
+        revision++;
+    }
+
+    /**
+     * Treated the same as {@link #sendBlockUpdated}.
+     */
+    @Override
+    public void setBlocksDirty(BlockPos pos, BlockState oldState, BlockState newState) {
+        revision++;
     }
 
     @Override
