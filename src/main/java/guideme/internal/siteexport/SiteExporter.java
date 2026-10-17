@@ -2,6 +2,7 @@ package guideme.internal.siteexport;
 
 import com.google.common.io.MoreFiles;
 import com.google.common.io.RecursiveDeleteOption;
+import com.mojang.blaze3d.platform.NativeImage;
 import guideme.Guide;
 import guideme.GuidePage;
 import guideme.compiler.PageCompiler;
@@ -640,6 +641,11 @@ public class SiteExporter implements ResourceExporter {
 
     @Override
     public String exportTexture(Identifier textureId) {
+        return exportTexture(textureId, IntUnaryOperator.identity());
+    }
+
+    @Override
+    public String exportTexture(Identifier textureId, IntUnaryOperator pixelOp) {
         var exportedPath = exportedTextures.get(textureId);
         if (exportedPath != null) {
             return exportedPath;
@@ -650,13 +656,40 @@ public class SiteExporter implements ResourceExporter {
             id = Identifier.fromNamespaceAndPath(id.getNamespace(), id.getPath() + ".png");
         }
 
-        var outputPath = getPathForWriting(id);
-
         var texture = Minecraft.getInstance().getTextureManager().getTexture(textureId);
+        var image = TextureDownloader.downloadTexture(texture.getTexture(), 0, pixelOp);
+        return exportNativeImage(textureId, getPathForWriting(id), image);
+    }
 
+    @Override
+    public String exportSprite(TextureAtlasSprite sprite) {
+        return exportSprite(sprite, IntUnaryOperator.identity());
+    }
+
+    @Override
+    public String exportSprite(TextureAtlasSprite sprite, IntUnaryOperator pixelOp) {
+        Identifier atlasId = sprite.atlasLocation();
+        Identifier spriteId = sprite.contents().name();
+        Identifier textureId = spriteId.withPrefix(atlasId.getNamespace() + "/" + atlasId.getPath());
+        var exportedPath = exportedTextures.get(textureId);
+        if (exportedPath != null) {
+            return exportedPath;
+        }
+
+        NativeImage originalImage = sprite.contents().originalImage;
+        var image = new NativeImage(sprite.contents().width(), sprite.contents().height(), false);
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int pixel = originalImage.getPixel(x, y);
+                image.setPixel(x, y, pixelOp.applyAsInt(pixel));
+            }
+        }
+        return exportNativeImage(textureId, getPathForWriting(spriteId.withSuffix(".png")), image);
+    }
+
+    private String exportNativeImage(Identifier textureId, Path outputPath, NativeImage image) {
         byte[] imageContent;
-        try (var nativeImage = TextureDownloader.downloadTexture(texture.getTexture(), 0,
-                IntUnaryOperator.identity())) {
+        try (var nativeImage = image) {
             imageContent = Platform.exportAsPng(nativeImage);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -667,7 +700,7 @@ public class SiteExporter implements ResourceExporter {
         } catch (IOException e) {
             throw new RuntimeException("Failed to export texture " + textureId, e);
         }
-        exportedPath = getPathRelativeFromOutputFolder(outputPath);
+        String exportedPath = getPathRelativeFromOutputFolder(outputPath);
         exportedTextures.put(textureId, exportedPath);
         return exportedPath;
     }
