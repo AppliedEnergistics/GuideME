@@ -5,6 +5,7 @@ import Video from '@site/src/components/Video';
 
 ## 26.3.2-alpha (Minecraft 26.3)
 
+- Fix light and dark mode colors of `custom_colors` in data-driven guides being swapped
 - Guides can now be turned into a static website, including search, recipes and interactive 3D scenes.
   The website is generated from the guide export by a Gradle task outside the game, so websites for previously exported
   guides can be regenerated with newer versions of GuideME. See [website export](./20-integration/website-export.md) for details.
