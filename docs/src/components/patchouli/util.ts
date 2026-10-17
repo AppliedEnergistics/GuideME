@@ -32,7 +32,7 @@ export async function extractFile(zipContent: Record<string, ZipItem>, name: str
 }
 
 export async function extractJsonFile(zipContent: Record<string, ZipItem>, name: string) {
-    return new Response(await extractFile(zipContent, name)).json();
+    return new Response(await extractFile(zipContent, name) as Uint8Array<ArrayBuffer>).json();
 }
 
 export function relativePageLink(pageId: string, targetPageId: string): string {

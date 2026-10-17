@@ -6,17 +6,23 @@ import guideme.GuidePage;
 import guideme.compiler.ParsedGuidePage;
 import guideme.document.block.LytNode;
 import guideme.document.block.LytVisitor;
+import guideme.extensions.ExtensionCollection;
 import guideme.libs.mdast.MdAstVisitor;
 import guideme.libs.mdast.MdAstYamlFrontmatter;
 import guideme.libs.mdast.model.MdAstNode;
 import guideme.siteexport.ResourceExporter;
+import java.util.List;
 
 /**
  * Post-Processes page content before exporting it.
  */
 public final class PageExportPostProcessor {
 
+    /**
+     * Modifies the page for the export. The page must be a copy of the page used by the in-game guide.
+     */
     public static void postprocess(ResourceExporter exporter,
+            ExtensionCollection extensions,
             ParsedGuidePage page,
             GuidePage compiledPage) {
 
@@ -38,6 +44,10 @@ public final class PageExportPostProcessor {
 
         // Strip unnecessary frontmatter nodes.
         astRoot.removeChildren(mdAstNode -> mdAstNode instanceof MdAstYamlFrontmatter, true);
+
+        // Let elements modify themselves first, so that the content they unwrap is exported as well
+        new PageExportProcessing(exporter, page.getId(), extensions,
+                node -> List.copyOf(nodeMapping.get(node))).process(astRoot);
 
         astRoot.visit(new SceneExportVisitor(exporter, nodeMapping));
         astRoot.visit(new ImageExportVisitor(exporter));

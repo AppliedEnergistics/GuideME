@@ -16,7 +16,7 @@ import {
   Texture,
   ZeroFactor,
 } from "three";
-import shaderInfos from "./shaderInfo.ts";
+import shaderInfos, { ShaderProps } from "./shaderInfo.ts";
 import TextureManager from "./TextureManager.ts";
 import { ExpTransparency } from "@generated/scene/exp-transparency.ts";
 
@@ -64,6 +64,7 @@ export default async function loadMaterial(
   textureManager: TextureManager,
   expMaterial: ExpMaterial,
   texturesById: Map<string, Texture[]>,
+  exportedShaderInfos: Map<string, ShaderProps>,
 ): Promise<Material> {
   const samplers: (Texture | null)[] = [];
   for (let i = 0; i < expMaterial.samplersLength(); ++i) {
@@ -101,7 +102,9 @@ export default async function loadMaterial(
   // These parameters are usually set via the shader
   const materialName = expMaterial.name();
   const shaderName = expMaterial.shaderName() ?? "none";
-  const shaderProps = shaderInfos[shaderName];
+  // Prefer the shader properties exported with the scene, and fall back to known shaders for older exports
+  const shaderProps =
+    exportedShaderInfos.get(shaderName) ?? shaderInfos[shaderName];
   const materialParams:
     | MeshLambertMaterialParameters
     | MeshBasicMaterialParameters = {};

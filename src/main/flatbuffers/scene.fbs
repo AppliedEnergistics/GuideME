@@ -154,6 +154,9 @@ table ExpScene {
   meshes:[ExpMesh];
   animated_textures: [ExpAnimatedTexturePart];
   shaders:[ExpShaderInfo];
+  // The world position shown at the center of the viewport.
+  // Missing in scenes exported by older versions, so it must remain optional.
+  camera_center:ExpVec3;
 }
 
 root_type ExpScene;

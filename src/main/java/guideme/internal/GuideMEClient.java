@@ -18,9 +18,8 @@ import guideme.internal.siteexport.TextureDownloader;
 import guideme.internal.util.Blitter;
 import guideme.navigation.NavigationNode;
 import guideme.render.GuiAssets;
-import guideme.scene.BlockModelFeatureRenderer;
-import guideme.scene.FluidModelFeatureRenderer;
 import guideme.scene.GuidebookLevelRenderer;
+import guideme.scene.SceneMeshFeatureRenderer;
 import guideme.scene.annotation.InWorldAnnotationRenderer;
 import java.util.List;
 import java.util.Objects;
@@ -122,8 +121,7 @@ public class GuideMEClient {
     }
 
     private void registerCustomFeatureRenderer(RegisterFeatureRenderersEvent event) {
-        event.register(FluidModelFeatureRenderer.TYPE, new FluidModelFeatureRenderer());
-        event.register(BlockModelFeatureRenderer.TYPE, new BlockModelFeatureRenderer());
+        event.register(SceneMeshFeatureRenderer.TYPE, new SceneMeshFeatureRenderer());
     }
 
     private void onReceiveRecipes(RecipesReceivedEvent event) {

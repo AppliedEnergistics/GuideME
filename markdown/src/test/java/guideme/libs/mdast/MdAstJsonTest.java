@@ -159,6 +159,23 @@ class MdAstJsonTest {
                 .isEqualTo(document);
     }
 
+    /**
+     * Older exports wrote optional properties that weren't set as null.
+     */
+    @Test
+    void testNullPropertiesAreReadAsMissing() throws IOException {
+        var link = (MdAstLink) MdAstNode.fromJson(JsonParser.parseString("""
+                {"type":"link","url":"https://example.com","title":null,"children":[]}""").getAsJsonObject());
+        assertThat(link.url).isEqualTo("https://example.com");
+        assertThat(link.title).isNull();
+
+        var code = (MdAstCode) MdAstNode.fromJson(JsonParser.parseString("""
+                {"type":"code","value":"code","lang":null,"meta":null}""").getAsJsonObject());
+        assertThat(code.value).isEqualTo("code");
+        assertThat(code.lang).isNull();
+        assertThat(code.meta).isNull();
+    }
+
     static String toJson(MdAstNode node) throws IOException {
         var writer = new StringWriter();
         node.toJson(new JsonWriter(writer));

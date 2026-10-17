@@ -29,6 +29,20 @@ jobs:
         shell: bash
       - uses: ./.github/actions/gradle-setup
 
+      # The web bundle in web/dist is committed and packaged into the jar, so it must match web/src
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Check that the committed web bundle is up-to-date
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+          git status --porcelain -- dist
+          if [ -n "$(git status --porcelain -- dist)" ]; then exit 1; fi
+
       # Xvfb offers no sRGB-capable GLX visual, which the OpenGL backend requires. The game then falls back to Vulkan,
       # for which we install Mesa's software implementation (lavapipe).
       - name: Install software Vulkan driver
@@ -37,7 +51,7 @@ jobs:
       - name: Generate Static HTML Site
         # If the game can't create a renderer, it hangs on an error dialog, so limit how long this can take.
         timeout-minutes: 10
-        run: xvfb-run -a -s "-screen 0 1280x1024x24" ./gradlew printProjectVersion createStaticSite --max-workers 1
+        run: xvfb-run -a -s "-screen 0 1280x1024x24" ./gradlew printProjectVersion renderStaticTestmodSite --max-workers 1
 
       - name: Upload Generated Site
         uses: actions/upload-artifact@v4

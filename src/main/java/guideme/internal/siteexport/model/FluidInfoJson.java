@@ -1,7 +1,24 @@
 package guideme.internal.siteexport.model;
 
-public class FluidInfoJson {
+import guideme.web.ExportedFluidInfo;
+
+public class FluidInfoJson implements ExportedFluidInfo {
     public String id;
     public String displayName;
     public String icon;
+
+    @Override
+    public String id() {
+        return id;
+    }
+
+    @Override
+    public String icon() {
+        return icon;
+    }
+
+    @Override
+    public String displayName() {
+        return displayName;
+    }
 }

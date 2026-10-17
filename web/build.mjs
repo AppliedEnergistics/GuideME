@@ -17,8 +17,9 @@ async function build() {
     fs.mkdirSync(path.join(distDir, 'templates'), {recursive: true});
 
     // Bundle JavaScript
+    const entryPoint = 'src/index.ts';
     const buildResult = await esbuild.build({
-        entryPoints: ['src/index.ts'],
+        entryPoints: [entryPoint],
         bundle: true,
         splitting: true,
         outdir: 'dist/assets/',
@@ -38,68 +39,75 @@ async function build() {
         },
     });
 
-    // Extract output filenames
-    const jsOutputs = Object.keys(buildResult.metafile.outputs).filter(f => f.endsWith('.js'));
-    const cssOutputs = Object.keys(buildResult.metafile.outputs).filter(f => f.endsWith('.css'));
-
-    const jsFile = path.basename(jsOutputs[0]);
-    if (!jsFile) {
-        throw new Error("Missing expected JS output: " + JSON.stringify(buildResult.metafile.outputs));
+    // Find the bundles of the entry point. Code splitting creates other JS outputs, i.e. for chunks shared by dynamic
+    // imports, which must not be loaded directly.
+    const outputs = buildResult.metafile.outputs;
+    const jsOutput = Object.keys(outputs).find(f => outputs[f].entryPoint === entryPoint);
+    if (!jsOutput) {
+        throw new Error(`Missing JS output for ${entryPoint}: ${JSON.stringify(outputs)}`);
     }
-    const cssFile = path.basename(cssOutputs[0]);
-    if (!cssFile) {
-        throw new Error("Missing expected CSS output: " + JSON.stringify(buildResult.metafile.outputs));
+    // The CSS imported by the entry point is bundled separately
+    const cssOutput = outputs[jsOutput].cssBundle;
+    if (!cssOutput) {
+        throw new Error(`Missing CSS output for ${entryPoint}: ${JSON.stringify(outputs)}`);
+    }
+    const jsFile = path.basename(jsOutput);
+    const cssFile = path.basename(cssOutput);
+
+    // Read and process the HTML templates
+    for (const template of ['layout.html', 'versions.html']) {
+        let htmlTemplate = fs.readFileSync(path.join('src', template), 'utf-8');
+
+        // Find all desired assets to copy
+        let htmlOutput = htmlTemplate.replaceAll(/\{\{asset:([^}]+)}}/g, (substring, assetPath) => {
+            const sourceAssetPath = path.join(dirname, assetPath);
+
+            // Read the asset content
+            const assetContent = fs.readFileSync(sourceAssetPath);
+
+            // Hash the content for cache busting
+            const hash = crypto.createHash('sha256').update(assetContent).digest('hex').substring(0, 12);
+
+            // Parse the path to insert hash before extension
+            const assetDir = path.dirname(assetPath);
+            const assetFilename = path.basename(assetPath);
+            const dotIndex = assetFilename.lastIndexOf('.');
+
+            let cacheBustedFilename;
+            if (dotIndex === -1) {
+                cacheBustedFilename = `${assetFilename}.${hash}`;
+            } else {
+                const name = assetFilename.substring(0, dotIndex);
+                const ext = assetFilename.substring(dotIndex);
+                cacheBustedFilename = `${name}.${hash}${ext}`;
+            }
+
+            // Construct output path maintaining relative directory structure
+            const outputPath = path.join(distDir, assetDir, cacheBustedFilename);
+
+            // Ensure output directory exists
+            fs.mkdirSync(path.dirname(outputPath), {recursive: true});
+
+            // Copy the asset to output directory
+            fs.writeFileSync(outputPath, assetContent);
+
+            // Return the relative path from output root
+            return path.join(assetDir, cacheBustedFilename).replace(/\\/g, '/');
+        });
+
+        // Write processed HTML
+        fs.writeFileSync(path.join('dist/templates', template), htmlOutput);
     }
 
-    // Read and process HTML
-    let htmlTemplate = fs.readFileSync('src/layout.html', 'utf-8');
-
-    // Find all desired assets to copy
-    let htmlOutput = htmlTemplate.replaceAll(/\{\{asset:([^}]+)}}/g, (substring, assetPath) => {
-        const sourceAssetPath = path.join(dirname, assetPath);
-
-        // Read the asset content
-        const assetContent = fs.readFileSync(sourceAssetPath);
-
-        // Hash the content for cache busting
-        const hash = crypto.createHash('sha256').update(assetContent).digest('hex').substring(0, 12);
-
-        // Parse the path to insert hash before extension
-        const assetDir = path.dirname(assetPath);
-        const assetFilename = path.basename(assetPath);
-        const dotIndex = assetFilename.lastIndexOf('.');
-
-        let cacheBustedFilename;
-        if (dotIndex === -1) {
-            cacheBustedFilename = `${assetFilename}.${hash}`;
-        } else {
-            const name = assetFilename.substring(0, dotIndex);
-            const ext = assetFilename.substring(dotIndex);
-            cacheBustedFilename = `${name}.${hash}${ext}`;
-        }
-
-        // Construct output path maintaining relative directory structure
-        const outputPath = path.join(distDir, assetDir, cacheBustedFilename);
-
-        // Ensure output directory exists
-        fs.mkdirSync(path.dirname(outputPath), {recursive: true});
-
-        // Copy the asset to output directory
-        fs.writeFileSync(outputPath, assetContent);
-
-        // Return the relative path from output root
-        return path.join(assetDir, cacheBustedFilename).replace(/\\/g, '/');
-    });
-
-    htmlOutput = htmlOutput
-        .replace(/\{\{JS_BUNDLE\}\}/g, 'assets/' + jsFile)
-        .replace(/\{\{CSS_BUNDLE\}\}/g, 'assets/' + cssFile);
-
-    // Write processed HTML
-    fs.writeFileSync('dist/templates/layout.html', htmlOutput);
+    // Write the hashed names of the bundles, which GuideME adds to the templates with placeholders
+    fs.writeFileSync(path.join('dist/templates', 'bundles.properties'),
+        `stylesheet=assets/${cssFile}\nscript=assets/${jsFile}\n`);
 
     // Write full assets file list
-    const assetList = fs.readdirSync('dist/assets', {recursive: true}).map(p => path.join('assets', p).replace("\\", "/"));
+    // Sort the list, since the order of directory listings depends on the OS and file system
+    const assetList = fs.readdirSync('dist/assets', {recursive: true})
+        .map(p => path.join('assets', p).replaceAll("\\", "/"))
+        .sort();
     fs.writeFileSync('dist/index.txt', assetList.join("\n"));
 }
 

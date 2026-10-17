@@ -1,4 +1,3 @@
-import {FileWithPath} from "react-dropzone";
 import {useEffect, useState} from "react";
 import {unzip} from 'but-unzip';
 import OutputFilesBrowser from "./OutputFilesBrowser";
@@ -8,7 +7,7 @@ import {ZipContent} from "@site/src/components/patchouli/types";
 import {convertBook, UnsortedCategory, UnsortedPage} from "@site/src/components/patchouli/convertBook";
 
 export interface ConversionProps {
-    file: FileWithPath;
+    file: File;
     reset: () => void;
 }
 
@@ -64,7 +63,7 @@ type ConversionResult = {
     outputFiles: Record<string, Uint8Array | string>;
 }
 
-async function convert(file: FileWithPath, writeLogLine: (line: string) => void): Promise<ConversionResult> {
+async function convert(file: File, writeLogLine: (line: string) => void): Promise<ConversionResult> {
     writeLogLine(`Loading ${file.name}...`);
 
     const zipItems = unzip(await readFile(file));

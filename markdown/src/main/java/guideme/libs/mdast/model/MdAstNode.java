@@ -2,6 +2,7 @@ package guideme.libs.mdast.model;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonWriter;
 import guideme.libs.mdast.MdAstVisitor;
@@ -161,8 +162,16 @@ public abstract class MdAstNode implements UnistNode {
     public void removeChildren(Predicate<MdAstNode> node, boolean recursive) {
     }
 
+    /**
+     * {@return the primitive value of a property, or null if it is missing or null}
+     */
+    private static JsonPrimitive getJsonPrimitive(JsonObject object, String name) {
+        var member = object.get(name);
+        return member != null && member.isJsonPrimitive() ? member.getAsJsonPrimitive() : null;
+    }
+
     protected String readJsonString(JsonObject object, String name, String defaultValue) {
-        var member = object.getAsJsonPrimitive(name);
+        var member = getJsonPrimitive(object, name);
         if (member == null) {
             return defaultValue;
         }
@@ -170,7 +179,7 @@ public abstract class MdAstNode implements UnistNode {
     }
 
     protected String readJsonString(JsonObject object, String name) {
-        var member = object.getAsJsonPrimitive(name);
+        var member = getJsonPrimitive(object, name);
         if (member == null || !member.isString()) {
             throw new JsonSyntaxException("Missing property " + name);
         }
@@ -178,7 +187,7 @@ public abstract class MdAstNode implements UnistNode {
     }
 
     protected int readJsonInt(JsonObject object, String name) {
-        var member = object.getAsJsonPrimitive(name);
+        var member = getJsonPrimitive(object, name);
         if (member == null || !member.isNumber()) {
             throw new JsonSyntaxException("Missing property " + name);
         }
@@ -186,7 +195,7 @@ public abstract class MdAstNode implements UnistNode {
     }
 
     protected boolean readJsonBoolean(JsonObject object, String name) {
-        var member = object.getAsJsonPrimitive(name);
+        var member = getJsonPrimitive(object, name);
         if (member == null || !member.isBoolean()) {
             throw new JsonSyntaxException("Missing property " + name);
         }

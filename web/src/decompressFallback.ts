@@ -1,5 +1,4 @@
 import { ungzip } from "pako";
-import decompress from "./decompress.ts";
 
 export default async function decompressFallback(
   blob: Blob,

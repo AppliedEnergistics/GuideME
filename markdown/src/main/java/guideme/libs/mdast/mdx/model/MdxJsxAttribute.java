@@ -74,7 +74,7 @@ public class MdxJsxAttribute extends MdAstNode implements MdxJsxAttributeNode {
         super.readJson(jsonObject);
         name = readJsonString(jsonObject, "name");
         var value = jsonObject.get("value");
-        if (value.isJsonNull()) {
+        if (value == null || value.isJsonNull()) {
             this.value = null;
         } else if (value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()) {
             this.value = value.getAsString();

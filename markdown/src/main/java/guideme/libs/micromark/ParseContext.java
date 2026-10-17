@@ -3,6 +3,7 @@ package guideme.libs.micromark;
 import guideme.libs.unist.UnistPoint;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,7 +22,7 @@ public class ParseContext {
     /**
      * List of defined identifiers
      */
-    public java.util.List<String> defined = new ArrayList<>();
+    public List<String> defined = new ArrayList<>();
 
     /**
      * Map of line numbers to whether they are lazy (as opposed to the line before them).

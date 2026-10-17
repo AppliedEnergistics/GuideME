@@ -2,18 +2,13 @@
   text-decoration: underline dotted;
 }
 
+/* The name of an item in its rarity color, with the text shadow Minecraft uses (a quarter of the text color) */
 .item-name {
-  padding-left: 4px;
-  padding-right: 4px;
-  font-weight: bold;
-  color: var(--text-color);
-
-  font-family: var(--minecraft-font);
-  text-shadow: 0.1em 0.1em 0 calc(var(--text-color) * 0.25);
-}
-
-.item-name[data-rarity="common"] {
   --text-color: white;
+  color: var(--text-color);
+  font-family: var(--minecraft-font);
+  text-shadow: calc(1px * var(--gui-scale)) calc(1px * var(--gui-scale)) 0
+    color-mix(in srgb, var(--text-color) 25%, black);
 }
 
 .item-name[data-rarity="uncommon"] {

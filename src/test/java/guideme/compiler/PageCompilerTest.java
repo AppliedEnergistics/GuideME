@@ -3,17 +3,23 @@ package guideme.compiler;
 import guideme.Guide;
 import guideme.GuidePage;
 import guideme.extensions.ExtensionCollection;
-import guideme.internal.GuideME;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
+import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(EphemeralTestServerProvider.class)
 class PageCompilerTest {
     private Path guidebookFolder;
+
+    public PageCompilerTest(MinecraftServer server) {
+    }
 
     @BeforeEach
     void setUp() throws Exception {
@@ -28,8 +34,10 @@ class PageCompilerTest {
     private GuidePage compilePage(String id) throws Exception {
         var path = guidebookFolder.resolve(id + ".md");
         try (var in = Files.newInputStream(path)) {
-            var parsed = PageCompiler.parse("ae2", "en_us", GuideME.makeId(id), in);
-            var testPages = Guide.builder(Identifier.fromNamespaceAndPath("ae2", "ae2guide"))
+            // Use the namespace of the test mod, so that assets are loaded from the development sources
+            var parsed = PageCompiler.parse("testmod", "en_us", Identifier.fromNamespaceAndPath("testmod", id + ".md"),
+                    in);
+            var testPages = Guide.builder(Identifier.fromNamespaceAndPath("testmod", "guide"))
                     .developmentSources(guidebookFolder)
                     .watchDevelopmentSources(false)
                     .register(false)

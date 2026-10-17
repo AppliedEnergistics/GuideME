@@ -1,6 +1,7 @@
 @import "./main.css";
 @import "./navbar.css";
 @import "./item-name.css";
+@import "./tooltip.css";
 @import "./recipes.css";
 @import "./model-viewer.css";
 
@@ -68,9 +69,6 @@ hr {
   --color--navbar-row-hover: rgb(33, 33, 33);
   --color--navbar-expand-arrow: rgb(238, 238, 238);
   --color--table-border: rgb(124, 124, 124);
-  --color--icon-button-normal: rgb(200, 200, 200);
-  --color--icon-button-disabled: rgb(64, 64, 64);
-  --color--icon-button-hover: rgb(0, 213, 255);
   --color--in-world-block-highlight: #999999cc;
   --color--scene-background: rgba(0, 0, 0, 0.2);
 
@@ -238,4 +236,34 @@ th + th {
     vertical-align: sub;
     padding-right: 5px;
   }
+}
+
+.floating-image-left {
+  float: left;
+  margin-right: calc(5px * var(--gui-scale));
+  margin-bottom: calc(5px * var(--gui-scale));
+}
+
+.floating-image-right {
+  float: right;
+  margin-left: calc(5px * var(--gui-scale));
+  margin-bottom: calc(5px * var(--gui-scale));
+}
+
+.command-link {
+  color: var(--color-link);
+  cursor: help;
+  text-decoration: underline dotted;
+}
+
+kbd {
+  font-family: inherit;
+  padding: 0 0.3em;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+}
+
+/* Block images are block elements like in-game */
+.block-image {
+  display: block;
 }

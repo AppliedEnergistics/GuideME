@@ -1,6 +1,6 @@
 modLoader = "javafml"
 loaderVersion = "*"
-iconFile = "logo.png"
+iconFile = "assets/guideme/logo.png"
 authors = "shartte"
 license = "See GitHub repository for details"
 

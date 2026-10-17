@@ -22,6 +22,7 @@ class GuidebookChunk extends LevelChunk {
         getGuidebookLevel().prepareLighting(pos);
 
         var result = super.setBlockState(pos, state, flags);
+        getGuidebookLevel().onBlockChanged();
         if (state.isAir()) {
             getGuidebookLevel().removeFilledBlock(pos);
         } else {

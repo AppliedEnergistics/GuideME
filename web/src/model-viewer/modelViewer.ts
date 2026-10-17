@@ -8,6 +8,7 @@ import {
   MathUtils,
   Raycaster,
   Scene,
+  Sprite,
   Vector2,
   Vector3,
 } from "three";
@@ -19,9 +20,19 @@ import { buildInWorldAnnotation } from "./buildInWorldAnnotation.ts";
 import addLevelLighting from "./addSceneLighting.ts";
 import buildOverlayAnnotation from "./buildOverlayAnnotations.ts";
 import TextureManager from "./TextureManager.ts";
-import tippy from "tippy.js";
+import tippy, { followCursor, type Instance } from "tippy.js";
 
 const DEBUG = false;
+
+/**
+ * The size of a GUI pixel in CSS pixels, matching --gui-scale of the page.
+ */
+const GUI_SCALE = 3;
+
+/**
+ * Overlay annotations have a fixed size on screen, like in-game (see DiamondAnnotation).
+ */
+const OVERLAY_ANNOTATION_SIZE = 16;
 
 interface ControlInterface {
   zoomIn(): void;
@@ -29,6 +40,8 @@ interface ControlInterface {
   zoomOut(): void;
 
   resetView(): void;
+
+  setAnnotationsVisible(visible: boolean): void;
 
   dispose(): void;
 }
@@ -110,11 +123,13 @@ async function initialize(
     abortSignal,
   );
 
-  // Center the scene
+  // Move the point the in-game camera is centered on to the origin, which the camera looks at.
+  // Older scenes don't include it, so we fall back to the center of the scene's bounding box.
   const sceneBounds = new Box3();
   sceneBounds.expandByObject(group);
   const sceneCenter = sceneBounds.getCenter(new Vector3());
-  group.position.copy(sceneCenter.clone().negate());
+  const cameraCenter = cameraProps.center ?? sceneCenter;
+  group.position.copy(cameraCenter.clone().negate());
 
   // Add a plane for orientation if camera controls are enabled
   if (cameraControls) {
@@ -135,24 +150,41 @@ async function initialize(
   addLevelLighting(scene);
   scene.add(group);
 
+  // Annotations are kept in their own group, so they can be hidden
+  const annotationGroup = new THREE.Group();
+  group.add(annotationGroup);
   for (const annotation of inWorldAnnotations) {
-    group.add(buildInWorldAnnotation(annotation));
+    annotationGroup.add(buildInWorldAnnotation(annotation));
   }
 
   for (const annotation of overlayAnnotations) {
-    group.add(await buildOverlayAnnotation(textureManager, annotation));
+    annotationGroup.add(
+      await buildOverlayAnnotation(textureManager, annotation),
+    );
   }
+
+  const overlaySprites: Sprite[] = [];
+  annotationGroup.traverse((object) => {
+    if (object instanceof Sprite) {
+      overlaySprites.push(object);
+    }
+  });
 
   const camera = new THREE.OrthographicCamera();
   camera.near = 0;
   camera.far = 30000;
 
+  // The size of a GUI pixel in CSS pixels, taking into account that scenes are scaled down to fit
+  let guiPixelSize = GUI_SCALE;
   const updateViewportSize = (width: number, height: number) => {
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     // We only scale down, not up
-    const scaling = Math.min(1, width / (originalWidth * 3));
-    camera.zoom = (1 / 0.625) * 16 * cameraProps.zoom * scaling;
+    const scaling = Math.min(1, width / (originalWidth * GUI_SCALE));
+    guiPixelSize = GUI_SCALE * scaling;
+    // Matches the view matrix scale in CameraSettings (0.625 comes from the default block model GUI transform),
+    // converted from GUI pixels to CSS pixels
+    camera.zoom = 0.625 * 16 * cameraProps.zoom * guiPixelSize;
     camera.left = -width / 2;
     camera.right = width / 2;
     camera.top = height / 2;
@@ -258,11 +290,18 @@ async function initialize(
       }
     }
 
+    // With an orthographic camera, a world unit is camera.zoom CSS pixels on screen
+    const overlaySize = (OVERLAY_ANNOTATION_SIZE * guiPixelSize) / camera.zoom;
+    for (const sprite of overlaySprites) {
+      sprite.scale.set(overlaySize, overlaySize, 1);
+    }
+
     renderer.render(scene, camera);
 
     // Update what's under the mouse
     const mousePos = mousePosRef.current;
-    if (mousePos) {
+    // Raycasting does not respect the visibility of objects
+    if (mousePos && annotationGroup.visible) {
       setTooltipObject(getTooltipContent(mousePos, camera, scene));
     } else {
       setTooltipObject(undefined);
@@ -289,6 +328,9 @@ async function initialize(
     },
     resetView(): void {
       controls?.reset();
+    },
+    setAnnotationsVisible(visible: boolean): void {
+      annotationGroup.visible = visible;
     },
     zoomIn(): void {
       if (controls) {
@@ -321,6 +363,21 @@ async function initialize(
       }
     },
   };
+}
+
+function parseAnnotations<T>(
+  element: HTMLElement,
+  json: string | undefined,
+): T[] {
+  if (!json) {
+    return [];
+  }
+  try {
+    return JSON.parse(json) as T[];
+  } catch (e) {
+    console.error("Scene %o has malformed annotations: %s", element, e);
+    return [];
+  }
 }
 
 export async function setupGameScene(element: HTMLElement) {
@@ -388,11 +445,35 @@ export async function setupGameScene(element: HTMLElement) {
   viewportElement.className = "viewport";
   rootElement.append(viewportElement);
 
+  const inWorldAnnotations = parseAnnotations<InWorldAnnotation>(
+    element,
+    element.dataset.sceneInWorldAnnotations,
+  );
+  const overlayAnnotations = parseAnnotations<OverlayAnnotation>(
+    element,
+    element.dataset.sceneOverlayAnnotations,
+  );
+
+  // Shows the content of the hovered annotation as a tooltip that follows the mouse
+  const annotationTooltip = tippy(rootElement, {
+    trigger: "manual",
+    allowHTML: true,
+    followCursor: true,
+    plugins: [followCursor],
+    animation: false,
+  });
   let currentTooltipTemplateId: string | undefined = undefined;
   const setTooltipContent = (templateId: string | undefined) => {
-    if (templateId !== currentTooltipTemplateId) {
-      currentTooltipTemplateId = templateId;
-      console.info("Setting tooltip content to template %s", templateId);
+    if (templateId === currentTooltipTemplateId) {
+      return;
+    }
+    currentTooltipTemplateId = templateId;
+    const template = templateId ? document.getElementById(templateId) : null;
+    if (template) {
+      annotationTooltip.setContent(template.innerHTML);
+      annotationTooltip.show();
+    } else {
+      annotationTooltip.hide();
     }
   };
 
@@ -426,8 +507,8 @@ export async function setupGameScene(element: HTMLElement) {
     sceneSrc,
     viewportElement,
     interactive,
-    [],
-    [],
+    inWorldAnnotations,
+    overlayAnnotations,
     mousePos,
     setTooltipContent,
     abortController.signal,
@@ -439,42 +520,42 @@ export async function setupGameScene(element: HTMLElement) {
     controlsWrapper.className = "controls";
     wrapperElement.append(controlsWrapper);
 
-    const zoomInButton = document.createElement("button");
-    zoomInButton.className = "minecraft-tooltip";
-    zoomInButton.dataset.tooltipText = "Zoom in";
-    zoomInButton.append("+");
-    zoomInButton.addEventListener("click", (e) => {
-      e.preventDefault();
-      controller.zoomIn();
-    });
-    tippy(zoomInButton, {
-      content: "Zoom in",
-    });
-    controlsWrapper.append(zoomInButton);
+    // Same buttons as the in-game scene toolbar (see LytGuidebookScene)
+    const addButton = (
+      icon: string,
+      label: string,
+      onClick: (button: HTMLButtonElement, tooltip: Instance) => void,
+    ) => {
+      const button = document.createElement("button");
+      button.className = "icon-" + icon;
+      button.setAttribute("aria-label", label);
+      const tooltip = tippy(button, { content: label });
+      button.addEventListener("click", (e) => {
+        e.preventDefault();
+        onClick(button, tooltip);
+      });
+      controlsWrapper.append(button);
+    };
 
-    const zoomOutButton = document.createElement("button");
-    zoomOutButton.className = "minecraft-tooltip";
-    zoomOutButton.dataset.tooltipText = "Zoom out";
-    zoomOutButton.append("-");
-    zoomOutButton.addEventListener("click", (e) => {
-      e.preventDefault();
-      controller.zoomOut();
-    });
-    tippy(zoomOutButton, {
-      content: "Zoom out",
-    });
-    controlsWrapper.append(zoomOutButton);
-
-    const resetButton = document.createElement("button");
-    resetButton.append("R");
-    resetButton.addEventListener("click", (e) => {
-      e.preventDefault();
-      controller.resetView();
-    });
-    controlsWrapper.append(resetButton);
-    tippy(resetButton, {
-      content: "Reset view",
-    });
+    if (inWorldAnnotations.length > 0 || overlayAnnotations.length > 0) {
+      let annotationsVisible = true;
+      addButton("hide-annotations", "Hide annotations", (button, tooltip) => {
+        annotationsVisible = !annotationsVisible;
+        controller.setAnnotationsVisible(annotationsVisible);
+        setTooltipContent(undefined);
+        const label = annotationsVisible
+          ? "Hide annotations"
+          : "Show annotations";
+        button.className = annotationsVisible
+          ? "icon-hide-annotations"
+          : "icon-show-annotations";
+        button.setAttribute("aria-label", label);
+        tooltip.setContent(label);
+      });
+    }
+    addButton("zoom-in", "Zoom in", () => controller.zoomIn());
+    addButton("zoom-out", "Zoom out", () => controller.zoomOut());
+    addButton("reset-view", "Reset view", () => controller.resetView());
   }
 
   element.insertAdjacentElement("afterend", wrapperElement);

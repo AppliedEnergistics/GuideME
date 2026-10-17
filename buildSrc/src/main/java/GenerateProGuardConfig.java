@@ -40,10 +40,11 @@ public abstract class GenerateProGuardConfig extends DefaultTask {
         Collections.sort(packageNames);
 
         templateContent.append("\n");
+        // Keep all members of our own public classes, since mods compile against them (including protected members).
+        // Shrinking is only aimed at the shaded libraries.
         for (String packageName : packageNames) {
             templateContent.append("-keep public class ").append(packageName).append(".* {\n");
-            templateContent.append("  public <methods>;\n");
-            templateContent.append("  public <fields>;\n");
+            templateContent.append("  *;\n");
             templateContent.append("}\n");
         }
 

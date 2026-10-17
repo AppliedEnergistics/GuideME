@@ -1,0 +1,4 @@
+.test {
+  background: url("images/test.png");
+  mask: url(data:image/png;base64,AAAA);
+}

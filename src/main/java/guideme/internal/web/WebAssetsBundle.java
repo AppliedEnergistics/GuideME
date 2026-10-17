@@ -1,10 +1,13 @@
 package guideme.internal.web;
 
-import static guideme.internal.web.HtmlUtils.createHtmlElement;
 import static guideme.internal.web.HtmlUtils.escapeHtml;
 
+import guideme.web.html.HtmlFragment;
+import guideme.web.html.HtmlNode;
+import guideme.web.html.HtmlTag;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -12,11 +15,16 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +41,13 @@ final class WebAssetsBundle {
     private static final String PLACEHOLDER_GUIDE_TITLE = "{{GUIDE_TITLE}}";
     private static final String PLACEHOLDER_GUIDE_NAVBAR = "{{GUIDE_NAVBAR}}";
     private static final String PLACEHOLDER_FOOTER = "{{FOOTER}}";
+    private static final String PLACEHOLDER_EXTRA_HEAD = "{{EXTRA_HEAD}}";
+    private static final String PLACEHOLDER_LOGO_URL = "{{LOGO_URL}}";
+    private static final String PLACEHOLDER_HOME_URL = "{{HOME_URL}}";
+    private static final String PLACEHOLDER_GUIDEME_STYLESHEETS = "{{GUIDEME_STYLESHEETS}}";
+    private static final String PLACEHOLDER_GUIDEME_SCRIPTS = "{{GUIDEME_SCRIPTS}}";
+
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{[A-Z0-9_]+}}");
 
     @Nullable
     private final Path folder;
@@ -40,7 +55,39 @@ final class WebAssetsBundle {
 
     private final String layoutTemplate;
 
-    public WebAssetsBundle(StaticSiteGenerator.Options options) {
+    /**
+     * Paths of the stylesheet and script bundles of GuideME relative to the output folder. Their names contain a hash
+     * of their content, so templates reference them with placeholders.
+     */
+    private final String stylesheetBundle;
+    private final String scriptBundle;
+
+    /**
+     * Template for the pages at the root of websites with multiple guide versions. Loaded on demand, since websites
+     * with a single version don't need it.
+     */
+    @Nullable
+    private String versionsTemplate;
+
+    /**
+     * Paths of stylesheets and scripts relative to the output folder, which are added to the head of every page.
+     */
+    private final List<String> extraStylesheets = new ArrayList<>();
+    private final List<String> extraScripts = new ArrayList<>();
+
+    /**
+     * Paths of the logo and favicon relative to the output folder.
+     */
+    private String logo = "";
+    @Nullable
+    private String favicon;
+
+    /**
+     * Path of the page the logo links to, relative to the output folder.
+     */
+    private String homePath = "";
+
+    WebAssetsBundle(WebSiteGenerator.Options options) {
         this.folder = options.webAssetsPath();
         this.outputFolder = options.outputFolder();
         this.layoutTemplate = loadTemplate(
@@ -51,7 +98,45 @@ final class WebAssetsBundle {
                 PLACEHOLDER_RELATIVE_PATH_TO_ROOT,
                 PLACEHOLDER_GUIDE_TITLE,
                 PLACEHOLDER_GUIDE_NAVBAR,
-                PLACEHOLDER_FOOTER);
+                PLACEHOLDER_FOOTER,
+                PLACEHOLDER_EXTRA_HEAD,
+                PLACEHOLDER_LOGO_URL,
+                PLACEHOLDER_HOME_URL,
+                PLACEHOLDER_GUIDEME_STYLESHEETS,
+                PLACEHOLDER_GUIDEME_SCRIPTS);
+
+        var bundles = new Properties();
+        try {
+            bundles.load(new StringReader(new String(loadAsset("templates/bundles.properties"),
+                    StandardCharsets.UTF_8)));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load the names of the bundles", e);
+        }
+        this.stylesheetBundle = bundles.getProperty("stylesheet");
+        this.scriptBundle = bundles.getProperty("script");
+        if (stylesheetBundle == null || scriptBundle == null) {
+            throw new IllegalStateException("Missing stylesheet or script in bundles.properties: " + bundles);
+        }
+    }
+
+    void setLogo(String pathInOutputFolder) {
+        this.logo = pathInOutputFolder;
+    }
+
+    void setFavicon(String pathInOutputFolder) {
+        this.favicon = pathInOutputFolder;
+    }
+
+    void setHomePath(String pathInOutputFolder) {
+        this.homePath = pathInOutputFolder;
+    }
+
+    void addStylesheet(String pathInOutputFolder) {
+        extraStylesheets.add(pathInOutputFolder);
+    }
+
+    void addScript(String pathInOutputFolder) {
+        extraScripts.add(pathInOutputFolder);
     }
 
     private byte[] loadAsset(String name) throws IOException {
@@ -84,7 +169,7 @@ final class WebAssetsBundle {
         }
 
         var foundPlaceholders = new HashSet<String>();
-        var matcher = Pattern.compile("\\{\\{[A-Z0-9_]+}}").matcher(content);
+        var matcher = PLACEHOLDER_PATTERN.matcher(content);
         while (matcher.find()) {
             foundPlaceholders.add(matcher.group());
         }
@@ -98,47 +183,156 @@ final class WebAssetsBundle {
         return content;
     }
 
-    public String realizeLayoutTemplate(WebPageCompileContext context, LayoutPlaceholders placeholders) {
-        // Compute the relative path to the output folder to fixup asset links
-        var relativePathToRoot = "";
-        if (!placeholders.destinationFolder().equals(outputFolder)) {
-            relativePathToRoot = placeholders.destinationFolder().relativize(outputFolder).toString().replace('\\', '/')
-                    + "/";
-        }
+    String realizeLayoutTemplate(WebPageCompileContext context, LayoutPlaceholders placeholders) {
+        var options = context.options();
 
-        // Strip all HTML and escape
-        var titleText = placeholders.pageTitle().replaceAll("<[^>]+>", "") + " - "
-                + escapeHtml("AE2 Players Guide for " + context.guide().getGameMajorVersion());
+        // The page title is plain text
+        var titleText = escapeHtml(placeholders.pageTitle() + " - " + options.title() + " for Minecraft "
+                + context.guide().getGameMajorVersion());
 
         var guideNavbar = WebGuideNavBar.generate(context);
 
         var footer = buildFooter(context);
 
-        return layoutTemplate
-                .replace(PLACEHOLDER_PAGE_CONTENT, placeholders.pageContent())
-                .replace(PLACEHOLDER_PAGE_TITLE, placeholders.pageTitle())
-                .replace(PLACEHOLDER_PAGE_TITLE_TEXT, titleText)
-                .replace(PLACEHOLDER_RELATIVE_PATH_TO_ROOT, relativePathToRoot)
-                .replace(PLACEHOLDER_GUIDE_TITLE, escapeHtml(context.guide().getGuideTitle()))
-                .replace(PLACEHOLDER_GUIDE_NAVBAR, guideNavbar)
-                .replace(PLACEHOLDER_FOOTER, footer);
-    }
-
-    private static @NonNull String buildFooter(WebPageCompileContext context) {
-        String footerContent = "Minecraft " + context.guide().getGameMajorVersion();
-        String changeVersionUrl = context.options().changeVersionUrl();
-        if (changeVersionUrl != null) {
-            footerContent += " [" + createHtmlElement("a", Map.of(
-                    "href", changeVersionUrl), "change") + "]";
+        var extraHead = new HtmlFragment();
+        if (placeholders.canonicalUrl() != null) {
+            extraHead.append(HtmlNode.tag("link")
+                    .setAttribute("rel", "canonical")
+                    .setAttribute("href", placeholders.canonicalUrl()));
         }
-        return createHtmlElement(
-                "div",
-                Map.of("class", "version-picker"),
-                footerContent);
+        if (favicon != null) {
+            extraHead.append(HtmlNode.tag("link")
+                    .setAttribute("rel", "icon")
+                    .setAttribute("href", context.url(favicon)));
+        }
+        // Styles required by renderers on this page come first, so the stylesheets of the site can override them
+        var stylesheets = new LinkedHashSet<>(context.requiredStylesheets());
+        stylesheets.addAll(extraStylesheets);
+        for (var stylesheet : stylesheets) {
+            extraHead.append(HtmlNode.tag("link")
+                    .setAttribute("rel", "stylesheet")
+                    .setAttribute("href", context.url(stylesheet)));
+        }
+        var scripts = new LinkedHashSet<>(context.requiredScripts());
+        scripts.addAll(extraScripts);
+        for (var script : scripts) {
+            extraHead.append(HtmlNode.tag("script")
+                    .setAttribute("src", context.url(script))
+                    .setAttribute("defer", null));
+        }
+
+        var values = new HashMap<String, String>();
+        values.put(PLACEHOLDER_PAGE_CONTENT, placeholders.pageContent().outerHtml());
+        values.put(PLACEHOLDER_PAGE_TITLE, escapeHtml(placeholders.pageTitle()));
+        values.put(PLACEHOLDER_PAGE_TITLE_TEXT, titleText);
+        values.put(PLACEHOLDER_RELATIVE_PATH_TO_ROOT, context.getUrlPrefixToRoot());
+        values.put(PLACEHOLDER_GUIDE_TITLE, escapeHtml(options.title()));
+        values.put(PLACEHOLDER_GUIDE_NAVBAR, guideNavbar.outerHtml());
+        values.put(PLACEHOLDER_FOOTER, footer.outerHtml());
+        values.put(PLACEHOLDER_EXTRA_HEAD, extraHead.outerHtml());
+        values.put(PLACEHOLDER_LOGO_URL, escapeHtml(context.url(logo)));
+        values.put(PLACEHOLDER_HOME_URL, escapeHtml(context.url(homePath)));
+        values.put(PLACEHOLDER_GUIDEME_STYLESHEETS, stylesheetTag(context.url(stylesheetBundle)).outerHtml());
+        values.put(PLACEHOLDER_GUIDEME_SCRIPTS, HtmlNode.tag("script")
+                .setAttribute("src", context.url(scriptBundle))
+                .setAttribute("defer", null)
+                .setAttribute("type", "module")
+                .outerHtml());
+
+        return replacePlaceholders(layoutTemplate, values);
     }
 
-    public void copyToOutputFolder() throws IOException {
-        var filesCreated = new HashSet<>();
+    /**
+     * Realizes the template of a page at the root of a website with multiple guide versions, which doesn't belong to
+     * any of the versions.
+     *
+     * @param urlPrefix The prefix of URLs relative to the root of the website.
+     */
+    String realizeVersionsTemplate(String guideTitle, String urlPrefix, VersionsPlaceholders placeholders) {
+        if (versionsTemplate == null) {
+            versionsTemplate = loadTemplate(
+                    "versions",
+                    PLACEHOLDER_PAGE_TITLE,
+                    PLACEHOLDER_PAGE_TITLE_TEXT,
+                    PLACEHOLDER_PAGE_CONTENT,
+                    PLACEHOLDER_RELATIVE_PATH_TO_ROOT,
+                    PLACEHOLDER_GUIDE_TITLE,
+                    PLACEHOLDER_EXTRA_HEAD,
+                    PLACEHOLDER_LOGO_URL,
+                    PLACEHOLDER_HOME_URL,
+                    PLACEHOLDER_GUIDEME_STYLESHEETS);
+        }
+
+        var extraHead = new HtmlFragment();
+        if (placeholders.description() != null) {
+            extraHead.append(HtmlNode.tag("meta")
+                    .setAttribute("name", "description")
+                    .setAttribute("content", placeholders.description()));
+        }
+        if (placeholders.canonicalUrl() != null) {
+            extraHead.append(HtmlNode.tag("link")
+                    .setAttribute("rel", "canonical")
+                    .setAttribute("href", placeholders.canonicalUrl()));
+        }
+        if (favicon != null) {
+            extraHead.append(HtmlNode.tag("link")
+                    .setAttribute("rel", "icon")
+                    .setAttribute("href", urlPrefix + favicon));
+        }
+        for (var stylesheet : extraStylesheets) {
+            extraHead.append(HtmlNode.tag("link")
+                    .setAttribute("rel", "stylesheet")
+                    .setAttribute("href", urlPrefix + stylesheet));
+        }
+
+        var values = new HashMap<String, String>();
+        values.put(PLACEHOLDER_PAGE_CONTENT, placeholders.pageContent().outerHtml());
+        values.put(PLACEHOLDER_PAGE_TITLE, escapeHtml(placeholders.pageTitle()));
+        values.put(PLACEHOLDER_PAGE_TITLE_TEXT, escapeHtml(placeholders.pageTitleText()));
+        values.put(PLACEHOLDER_RELATIVE_PATH_TO_ROOT, urlPrefix);
+        values.put(PLACEHOLDER_GUIDE_TITLE, escapeHtml(guideTitle));
+        values.put(PLACEHOLDER_EXTRA_HEAD, extraHead.outerHtml());
+        values.put(PLACEHOLDER_LOGO_URL, escapeHtml(urlPrefix + logo));
+        values.put(PLACEHOLDER_HOME_URL, escapeHtml(urlPrefix));
+        values.put(PLACEHOLDER_GUIDEME_STYLESHEETS, stylesheetTag(urlPrefix + stylesheetBundle).outerHtml());
+        return replacePlaceholders(versionsTemplate, values);
+    }
+
+    private static HtmlTag stylesheetTag(String href) {
+        return HtmlNode.tag("link")
+                .setAttribute("rel", "stylesheet")
+                .setAttribute("href", href);
+    }
+
+    private static String replacePlaceholders(String template, Map<String, String> values) {
+        // Replace in a single pass, so that placeholders in the inserted content are not replaced
+        return PLACEHOLDER_PATTERN.matcher(template)
+                .replaceAll(m -> Matcher.quoteReplacement(values.getOrDefault(m.group(), m.group())));
+    }
+
+    private static HtmlTag buildFooter(WebPageCompileContext context) {
+        var fragment = new HtmlFragment();
+        fragment.append("Minecraft " + context.guide().getGameMajorVersion());
+
+        // When the website is served from a sub-path, assume that the root lists the available versions
+        var options = context.options();
+        var changeVersionUrl = options.changeVersionUrl();
+        if (changeVersionUrl == null && !options.basePath().equals("/")) {
+            changeVersionUrl = "/";
+        }
+        if (changeVersionUrl != null) {
+            fragment.append(" [");
+            fragment.append(HtmlNode.tag("a")
+                    .setAttribute("href", changeVersionUrl).append("change"));
+            fragment.append("]");
+        }
+
+        return HtmlNode.tag("div", fragment)
+                .setClassName("version-picker");
+    }
+
+    void copyToOutputFolder() throws IOException {
+        var filesCreated = new HashSet<Path>();
         if (this.folder != null) {
             Path templatesFolder = folder.resolve("templates");
             Files.walkFileTree(folder, new SimpleFileVisitor<>() {
@@ -155,7 +349,7 @@ final class WebAssetsBundle {
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     var destination = outputFolder.resolve(folder.relativize(file));
                     Files.copy(file, destination, StandardCopyOption.REPLACE_EXISTING);
-                    filesCreated.add(file.toAbsolutePath().normalize());
+                    filesCreated.add(destination.toAbsolutePath().normalize());
                     return super.visitFile(file, attrs);
                 }
             });
@@ -176,7 +370,7 @@ final class WebAssetsBundle {
                 continue;
             }
             var targetPath = outputFolder.resolve(assetIndexLine);
-            if (filesCreated.contains(targetPath)) {
+            if (filesCreated.contains(targetPath.toAbsolutePath().normalize())) {
                 continue;
             }
             var assetContent = loadDefaultAsset(assetIndexLine);
