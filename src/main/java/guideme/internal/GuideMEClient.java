@@ -145,10 +145,6 @@ public class GuideMEClient {
         return clientConfig.showDebugGuiOverlays.getAsBoolean();
     }
 
-    public boolean isCacheSceneMeshes() {
-        return clientConfig.cacheSceneMeshes.getAsBoolean();
-    }
-
     public boolean isAdaptiveScalingEnabled() {
         return clientConfig.adaptiveScaling.getAsBoolean();
     }
@@ -212,7 +208,6 @@ public class GuideMEClient {
         final ModConfigSpec spec;
         final ModConfigSpec.BooleanValue adaptiveScaling;
         final ModConfigSpec.BooleanValue showDebugGuiOverlays;
-        final ModConfigSpec.BooleanValue cacheSceneMeshes;
         final ModConfigSpec.BooleanValue fullWidthLayout;
         final ModConfigSpec.BooleanValue ignoreTranslatedGuides;
         final ModConfigSpec.BooleanValue hideMissingRecipeErrors;
@@ -245,10 +240,6 @@ public class GuideMEClient {
             showDebugGuiOverlays = builder
                     .comment("Show debugging overlays in GUI on mouse-over.")
                     .define("showDebugGuiOverlays", false);
-            cacheSceneMeshes = builder
-                    .comment(
-                            "Keep the block geometry of 3D scenes on the GPU instead of rebuilding it every frame. Turn this off to compare against or work around rendering issues.")
-                    .define("cacheSceneMeshes", true);
             builder.pop();
 
             spec = builder.build();

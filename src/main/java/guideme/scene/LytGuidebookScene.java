@@ -215,10 +215,12 @@ public class LytGuidebookScene extends LytBox {
                 scene.getCameraSettings().setViewportSize(prefSize);
                 var annotations = hideAnnotations ? Collections.<InWorldAnnotation>emptyList()
                         : scene.getInWorldAnnotations();
-                // Site exports capture all scenes of a guide without a client tick in between, so unused caches
-                // couldn't expire
-                renderer.render(scene.getLevel(), scene.getCameraSettings(), annotations, LightDarkMode.LIGHT_MODE,
-                        false);
+                // Don't keep the geometry: site exports capture all scenes of a guide without a client tick in
+                // between, so unused geometry wouldn't be freed during the export
+                try (var meshCache = new SceneMeshCache()) {
+                    renderer.render(scene.getLevel(), scene.getCameraSettings(), annotations,
+                            LightDarkMode.LIGHT_MODE, meshCache);
+                }
             });
         }
     }

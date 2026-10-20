@@ -24,19 +24,18 @@ public final class GuideMELanguageProvider extends LanguageProvider {
     }
 
     private void addConfigTranslations() {
-        var translations = Map.ofEntries(
-                Map.entry("guide", "Guides"),
-                Map.entry("ignoreTranslatedGuides", "Ignore Guide Translations"),
-                Map.entry("ignoreTranslatedGuides.tooltip",
-                        "Always load the original version of GuideME guides, regardless of the currently selected UI language"),
-                Map.entry("title", "GuideME Configuration"),
-                Map.entry("gui", "User Interface"),
-                Map.entry("debug", "Debug"),
-                Map.entry("debug.tooltip", "Advanced Debugging Settings for Guide development"),
-                Map.entry("adaptiveScaling", "Adaptive UI Scaling"),
-                Map.entry("fullWidthLayout", "Full Width Layout"),
-                Map.entry("showDebugGuiOverlays", "Debug GUI Overlays"),
-                Map.entry("cacheSceneMeshes", "Cache Scene Geometry"));
+        var translations = Map.of(
+                "guide", "Guides",
+                "ignoreTranslatedGuides", "Ignore Guide Translations",
+                "ignoreTranslatedGuides.tooltip",
+                "Always load the original version of GuideME guides, regardless of the currently selected UI language",
+                "title", "GuideME Configuration",
+                "gui", "User Interface",
+                "debug", "Debug",
+                "debug.tooltip", "Advanced Debugging Settings for Guide development",
+                "adaptiveScaling", "Adaptive UI Scaling",
+                "fullWidthLayout", "Full Width Layout",
+                "showDebugGuiOverlays", "Debug GUI Overlays");
         for (var entry : translations.entrySet()) {
             add("guideme.configuration." + entry.getKey(), entry.getValue());
         }
