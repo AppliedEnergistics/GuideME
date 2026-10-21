@@ -1,7 +1,6 @@
 package guideme.siteexport;
 
 import java.nio.file.Path;
-import java.util.function.IntUnaryOperator;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -56,7 +55,7 @@ public interface ResourceExporter {
     /**
      * Exports a texture by id and returns the relative path to refer to it from other content that is being exported.
      */
-    String exportTexture(Identifier texture, IntUnaryOperator pixelOp);
+    String exportTexture(Identifier texture, NamedPixelModifier pixelOp);
 
     /**
      * Exports a sprite by id and returns the relative path to refer to it from other content that is being exported.
@@ -66,7 +65,7 @@ public interface ResourceExporter {
     /**
      * Exports a sprite by id and returns the relative path to refer to it from other content that is being exported.
      */
-    String exportSprite(TextureAtlasSprite texture, IntUnaryOperator pixelOp);
+    String exportSprite(TextureAtlasSprite texture, NamedPixelModifier pixelOp);
 
     /**
      * @return The new resource id after applying cache busting.
