@@ -23,6 +23,7 @@ import guideme.layout.MinecraftFontMetrics;
 import guideme.render.GuiAssets;
 import guideme.render.GuidePageTexture;
 import guideme.render.RenderContext;
+import guideme.scene.GuidebookLevelRenderer;
 import guideme.style.TextAlignment;
 import guideme.style.TextStyle;
 import guideme.ui.GuideUiHost;
@@ -332,6 +333,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
 
     private void loadPage(ResourceLocation pageId) {
         GuidePageTexture.releaseUsedTextures();
+        GuidebookLevelRenderer.freeMeshCaches();
         var page = guide.getParsedPage(pageId);
 
         if (page == null) {
@@ -380,6 +382,7 @@ public class GuideScreen extends DocumentScreen implements GuideUiHost {
     public void removed() {
         super.removed();
         GuidePageTexture.releaseUsedTextures();
+        GuidebookLevelRenderer.freeMeshCaches();
     }
 
     /**
