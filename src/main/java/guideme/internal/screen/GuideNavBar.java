@@ -31,7 +31,7 @@ import org.joml.Vector2f;
 public class GuideNavBar extends AbstractWidget {
     public static final int WIDTH_OPEN = 150;
     public static final int WIDTH_CLOSED = 15;
-    private static final int CHILD_ROW_INDENT = 10;
+    private static final int ROW_INDENT = 10;
     private static final int PARENT_ROW_INDENT = 7;
     private static boolean neverInteracted = true;
 
@@ -302,18 +302,18 @@ public class GuideNavBar extends AbstractWidget {
         this.rows.clear();
 
         for (var rootNode : this.navTree.getRootNodes()) {
-            var row = new Row(rootNode, null);
-            rows.add(row);
-
-            // Add second level
-            for (var child : row.node.children()) {
-                row.hasChildren = true;
-                var childRow = new Row(child, row);
-                rows.add(childRow);
-            }
+            addRow(rootNode, null);
         }
 
         updateLayout();
+    }
+
+    private void addRow(NavigationNode node, @Nullable Row parent) {
+        var row = new Row(node, parent);
+        rows.add(row);
+        for (var child : node.children()) {
+            addRow(child, row);
+        }
     }
 
     private void updateLayout() {
@@ -325,16 +325,8 @@ public class GuideNavBar extends AbstractWidget {
                 continue;
             }
 
-            // Child-Rows should be indented and their parents
-            // need an indent too for the expand/collapse indicator
-            int indent;
-            if (row.hasChildren) {
-                indent = PARENT_ROW_INDENT;
-            } else if (row.parent != null) {
-                indent = CHILD_ROW_INDENT;
-            } else {
-                indent = 0;
-            }
+            // Reserve the expand/collapse indicator column for every row so sibling icons and text align.
+            int indent = row.depth * ROW_INDENT + PARENT_ROW_INDENT;
 
             if (row.node.iconFactory() != null) {
                 indent += 8; // Indent for icon;
@@ -386,14 +378,18 @@ public class GuideNavBar extends AbstractWidget {
         private final LytParagraph paragraph = new LytParagraph();
         public final LytFlowSpan span;
         private boolean expanded;
+        @Nullable
         private final Row parent;
-        private boolean hasChildren;
+        private final int depth;
+        private final boolean hasChildren;
         public int top;
         public int bottom;
 
-        public Row(NavigationNode node, Row parent) {
+        public Row(NavigationNode node, @Nullable Row parent) {
             this.node = node;
             this.parent = parent;
+            this.depth = parent == null ? 0 : parent.depth + 1;
+            this.hasChildren = !node.children().isEmpty();
 
             span = new LytFlowSpan();
             span.appendText(node.title());
@@ -403,7 +399,8 @@ public class GuideNavBar extends AbstractWidget {
         }
 
         public LytRect getBounds() {
-            return new LytRect(0, top, width, bottom - top);
+            int x = depth * ROW_INDENT;
+            return new LytRect(x, top, Math.max(0, width - x), bottom - top);
         }
 
         public boolean contains(float x, float y) {
@@ -411,7 +408,12 @@ public class GuideNavBar extends AbstractWidget {
         }
 
         public boolean isVisible() {
-            return parent == null || parent.expanded;
+            for (var ancestor = parent; ancestor != null; ancestor = ancestor.parent) {
+                if (!ancestor.expanded) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         // Is this row visible in the given viewport?
