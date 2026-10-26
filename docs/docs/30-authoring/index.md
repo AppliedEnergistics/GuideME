@@ -62,6 +62,25 @@ navigation:
 ---
 ```
 
+The navigation sidebar shows up to two levels, both in-game and on the
+[website](../20-integration/website-export.md). Pages nested deeper than that are not shown in the sidebar, but remain
+reachable through links and `<SubPages />`. Deep navigation trees are hard to use in the narrow sidebar, so prefer a
+broad, shallow structure.
+
+A page can change how many levels below it are shown with `max_depth`. This replaces the depth the page would otherwise
+inherit, so it can both show more and fewer levels. For example, `max_depth: 2` on a top-level page shows its children
+and their children, while `max_depth: 0` shows no children at all:
+
+```yaml
+---
+navigation:
+  title: Machines
+  max_depth: 2
+---
+```
+
+Pages below it inherit the remaining depth, unless they set `max_depth` themselves.
+
 ## Declaring Pages as ItemLink targets
 
 When using the `<ItemLink ... />` tag, the guidebook will try to find the page that explains what the given item does.

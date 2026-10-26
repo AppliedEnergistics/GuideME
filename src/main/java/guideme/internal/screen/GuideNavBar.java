@@ -12,10 +12,12 @@ import guideme.layout.LayoutContext;
 import guideme.layout.MinecraftFontMetrics;
 import guideme.navigation.NavigationNode;
 import guideme.navigation.NavigationTree;
+import guideme.render.GuiAssets;
+import guideme.render.GuiSprite;
 import guideme.render.SimpleRenderContext;
-import guideme.ui.GuideUiHost;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -24,6 +26,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
@@ -31,8 +34,18 @@ import org.joml.Vector2f;
 public class GuideNavBar extends AbstractWidget {
     public static final int WIDTH_OPEN = 150;
     public static final int WIDTH_CLOSED = 15;
-    private static final int CHILD_ROW_INDENT = 10;
-    private static final int PARENT_ROW_INDENT = 7;
+    private static final int ROW_INDENT = 10;
+    private static final int PARENT_ROW_INDENT = 8;
+    /**
+     * The number of navigation tree levels shown by default. Pages can change how many levels are shown below them with
+     * {@link NavigationNode#maxDepth()}. Pages that are not listed remain reachable through links.
+     */
+    public static final int DEFAULT_MAX_DEPTH = 2;
+    /**
+     * White expand/collapse chevrons, tinted with the text color when drawn.
+     */
+    static final GuiSprite CHEVRON_COLLAPSED = GuiAssets.sprite("nav_chevron_collapsed");
+    static final GuiSprite CHEVRON_EXPANDED = GuiAssets.sprite("nav_chevron_expanded");
     private static boolean neverInteracted = true;
 
     private final Transition widthTransition = new Transition(
@@ -46,7 +59,14 @@ public class GuideNavBar extends AbstractWidget {
 
     private final List<Row> rows = new ArrayList<>();
 
-    private final GuideUiHost screen;
+    private final GuideScreen screen;
+
+    /**
+     * The page whose row was last revealed in the navigation tree. Used to only auto-expand when the page changes, so
+     * that the user can still collapse the ancestors of the current page.
+     */
+    @Nullable
+    private Identifier revealedPageId;
 
     private int scrollOffset;
 
@@ -68,16 +88,26 @@ public class GuideNavBar extends AbstractWidget {
             return;
         }
 
+        var vpPos = getViewportPoint(event.x(), event.y());
         var row = pickRow(event.x(), event.y());
-        if (row != null) {
+        if (row == null || vpPos == null) {
+            return;
+        }
+
+        var handler = Minecraft.getInstance().getSoundManager();
+        handler.play(SimpleSoundInstance.forUI(GuideMEClient.GUIDE_CLICK_EVENT, 1.0F));
+
+        if (row.isOnExpandIndicator(vpPos.x()) || row.node.pageId() == null) {
+            // The indicator only toggles, so the tree can be browsed without navigating
             row.expanded = !row.expanded;
             updateLayout();
-
-            var handler = Minecraft.getInstance().getSoundManager();
-            handler.play(SimpleSoundInstance.forUI(GuideMEClient.GUIDE_CLICK_EVENT, 1.0F));
-            if (row.node.pageId() != null) {
-                screen.navigateTo(row.node.pageId());
+        } else {
+            // Clicking the label navigates, and opens the children of the target page
+            if (row.hasChildren && !row.expanded) {
+                row.expanded = true;
+                updateLayout();
             }
+            screen.navigateTo(row.node.pageId());
         }
     }
 
@@ -122,6 +152,12 @@ public class GuideNavBar extends AbstractWidget {
         var currentNavTree = screen.getGuide().getNavigationTree();
         if (currentNavTree != this.navTree) {
             recreateRows();
+        }
+
+        var currentPageId = screen.getCurrentPageId();
+        if (!Objects.equals(currentPageId, revealedPageId)) {
+            revealedPageId = currentPageId;
+            revealPage(currentPageId);
         }
 
         // stop reacting to mouse events
@@ -219,6 +255,12 @@ public class GuideNavBar extends AbstractWidget {
                 renderContext.fillRect(hoveredRow.getBounds(), SymbolicColor.NAVBAR_ROW_HOVER);
             }
 
+            // Highlight the row of the current page on top of the hover backdrop
+            var currentRow = findRow(currentPageId);
+            if (currentRow != null && currentRow.isVisible()) {
+                renderContext.fillRect(currentRow.getBounds(), SymbolicColor.NAVBAR_ROW_CURRENT);
+            }
+
             // Render decorations, icons, etc.
             for (var row : rows) {
                 if (!row.isVisible(viewport)) {
@@ -228,25 +270,14 @@ public class GuideNavBar extends AbstractWidget {
                 row.paragraph.render(renderContext);
 
                 if (row.hasChildren) {
-                    float x = row.getBounds().x();
-                    x += 5;
-                    float y = row.getBounds().y();
-                    y += 2f;
-                    Vector2f p1, p2, p3;
-                    if (row.expanded) {
-                        // Triangle points down
-                        p1 = new Vector2f(x + 5, y);
-                        p2 = new Vector2f(x, y);
-                        p3 = new Vector2f(x + 2.5f, y + 5);
-                    } else {
-                        // Triangle points right
-                        p1 = new Vector2f(x + 5, y + 2.5f);
-                        p2 = new Vector2f(x, y);
-                        p3 = new Vector2f(x, y + 5);
-                    }
-
                     var color = row == hoveredRow ? SymbolicColor.LINK : SymbolicColor.BODY_TEXT;
-                    renderContext.fillTriangle(p1, p2, p3, color);
+                    var bounds = row.getBounds();
+                    if (row.expanded) {
+                        // Both chevrons share the same center column, leaving a gap to the icon
+                        renderContext.drawIcon(bounds.x() + 3, bounds.y() + 2, CHEVRON_EXPANDED, color);
+                    } else {
+                        renderContext.drawIcon(bounds.x() + 5, bounds.y(), CHEVRON_COLLAPSED, color);
+                    }
                 }
 
                 if (row.node.iconFactory() != null) {
@@ -300,20 +331,55 @@ public class GuideNavBar extends AbstractWidget {
         this.navTree = screen.getGuide().getNavigationTree();
         // Save Freeze expanded / scroll position
         this.rows.clear();
+        this.revealedPageId = null;
 
         for (var rootNode : this.navTree.getRootNodes()) {
-            var row = new Row(rootNode, null);
-            rows.add(row);
-
-            // Add second level
-            for (var child : row.node.children()) {
-                row.hasChildren = true;
-                var childRow = new Row(child, row);
-                rows.add(childRow);
-            }
+            addRow(rootNode, null);
         }
 
         updateLayout();
+    }
+
+    private void addRow(NavigationNode node, @Nullable Row parent) {
+        var row = new Row(node, parent);
+        rows.add(row);
+        if (row.levelsBelow > 0) {
+            for (var child : node.children()) {
+                addRow(child, row);
+            }
+        }
+    }
+
+    @Nullable
+    private Row findRow(@Nullable Identifier pageId) {
+        if (pageId == null) {
+            return null;
+        }
+        for (var row : rows) {
+            if (pageId.equals(row.node.pageId())) {
+                return row;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Expands all ancestors of the given page's row and scrolls it into view.
+     */
+    private void revealPage(@Nullable Identifier pageId) {
+        var row = findRow(pageId);
+        if (row == null) {
+            return;
+        }
+
+        for (var ancestor = row.parent; ancestor != null; ancestor = ancestor.parent) {
+            ancestor.expanded = true;
+        }
+        updateLayout();
+
+        if (row.top < scrollOffset || row.bottom > scrollOffset + height) {
+            setScrollOffset(row.top - height / 2);
+        }
     }
 
     private void updateLayout() {
@@ -325,16 +391,8 @@ public class GuideNavBar extends AbstractWidget {
                 continue;
             }
 
-            // Child-Rows should be indented and their parents
-            // need an indent too for the expand/collapse indicator
-            int indent;
-            if (row.hasChildren) {
-                indent = PARENT_ROW_INDENT;
-            } else if (row.parent != null) {
-                indent = CHILD_ROW_INDENT;
-            } else {
-                indent = 0;
-            }
+            // Reserve the expand/collapse indicator column for every row so sibling icons and text align.
+            int indent = row.depth * ROW_INDENT + PARENT_ROW_INDENT;
 
             if (row.node.iconFactory() != null) {
                 indent += 8; // Indent for icon;
@@ -386,14 +444,27 @@ public class GuideNavBar extends AbstractWidget {
         private final LytParagraph paragraph = new LytParagraph();
         public final LytFlowSpan span;
         private boolean expanded;
+        @Nullable
         private final Row parent;
-        private boolean hasChildren;
+        private final int depth;
+        /**
+         * How many levels of descendants of this row are shown.
+         */
+        private final int levelsBelow;
+        private final boolean hasChildren;
         public int top;
         public int bottom;
 
-        public Row(NavigationNode node, Row parent) {
+        public Row(NavigationNode node, @Nullable Row parent) {
             this.node = node;
             this.parent = parent;
+            this.depth = parent == null ? 0 : parent.depth + 1;
+            if (node.maxDepth() != null) {
+                this.levelsBelow = node.maxDepth();
+            } else {
+                this.levelsBelow = parent == null ? DEFAULT_MAX_DEPTH - 1 : parent.levelsBelow - 1;
+            }
+            this.hasChildren = levelsBelow > 0 && !node.children().isEmpty();
 
             span = new LytFlowSpan();
             span.appendText(node.title());
@@ -403,15 +474,25 @@ public class GuideNavBar extends AbstractWidget {
         }
 
         public LytRect getBounds() {
-            return new LytRect(0, top, width, bottom - top);
+            int x = depth * ROW_INDENT;
+            return new LytRect(x, top, Math.max(0, width - x), bottom - top);
         }
 
         public boolean contains(float x, float y) {
             return x >= 0 && x < width && y >= top && y < bottom;
         }
 
+        public boolean isOnExpandIndicator(float x) {
+            return hasChildren && x < depth * ROW_INDENT + PARENT_ROW_INDENT + 4;
+        }
+
         public boolean isVisible() {
-            return parent == null || parent.expanded;
+            for (var ancestor = parent; ancestor != null; ancestor = ancestor.parent) {
+                if (!ancestor.expanded) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         // Is this row visible in the given viewport?

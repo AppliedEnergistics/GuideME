@@ -14,7 +14,18 @@ public record NavigationNode(
         @Nullable Lazy<ItemStack> iconFactory,
         List<NavigationNode> children,
         int position,
-        boolean hasPage) {
+        boolean hasPage,
+        @Nullable Integer maxDepth) {
+    public NavigationNode(@Nullable Identifier pageId,
+            String title,
+            @Nullable ItemStackTemplate icon,
+            @Nullable Lazy<ItemStack> iconFactory,
+            List<NavigationNode> children,
+            int position,
+            boolean hasPage) {
+        this(pageId, title, icon, iconFactory, children, position, hasPage, null);
+    }
+
     public NavigationNode(@Nullable Identifier pageId,
             String title,
             @Nullable ItemStackTemplate icon,
