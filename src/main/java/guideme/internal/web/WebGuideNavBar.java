@@ -1,5 +1,6 @@
 package guideme.internal.web;
 
+import guideme.internal.screen.GuideNavBar;
 import guideme.internal.siteexport.model.NavigationNodeJson;
 import guideme.web.html.HtmlFragment;
 import guideme.web.html.HtmlNode;
@@ -105,7 +106,7 @@ class WebGuideNavBar {
 
     static HtmlTag generate(WebPageCompileContext context) {
         var navbar = new WebGuideNavBar(context);
-        var rootLevelsBelow = context.guide().getNavigationDefaultMaxDepth() - 1;
+        var rootLevelsBelow = GuideNavBar.DEFAULT_MAX_DEPTH - 1;
         return HtmlNode.tag("div")
                 .setClassName("navbar")
                 .append(navbar.generateLevel(context.guide().getRootNavigationNodes(), rootLevelsBelow));

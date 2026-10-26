@@ -159,7 +159,6 @@ class WebSiteGeneratorTest {
 
     @Test
     void testNavigationShowsTheDefaultNumberOfLevels() throws Exception {
-        json.navigationDefaultMaxDepth = 2;
         addNestedNavigation(null);
         generate(false, "/");
 
@@ -175,7 +174,6 @@ class WebSiteGeneratorTest {
 
     @Test
     void testNavigationMaxDepthOverridesTheInheritedDepth() throws Exception {
-        json.navigationDefaultMaxDepth = 2;
         addNestedNavigation(2);
         generate(false, "/");
 
@@ -186,7 +184,6 @@ class WebSiteGeneratorTest {
 
     @Test
     void testNavigationOpensTheLevelsContainingTheCurrentPage() throws Exception {
-        json.navigationDefaultMaxDepth = 2;
         addNestedNavigation(null);
         generate(false, "/");
 
@@ -197,14 +194,6 @@ class WebSiteGeneratorTest {
         // L3 is not shown, so neither its ancestors are opened nor anything is marked active
         var l3 = read("nav/l3.html");
         assertThat(l3).doesNotContain("<details open", "class=\"active\"");
-    }
-
-    @Test
-    void testNavigationOfLegacyExportsShowsAllLevels() throws Exception {
-        addNestedNavigation(null);
-        generate(false, "/");
-
-        assertThat(read("start.html")).contains(">L5</a>");
     }
 
     @Test

@@ -1,5 +1,6 @@
 package guideme.internal.siteexport.model;
 
+import guideme.internal.screen.GuideNavBar;
 import guideme.internal.siteexport.SiteExportWriter;
 import guideme.navigation.NavigationNode;
 import java.util.List;
@@ -13,7 +14,7 @@ public class NavigationNodeJson {
     public boolean hasPage;
     /**
      * If set, the number of levels below this node that the navigation shows. Otherwise, one less than its parent
-     * shows, starting with {@link SiteExportJson#navigationDefaultMaxDepth} levels including the root level.
+     * shows, starting with {@link GuideNavBar#DEFAULT_MAX_DEPTH} levels including the root level.
      */
     public Integer maxDepth;
 
