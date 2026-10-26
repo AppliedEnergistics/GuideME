@@ -214,8 +214,11 @@ function hookNavigation() {
       if (e.target instanceof Element) {
         const closestLink = e.target?.closest("a");
         if (closestLink && closestLink.href) {
-          // Expand the navbar as needed
-          closestLink.closest("summary")?.click();
+          // Clicking the label of a navbar level opens it, but never closes it. Only its toggle closes it.
+          const summaryDetails = closestLink.closest("summary")?.parentElement;
+          if (summaryDetails instanceof HTMLDetailsElement) {
+            summaryDetails.open = true;
+          }
 
           const targetUrl = new URL(closestLink.href);
           if (

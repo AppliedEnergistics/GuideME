@@ -47,9 +47,7 @@ class WebSiteGeneratorTest {
     }
 
     private void addPage(String pageId, String markdown) {
-        var page = new ExportedPageJson();
-        page.astRoot = PageCompiler.parse("testmod", "en_us", Identifier.parse(pageId), markdown).getAstRoot();
-        json.pages.put(pageId, page);
+        addPageWithoutNavigation(pageId, markdown);
 
         var node = new NavigationNodeJson();
         node.pageId = pageId;
@@ -57,6 +55,43 @@ class WebSiteGeneratorTest {
         node.hasPage = true;
         node.children = new ArrayList<>();
         json.navigationRootNodes.add(node);
+    }
+
+    private void addPageWithoutNavigation(String pageId, String markdown) {
+        var page = new ExportedPageJson();
+        page.astRoot = PageCompiler.parse("testmod", "en_us", Identifier.parse(pageId), markdown).getAstRoot();
+        json.pages.put(pageId, page);
+    }
+
+    /**
+     * Adds a page named after its title, and a navigation node for it.
+     */
+    private NavigationNodeJson navNode(String title, Integer maxDepth, NavigationNodeJson... children) {
+        var pageId = "testmod:nav/" + title.toLowerCase() + ".md";
+        addPageWithoutNavigation(pageId, "# " + title);
+
+        var node = new NavigationNodeJson();
+        node.pageId = pageId;
+        node.title = title;
+        node.hasPage = true;
+        node.children = List.of(children);
+        node.maxDepth = maxDepth;
+        return node;
+    }
+
+    /**
+     * A chain of five nested navigation levels, where L2 optionally sets how many levels are shown below it.
+     */
+    private void addNestedNavigation(Integer l2MaxDepth) {
+        json.navigationRootNodes.add(navNode("L1", null,
+                navNode("L2", l2MaxDepth,
+                        navNode("L3", null,
+                                navNode("L4", null,
+                                        navNode("L5", null))))));
+    }
+
+    private static int count(String text, String substring) {
+        return text.split(Pattern.quote(substring), -1).length - 1;
     }
 
     @Test
@@ -120,6 +155,56 @@ class WebSiteGeneratorTest {
 
         assertThat(read("index.html")).contains("url=sub/other/");
         assertThat(read("start/index.html")).contains("<a href=\"../sub/other/\" class=\"logo\">");
+    }
+
+    @Test
+    void testNavigationShowsTheDefaultNumberOfLevels() throws Exception {
+        json.navigationDefaultMaxDepth = 2;
+        addNestedNavigation(null);
+        generate(false, "/");
+
+        var page = read("start.html");
+        assertThat(page).contains(">L1</a>", ">L2</a>").doesNotContain(">L3</a>", ">L4</a>", ">L5</a>");
+        // L2 is on the last level, so it is a plain link without a toggle, even though it has children
+        assertThat(count(page, "class=\"nav-toggle\"")).isEqualTo(1);
+        // The toggle is next to the link, so clicking it does not navigate
+        assertThat(page).contains("<summary><span class=\"nav-toggle\" aria-hidden=\"true\"><svg viewBox=\"0 0 7 7\">");
+        // Nothing is open, since the start page is not part of the nested levels
+        assertThat(page).doesNotContain("<details open");
+    }
+
+    @Test
+    void testNavigationMaxDepthOverridesTheInheritedDepth() throws Exception {
+        json.navigationDefaultMaxDepth = 2;
+        addNestedNavigation(2);
+        generate(false, "/");
+
+        var page = read("start.html");
+        assertThat(page).contains(">L3</a>", ">L4</a>").doesNotContain(">L5</a>");
+        assertThat(count(page, "class=\"nav-toggle\"")).isEqualTo(3);
+    }
+
+    @Test
+    void testNavigationOpensTheLevelsContainingTheCurrentPage() throws Exception {
+        json.navigationDefaultMaxDepth = 2;
+        addNestedNavigation(null);
+        generate(false, "/");
+
+        var l2 = read("nav/l2.html");
+        assertThat(count(l2, "<details open>")).isEqualTo(1);
+        assertThat(l2).containsPattern("<a [^>]*class=\"active\"[^>]*>L2</a>");
+
+        // L3 is not shown, so neither its ancestors are opened nor anything is marked active
+        var l3 = read("nav/l3.html");
+        assertThat(l3).doesNotContain("<details open", "class=\"active\"");
+    }
+
+    @Test
+    void testNavigationOfLegacyExportsShowsAllLevels() throws Exception {
+        addNestedNavigation(null);
+        generate(false, "/");
+
+        assertThat(read("start.html")).contains(">L5</a>");
     }
 
     @Test

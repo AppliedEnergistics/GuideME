@@ -19,6 +19,7 @@ public enum SymbolicColor implements ColorValue {
     NAVBAR_BG_TOP(Colors.rgb(0, 0, 0), Colors.rgb(0, 0, 0)),
     NAVBAR_BG_BOTTOM(Colors.argb(127, 0, 0, 0), Colors.argb(127, 0, 0, 0)),
     NAVBAR_ROW_HOVER(Colors.rgb(33, 33, 33), Colors.rgb(33, 33, 33)),
+    NAVBAR_ROW_CURRENT(Colors.argb(48, 0, 213, 255), Colors.argb(48, 0, 213, 255)),
     NAVBAR_EXPAND_ARROW(Colors.rgb(238, 238, 238), Colors.rgb(238, 238, 238)),
     TABLE_BORDER(Colors.rgb(124, 124, 124), Colors.rgb(124, 124, 124)),
 

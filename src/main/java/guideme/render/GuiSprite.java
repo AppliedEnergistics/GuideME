@@ -51,7 +51,7 @@ public final class GuiSprite {
             var darkId = id.withSuffix("_darkmode");
             var darkSprite = guiSprites.getSprite(darkId);
 
-            if (sprite.contents().name().equals(MissingTextureAtlasSprite.getLocation())) {
+            if (darkSprite.contents().name().equals(MissingTextureAtlasSprite.getLocation())) {
                 // Use the light sprite as the dark sprite
                 darkId = id;
                 darkSprite = sprite;

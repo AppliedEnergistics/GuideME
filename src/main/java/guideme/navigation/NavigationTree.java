@@ -138,7 +138,8 @@ public class NavigationTree {
                 icon != null ? Lazy.of(icon.iconFactory()) : null,
                 childNodes,
                 navigationEntry.position(),
-                true);
+                true,
+                navigationEntry.maxDepth());
         nodeIndex.put(page.getId(), node);
         if (navigationEntry.parent() == null) {
             rootNodes.add(node);

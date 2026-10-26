@@ -243,6 +243,14 @@ class ExportedGuideImpl implements ExportedGuide {
         return json.navigationRootNodes;
     }
 
+    /**
+     * The number of navigation levels shown by default, including the root level.
+     */
+    int getNavigationDefaultMaxDepth() {
+        // Exports from versions without navigation depth limits show the whole tree
+        return Objects.requireNonNullElse(json.navigationDefaultMaxDepth, Integer.MAX_VALUE);
+    }
+
     String getGameMajorVersion() {
         return Objects.requireNonNullElse(index.gameMajorVersion(), index.gameVersion());
     }

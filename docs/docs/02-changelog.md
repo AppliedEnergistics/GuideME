@@ -3,9 +3,17 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
-## 26.3.2-alpha (Minecraft 26.3)
+## 26.3.5-alpha (Minecraft 26.3)
 
 - Fix light and dark mode colors of `custom_colors` in data-driven guides being swapped
+- The navigation sidebar can now show deeper levels of the navigation tree. It still shows two levels by default, which
+  pages can change for the levels below them with `max_depth` in their navigation frontmatter.
+  See [navigation](./30-authoring/index.md#adding-pages-to-the-navigation-bar) for details. This also applies to the website.
+- The navigation sidebar highlights the current page and reveals it when navigating. Clicking the arrow next to a page
+  only expands or collapses it, while clicking its title opens the page.
+
+## 26.3.2-alpha (Minecraft 26.3)
+
 - Guides can now be turned into a static website, including search, recipes and interactive 3D scenes.
   The website is generated from the guide export by a Gradle task outside the game, so websites for previously exported
   guides can be regenerated with newer versions of GuideME. See [website export](./20-integration/website-export.md) for details.

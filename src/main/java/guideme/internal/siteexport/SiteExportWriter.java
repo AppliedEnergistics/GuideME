@@ -12,6 +12,7 @@ import guideme.compiler.MdAstNodeAdapter;
 import guideme.compiler.ParsedGuidePage;
 import guideme.extensions.ExtensionCollection;
 import guideme.indices.PageIndex;
+import guideme.internal.screen.GuideNavBar;
 import guideme.internal.siteexport.model.ExportedPageJson;
 import guideme.internal.siteexport.model.FluidInfoJson;
 import guideme.internal.siteexport.model.ItemInfoJson;
@@ -161,6 +162,7 @@ public class SiteExportWriter {
                 .stream()
                 .map(NavigationNodeJson::of)
                 .toList();
+        siteExport.navigationDefaultMaxDepth = GuideNavBar.DEFAULT_MAX_DEPTH;
     }
 
     public void addItem(String id, ItemStack stack, String iconPath) {

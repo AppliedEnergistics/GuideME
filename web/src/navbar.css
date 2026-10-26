@@ -1,20 +1,15 @@
 .navbar {
-  svg {
-    width: 1em;
-    height: 1em;
-    fill: currentColor;
-    path {
-      d: path("M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z");
-    }
-  }
-
-  details[open] svg path {
-    d: path("M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z");
-  }
+  --nav-toggle-width: 1em;
 
   img {
     width: auto;
     height: 1em;
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
   }
 
   /* Used when there's a header but no link */
@@ -23,14 +18,58 @@
     cursor: pointer;
   }
 
+  /* Only toggles the level, while the link next to it navigates */
+  .nav-toggle {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--nav-toggle-width);
+    height: 1em;
+    color: var(--color-body-text);
+
+    svg {
+      width: 0.5em;
+      height: 0.5em;
+      fill: currentColor;
+      shape-rendering: crispEdges;
+      transition: transform 0.1s;
+    }
+  }
+
+  details[open] > summary > .nav-toggle svg {
+    transform: rotate(90deg);
+  }
+
+  summary:hover {
+    background-color: var(--color--navbar-row-hover);
+
+    .nav-toggle {
+      color: var(--color-link);
+    }
+  }
+
+  summary:has(> a.active) {
+    background-color: var(--color--navbar-row-hover);
+  }
+
   a,
   .expandableHeader {
     display: flex;
+    flex: 1;
     color: var(--color-body-text);
     align-items: center;
     gap: 4px;
     box-sizing: border-box;
     padding-left: 4px;
+  }
+
+  /* Rows without children reserve the space of the toggle, so they align with their siblings */
+  > a,
+  > .expandableHeader,
+  .sublevel > a,
+  .sublevel > .expandableHeader {
+    padding-left: calc(var(--nav-toggle-width) + 4px);
   }
 
   a:hover,
@@ -44,8 +83,9 @@
     background-color: var(--color--navbar-row-hover);
   }
 
+  /* Indent children so their toggles line up with the label of their parent */
   details > .sublevel {
-    margin-left: 24px;
+    margin-left: calc(var(--nav-toggle-width) + 4px);
     display: flex;
     flex-direction: column;
     gap: 2px;

@@ -30,6 +30,12 @@ public class SiteExportJson {
 
     public List<NavigationNodeJson> navigationRootNodes = new ArrayList<>();
 
+    /**
+     * The number of navigation levels shown, including the root level, unless {@link NavigationNodeJson#maxDepth}
+     * changes it below a node. Missing in exports from older versions, which show all levels.
+     */
+    public Integer navigationDefaultMaxDepth;
+
     public Map<String, FluidInfoJson> fluids = new HashMap<>();
 
     public Map<String, Object> modData = new HashMap<>();
