@@ -32,6 +32,13 @@ public record Frontmatter(
             }
             var iconIdStr = getString(navigationMap, "icon");
             Map<?, ?> iconComponents = getCompound(navigationMap, "icon_components");
+            Integer maxDepth = null;
+            if (navigationMap.containsKey("max_depth")) {
+                maxDepth = getInt(navigationMap, "max_depth");
+                if (maxDepth < 0) {
+                    throw new IllegalArgumentException("max_depth in navigation frontmatter must not be negative");
+                }
+            }
 
             ResourceLocation parentId = null;
             if (parentIdStr != null) {
@@ -43,7 +50,7 @@ public record Frontmatter(
                 iconId = IdUtils.resolveId(iconIdStr, pageId.getNamespace());
             }
 
-            navigation = new FrontmatterNavigation(title, parentId, position, iconId, iconComponents);
+            navigation = new FrontmatterNavigation(title, parentId, position, iconId, iconComponents, maxDepth);
         }
 
         return new Frontmatter(

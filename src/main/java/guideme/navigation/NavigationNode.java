@@ -13,7 +13,18 @@ public record NavigationNode(
         Supplier<ItemStack> iconFactory,
         List<NavigationNode> children,
         int position,
-        boolean hasPage) {
+        boolean hasPage,
+        @Nullable Integer maxDepth) {
+    public NavigationNode(@Nullable ResourceLocation pageId,
+            String title,
+            ItemStack icon,
+            Supplier<ItemStack> iconFactory,
+            List<NavigationNode> children,
+            int position,
+            boolean hasPage) {
+        this(pageId, title, icon, iconFactory, children, position, hasPage, null);
+    }
+
     public NavigationNode(@Nullable ResourceLocation pageId,
             String title,
             ItemStack icon,

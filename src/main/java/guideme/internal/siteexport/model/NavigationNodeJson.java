@@ -1,5 +1,6 @@
 package guideme.internal.siteexport.model;
 
+import guideme.internal.screen.GuideNavBar;
 import guideme.navigation.NavigationNode;
 import java.util.List;
 import net.minecraft.world.item.ItemStack;
@@ -11,6 +12,11 @@ public class NavigationNodeJson {
     public List<NavigationNodeJson> children;
     public int position;
     public boolean hasPage;
+    /**
+     * If set, the number of levels below this node that the navigation shows. Otherwise, one less than its parent
+     * shows, starting with {@link GuideNavBar#DEFAULT_MAX_DEPTH} levels including the root level.
+     */
+    public Integer maxDepth;
 
     public static NavigationNodeJson of(NavigationNode node) {
         var jsonNode = new NavigationNodeJson();
@@ -24,6 +30,7 @@ public class NavigationNodeJson {
         jsonNode.children = node.children().stream().map(NavigationNodeJson::of).toList();
         jsonNode.position = node.position();
         jsonNode.hasPage = node.hasPage();
+        jsonNode.maxDepth = node.maxDepth();
         return jsonNode;
     }
 }

@@ -137,7 +137,8 @@ public class NavigationTree {
                 icon.iconFactory(),
                 childNodes,
                 navigationEntry.position(),
-                true);
+                true,
+                navigationEntry.maxDepth());
         nodeIndex.put(page.getId(), node);
         if (navigationEntry.parent() == null) {
             rootNodes.add(node);
