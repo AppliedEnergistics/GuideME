@@ -58,7 +58,7 @@ public interface ResourceExporter {
     String exportTexture(Identifier texture, NamedPixelModifier pixelOp);
 
     /**
-     * Exports a sprite by id and returns the relative path to refer to it from other content that is being exported.
+     * Exports an atlas sprite and returns the relative path to refer to it from other content that is being exported.
      */
     String exportSprite(TextureAtlasSprite texture);
 
