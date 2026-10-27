@@ -14,6 +14,7 @@ import guideme.internal.siteexport.mdastpostprocess.PageExportPostProcessor;
 import guideme.internal.util.Platform;
 import guideme.navigation.NavigationNode;
 import guideme.siteexport.ExportableResourceProvider;
+import guideme.siteexport.NamedPixelModifier;
 import guideme.siteexport.ResourceExporter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -26,13 +27,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.IntUnaryOperator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DetectedVersion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.LoadingOverlay;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.NonNullList;
@@ -63,7 +65,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -521,38 +522,71 @@ public class SiteExporter implements ResourceExporter {
 
     @Override
     public String exportTexture(ResourceLocation textureId) {
+        return exportTexture(textureId, null);
+    }
+
+    @Override
+    public String exportTexture(ResourceLocation textureId, @Nullable NamedPixelModifier pixelOp) {
+        ResourceLocation exportId = textureId;
+        if (pixelOp != null) {
+            String path = exportId.getPath();
+            String suffix = "_" + pixelOp.name();
+            if (path.endsWith(".png")) {
+                suffix += ".png";
+                path = path.substring(0, path.length() - 4);
+            }
+            exportId = exportId.withPath(path + suffix);
+        }
+        var exportedPath = exportedTextures.get(exportId);
+        if (exportedPath != null) {
+            return exportedPath;
+        }
+
+        ResourceLocation id = exportId;
+        if (!id.getPath().endsWith(".png")) {
+            id = id.withSuffix(".png");
+        }
+
+        IntUnaryOperator realPixelOp = Objects.requireNonNullElse(pixelOp, IntUnaryOperator.identity());
+        var texture = Minecraft.getInstance().getTextureManager().getTexture(textureId);
+        var image = TextureDownloader.downloadTexture(texture, 0, realPixelOp);
+        return exportNativeImage(exportId, getPathForWriting(id), image);
+    }
+
+    @Override
+    public String exportSprite(TextureAtlasSprite sprite) {
+        return exportSprite(sprite, null);
+    }
+
+    @Override
+    public String exportSprite(TextureAtlasSprite sprite, @Nullable NamedPixelModifier pixelOp) {
+        ResourceLocation atlasId = sprite.atlasLocation();
+        ResourceLocation spriteId = sprite.contents().name();
+        if (pixelOp != null) {
+            spriteId = spriteId.withSuffix("_" + pixelOp.name());
+        }
+        ResourceLocation textureId = spriteId.withPrefix(atlasId.getNamespace() + "/" + atlasId.getPath());
         var exportedPath = exportedTextures.get(textureId);
         if (exportedPath != null) {
             return exportedPath;
         }
 
-        ResourceLocation id = textureId;
-        if (!id.getPath().endsWith(".png")) {
-            id = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + ".png");
-        }
-
-        var outputPath = getPathForWriting(id);
-
-        var texture = Minecraft.getInstance().getTextureManager().getTexture(textureId);
-
-        if (texture instanceof TextureAtlas textureAtlas) {
-            for (var sprite : textureAtlas.sprites) {
-                if (sprite.animatedTexture != null) {
-                }
+        // The pixel operator receives ARGB colors, while NativeImage stores ABGR colors in 1.21.1
+        IntUnaryOperator realPixelOp = Objects.requireNonNullElse(pixelOp, IntUnaryOperator.identity());
+        NativeImage originalImage = sprite.contents().originalImage;
+        var image = new NativeImage(sprite.contents().width(), sprite.contents().height(), false);
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int pixel = FastColor.ABGR32.fromArgb32(originalImage.getPixelRGBA(x, y));
+                image.setPixelRGBA(x, y, FastColor.ABGR32.fromArgb32(realPixelOp.applyAsInt(pixel)));
             }
         }
+        return exportNativeImage(textureId, getPathForWriting(spriteId.withSuffix(".png")), image);
+    }
 
-        texture.bind();
-        int w, h;
-        int[] intResult = new int[1];
-        GL11.glGetTexLevelParameteriv(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH, intResult);
-        w = intResult[0];
-        GL11.glGetTexLevelParameteriv(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT, intResult);
-        h = intResult[0];
-
+    private String exportNativeImage(ResourceLocation textureId, Path outputPath, NativeImage image) {
         byte[] imageContent;
-        try (var nativeImage = new NativeImage(w, h, false)) {
-            nativeImage.downloadTexture(0, false);
+        try (var nativeImage = image) {
             imageContent = nativeImage.asByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -563,7 +597,7 @@ public class SiteExporter implements ResourceExporter {
         } catch (IOException e) {
             throw new RuntimeException("Failed to export texture " + textureId, e);
         }
-        exportedPath = getPathRelativeFromOutputFolder(outputPath);
+        String exportedPath = getPathRelativeFromOutputFolder(outputPath);
         exportedTextures.put(textureId, exportedPath);
         return exportedPath;
     }

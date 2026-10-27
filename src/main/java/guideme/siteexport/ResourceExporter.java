@@ -1,6 +1,7 @@
 package guideme.siteexport;
 
 import java.nio.file.Path;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -20,6 +21,21 @@ public interface ResourceExporter {
     void referenceFluid(Fluid fluid);
 
     String exportTexture(ResourceLocation texture);
+
+    /**
+     * Exports a texture by id and returns the relative path to refer to it from other content that is being exported.
+     */
+    String exportTexture(ResourceLocation texture, NamedPixelModifier pixelOp);
+
+    /**
+     * Exports an atlas sprite and returns the relative path to refer to it from other content that is being exported.
+     */
+    String exportSprite(TextureAtlasSprite texture);
+
+    /**
+     * Exports a sprite by id and returns the relative path to refer to it from other content that is being exported.
+     */
+    String exportSprite(TextureAtlasSprite texture, NamedPixelModifier pixelOp);
 
     /**
      * @return The new resource id after applying cache busting.
