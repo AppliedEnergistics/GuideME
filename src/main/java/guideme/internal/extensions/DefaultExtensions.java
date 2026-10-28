@@ -24,6 +24,7 @@ import guideme.extensions.ExtensionPoint;
 import guideme.internal.siteexport.mdastpostprocess.BlockAnnotationTemplateExportProcessor;
 import guideme.internal.siteexport.mdastpostprocess.ColorExportProcessor;
 import guideme.internal.siteexport.mdastpostprocess.KeyBindExportProcessor;
+import guideme.internal.siteexport.mdastpostprocess.OptionalSectionExportProcessor;
 import guideme.scene.BlockImageTagCompiler;
 import guideme.scene.ItemImageTagCompiler;
 import guideme.scene.SceneTagCompiler;
@@ -76,7 +77,8 @@ public final class DefaultExtensions {
         return List.of(
                 new ColorExportProcessor(),
                 new KeyBindExportProcessor(),
-                new BlockAnnotationTemplateExportProcessor());
+                new BlockAnnotationTemplateExportProcessor(),
+                new OptionalSectionExportProcessor());
     }
 
     private static List<TagCompiler> tagCompilers() {
