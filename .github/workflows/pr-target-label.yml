@@ -4,12 +4,11 @@ name: 'Label PR by target version'
 # even for PRs from forks. This is safe here because we never check out or run PR code.
 on:
   pull_request_target:
-    types: [opened, reopened, edited, synchronize]
+    types: [opened, reopened, edited]
   # Manually (re-)label all open PRs
   workflow_dispatch:
 
 permissions:
-  contents: read
   issues: write
   pull-requests: write
 
@@ -25,37 +24,13 @@ jobs:
             const VERSION_BRANCH = /^\d+\.\d+(\.\d+)?$/;
 
             const { owner, repo } = context.repo;
-            const versionCache = new Map();
             const knownLabels = new Set();
 
-            async function getVersion(pr) {
+            // Only version branches get a label. PRs targeting main (or any other branch) are
+            // left unlabeled, since the version main tracks changes over the lifetime of a PR.
+            function getVersion(pr) {
               const base = pr.base.ref;
-              if (VERSION_BRANCH.test(base)) {
-                return base;
-              }
-              if (base !== pr.base.repo.default_branch) {
-                return null;
-              }
-              if (versionCache.has(base)) {
-                return versionCache.get(base);
-              }
-              // The default branch tracks the newest Minecraft version; read it from gradle.properties.
-              let version = null;
-              try {
-                const { data } = await github.rest.repos.getContent({
-                  owner, repo, path: 'gradle.properties', ref: base,
-                });
-                const props = Buffer.from(data.content, 'base64').toString('utf8');
-                const match = props.match(/^minecraft_version\s*=\s*(\S+)\s*$/m);
-                if (match) {
-                  // 26.3.0 -> 26.3, to match how version branches are named
-                  version = match[1].replace(/\.0$/, '');
-                }
-              } catch (e) {
-                core.warning(`Could not read minecraft_version from ${base}: ${e.message}`);
-              }
-              versionCache.set(base, version);
-              return version;
+              return VERSION_BRANCH.test(base) ? base : null;
             }
 
             async function ensureLabel(name, version) {
@@ -81,11 +56,11 @@ jobs:
             }
 
             async function labelPr(pr) {
-              const version = await getVersion(pr);
+              const version = getVersion(pr);
               const wanted = version ? LABEL_PREFIX + version : null;
               const current = pr.labels.map(l => l.name);
 
-              // Drop labels for other versions (e.g. when the base branch was changed)
+              // Drop labels for other versions, or all of them when targeting main (e.g. when the base branch was changed)
               for (const name of current) {
                 if (name.startsWith(LABEL_PREFIX) && name !== wanted) {
                   core.info(`#${pr.number}: removing stale label ${name}`);
