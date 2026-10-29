@@ -345,3 +345,22 @@ You can show the currently binding for a hotkey by using the `<KeyBind id="..." 
 The `id` attribute refers to the key binding by its unique identifier, such as `key.jump` for the jump button.
 
 Ids for default Minecraft keys can be found on the [Minecraft Wiki](https://minecraft.wiki/w/Controls).
+
+### Optional Sections
+
+To only show content if another mod is installed, for example to describe optional mod compatibility, wrap it in an
+`<OptionalSection modId="..."></OptionalSection>` tag. Prefix the mod id with `!` to instead only show the content if the
+mod is *not* installed, for example to describe a fallback.
+
+```markdown
+<OptionalSection modId="jei">
+  Use JEI to look up all recipes for this machine.
+</OptionalSection>
+
+<OptionalSection modId="!jei">
+  Install JEI to look up all recipes for this machine.
+</OptionalSection>
+```
+
+The `modId` attribute is required. For the [website export](../20-integration/website-export.md), the condition is
+evaluated against the mods installed when the guide is exported.

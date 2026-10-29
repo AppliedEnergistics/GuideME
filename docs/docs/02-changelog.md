@@ -3,6 +3,11 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.3.6-alpha (Minecraft 26.3)
+
+- Added `<OptionalSection modId="...">` to only show content if a mod is installed, or with `modId="!..."` if it is not
+  installed. See [optional sections](./30-authoring/index.md#optional-sections) for details.
+
 ## 26.3.5-alpha (Minecraft 26.3)
 
 - Fix light and dark mode colors of `custom_colors` in data-driven guides being swapped
