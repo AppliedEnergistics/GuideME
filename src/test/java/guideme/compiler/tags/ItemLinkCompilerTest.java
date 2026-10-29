@@ -2,15 +2,7 @@ package guideme.compiler.tags;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import guideme.Guide;
 import guideme.GuidePage;
-import guideme.compiler.PageCompiler;
-import guideme.compiler.TagCompiler;
-import guideme.extensions.ExtensionCollection;
-import guideme.internal.GuideME;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Test;
@@ -23,7 +15,7 @@ class ItemLinkCompilerTest {
     }
 
     @Test
-    void testMissingTargetPageFromSameNamespace() throws IOException {
+    void testMissingTargetPageFromSameNamespace() {
         var page = compilePage("minecraft:test_page", """
                 <ItemLink id="minecraft:stick" />
                 """);
@@ -32,7 +24,7 @@ class ItemLinkCompilerTest {
     }
 
     @Test
-    void testMissingTargetPageFromSameNamespaceButOptional() throws IOException {
+    void testMissingTargetPageFromSameNamespaceButOptional() {
         var page = compilePage("minecraft:test_page", """
                 <ItemLink id="minecraft:stick" optional />
                 """);
@@ -41,8 +33,8 @@ class ItemLinkCompilerTest {
     }
 
     @Test
-    void testMissingTargetPageFromOtherNamespace() throws IOException {
-        var page = compilePage("giudeme:test_page", """
+    void testMissingTargetPageFromOtherNamespace() {
+        var page = compilePage("guideme:test_page", """
                 <ItemLink id="minecraft:stick" />
                 """);
 
@@ -50,25 +42,15 @@ class ItemLinkCompilerTest {
     }
 
     @Test
-    void testMissingTargetPageFromOtherNamespaceButExplicitlyNonOptional() throws IOException {
-        var page = compilePage("giudeme:test_page", """
+    void testMissingTargetPageFromOtherNamespaceButExplicitlyNonOptional() {
+        var page = compilePage("guideme:test_page", """
                 <ItemLink id="minecraft:stick" optional={false} />
                 """);
 
         assertThat(page.document().getTextContent()).contains("No page found for item minecraft:stick");
     }
 
-    private static GuidePage compilePage(String pageId, String content) throws IOException {
-        try (var in = new ByteArrayInputStream(content.getBytes())) {
-            var parsed = PageCompiler.parse(GuideME.MOD_ID, "en_us", Identifier.parse(pageId), in);
-            var testPages = Guide.builder(Identifier.fromNamespaceAndPath(GuideME.MOD_ID, "test"))
-                    .watchDevelopmentSources(false)
-                    .register(false)
-                    .disableOpenHotkey()
-                    .build();
-            return PageCompiler.compile(testPages, ExtensionCollection.builder()
-                    .add(TagCompiler.EXTENSION_POINT, new ItemLinkCompiler())
-                    .build(), parsed);
-        }
+    private static GuidePage compilePage(String pageId, String content) {
+        return TestPages.compile(pageId, content, new ItemLinkCompiler());
     }
 }
