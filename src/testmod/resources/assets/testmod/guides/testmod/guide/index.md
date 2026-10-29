@@ -69,3 +69,19 @@ You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">do
   <BlockImage id="minecraft:jungle_log" scale="4" />
   <BlockImage id="minecraft:mangrove_log" scale="4" />
 </Row>
+
+## Optional content
+
+<OptionalSection modId="not_installed">
+  This text must not be visible because no mod with ID `not_installed` is loaded!
+</OptionalSection>
+
+<OptionalSection modId="!guideme">
+  This text must not be visible because GuideME is loaded!
+</OptionalSection>
+
+<OptionalSection modId="minecraft">
+  This text is visible because Minecraft is loaded!
+</OptionalSection>
+
+End of optional content

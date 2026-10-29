@@ -39,6 +39,9 @@ public final class PageExportPostProcessor {
         // Strip unnecessary frontmatter nodes.
         astRoot.removeChildren(mdAstNode -> mdAstNode instanceof MdAstYamlFrontmatter, true);
 
+        // Resolve optional sections, since the installed mods are only known in-game.
+        OptionalSectionExportProcessor.process(astRoot);
+
         astRoot.visit(new SceneExportVisitor(exporter, nodeMapping));
         astRoot.visit(new ImageExportVisitor(exporter));
 
