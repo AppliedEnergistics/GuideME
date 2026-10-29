@@ -80,6 +80,31 @@ class PageExportProcessingTest {
     }
 
     @Test
+    void testOptionalSectionDependsOnLoadedMods() throws Exception {
+        var root = parse("""
+                <OptionalSection modId="minecraft">
+                  Shown
+                </OptionalSection>
+
+                <OptionalSection modId="!minecraft">
+                  Hidden
+                </OptionalSection>
+
+                <OptionalSection modId="not_installed">
+                  Hidden
+                </OptionalSection>
+
+                <OptionalSection modId="!not_installed">
+                  Inverted
+                </OptionalSection>""");
+
+        process(root, new OptionalSectionExportProcessor());
+
+        assertThat(root.children()).extracting(PageExportProcessingTest::textOf)
+                .containsExactly("Shown", "Inverted");
+    }
+
+    @Test
     void testParentAndLayoutNodesAreAvailable() throws Exception {
         var root = parse("""
                 <Outer>
