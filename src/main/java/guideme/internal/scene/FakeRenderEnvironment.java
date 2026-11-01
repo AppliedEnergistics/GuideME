@@ -11,6 +11,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.CommonListenerCookie;
 import net.minecraft.client.multiplayer.LevelLoadTracker;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.player.ItemActivation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.telemetry.TelemetryEventSender;
@@ -67,7 +68,10 @@ public class FakeRenderEnvironment implements AutoCloseable {
                     registries.freeze(),
                     FeatureFlags.VANILLA_SET,
                     null,
-                    null,
+                    // NeoForge resolves the storage location of client session attachments in the constructor of
+                    // the packet listener, which fails without either server data or a singleplayer world.
+                    // This also keeps us away from the attachments of a world or server that is actually running.
+                    new ServerData("GuideME", "guideme.invalid", ServerData.Type.OTHER),
                     null,
                     Map.of(),
                     null,

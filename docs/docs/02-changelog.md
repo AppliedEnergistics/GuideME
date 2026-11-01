@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.3.7-alpha (Minecraft 26.3)
+
+- Compatibility with NeoForge 26.3.0.100
+
 ## 26.3.6-alpha (Minecraft 26.3)
 
 - Added `<OptionalSection modId="...">` to only show content if a mod is installed, or with `modId="!..."` if it is not
