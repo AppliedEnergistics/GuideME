@@ -1,10 +1,10 @@
 package guideme.compiler.tags;
 
+import guideme.compiler.ModPresence;
 import guideme.compiler.PageCompiler;
 import guideme.document.block.LytBlockContainer;
 import guideme.libs.mdast.mdx.model.MdxJsxElementFields;
 import java.util.Set;
-import net.neoforged.fml.ModList;
 
 public class OptionalSectionCompiler extends BlockTagCompiler {
     public static final String TAG_NAME = "OptionalSection";
@@ -29,11 +29,6 @@ public class OptionalSectionCompiler extends BlockTagCompiler {
     }
 
     public static boolean test(String modId) {
-        boolean invert = false;
-        if (modId.startsWith("!")) {
-            modId = modId.substring(1);
-            invert = true;
-        }
-        return ModList.get().isLoaded(modId) ^ invert;
+        return ModPresence.test(modId);
     }
 }
