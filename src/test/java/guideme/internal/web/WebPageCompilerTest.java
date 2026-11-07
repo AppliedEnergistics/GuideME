@@ -211,6 +211,16 @@ class WebPageCompilerTest {
     }
 
     @Test
+    void testCrossGuideLinkIsRenderedAsText() throws Exception {
+        var html = compile("[Overview](guide:ae2:guide#getting-started.md)");
+
+        // A website is generated per guide, so links into other guides can only be followed in-game
+        assertThat(html).doesNotContain("Error:");
+        assertThat(html).doesNotContain("href=\"guide:");
+        assertThat(html).contains("<p><span>Overview</span></p>");
+    }
+
+    @Test
     void testMalformedAttributeOnlyAffectsElement() throws Exception {
         var html = compile("""
                 Before

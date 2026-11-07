@@ -26,6 +26,7 @@ GuideME is based on the [micromark](https://github.com/micromark/micromark) Mark
 | `[Link](http://a.com)`     |                   | ![link](./markdown/link.png)                   |
 | `[Link](./index.md)`       |                   | ![link](./markdown/link.png)                   |
 | `[Link](testmod:index.md)` |                   | ![link](./markdown/link.png)                   |
+| `[Link](guide:testmod:other#index.md)` |        | ![link](./markdown/link.png)                   |
 | `` `Inline Code` ``        |                   | ![inline code](./markdown/inline_code.png)     |
 | `![Image](test.png)`       |                   | ![image](./markdown/image.png)                 |
 

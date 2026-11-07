@@ -5,6 +5,7 @@ import static guideme.internal.web.HtmlUtils.guiScaledDimension;
 import com.google.gson.Gson;
 import guideme.color.LightDarkMode;
 import guideme.color.SymbolicColor;
+import guideme.compiler.GuideLink;
 import guideme.compiler.tags.MdxAttrs;
 import guideme.internal.siteexport.model.ExportedPageJson;
 import guideme.internal.siteexport.model.ItemInfoJson;
@@ -387,6 +388,12 @@ class WebPageCompiler {
     private HtmlTag compileLink(WebPageCompileContext context, MdAstLink node) {
 
         var href = node.url;
+
+        // Links to pages in other guides can only be followed in-game, since a website is generated per guide
+        if (GuideLink.isGuideLink(href)) {
+            return HtmlNode.tag("span", compileChildren(context, node));
+        }
+
         var link = HtmlNode.tag("a", compileChildren(context, node));
         if (node.title != null) {
             link.setAttribute("title", node.title);

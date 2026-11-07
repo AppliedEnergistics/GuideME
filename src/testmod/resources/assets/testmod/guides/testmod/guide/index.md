@@ -105,3 +105,10 @@ You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">do
 </OptionalSection>
 
 End of optional content
+
+## Linking to pages in other guides
+
+[Other guide start page](guide:testmod:other#pages/index.md)
+
+A link to a guide that does not exist, rendered as plain text: [Missing guide](guide:not_installed:guide#index.md)
+
