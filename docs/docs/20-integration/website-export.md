@@ -182,6 +182,11 @@ Data that is only available in-game can be exported using `ResourceExporter#addE
 `AdditionalResourceExporter` extension, and read using `ExportedGuide#getExtraData`.
 :::
 
+Recipes that can't be exported otherwise are exported based on their recipe displays, which is how they're shown
+in-game as well. Recipes that use shaped or shapeless crafting displays therefore don't need a custom exporter or
+renderer. Recipes with several displays are shown once per display, and `RecipeFor` and `RecipesFor` only show the
+displays that produce the item.
+
 Renderers produce HTML using `HtmlNode.tag(...)` and the helpers on their rendering context, for example
 `itemIcon`, `itemLink`, `getPageUrl`, or `getAssetUrl(Identifier)`, which copies a texture from your mod resources
 into the website.

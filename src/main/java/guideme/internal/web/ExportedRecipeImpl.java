@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import guideme.web.ExportedRecipe;
 import java.util.Map;
 
-record ExportedRecipeImpl(String id, JsonObject recipe) implements ExportedRecipe {
+record ExportedRecipeImpl(String id, JsonObject recipe) implements ExportedRecipe, RecipeEntry {
     @Override
     public String type() {
         return recipe.getAsJsonPrimitive("type").getAsString();
@@ -21,6 +21,12 @@ record ExportedRecipeImpl(String id, JsonObject recipe) implements ExportedRecip
         // Not all recipe types export the count (i.e. AE2 charger and transform recipes)
         var resultCount = recipe.get("resultCount");
         return resultCount != null ? resultCount.getAsInt() : 1;
+    }
+
+    @Override
+    public boolean special() {
+        var special = recipe.get("special");
+        return special != null && special.getAsBoolean();
     }
 
     @SuppressWarnings("unchecked")

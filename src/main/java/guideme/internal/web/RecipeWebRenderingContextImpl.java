@@ -17,13 +17,17 @@ class RecipeWebRenderingContextImpl extends WebRenderingContextImpl implements R
     private final WebPageCompiler webPageCompiler;
     private final WebPageCompileContext context;
     private final MdAstParent<?> node;
+    @Nullable
     private final ExportedRecipeImpl recipe;
     private final Consumer<HtmlNode> output;
 
+    /**
+     * @param recipe The recipe being rendered, or null if a recipe display is being rendered.
+     */
     RecipeWebRenderingContextImpl(WebPageCompiler webPageCompiler,
             WebPageCompileContext context,
             MdAstParent<?> node,
-            ExportedRecipeImpl recipe,
+            @Nullable ExportedRecipeImpl recipe,
             Consumer<HtmlNode> output) {
         super(context, webPageCompiler, node);
         this.webPageCompiler = webPageCompiler;
@@ -64,12 +68,12 @@ class RecipeWebRenderingContextImpl extends WebRenderingContextImpl implements R
         return new RecipeBoxBuilder() {
             @Override
             public RecipeBoxBuilder resultSlot() {
-                return slot(recipe.resultItem());
+                return slot(requireRecipe().resultItem());
             }
 
             @Override
             public RecipeBoxBuilder craftingIngredientGrid() {
-                recipeBoxContent.append(createRecipeIngredientGrid(context, node, recipe));
+                recipeBoxContent.append(createRecipeIngredientGrid(context, node, requireRecipe()));
                 return this;
             }
 
@@ -151,6 +155,22 @@ class RecipeWebRenderingContextImpl extends WebRenderingContextImpl implements R
                         .append(createMinecraftFrame().append(createRecipeBoxLayout().append(recipeBoxContent))));
             }
         };
+    }
+
+    private ExportedRecipeImpl requireRecipe() {
+        if (recipe == null) {
+            throw new IllegalStateException("Not rendering a recipe");
+        }
+        return recipe;
+    }
+
+    /**
+     * Creates the same ingredient grid used for Vanilla crafting recipes.
+     *
+     * @param width The width of the recipe grid. Required for shaped recipes.
+     */
+    HtmlTag craftingIngredientGridHtml(List<List<String>> ingredients, boolean shapeless, @Nullable Integer width) {
+        return compileRecipeIngredientGrid(context, node, ingredients, shapeless, width);
     }
 
     private HtmlTag createRecipeIngredientGrid(WebPageCompileContext context, MdAstParent<?> node,

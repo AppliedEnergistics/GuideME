@@ -853,14 +853,22 @@ class WebPageCompiler {
             output.accept(compileError(node, "Missing id"));
             return;
         }
+        // The recipe box itself is already wrapped in a recipe container
         var recipe = guide.getRecipeById(id);
-        if (recipe == null) {
-            compileMissingRecipe(jsxElement, node, "Missing recipe: " + id, output);
+        if (recipe != null) {
+            compileRecipeInner(context, node, recipe, output);
             return;
         }
 
-        // The recipe box itself is already wrapped in a recipe container
-        compileRecipeInner(context, node, recipe, output);
+        // Recipes that were not exported as recipes are shown using their recipe displays, like in-game
+        var displays = guide.getRecipeDisplaysById(id);
+        if (displays.isEmpty()) {
+            compileMissingRecipe(jsxElement, node, "Missing recipe: " + id, output);
+            return;
+        }
+        for (var display : displays) {
+            compileRecipeDisplay(context, node, display, output);
+        }
     }
 
     private void compileRecipeFor(WebPageCompileContext context, MdxJsxElementFields jsxElement,
@@ -871,7 +879,7 @@ class WebPageCompiler {
             return;
         }
 
-        var recipes = context.guide().getRecipesForItem(id);
+        var recipes = context.guide().getRecipeEntriesForItem(id);
 
         if (recipes.isEmpty()) {
             compileMissingRecipe(jsxElement, node, "No recipes for " + id, output);
@@ -879,7 +887,7 @@ class WebPageCompiler {
         }
 
         var container = HtmlNode.tag("div").setClassName("recipe-container");
-        compileRecipeInner(context, node, recipes.getFirst(), container::append);
+        compileRecipeEntry(context, node, recipes.getFirst(), container::append);
         output.accept(container);
     }
 
@@ -891,7 +899,7 @@ class WebPageCompiler {
             return;
         }
 
-        var recipes = context.guide().getRecipesForItem(id);
+        var recipes = context.guide().getRecipeEntriesForItem(id);
 
         if (recipes.isEmpty()) {
             compileMissingRecipe(jsxElement, node, "No recipes for " + id, output);
@@ -900,7 +908,7 @@ class WebPageCompiler {
 
         var container = HtmlNode.tag("div").setClassName("recipe-container");
         for (var recipe : recipes) {
-            compileRecipeInner(context, node, recipe, container::append);
+            compileRecipeEntry(context, node, recipe, container::append);
         }
         output.accept(container);
     }
@@ -917,6 +925,27 @@ class WebPageCompiler {
         } else if (!fallbackText.isEmpty()) {
             output.accept(HtmlNode.tag("p").append(fallbackText));
         }
+    }
+
+    private void compileRecipeEntry(WebPageCompileContext context, MdAstParent<?> node, RecipeEntry entry,
+            Consumer<HtmlNode> output) {
+        switch (entry) {
+            case ExportedRecipeImpl recipe -> compileRecipeInner(context, node, recipe, output);
+            case ExportedRecipeDisplay display -> compileRecipeDisplay(context, node, display, output);
+        }
+    }
+
+    private void compileRecipeDisplay(WebPageCompileContext context, MdAstParent<?> node,
+            ExportedRecipeDisplay display, Consumer<HtmlNode> output) {
+        var type = display.type();
+        if (!type.equals(CraftingRecipeDisplayRenderer.SHAPED)
+                && !type.equals(CraftingRecipeDisplayRenderer.SHAPELESS)) {
+            output.accept(compileError(node, "Can't handle recipe display type " + type));
+            return;
+        }
+
+        var recipeRenderContext = new RecipeWebRenderingContextImpl(this, context, node, null, output);
+        CraftingRecipeDisplayRenderer.render(recipeRenderContext, display);
     }
 
     private void compileRecipeInner(WebPageCompileContext context, MdAstParent<?> node, ExportedRecipeImpl recipe,
