@@ -3,6 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
+## 26.3.8-alpha (Minecraft 26.3)
+
+- Fix crafting recipes with multiple recipe displays showing the result of the first display for all of them
+
 ## 26.3.7-alpha (Minecraft 26.3)
 
 - Compatibility with NeoForge 26.3.0.100

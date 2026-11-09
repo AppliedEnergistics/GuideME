@@ -55,7 +55,7 @@ final class VanillaRecipes {
                         .title(GuidebookText.Crafting.text().getString())
                         .icon(Blocks.CRAFTING_TABLE)
                         .input(grid)
-                        .outputFromResultOf(holder)
+                        .outputFromResultOf(recipeDisplay)
                         .build(holder));
             } else if (recipeDisplay instanceof ShapelessCraftingRecipeDisplay shapelessDisplay) {
                 var ingredients = shapelessDisplay.ingredients();
@@ -73,7 +73,7 @@ final class VanillaRecipes {
                         .title(GuidebookText.ShapelessCrafting.text().getString())
                         .icon(Blocks.CRAFTING_TABLE)
                         .input(grid)
-                        .outputFromResultOf(holder)
+                        .outputFromResultOf(recipeDisplay)
                         .build(holder));
             }
         }

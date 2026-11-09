@@ -77,6 +77,12 @@ You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">do
     <RecipesFor id="minecraft:green_bed" />
 </Row>
 
+### Custom Recipe With Multiple Displays
+
+<Row>
+    <Recipe id="testmod:stick_bucket" />
+</Row>
+
 ***
 
 <Row>
