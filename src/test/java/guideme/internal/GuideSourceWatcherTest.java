@@ -33,7 +33,7 @@ class GuideSourceWatcherTest {
     }
 
     @Test
-    void deletingDefaultLanguagePageMarksPageAsDeleted() throws Exception {
+    void deletingPageMarksPageAsDeleted() throws Exception {
         var pagePath = writePage("advanced/camo_crafting.md");
         startWatcher();
 
