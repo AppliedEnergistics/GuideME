@@ -3,9 +3,10 @@ import Video from '@site/src/components/Video';
 
 # Changelog
 
-## 26.3.8-alpha (Minecraft 26.3)
+## 26.3.8-beta (Minecraft 26.3)
 
 - Fix crafting recipes with multiple recipe displays showing the result of the first display for all of them
+- Fix the live-reload watcher erroring when a guide page is deleted on Windows (#158)
 - Website: Recipes that can't be exported otherwise (i.e. custom crafting recipes) are now exported based on their
   recipe displays, and each shaped or shapeless crafting display is shown as its own recipe. Previously, they were
   missing from the website.
