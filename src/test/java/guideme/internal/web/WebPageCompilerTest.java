@@ -9,6 +9,7 @@ import guideme.internal.siteexport.model.ExportedPageJson;
 import guideme.internal.siteexport.model.IndexModel;
 import guideme.internal.siteexport.model.ItemInfoJson;
 import guideme.internal.siteexport.model.NavigationNodeJson;
+import guideme.internal.siteexport.model.RecipeDisplaysJson;
 import guideme.internal.siteexport.model.SiteExportJson;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -179,6 +180,102 @@ class WebPageCompilerTest {
         assertThat(html).contains("<svg class=\"recipe-arrow\"");
         // The base item is shown as the input and as the result
         assertThat(html.split("aria-description=\"Diamond Chestplate\"", -1)).hasSize(3);
+    }
+
+    @Test
+    void testRecipeWithMultipleDisplaysShowsEachDisplay() throws Exception {
+        addMultiDisplayRecipe();
+
+        var html = compile("<Recipe id=\"testmod:stick_bucket\" />");
+
+        assertThat(html).doesNotContain("Error:");
+        assertThat(html.split("<div class=\"minecraft-frame\">", -1)).hasSize(3);
+        assertThat(html).contains("aria-description=\"Water Bucket\"");
+        assertThat(html).contains("aria-description=\"Mossy Cobblestone\"");
+        assertThat(html).contains("aria-description=\"Lava Bucket\"");
+        assertThat(html).contains("aria-description=\"Magma Block\"");
+    }
+
+    @Test
+    void testRecipeForOnlyShowsDisplayWithMatchingResult() throws Exception {
+        addMultiDisplayRecipe();
+
+        var html = compile("<RecipeFor id=\"minecraft:magma_block\" />");
+
+        assertThat(html).doesNotContain("Error:");
+        assertThat(html.split("<div class=\"minecraft-frame\">", -1)).hasSize(2);
+        assertThat(html).contains("aria-description=\"Lava Bucket\"");
+        assertThat(html).doesNotContain("aria-description=\"Water Bucket\"");
+    }
+
+    @Test
+    void testRecipeForPrefersNonSpecialRecipes() throws Exception {
+        addItem("minecraft:diamond", "Diamond");
+        addRecipeDisplays("testmod:special_stick", true, """
+                {
+                  "type": "minecraft:crafting_shaped",
+                  "width": 1,
+                  "height": 1,
+                  "ingredients": [["minecraft:diamond"]],
+                  "result": ["minecraft:stick"],
+                  "resultCount": 1,
+                  "craftingStation": ["minecraft:crafting_table"]
+                }""");
+
+        var html = compile("<RecipeFor id=\"minecraft:stick\" />");
+        assertThat(html).contains("aria-description=\"Oak Planks\"");
+        assertThat(html).doesNotContain("aria-description=\"Diamond\"");
+
+        html = compile("<RecipesFor id=\"minecraft:stick\" />");
+        assertThat(html).doesNotContain("Error:");
+        assertThat(html.indexOf("aria-description=\"Oak Planks\""))
+                .isNotNegative()
+                .isLessThan(html.indexOf("aria-description=\"Diamond\""));
+    }
+
+    @Test
+    void testUnknownRecipeDisplayType() throws Exception {
+        addRecipeDisplays("testmod:furnace", false, """
+                {
+                  "type": "minecraft:furnace",
+                  "result": ["minecraft:stick"],
+                  "resultCount": 1,
+                  "craftingStation": []
+                }""");
+
+        assertThat(compile("<Recipe id=\"testmod:furnace\" />"))
+                .contains("handle recipe display type minecraft:furnace");
+    }
+
+    private void addMultiDisplayRecipe() throws IOException {
+        addItem("minecraft:water_bucket", "Water Bucket");
+        addItem("minecraft:lava_bucket", "Lava Bucket");
+        addItem("minecraft:mossy_cobblestone", "Mossy Cobblestone");
+        addItem("minecraft:magma_block", "Magma Block");
+        addRecipeDisplays("testmod:stick_bucket", true, """
+                {
+                  "type": "minecraft:crafting_shapeless",
+                  "ingredients": [["minecraft:stick"], ["minecraft:water_bucket"]],
+                  "result": ["minecraft:mossy_cobblestone"],
+                  "resultCount": 1,
+                  "craftingStation": ["minecraft:crafting_table"]
+                }""", """
+                {
+                  "type": "minecraft:crafting_shapeless",
+                  "ingredients": [["minecraft:stick"], ["minecraft:lava_bucket"]],
+                  "result": ["minecraft:magma_block"],
+                  "resultCount": 1,
+                  "craftingStation": ["minecraft:crafting_table"]
+                }""");
+    }
+
+    private void addRecipeDisplays(String recipeId, boolean special, String... displays) {
+        var recipeDisplays = new RecipeDisplaysJson();
+        recipeDisplays.special = special;
+        for (var display : displays) {
+            recipeDisplays.displays.add(JsonParser.parseString(display).getAsJsonObject());
+        }
+        json.recipeDisplays.put(recipeId, recipeDisplays);
     }
 
     @Test

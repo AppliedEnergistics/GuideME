@@ -10,6 +10,7 @@ import guideme.internal.siteexport.model.SiteExportJson;
 import guideme.web.ExportedGuide;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,10 @@ class ExportedGuideImpl implements ExportedGuide {
 
     private final Map<String, List<ExportedRecipeImpl>> recipesByResult = new HashMap<>();
 
+    private final Map<String, List<ExportedRecipeDisplay>> recipeDisplays = new HashMap<>();
+
+    private final Map<String, List<ExportedRecipeDisplay>> recipeDisplaysByResult = new HashMap<>();
+
     ExportedGuideImpl(IndexModel index, SiteExportJson json) {
         this.index = index;
         this.json = json;
@@ -44,6 +49,21 @@ class ExportedGuideImpl implements ExportedGuide {
             if (exportedRecipe.recipe().has("resultItem")) {
                 recipesByResult.computeIfAbsent(exportedRecipe.resultItem(), _ -> new ArrayList<>())
                         .add(exportedRecipe);
+            }
+        }
+
+        // Recipes that were not exported as recipes may have their recipe displays exported instead
+        if (json.recipeDisplays != null) {
+            for (var entry : json.recipeDisplays.entrySet()) {
+                var displays = new ArrayList<ExportedRecipeDisplay>();
+                for (var displayJson : entry.getValue().displays) {
+                    var display = new ExportedRecipeDisplay(entry.getKey(), entry.getValue().special, displayJson);
+                    displays.add(display);
+                    for (var resultItem : display.result()) {
+                        recipeDisplaysByResult.computeIfAbsent(resultItem, _ -> new ArrayList<>()).add(display);
+                    }
+                }
+                recipeDisplays.put(entry.getKey(), List.copyOf(displays));
             }
         }
 
@@ -252,6 +272,28 @@ class ExportedGuideImpl implements ExportedGuide {
         id = resolveId(id);
 
         return recipesByResult.getOrDefault(id, List.of());
+    }
+
+    /**
+     * {@return the exported recipes and recipe displays that produce the given item, non-special ones first}
+     */
+    List<RecipeEntry> getRecipeEntriesForItem(String id) {
+        id = resolveId(id);
+
+        var result = new ArrayList<RecipeEntry>();
+        result.addAll(recipesByResult.getOrDefault(id, List.of()));
+        result.addAll(recipeDisplaysByResult.getOrDefault(id, List.of()));
+        result.sort(Comparator.comparing(RecipeEntry::special));
+        return result;
+    }
+
+    /**
+     * {@return the recipe displays exported for a recipe that was not exported as a recipe}
+     */
+    List<ExportedRecipeDisplay> getRecipeDisplaysById(String id) {
+        id = resolveId(id);
+
+        return recipeDisplays.getOrDefault(id, List.of());
     }
 
     @Override

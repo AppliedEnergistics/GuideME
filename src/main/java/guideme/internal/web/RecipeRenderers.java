@@ -82,3 +82,36 @@ final class SmithingRecipeRenderer implements RecipeWebRenderer {
                 .build();
     }
 }
+
+/**
+ * Renders the shaped and shapeless crafting recipe displays of recipes that were not exported as recipes.
+ */
+final class CraftingRecipeDisplayRenderer {
+    static final String SHAPED = "minecraft:crafting_shaped";
+    static final String SHAPELESS = "minecraft:crafting_shapeless";
+
+    private CraftingRecipeDisplayRenderer() {
+    }
+
+    static void render(RecipeWebRenderingContextImpl builder, ExportedRecipeDisplay display) {
+        var shapeless = display.type().equals(SHAPELESS);
+
+        var type = "Crafting";
+        if (shapeless) {
+            type += " (Shapeless)";
+        }
+
+        var craftingStation = display.craftingStation().isEmpty()
+                ? "minecraft:crafting_table"
+                : display.craftingStation().getFirst();
+        var result = display.result();
+        var tooltipItem = result.isEmpty() ? craftingStation : result.getFirst();
+
+        builder.recipeBox(craftingStation, type, tooltipItem)
+                .append(builder.craftingIngredientGridHtml(display.ingredients(), shapeless,
+                        shapeless ? null : display.width()))
+                .arrow()
+                .slot(result)
+                .build();
+    }
+}
