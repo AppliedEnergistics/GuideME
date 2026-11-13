@@ -99,6 +99,38 @@ item_ids:
 Using `<ItemLink id="item_id" />` or `<ItemLink id="ae2:item_id" />` will then link to this page, as will slots
 in recipes that show that item.
 
+## Linking to Pages in Other Guides
+
+A guide can link to a page of another guide, for example to describe how a mod integrates with another mod's guide. Use
+the `guide:` scheme, followed by the ID of the target guide, a `#` and the page within that guide:
+
+```markdown
+[Getting started with the other mod](guide:othermod:guide#getting-started.md)
+```
+
+The guide ID is the ID the target guide was registered with, which for guides defined in resource packs is
+`<namespace>:<path>` for the folder `guides/<namespace>/<path>`. Data-driven guides use the path of their definition
+file in `guideme_guides`.
+
+The page is resolved against the default namespace of the target guide, so `getting-started.md` refers to
+`<namespace>:getting-started.md` for a guide in the namespace `<namespace>`. A full page ID such as
+`othermod:items/foo.md` can be used as well. To scroll to an anchor within the page, append it after another `#`:
+
+```markdown
+[Usage](guide:othermod:guide#getting-started.md#usage)
+```
+
+:::note
+
+If the target guide or page is not present, for example because the other mod is not installed, the link text is shown
+as plain text. Neither mod needs a dependency on the other one.
+
+Back and forward navigation stay within the guide the link leads to. On the
+[website](../20-integration/website-export.md), links to other guides are shown as plain text, because a website is
+generated per guide.
+
+:::
+
 ## Using Images
 
 To show an image, just put it (.png or .jpg) in the `guidebook/assets` folder and embed it either:

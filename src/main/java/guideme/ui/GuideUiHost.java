@@ -1,5 +1,6 @@
 package guideme.ui;
 
+import guideme.Guide;
 import guideme.PageAnchor;
 import guideme.PageCollection;
 import guideme.document.LytPoint;
@@ -13,6 +14,13 @@ public interface GuideUiHost {
     void navigateTo(Identifier pageId);
 
     void navigateTo(PageAnchor anchor);
+
+    /**
+     * Opens the given page in the given guide, which may be a different guide than the one this host displays.
+     */
+    default void openGuide(Guide guide, PageAnchor anchor) {
+        GuideNavigation.navigateTo(guide, anchor);
+    }
 
     void reloadPage();
 

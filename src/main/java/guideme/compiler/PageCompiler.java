@@ -28,6 +28,7 @@ import guideme.extensions.Extension;
 import guideme.extensions.ExtensionCollection;
 import guideme.extensions.ExtensionPoint;
 import guideme.indices.PageIndex;
+import guideme.internal.GuideRegistry;
 import guideme.libs.mdast.MdAst;
 import guideme.libs.mdast.MdAstYamlFrontmatter;
 import guideme.libs.mdast.MdastOptions;
@@ -441,6 +442,10 @@ public final class PageCompiler {
     }
 
     private LytFlowContent compileLink(MdAstLink astLink, LytErrorSink errorSink) {
+        if (GuideLink.isGuideLink(astLink.url)) {
+            return compileGuideLink(astLink, errorSink);
+        }
+
         var link = new LytFlowLink();
         if (astLink.title != null && !astLink.title.isEmpty()) {
             link.setTooltip(new TextTooltip(astLink.title));
@@ -464,6 +469,37 @@ public final class PageCompiler {
             });
         }
 
+        compileFlowContext(astLink, link);
+        return link;
+    }
+
+    /**
+     * Compiles a link to a page in another guide. If the target guide or page doesn't exist, for example because the mod
+     * providing it isn't installed, the link is rendered as plain text.
+     */
+    private LytFlowContent compileGuideLink(MdAstLink astLink, LytErrorSink errorSink) {
+        GuideLink guideLink;
+        try {
+            guideLink = GuideLink.parse(astLink.url);
+        } catch (IllegalArgumentException e) {
+            errorSink.appendError(this, e.getMessage(), astLink);
+            return new LytFlowSpan();
+        }
+
+        var targetGuide = GuideRegistry.getById(guideLink.guideId());
+        var pageId = targetGuide != null ? guideLink.resolvePageId(targetGuide) : null;
+        if (targetGuide == null || !targetGuide.pageExists(pageId)) {
+            var span = new LytFlowSpan();
+            compileFlowContext(astLink, span);
+            return span;
+        }
+
+        var link = new LytFlowLink();
+        if (astLink.title != null && !astLink.title.isEmpty()) {
+            link.setTooltip(new TextTooltip(astLink.title));
+        }
+        var anchor = new PageAnchor(pageId, guideLink.anchor());
+        link.setClickCallback(screen -> screen.openGuide(targetGuide, anchor));
         compileFlowContext(astLink, link);
         return link;
     }
