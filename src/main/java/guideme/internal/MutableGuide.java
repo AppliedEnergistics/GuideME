@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
+import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -298,6 +299,11 @@ public final class MutableGuide implements Guide {
             }
 
             var newPage = change.newPage();
+            // Pages that no longer satisfy their required mods are treated as if they had been deleted
+            if (newPage != null && !isAvailable(newPage)) {
+                LOG.info("Hiding page {} because the mods it requires are not present", pageId);
+                newPage = null;
+            }
             if (newPage != null) {
                 developmentPages.put(pageId, newPage);
             } else {
@@ -332,6 +338,26 @@ public final class MutableGuide implements Guide {
         }
     }
 
+    /**
+     * {@return whether the page is visible in the current environment, i.e. all mods in its {@code required_mods}
+     * frontmatter are present (or absent, for ids prefixed with {@code !})}
+     */
+    static boolean isAvailable(ParsedGuidePage page) {
+        return page.getFrontmatter().isAvailable(ModList.get()::isLoaded);
+    }
+
+    private static Map<Identifier, ParsedGuidePage> filterAvailable(Map<Identifier, ParsedGuidePage> pages) {
+        var result = new HashMap<Identifier, ParsedGuidePage>(pages.size());
+        for (var entry : pages.entrySet()) {
+            if (isAvailable(entry.getValue())) {
+                result.put(entry.getKey(), entry.getValue());
+            } else {
+                LOG.debug("Hiding page {} because the mods it requires are not present", entry.getKey());
+            }
+        }
+        return result;
+    }
+
     private NavigationTree buildNavigation() {
         if (developmentPages.isEmpty()) {
             return NavigationTree.build(pages.values());
@@ -359,13 +385,15 @@ public final class MutableGuide implements Guide {
     }
 
     public void setPages(Map<Identifier, ParsedGuidePage> pages) {
-        this.pages = Map.copyOf(pages);
+        this.pages = Map.copyOf(filterAvailable(pages));
 
         if (watcher != null) {
             watcher.clearChanges(); // Since we'll load them all now, ignore all changes up to now
 
             for (var page : watcher.loadAll(defaultLanguage)) {
-                developmentPages.put(page.getId(), page);
+                if (isAvailable(page)) {
+                    developmentPages.put(page.getId(), page);
+                }
             }
         }
 

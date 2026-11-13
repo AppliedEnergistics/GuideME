@@ -111,3 +111,12 @@ You may ~~need~~ a <Color color="#ff0000">door</Color> <Color id="test_color">do
 </OptionalSection>
 
 End of optional content
+
+## Conditional pages
+
+[Conditional Page (shown)](./conditional_shown.md) is part of the guide.
+
+<OptionalSection modId="not_installed">
+  [Conditional Page (hidden)](./conditional_hidden.md) must not be part of the guide.
+</OptionalSection>
+

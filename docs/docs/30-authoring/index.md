@@ -41,6 +41,42 @@ navigation:
 Content
 ```
 
+## Conditional Pages
+
+A page can be hidden depending on which mods are installed by listing them under the `required_mods` key in its
+frontmatter:
+
+```yaml
+---
+navigation:
+  title: Applied Energistics 2
+required_mods:
+  - ae2
+---
+```
+
+The page is only shown if *all* listed mods are installed. Prefix a mod id with `!` to instead require the mod to be
+*absent*, for example to describe a fallback:
+
+```yaml
+required_mods:
+  - ae2
+  - "!ae2wtlib"
+```
+
+:::note
+
+A hidden page is treated as if it did not exist at all. It is absent from the navigation bar, the full-text search, the
+item and category indices, and the [website export](../20-integration/website-export.md). Links pointing to it are
+reported as "Page does not exist", so wrap those links in an [`<OptionalSection>`](#optional-sections) with the same
+condition.
+
+:::
+
+Conditions are not inherited: a child page is still shown when its navigation parent is hidden. Note that hiding a page
+that other pages list as their navigation `parent` removes those pages from the navigation bar as well, since their
+parent no longer exists.
+
 ## Adding Pages to the Navigation Bar
 
 To include a page in the navigation sidebar, it needs to define the `navigation` key in its frontmatter as such:
@@ -364,3 +400,6 @@ mod is *not* installed, for example to describe a fallback.
 
 The `modId` attribute is required. For the [website export](../20-integration/website-export.md), the condition is
 evaluated against the mods installed when the guide is exported.
+
+To hide or show an entire page instead of just a part of it, use
+[`required_mods` in the page's frontmatter](#conditional-pages).
