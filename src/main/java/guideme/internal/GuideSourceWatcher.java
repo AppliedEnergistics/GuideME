@@ -270,15 +270,15 @@ class GuideSourceWatcher implements AutoCloseable {
         }
 
         // If a language specific page is deleted, make it fall back to the default language page instead
-        var defaultLangPath = sourceFolder.resolve(pageKey.pageId().toString());
-        if (!defaultLangPath.equals(path)) {
+        var defaultLangPath = sourceFolder.resolve(pageKey.pageId().getPath());
+        if (!defaultLangPath.equals(path) && Files.isRegularFile(defaultLangPath)) {
             try (var in = Files.newInputStream(defaultLangPath)) {
                 var page = PageCompiler.parse(sourcePackId, defaultLanguage, pageKey.pageId(), in);
                 changedPages.put(pageKey, page);
                 deletedPages.remove(pageKey);
                 return;
             } catch (Exception e) {
-                LOG.error("Failed to load default language guidebook page {}", path, e);
+                LOG.error("Failed to load default language guidebook page {}", defaultLangPath, e);
             }
         }
 
