@@ -294,23 +294,27 @@ public class SiteExporter implements ResourceExporter {
             }
 
             if (recipe instanceof CraftingRecipe craftingRecipe) {
-                if (craftingRecipe.isSpecial()) {
-                    continue;
-                }
-                writer.addRecipe(id, craftingRecipe);
+                handled = writer.addRecipe(id, craftingRecipe);
             } else if (recipe instanceof AbstractCookingRecipe cookingRecipe) {
                 writer.addRecipe(id, cookingRecipe);
+                handled = true;
             } else if (recipe instanceof SmithingRecipe smithingRecipe) {
                 writer.addRecipe(id, smithingRecipe);
+                handled = true;
             } else if (recipe instanceof SingleItemRecipe singleItemRecipe) {
                 writer.addRecipe(id, singleItemRecipe);
+                handled = true;
             } else {
                 var recipeFields = getCustomRecipeFields(id, recipe);
                 if (recipeFields != null) {
                     writer.addRecipe(id, recipe, recipeFields);
-                } else {
-                    LOG.warn("Unable to handle recipe {} of type {}", holder.id(), recipe.getType());
+                    handled = true;
                 }
+            }
+
+            // Fall back to exporting the recipe displays, which is how the recipe is shown in-game as well
+            if (!handled && !writer.addRecipeDisplays(id, recipe)) {
+                LOG.warn("Unable to handle recipe {} of type {}", holder.id(), recipe.getType());
             }
         }
     }

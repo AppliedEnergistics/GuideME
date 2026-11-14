@@ -21,6 +21,12 @@ public class SiteExportJson {
      */
     public Map<String, JsonObject> recipes = new HashMap<>();
 
+    /**
+     * Recipe displays of recipes that were not exported as recipes, indexed by their recipe ID. Missing in exports from
+     * older versions.
+     */
+    public Map<String, RecipeDisplaysJson> recipeDisplays = new HashMap<>();
+
     public Map<String, ItemInfoJson> items = new HashMap<>();
 
     public List<NavigationNodeJson> navigationRootNodes = new ArrayList<>();

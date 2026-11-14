@@ -16,6 +16,7 @@ import guideme.internal.siteexport.model.ExportedPageJson;
 import guideme.internal.siteexport.model.FluidInfoJson;
 import guideme.internal.siteexport.model.ItemInfoJson;
 import guideme.internal.siteexport.model.NavigationNodeJson;
+import guideme.internal.siteexport.model.RecipeDisplaysJson;
 import guideme.internal.siteexport.model.SiteExportJson;
 import guideme.internal.util.Platform;
 import guideme.libs.mdast.MdAstVisitor;
@@ -32,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
@@ -56,6 +58,10 @@ import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.item.crafting.SmithingTransformRecipe;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -179,7 +185,12 @@ public class SiteExportWriter {
         siteExport.fluids.put(fluidInfo.id, fluidInfo);
     }
 
-    public void addRecipe(ResourceKey<Recipe<?>> id, CraftingRecipe recipe) {
+    /**
+     * Adds a standard shaped or shapeless crafting recipe.
+     *
+     * @return false if the recipe is not a standard shaped or shapeless crafting recipe.
+     */
+    public boolean addRecipe(ResourceKey<Recipe<?>> id, CraftingRecipe recipe) {
         Map<String, Object> fields = new HashMap<>();
         if (recipe instanceof ShapedRecipe shapedRecipe) {
             fields.put("shapeless", false);
@@ -198,11 +209,64 @@ public class SiteExportWriter {
             fields.put("resultItem", resultItem);
             fields.put("resultCount", resultItem.count());
         } else {
-            LOG.warn("Cannot handle crafting recipe of type {}", recipe);
-            return;
+            return false;
         }
 
         addRecipe(id, recipe, fields);
+        return true;
+    }
+
+    /**
+     * Adds the recipe displays of a recipe that could not be exported otherwise. They are exported separately from the
+     * recipes, since there is no 1:1 relationship between a recipe and its displays.
+     *
+     * @return false if the recipe has no recipe displays.
+     */
+    public boolean addRecipeDisplays(ResourceKey<Recipe<?>> id, Recipe<?> recipe) {
+        var displays = new ArrayList<JsonObject>();
+        for (var display : recipe.display()) {
+            displays.add(GSON.toJsonTree(getRecipeDisplayFields(display)).getAsJsonObject());
+        }
+        if (displays.isEmpty()) {
+            return false;
+        }
+
+        var exportedDisplays = new RecipeDisplaysJson();
+        exportedDisplays.special = recipe.isSpecial();
+        exportedDisplays.displays = displays;
+        if (siteExport.recipeDisplays.put(id.identifier().toString(), exportedDisplays) != null) {
+            throw new RuntimeException("Duplicate recipe displays for id " + id);
+        }
+        return true;
+    }
+
+    private static Map<String, Object> getRecipeDisplayFields(RecipeDisplay display) {
+        Map<String, Object> fields = new HashMap<>();
+        fields.put("type", BuiltInRegistries.RECIPE_DISPLAY.getKey(display.type()).toString());
+        fields.put("result", resolveItemIds(display.result()));
+        fields.put("resultCount", display.result().resolveForFirstStack(Platform.getSlotDisplayContext()).getCount());
+        fields.put("craftingStation", resolveItemIds(display.craftingStation()));
+
+        if (display instanceof ShapedCraftingRecipeDisplay shapedDisplay) {
+            fields.put("width", shapedDisplay.width());
+            fields.put("height", shapedDisplay.height());
+            fields.put("ingredients",
+                    shapedDisplay.ingredients().stream().map(SiteExportWriter::resolveItemIds).toList());
+        } else if (display instanceof ShapelessCraftingRecipeDisplay shapelessDisplay) {
+            fields.put("ingredients",
+                    shapelessDisplay.ingredients().stream().map(SiteExportWriter::resolveItemIds).toList());
+        }
+
+        return fields;
+    }
+
+    private static List<String> resolveItemIds(SlotDisplay display) {
+        return display.resolveForStacks(Platform.getSlotDisplayContext())
+                .stream()
+                .filter(stack -> !stack.isEmpty())
+                .map(stack -> BuiltInRegistries.ITEM.getKey(stack.getItem()).toString())
+                .distinct()
+                .toList();
     }
 
     public void addRecipe(ResourceKey<Recipe<?>> id, SingleItemRecipe recipe) {
@@ -240,6 +304,9 @@ public class SiteExportWriter {
 
         var type = BuiltInRegistries.RECIPE_TYPE.getKey(recipe.getType()).toString();
         jsonObject.addProperty("type", type);
+        if (recipe.isSpecial()) {
+            jsonObject.addProperty("special", true);
+        }
 
         if (siteExport.recipes.put(id.identifier().toString(), jsonObject) != null) {
             throw new RuntimeException("Duplicate recipe id " + id);
